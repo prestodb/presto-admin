@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
 ##
-#  This file was copied from Fabric-1.8.0 with some modifications.  
+#  This file was copied from Fabric-1.8.0 with some modifications.
 #
 #  This distribution of fabric is distributed under the following BSD license:
 #
@@ -11,22 +13,25 @@
 #
 #      * Redistributions of source code must retain the above copyright notice,
 #        this list of conditions and the following disclaimer.
-#      * Redistributions in binary form must reproduce the above copyright notice,
-#        this list of conditions and the following disclaimer in the documentation
-#        and/or other materials provided with the distribution.
+#      * Redistributions in binary form must reproduce the above copyright
+#        notice, this list of conditions and the following disclaimer in the
+#        documentation and/or other materials provided with the distribution.
 #
-#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-#  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-#  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-#  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-#  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-#  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-#  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-#  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
 #
 ##
+
+
 """
 This module contains Fab's `main` method plus related subroutines.
 
@@ -60,7 +65,9 @@ from util.parse import to_boolean
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
 _modules = [api, project, files, console]
-_internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
+_internals = reduce(lambda x, y: x + filter(
+    callable,
+    vars(y).values()),
     _modules,
     []
 )
@@ -96,7 +103,7 @@ def load_settings(path):
         comments = lambda s: s and not s.startswith("#")
         settings = filter(comments, open(path, 'r'))
         return dict((k.strip(), v.strip()) for k, _, v in
-            [s.partition('=') for s in settings])
+                    [s.partition('=') for s in settings])
     # Handle nonexistent or empty settings file
     return {}
 
@@ -217,7 +224,7 @@ def load_tasks_from_module(imported):
     # Obey the use of <module>.__all__ if it is present
     imported_vars = vars(imported)
     if "__all__" in imported_vars:
-        imported_vars = [(name, imported_vars[name]) for name in \
+        imported_vars = [(name, imported_vars[name]) for name in
                          imported_vars if name in imported_vars["__all__"]]
     else:
         imported_vars = imported_vars.items()
@@ -271,7 +278,7 @@ def is_task_module(a):
     """
     Determine if the provided value is a task module
     """
-    #return (type(a) is types.ModuleType and
+    # return (type(a) is types.ModuleType and
     #        any(map(is_task_object, vars(a).values())))
     if isinstance(a, types.ModuleType) and a not in _seen:
         # Flag module as seen
@@ -311,28 +318,36 @@ def parse_options():
     #
 
     # Display info about a specific command
-    parser.add_option('-d', '--display',
+    parser.add_option(
+        '-d',
+        '--display',
         metavar='NAME',
         help="print detailed info about command NAME"
     )
 
     # Control behavior of --list
     LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
-    parser.add_option('-F', '--list-format',
+    parser.add_option(
+        '-F',
+        '--list-format',
         choices=LIST_FORMAT_OPTIONS,
         default='normal',
         metavar='FORMAT',
         help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
     )
 
-    parser.add_option('-I', '--initial-password-prompt',
+    parser.add_option(
+        '-I',
+        '--initial-password-prompt',
         action='store_true',
         default=False,
         help="Force password prompt up-front"
     )
 
     # List Fab commands found in loaded fabfiles/source files
-    parser.add_option('-l', '--list',
+    parser.add_option(
+        '-l',
+        '--list',
         action='store_true',
         dest='list_commands',
         default=False,
@@ -340,7 +355,8 @@ def parse_options():
     )
 
     # Allow setting of arbitrary env vars at runtime.
-    parser.add_option('--set',
+    parser.add_option(
+        '--set',
         metavar="KEY=VALUE,...",
         dest='env_settings',
         default="",
@@ -348,7 +364,8 @@ def parse_options():
     )
 
     # Like --list, but text processing friendly
-    parser.add_option('--shortlist',
+    parser.add_option(
+        '--shortlist',
         action='store_true',
         dest='shortlist',
         default=False,
@@ -357,14 +374,17 @@ def parse_options():
 
     # Version number (optparse gives you --version but we have to do it
     # ourselves to get -V too. sigh)
-    parser.add_option('-V', '--version',
+    parser.add_option(
+        '-V',
+        '--version',
         action='store_true',
         dest='show_version',
         default=False,
         help="show program's version number and exit"
     )
 
-    parser.add_option('--post',
+    parser.add_option(
+        '--post',
         dest='post_tasks',
         default=[],
         action="append",
@@ -574,7 +594,8 @@ def parse_arguments(arguments):
                     k, v = result
                     # Catch, interpret host/hosts/role/roles/exclude_hosts
                     # kwargs
-                    if k in ['host', 'hosts', 'role', 'roles', 'exclude_hosts']:
+                    if k in ['host', 'hosts', 'role', 'roles',
+                             'exclude_hosts']:
                         if k == 'host':
                             hosts = [v.strip()]
                         elif k == 'hosts':
@@ -622,22 +643,24 @@ def show_commands(docstring, format, code=0):
     print("\n".join(list_commands(docstring, format)))
     sys.exit(code)
 
+
 def run_tasks(task_list, suppress_errors=False):
-    for name, args, kwargs, arg_hosts, arg_roles, arg_exclude_hosts in task_list:
+    for name, args, kwargs, arg_hosts, arg_roles, arg_excl_hosts in task_list:
         try:
             execute(
                 name,
                 hosts=arg_hosts,
                 roles=arg_roles,
-                exclude_hosts=arg_exclude_hosts,
+                exclude_hosts=arg_excl_hosts,
                 *args, **kwargs
             )
         except:
             if not suppress_errors:
                 raise
 
+
 def toBool(param, default):
-    if isinstance (param, bool):
+    if isinstance(param, bool):
         return param
     if not param:
         return default
@@ -646,6 +669,7 @@ def toBool(param, default):
     if (param.lower() in ['false', '0', 'f', 'n', 'no']):
         return False
     return default
+
 
 def main(fabfile_locations=None):
     """
@@ -727,7 +751,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # Handle case where we were called bare, i.e. just "fab", and print
         # a help message.
         actions = (options.list_commands, options.shortlist, options.display,
-            arguments, remainder_arguments, default)
+                   arguments, remainder_arguments, default)
         if not any(actions):
             parser.print_help()
             sys.exit(1)
@@ -773,6 +797,7 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Figure out if any specified task names are invalid
         unknown_commands = []
+
         def validate_command(command):
             if command and crawl(command, state.commands) is None:
                 unknown_commands.append(command)
@@ -782,15 +807,19 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
 
         # Abort if any unknown commands were specified
         if unknown_commands:
-            warn("Command(s) not found:\n%s" \
-                % indent(unknown_commands))
+            warn("Command(s) not found:\n%s"
+                 % indent(unknown_commands))
             show_commands(None, options.list_format, 1)
 
         # Generate remainder command and insert into commands, commands_to_run
 
         if remainder_command:
             r = '<remainder>'
-            state.commands[r] = lambda: api.run(remainder_command, pty=toBool(state.env.get('pty'), True), combine_stderr=toBool(state.env.get('combine_stderr'), True))
+            state.commands[r] = lambda: api.run(
+                remainder_command,
+                pty=toBool(state.env.get('pty'), True),
+                combine_stderr=toBool(state.env.get('combine_stderr'), True)
+            )
             commands_to_run.append((r, [], {}, [], [], []))
 
         # Ditto for a default, if found
@@ -825,7 +854,8 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         sys.exit(1)
     finally:
         try:
-            if commands_to_run is not None and len(commands_to_run) > 0 and len(unknown_commands) == 0:
+            if (commands_to_run is not None and len(commands_to_run) > 0 and
+                    len(unknown_commands) == 0):
                 run_tasks(post_commands_to_run, True)
         finally:
             disconnect_all()

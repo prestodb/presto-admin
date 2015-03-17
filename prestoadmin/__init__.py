@@ -1,4 +1,5 @@
-#!/bin/sh
+# -*- coding: utf-8 -*-
+
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from fabric.api import env
 
-SCRIPT_ROOT=$(readlink -f $(dirname $(readlink -f "$0"))/..)
+import errno
+import os
 
-DEFAULT_ARGS="--disable-known-hosts --connection-attempts=3"
+config_root = os.getenv('WORKSPACE', '~')
+env.config_directory = os.path.join(os.path.expanduser(config_root), '.fabric')
+try:
+    os.makedirs(env.config_directory)
+except OSError as ex:
+    if ex.errno != errno.EEXIST:
+        raise
 
-# if we had installed fabric normally you could just call "fab" here
-# since we're keeping it in the egg, this just calls the main function
-# manually
-exec python -c 'from prestoadmin.main import main; main();' $DEFAULT_ARGS -f $SCRIPT_ROOT/prestoadmin "$@"
+env.roledefs = {
+    'coordinator': [],
+    'worker': [],
+    'all': [],
+}

@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +15,30 @@
 # limitations under the License.
 #
 
-SCRIPT_ROOT=$(readlink -f $(dirname $(readlink -f "$0"))/..)
 
-DEFAULT_ARGS="--disable-known-hosts --connection-attempts=3"
+"""
+test_prestoadmin
+----------------------------------
 
-# if we had installed fabric normally you could just call "fab" here
-# since we're keeping it in the egg, this just calls the main function
-# manually
-exec python -c 'from prestoadmin.main import main; main();' $DEFAULT_ARGS -f $SCRIPT_ROOT/prestoadmin "$@"
+Tests for `prestoadmin` module.
+"""
+
+import unittest
+
+from prestoadmin import main
+
+
+class TestPrestoadmin(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_something(self):
+        # Test that we can access the toBool method from main
+        self.assertTrue(main.toBool('yes', False))
+
+    def tearDown(self):
+        pass
+
+if __name__ == '__main__':
+    unittest.main()

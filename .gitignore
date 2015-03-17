@@ -1,1 +1,10 @@
 *.pyc
+*.swp
+prestoadmin.egg-info/
+.tox/
+.coverage
+
+# Ignore generated Sphinx docs
+docs/prestoadmin.*
+docs/modules.rst
+docs/_build
