@@ -1,0 +1,7 @@
+{
+    "username" : "me",
+    "port" : "1234",
+    "coordinator" : "coordinator",
+    "workers" : ["node1" , "node2"],
+    "invalid property" : "fake"
+}
