@@ -12,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests the presto-admin config
-"""
-
-import os
 from prestoadmin import configuration as config
-import test_utils
-import unittest
+import os
+import utils
 
 
-class TestConfiguration(test_utils.BaseTestCase):
-
+class TestConfiguration(utils.BaseTestCase):
     def test_file_does_not_exist(self):
         self.assertRaisesRegexp(IOError,
                                 "No such file or directory",
@@ -38,107 +32,17 @@ class TestConfiguration(test_utils.BaseTestCase):
                                 (os.path.dirname(__file__) +
                                  "/files/invalid_json_conf.json"))
 
-    def test_invalid_property(self):
-        conf = config.get_conf_from_file(os.path.dirname(__file__) +
-                                         "/files/invalid_conf.json")
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "Invalid property: invalid property",
-                                config.validate_config, conf)
+    def test_fill_defaults_no_missing(self):
+        orig = {"key1": "val1", "key2": "val2", "key3": "val3"}
+        defaults = {"key1": "default1", "key2": "default2"}
+        filled = orig.copy()
+        config.fill_defaults(filled, defaults)
+        self.assertEqual(filled, orig)
 
-    def test_valid_conf(self):
-        conf = config.get_conf_from_file(os.path.dirname(__file__) +
-                                         "/files/valid_conf.json")
-        config.validate_config(conf)
-
-    def test_valid_ipv4(self):
-        config.validate_host("10.14.1.10")
-
-    def test_valid_full_ipv6(self):
-        config.validate_host("FE80:0000:0000:0000:0202:B3FF:FE1E:8329")
-
-    def test_valid_collapsed_ipv6(self):
-        config.validate_host("FE80::0202:B3FF:FE1E:8329")
-
-    def test_empty_host(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "'' is not a valid ip address or host name",
-                                config.validate_coordinator, (""))
-
-    def test_valid_hostname(self):
-        config.validate_host("master")
-
-    def test_invalid_host(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "'.1234' is not a valid ip address "
-                                "or host name",
-                                config.validate_host, (".1234"))
-
-    def test_invalid_host_type(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "Host must be of type string.  "
-                                "Found <type 'list'>",
-                                config.validate_host, (["my", "list"]))
-
-    def test_valid_port(self):
-        config.validate_port("1234")
-
-    def test_invalid_port(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "Invalid port number 99999999: port must be "
-                                "between 1 and 65535",
-                                config.validate_port, ("99999999"))
-
-    def test_invalid_port_type(self):
-        self.assertRaises(config.ConfigurationError,
-                          config.validate_port, (["123"]))
-
-    def test_valid_workers(self):
-        config.validate_workers(["172.16.1.10", "myslave",
-                                 "FE80::0202:B3FF:FE1E:8329"])
-
-    def test_no_workers(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "Must specify at least one worker",
-                                config.validate_workers, ([]))
-
-    def test_invalid_workers_type(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "Workers must be of type list.  "
-                                "Found <type 'str'>",
-                                config.validate_workers, ("not a list"))
-
-    def test_invalid_coordinator_type(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
-                                "Host must be of type string.  "
-                                "Found <type 'list'>",
-                                config.validate_coordinator,
-                                (["my", "list"]))
-
-    def test_valid_read_username(self):
-        self.assertEqual(config.read_in_username(lambda: "user"), "user")
-
-    def test_default_read_username(self):
-        self.assertEqual(config.read_in_username(lambda: ""), "root")
-
-    def test_valid_read_port(self):
-        self.assertEqual(config.read_in_port(lambda: "123"), "123")
-
-    def test_default_read_port(self):
-        self.assertEqual(config.read_in_port(lambda: ""), "22")
-
-    def test_valid_read_coordinator(self):
-        self.assertEqual(config.read_in_coordinator(lambda: "master"),
-                         "master")
-
-    def test_default_read_coordinator(self):
-        self.assertEqual(config.read_in_coordinator(lambda: ""), "localhost")
-
-    def test_valid_read_workers(self):
-        self.assertEqual(config.read_in_workers(lambda: ["slave1", "slave2"]),
-                         ["slave1", "slave2"])
-
-    def test_default_read_workers(self):
-        self.assertEqual(config.read_in_workers(lambda: ""), ["localhost"])
-
-if __name__ == "__main__":
-    unittest.main()
+    def test_fill_defaults(self):
+        orig = {"key1": "val1",  "key3": "val3"}
+        defaults = {"key1": "default1", "key2": "default2"}
+        filled = orig.copy()
+        config.fill_defaults(filled, defaults)
+        self.assertEqual(filled,
+                         {"key1": "val1", "key2": "default2", "key3": "val3"})

@@ -19,6 +19,7 @@ import errno
 import os
 
 ___version___ = '0.1.0'
+__all__ = ['topology']
 
 config_root = os.getenv('WORKSPACE', '~')
 env.config_directory = os.path.join(os.path.expanduser(config_root), '.fabric')
@@ -33,3 +34,5 @@ env.roledefs = {
     'worker': [],
     'all': [],
 }
+
+import topology
