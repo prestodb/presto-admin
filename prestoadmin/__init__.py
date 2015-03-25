@@ -18,6 +18,8 @@ from fabric.api import env
 import errno
 import os
 
+___version___ = '0.1.0'
+
 config_root = os.getenv('WORKSPACE', '~')
 env.config_directory = os.path.join(os.path.expanduser(config_root), '.fabric')
 try:

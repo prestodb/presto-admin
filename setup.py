@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+import prestoadmin
 
 try:
     from setuptools import setup
@@ -38,7 +39,7 @@ test_requirements = [
 
 setup(
     name='prestoadmin',
-    version='0.1.0',
+    version=prestoadmin.___version___,
     description="Presto-admin installs, configures, and manages Presto installations.",
     long_description=readme + '\n\n' + history,
     author="Teradata Coporation",

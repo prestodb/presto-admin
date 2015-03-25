@@ -8,3 +8,7 @@ prestoadmin.egg-info/
 docs/prestoadmin.*
 docs/modules.rst
 docs/_build
+
+# Ignore build folders
+build/
+dist/
