@@ -12,3 +12,5 @@ docs/_build
 # Ignore build folders
 build/
 dist/
+.eggs/
+.idea/

@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+___version___ = '0.1.0'  # Make sure to update setup.py too
+
 from fabric.api import env
 
 import errno
 import os
 
-___version___ = '0.1.0'
 __all__ = ['topology']
 
 config_root = os.getenv('WORKSPACE', '~')
