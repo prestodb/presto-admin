@@ -45,6 +45,7 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 import getpass
 from operator import isMappingType
 from optparse import OptionParser
+from prestoadmin import ___version___
 import os
 import sys
 import types
@@ -53,14 +54,12 @@ import types
 from fabric import api, state
 from fabric.contrib import console, files, project
 
-from fabric.network import disconnect_all, ssh
+from fabric.network import disconnect_all
 from fabric.state import env_options
 from fabric.tasks import Task, execute, get_task_details
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
-
-from util.parse import to_boolean
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
@@ -71,6 +70,17 @@ _internals = reduce(lambda x, y: x + filter(
     _modules,
     []
 )
+
+
+def _get_presto_env_options():
+    presto_env_options = env_options[:]
+    commands_to_remove = ["fabfile", "rcfile"]
+    for option in env_options:
+        if option.dest in commands_to_remove:
+            presto_env_options.remove(option)
+    return presto_env_options
+
+presto_env_options = _get_presto_env_options()
 
 
 # Module recursion cache
@@ -93,21 +103,6 @@ class _ModuleCache(object):
 _seen = _ModuleCache()
 
 
-def load_settings(path):
-    """
-    Take given file path and return dictionary of any key=value pairs found.
-
-    Usage docs are in docs/usage/fab.rst, in "Settings files."
-    """
-    if os.path.exists(path):
-        comments = lambda s: s and not s.startswith("#")
-        settings = filter(comments, open(path, 'r'))
-        return dict((k.strip(), v.strip()) for k, _, v in
-                    [s.partition('=') for s in settings])
-    # Handle nonexistent or empty settings file
-    return {}
-
-
 def _is_package(path):
     """
     Is the given path a Python package?
@@ -116,41 +111,6 @@ def _is_package(path):
         os.path.isdir(path)
         and os.path.exists(os.path.join(path, '__init__.py'))
     )
-
-
-def find_fabfile(names=None):
-    """
-    Attempt to locate a fabfile, either explicitly or by searching parent dirs.
-
-    Usage docs are in docs/usage/fabfiles.rst, in "Fabfile discovery."
-    """
-    # Obtain env value if not given specifically
-    if names is None:
-        names = [state.env.fabfile]
-    # Create .py version if necessary
-    if not names[0].endswith('.py'):
-        names += [names[0] + '.py']
-    # Does the name contain path elements?
-    if os.path.dirname(names[0]):
-        # If so, expand home-directory markers and test for existence
-        for name in names:
-            expanded = os.path.expanduser(name)
-            if os.path.exists(expanded):
-                if name.endswith('.py') or _is_package(expanded):
-                    return os.path.abspath(expanded)
-    else:
-        # Otherwise, start in cwd and work downwards towards filesystem root
-        path = '.'
-        # Stop before falling off root of filesystem (should be platform
-        # agnostic)
-        while os.path.split(os.path.abspath(path))[1]:
-            for name in names:
-                joined = os.path.join(path, name)
-                if os.path.exists(joined):
-                    if name.endswith('.py') or _is_package(joined):
-                        return os.path.abspath(joined)
-            path = os.path.join('..', path)
-    # Implicit 'return None' if nothing was found
 
 
 def is_classic_task(tup):
@@ -214,7 +174,7 @@ def load_fabfile(path, importer=None):
     tasks = new_style if state.env.new_style_tasks else classic
     # Clean up after ourselves
     _seen.clear()
-    return docstring, tasks, default
+    return docstring, tasks
 
 
 def load_tasks_from_module(imported):
@@ -297,19 +257,21 @@ def is_task_object(a):
     return isinstance(a, Task) and a.use_task_objects
 
 
-def parse_options():
+def parser_for_options():
     """
     Handle command-line options with optparse.OptionParser.
 
-    Return list of arguments, largely for use in `parse_arguments`.
+    Return parser, largely for use in `parse_arguments`.
+
+    On this parser, you must call parser.parse_args()
     """
     #
     # Initialize
     #
 
     parser = OptionParser(
-        usage=("presto-admin [options] <command>"
-               "[:arg1,arg2=val2,host=foo,hosts='h1;h2',...] ..."))
+        usage=("presto-admin [options] <command> [arg1]"),
+        version="presto-admin %s" % ___version___)
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -319,6 +281,7 @@ def parse_options():
 
     # Display info about a specific command
     parser.add_option(
+        # TODO: need to make this a vararg parser. unfortunately.
         '-d',
         '--display',
         metavar='NAME',
@@ -354,15 +317,6 @@ def parse_options():
         help="print list of possible commands and exit"
     )
 
-    # Allow setting of arbitrary env vars at runtime.
-    parser.add_option(
-        '--set',
-        metavar="KEY=VALUE,...",
-        dest='env_settings',
-        default="",
-        help="comma separated KEY=VALUE pairs to set Fab env vars"
-    )
-
     # Like --list, but text processing friendly
     parser.add_option(
         '--shortlist',
@@ -372,39 +326,15 @@ def parse_options():
         help="alias for -F short --list"
     )
 
-    # Version number (optparse gives you --version but we have to do it
-    # ourselves to get -V too. sigh)
-    parser.add_option(
-        '-V',
-        '--version',
-        action='store_true',
-        dest='show_version',
-        default=False,
-        help="show program's version number and exit"
-    )
-
-    parser.add_option(
-        '--post',
-        dest='post_tasks',
-        default=[],
-        action="append",
-        help="task(s) to unconditionally execute before terminating"
-    )
-
     #
     # Add in options which are also destined to show up as `env` vars.
     #
 
-    for option in env_options:
+    for option in presto_env_options:
         parser.add_option(option)
 
-    #
-    # Finalize
-    #
-
-    # Return three-tuple of parser + the output from parse_args (opt obj, args)
-    opts, args = parser.parse_args()
-    return parser, opts, args
+    # Return parser
+    return parser
 
 
 def _is_task(name, value):
@@ -438,7 +368,7 @@ def _task_names(mapping):
         module = mapping[collection]
         if hasattr(module, 'default'):
             tasks.append(collection)
-        join = lambda x: ".".join((collection, x))
+        join = lambda x: " ".join((collection, x))
         tasks.extend(map(join, _task_names(module)))
     return tasks
 
@@ -573,53 +503,43 @@ def _escape_split(sep, argstr):
     return startlist + [unfinished] + endlist[1:]  # put together all the parts
 
 
-def parse_arguments(arguments):
+def parse_arguments(arguments, commands):
     """
-    Parse string list into list of tuples: command, args, kwargs, hosts, roles.
+    Parse string list into list of tuples: command, args.
 
-    See docs/usage/fab.rst, section on "per-task arguments" for details.
+    commands is formatted like {'install' : {'server' : WrappedCallable,
+    'cli' : WrappedCallable}, 'topology': {'show' : WrappedCallable}}
+
+    Thus, since our arguments are separated by spaces, and is of the form
+    ['install', 'server'], we iterate through the commands, progressively
+     going deeper into the dict.  If we run out of elements in the dict,
+     the rest of the tokens are arguments to the function. If we don't
+     get down to the bottom-most level, the command is not valid. If
+     at any point the next token is not in the possible_cmd map, the
+     command is invalid.
     """
-    cmds = []
-    for cmd in arguments:
-        args = []
-        kwargs = {}
-        hosts = []
-        roles = []
-        exclude_hosts = []
-        if ':' in cmd:
-            cmd, argstr = cmd.split(':', 1)
-            for pair in _escape_split(',', argstr):
-                result = _escape_split('=', pair)
-                if len(result) > 1:
-                    k, v = result
-                    # Catch, interpret host/hosts/role/roles/exclude_hosts
-                    # kwargs
-                    if k in ['host', 'hosts', 'role', 'roles',
-                             'exclude_hosts']:
-                        if k == 'host':
-                            hosts = [v.strip()]
-                        elif k == 'hosts':
-                            hosts = [x.strip() for x in v.split(';')]
-                        elif k == 'role':
-                            roles = [v.strip()]
-                        elif k == 'roles':
-                            roles = [x.strip() for x in v.split(';')]
-                        elif k == 'exclude_hosts':
-                            exclude_hosts = [x.strip() for x in v.split(';')]
-                    # Otherwise, record as usual
-                    else:
-                        kwargs[k] = v
-                else:
-                    args.append(result[0])
-        cmds.append((cmd, args, kwargs, hosts, roles, exclude_hosts))
+
+    possible_cmds = commands.copy()
+    pos = 0
+
+    while pos < len(arguments):
+        if not isinstance(possible_cmds, dict):
+            # the rest of are all arguments to the cmd
+            break
+        if arguments[pos] not in possible_cmds:
+            invalid_command_error(arguments)
+        possible_cmds = possible_cmds[arguments[pos]]
+        pos += 1
+
+    if isinstance(possible_cmds, dict):
+        invalid_command_error(arguments)
+
+    cmds = [(".".join(arguments[:pos]), arguments[pos:], {}, [], [], [])]
     return cmds
 
 
-def parse_remainder(arguments):
-    """
-    Merge list of "remainder arguments" into a single command string.
-    """
-    return ' '.join(arguments)
+def invalid_command_error(arguments):
+    raise NameError("Command not found:\n%s" % indent(" ".join(arguments)))
 
 
 def update_output_levels(show, hide):
@@ -659,177 +579,87 @@ def run_tasks(task_list, suppress_errors=False):
                 raise
 
 
-def toBool(param, default):
-    if isinstance(param, bool):
-        return param
-    if not param:
-        return default
-    if (param.lower() in ['true', '1', 't', 'y', 'yes']):
-        return True
-    if (param.lower() in ['false', '0', 'f', 'n', 'no']):
-        return False
-    return default
+def parse_and_validate_commands(args=sys.argv[1:]):
+    # Parse command line options
+    parser = parser_for_options()
+    options, arguments = parser.parse_args(args)
+
+    # Handle regular args vs -- args
+    arguments = parser.largs
+
+    # Update env with any overridden option values
+    # NOTE: This needs to remain the first thing that occurs
+    # post-parsing, since so many things hinge on the values in env.
+    for option in presto_env_options:
+        state.env[option.dest] = getattr(options, option.dest)
+
+    # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
+    # list)
+    for key in ['hosts', 'roles', 'exclude_hosts']:
+        if key in state.env and isinstance(state.env[key], basestring):
+            state.env[key] = state.env[key].split(',')
+
+    # Handle output control level show/hide
+    update_output_levels(show=options.show, hide=options.hide)
+
+    # Find local fabfile path or abort
+    fabfile = "prestoadmin"  # TODO: shouldn't hard code
+
+    # Store absolute path to fabfile in case anyone needs it
+    state.env.real_fabfile = fabfile
+
+    # Load fabfile (which calls its module-level code, including
+    # tweaks to env values) and put its commands in the shared commands
+    # dict
+    docstring, callables = load_fabfile(fabfile)
+    state.commands.update(callables)
+
+    # Shortlist is now just an alias for the "short" list format;
+    # it overrides use of --list-format if somebody were to specify both
+    if options.shortlist:
+        options.list_format = 'short'
+        options.list_commands = True
+
+    if len(parser.rargs) > 0:
+        warn("Arbitrary remote shell commands not supported.")
+        show_commands(None, options.list_format, 2)
+
+    # List available commands
+    if options.list_commands:
+        show_commands(docstring, options.list_format)
+
+    # Handle show (command-specific help) option
+    if options.display:
+        print options.display
+        display_command(options.display)
+
+    # If user didn't specify any commands to run, show help
+    if not (arguments):
+        parser.print_help()
+        sys.exit(0)  # don't consider this an error
+
+    # Parse arguments into commands to run (plus args/kwargs/hosts)
+    commands_to_run = None
+    try:
+        commands_to_run = parse_arguments(arguments, state.commands)
+    except NameError as e:
+        warn(e.message)
+        show_commands(None, options.list_format, 2)
+
+    # Initial password prompt, if requested
+    if options.initial_password_prompt:
+        prompt = "Initial value for env.password: "
+        state.env.password = getpass.getpass(prompt)
+
+    return commands_to_run
 
 
-def main(fabfile_locations=None):
+def main():
     """
     Main command-line execution loop.
     """
-    commands_to_run = None
     try:
-        # Parse command line options
-        parser, options, arguments = parse_options()
-
-        # Handle regular args vs -- args
-        arguments = parser.largs
-        remainder_arguments = parser.rargs
-
-        # Allow setting of arbitrary env keys.
-        # This comes *before* the "specific" env_options so that those may
-        # override these ones. Specific should override generic, if somebody
-        # was silly enough to specify the same key in both places.
-        # E.g. "fab --set shell=foo --shell=bar" should have env.shell set to
-        # 'bar', not 'foo'.
-        for pair in _escape_split(',', options.env_settings):
-            pair = _escape_split('=', pair)
-            # "--set x" => set env.x to True
-            # "--set x=" => set env.x to ""
-            key = pair[0]
-            value = True
-            if len(pair) == 2:
-                try:
-                    value = to_boolean(pair[1])
-                except ValueError:
-                    value = pair[1]
-            state.env[key] = value
-
-        # Update env with any overridden option values
-        # NOTE: This needs to remain the first thing that occurs
-        # post-parsing, since so many things hinge on the values in env.
-        for option in env_options:
-            state.env[option.dest] = getattr(options, option.dest)
-
-        # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
-        # list)
-        for key in ['hosts', 'roles', 'exclude_hosts']:
-            if key in state.env and isinstance(state.env[key], basestring):
-                state.env[key] = state.env[key].split(',')
-
-        # Feed the env.tasks : tasks that are asked to be executed.
-        state.env['tasks'] = arguments
-
-        # Handle output control level show/hide
-        update_output_levels(show=options.show, hide=options.hide)
-
-        # Handle version number option
-        if options.show_version:
-            print("Fabric %s" % state.env.version)
-            print("Paramiko %s" % ssh.__version__)
-            sys.exit(0)
-
-        # Load settings from user settings file, into shared env dict.
-        state.env.update(load_settings(state.env.rcfile))
-
-        # Find local fabfile path or abort
-        fabfile = find_fabfile(fabfile_locations)
-        if not fabfile and not remainder_arguments:
-            abort("""Couldn't find any fabfiles!
-
-Remember that -f can be used to specify fabfile path, and use -h for help.""")
-
-        # Store absolute path to fabfile in case anyone needs it
-        state.env.real_fabfile = fabfile
-
-        # Load fabfile (which calls its module-level code, including
-        # tweaks to env values) and put its commands in the shared commands
-        # dict
-        default = None
-        if fabfile:
-            docstring, callables, default = load_fabfile(fabfile)
-            state.commands.update(callables)
-
-        # Handle case where we were called bare, i.e. just "fab", and print
-        # a help message.
-        actions = (options.list_commands, options.shortlist, options.display,
-                   arguments, remainder_arguments, default)
-        if not any(actions):
-            parser.print_help()
-            sys.exit(1)
-
-        # Abort if no commands found
-        if not state.commands and not remainder_arguments:
-            abort("Fabfile didn't contain any commands!")
-
-        # Now that we're settled on a fabfile, inform user.
-        if state.output.debug:
-            if fabfile:
-                print("Using fabfile '%s'" % fabfile)
-            else:
-                print("No fabfile loaded -- remainder command only")
-
-        # Shortlist is now just an alias for the "short" list format;
-        # it overrides use of --list-format if somebody were to specify both
-        if options.shortlist:
-            options.list_format = 'short'
-            options.list_commands = True
-
-        # List available commands
-        if options.list_commands:
-            show_commands(docstring, options.list_format)
-
-        # Handle show (command-specific help) option
-        if options.display:
-            display_command(options.display)
-
-        # If user didn't specify any commands to run, show help
-        if not (arguments or remainder_arguments or default):
-            parser.print_help()
-            sys.exit(0)  # Or should it exit with error (1)?
-
-        # Parse arguments into commands to run (plus args/kwargs/hosts)
-        commands_to_run = parse_arguments(arguments)
-
-        # Parse the unconditionally post executed commands
-        post_commands_to_run = parse_arguments(options.post_tasks)
-
-        # Parse remainders into a faux "command" to execute
-        remainder_command = parse_remainder(remainder_arguments)
-
-        # Figure out if any specified task names are invalid
-        unknown_commands = []
-
-        def validate_command(command):
-            if command and crawl(command, state.commands) is None:
-                unknown_commands.append(command)
-
-        for tup in commands_to_run + post_commands_to_run:
-            validate_command(tup[0])
-
-        # Abort if any unknown commands were specified
-        if unknown_commands:
-            warn("Command(s) not found:\n%s"
-                 % indent(unknown_commands))
-            show_commands(None, options.list_format, 1)
-
-        # Generate remainder command and insert into commands, commands_to_run
-
-        if remainder_command:
-            r = '<remainder>'
-            state.commands[r] = lambda: api.run(
-                remainder_command,
-                pty=toBool(state.env.get('pty'), True),
-                combine_stderr=toBool(state.env.get('combine_stderr'), True)
-            )
-            commands_to_run.append((r, [], {}, [], [], []))
-
-        # Ditto for a default, if found
-        if not commands_to_run and default:
-            commands_to_run.append((default.name, [], {}, [], [], []))
-
-        # Initial password prompt, if requested
-        if options.initial_password_prompt:
-            prompt = "Initial value for env.password: "
-            state.env.password = getpass.getpass(prompt)
+        commands_to_run = parse_and_validate_commands()
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)
@@ -853,10 +683,5 @@ Remember that -f can be used to specify fabfile path, and use -h for help.""")
         # we might leave stale threads if we don't explicitly exit()
         sys.exit(1)
     finally:
-        try:
-            if (commands_to_run is not None and len(commands_to_run) > 0 and
-                    len(unknown_commands) == 0):
-                run_tasks(post_commands_to_run, True)
-        finally:
-            disconnect_all()
+        disconnect_all()
     sys.exit(0)

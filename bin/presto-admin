@@ -13,11 +13,9 @@
 # limitations under the License.
 #
 
-SCRIPT_ROOT=$(readlink -f $(dirname $(readlink -f "$0"))/..)
-
 DEFAULT_ARGS="--disable-known-hosts --connection-attempts=3"
 
 # if we had installed fabric normally you could just call "fab" here
 # since we're keeping it in the egg, this just calls the main function
 # manually
-exec python -c 'from prestoadmin.main import main; main();' $DEFAULT_ARGS -f $SCRIPT_ROOT/prestoadmin "$@"
+exec python -c 'from prestoadmin.main import main; main();' $DEFAULT_ARGS "$@"
