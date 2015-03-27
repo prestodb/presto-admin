@@ -15,15 +15,18 @@
 
 """
 This module contains the methods for setting and validating the
-presto-admin configuration
+presto-admin config
 """
 
-import configuration
+import configuration as config
+import fabric
 from fabric.api import task
 import os
 import pprint
 import re
 import socket
+import sys
+
 
 __all__ = ["show"]
 
@@ -35,28 +38,27 @@ DEFAULT_PROPERTIES = {"username": "root",
                       "workers": ["localhost"]}
 
 
-class ConfigurationError(Exception):
-    pass
-
-
 def write(conf):
-    configuration.write(conf, CONFIG_PATH)
+    config.write(conf, CONFIG_PATH)
 
 
 @task
 def show():
-    pprint.pprint(get_conf(), width=1)
+    try:
+        pprint.pprint(get_conf(), width=1)
+    except config.ConfigurationError as e:
+        sys.stderr.write(type(e).__name__ + ": " + str(e))
 
 
 def get_conf():
     conf = _get_conf_from_file()
     validate(conf)
-    configuration.fill_defaults(conf, DEFAULT_PROPERTIES)
+    config.fill_defaults(conf, DEFAULT_PROPERTIES)
     return conf
 
 
 def _get_conf_from_file():
-    return configuration.get_conf_from_file(CONFIG_PATH)
+    return config.get_conf_from_file(CONFIG_PATH)
 
 
 def set_conf_interactive():
@@ -65,69 +67,50 @@ def set_conf_interactive():
 
 def build_conf_interactive():
     conf = {}
-    conf["username"] = read_in_username(prompt_for_username)
-    conf["port"] = read_in_port(prompt_for_port)
-    conf["coordinator"] = read_in_coordinator(prompt_for_coordinator)
-    conf["workers"] = read_in_workers(prompt_for_workers)
+    conf["username"] = prompt_for_username()
+    conf["port"] = prompt_for_port()
+    conf["coordinator"] = prompt_for_coordinator()
+    conf["workers"] = prompt_for_workers()
     return conf
 
 
-def read_in_username(input_func):
-    prop = read_in_property(input_func, validate_username)
-    return prop if prop else DEFAULT_PROPERTIES["username"]
-
-
-def read_in_port(input_func):
-    prop = read_in_property(input_func, validate_port)
-    return prop if prop else DEFAULT_PROPERTIES["port"]
-
-
-def read_in_coordinator(input_func):
-    prop = read_in_property(input_func, validate_coordinator)
-    return prop if prop else DEFAULT_PROPERTIES["coordinator"]
-
-
-def read_in_workers(input_func):
-    prop = read_in_property(input_func, validate_workers)
-    return prop if prop else DEFAULT_PROPERTIES["workers"]
-
-
 def prompt_for_username():
-    return raw_input("Enter user name for SSH connection to all nodes "
-                     "(Default: root): ")
+    return fabric.operations.prompt("Enter user name for SSH connection to "
+                                    "all nodes:",
+                                    default=DEFAULT_PROPERTIES["username"],
+                                    validate=validate_username)
 
 
 def prompt_for_port():
-    return raw_input("Enter port number for SSH connections to all nodes "
-                     "(Default: 22): ")
+    return fabric.operations.prompt("Enter port number for SSH connections to "
+                                    "all nodes:",
+                                    default=DEFAULT_PROPERTIES["port"],
+                                    validate=validate_port)
 
 
 def prompt_for_coordinator():
-    return raw_input("Enter host name or IP address for coordinator node "
-                     "(Default: localhost): ")
+    return fabric.operations.prompt("Enter host name or IP address for "
+                                    "coordinator node:",
+                                    default=DEFAULT_PROPERTIES["coordinator"],
+                                    validate=validate_coordinator)
 
 
 def prompt_for_workers():
-    workers = raw_input("Enter host names or IP addresses for worker nodes"
-                        "(i.e. node1 node2) (Default: localhost): ")
-    return workers.split()
+    return fabric.operations.prompt("Enter host names or IP addresses for "
+                                    "worker nodes separtated by spaces:",
+                                    default=" ".join(
+                                        DEFAULT_PROPERTIES["workers"]),
+                                    validate=validate_workers_for_prompt)
 
 
-def read_in_property(input_func, validate_func):
-    while True:
-        prop = input_func()
-        try:
-            if prop:
-                validate_func(prop)
-            return prop
-        except ConfigurationError as e:
-            print e
+def validate_workers_for_prompt(workers):
+    return validate_workers(workers.split())
 
 
 def validate(conf):
     for key in conf.keys():
         if key not in PRESTO_ADMIN_PROPERTIES:
-            raise ConfigurationError("Invalid property: " + key)
+            raise config.ConfigurationError("Invalid property: " + key)
 
     try:
         username = conf["username"]
@@ -156,62 +139,69 @@ def validate(conf):
         pass
     else:
         validate_port(ssh_port)
+    return conf
 
 
 def validate_username(username):
     if not isinstance(username, basestring):
-        raise ConfigurationError("username must be of type string")
+        raise config.ConfigurationError("username must be of type string")
+    return username
 
 
 def validate_coordinator(coordinator):
     validate_host(coordinator)
+    return coordinator
 
 
 def validate_workers(workers):
     if not isinstance(workers, list):
-        raise ConfigurationError("Workers must be of type list.  Found "
-                                 + str(type(workers)))
+        raise config.ConfigurationError("Workers must be of type list.  Found "
+                                        + str(type(workers)))
 
     if len(workers) < 1:
-        raise ConfigurationError("Must specify at least one worker")
+        raise config.ConfigurationError("Must specify at least one worker")
 
     for worker in workers:
         validate_host(worker)
+    return workers
 
 
-def validate_port(port_string):
+def validate_port(port):
     try:
-        port = int(port_string)
+        port_int = int(port)
     except TypeError:
-        raise ConfigurationError("Port must be of type string, but found "
-                                 + str(type(port_string)))
+        raise config.ConfigurationError("Port must be of type string, but "
+                                        "found " + str(type(port)))
     except ValueError:
-        raise ConfigurationError("Invalid value " + port_string + ": "
-                                 "port must be a number between 1 and 65535")
-    if not port > 0 or not port < 65535:
-        raise ConfigurationError("Invalid port number " + str(port) +
-                                 ": port must be between 1 and 65535")
+        raise config.ConfigurationError("Invalid value " + port + ": "
+                                        "port must be a number between 1 and "
+                                        "65535")
+    if not port_int > 0 or not port_int < 65535:
+        raise config.ConfigurationError("Invalid port number " + port +
+                                        ": port must be between 1 and 65535")
+    return port
 
 
 def validate_host(host):
     try:
         socket.inet_pton(socket.AF_INET, host)
-        return
+        return host
     except TypeError:
-        raise ConfigurationError("Host must be of type string.  Found "
-                                 + str(type(host)))
+        raise config.ConfigurationError("Host must be of type string.  Found "
+                                        + str(type(host)))
     except socket.error:
         pass
 
     try:
         socket.inet_pton(socket.AF_INET6, host)
-        return
+        return host
     except socket.error:
         pass
 
     if not is_valid_hostname(host):
-        raise ConfigurationError(repr(host) + " is not a valid "
-                                 "ip address or host name")
+        raise config.ConfigurationError(repr(host) + " is not a valid "
+                                        "ip address or host name")
+    return host
 
 
 def is_valid_hostname(hostname):

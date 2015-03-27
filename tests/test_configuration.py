@@ -19,13 +19,13 @@ import utils
 
 class TestConfiguration(utils.BaseTestCase):
     def test_file_does_not_exist(self):
-        self.assertRaisesRegexp(IOError,
-                                "No such file or directory",
+        self.assertRaisesRegexp(config.ConfigurationError,
+                                "Missing configuration file at",
                                 config.get_conf_from_file,
                                 ("does/not/exist/conf.json"))
 
     def test_invalid_json(self):
-        self.assertRaisesRegexp(ValueError,
+        self.assertRaisesRegexp(config.ConfigurationError,
                                 "Expecting , delimiter: line 3 column 3 "
                                 "\(char 19\)",
                                 config.get_conf_from_file,

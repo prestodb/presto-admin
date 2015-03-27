@@ -16,9 +16,19 @@ import json
 import os
 
 
+class ConfigurationError(Exception):
+    pass
+
+
 def get_conf_from_file(path):
-    conf_file = open(path, 'r')
-    return json.load(conf_file)
+    try:
+        conf_file = open(path, 'r')
+    except IOError:
+        raise ConfigurationError("Missing configuration file at " + repr(path))
+    try:
+        return json.load(conf_file)
+    except ValueError as e:
+        raise ConfigurationError(e)
 
 
 def write(conf, path):
@@ -26,7 +36,7 @@ def write(conf, path):
     if not os.path.exists(conf_directory):
         os.makedirs(conf_directory)
 
-    f = open(path, "w")
+    f = open(path, 'w')
     json.dump(conf, f, indent=4, separators=(',', ':'))
     f.close
 
