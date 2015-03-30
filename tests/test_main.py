@@ -24,23 +24,13 @@ Tests for `prestoadmin` module.
 """
 
 import unittest
-import StringIO
-import sys
+import utils
 
 import prestoadmin
 from prestoadmin import main
 
 
-class TestMain(unittest.TestCase):
-    stdout = None
-    old_stdout = sys.__stdout__
-
-    def setUp(self):
-        # We redirect the stdout for all of the tests, because optparse
-        # sometimes just prints to stdout and exits.
-        self.stdout = StringIO.StringIO()
-        sys.stdout = self.stdout
-        pass
+class TestMain(utils.BaseTestCase):
 
     def run_command_compare_to_file(self, command, exit_status, filename):
         """
@@ -60,7 +50,7 @@ class TestMain(unittest.TestCase):
         except SystemExit as e:
             self.assertEqual(e.code, exit_status)
 
-        self.assertEqual(self.stdout.getvalue(), text)
+        self.assertEqual(self.test_stdout.getvalue(), text)
 
     def test_help_text_short(self):
         # See if the help text matches what we expect it to be (in
@@ -84,30 +74,24 @@ class TestMain(unittest.TestCase):
                                            prestoadmin.___version___)
 
     def test_argument_parsing_with_invalid_command(self):
-        old_stderr = sys.stderr
-        sys.stderr = test_stderr = StringIO.StringIO()
         try:
             main.parse_and_validate_commands(["hello", "world"])
         except SystemExit as e:
             self.assertEqual(e.code, 2)
 
-        self.assertEqual(test_stderr.getvalue(), "\nWarning: Command not " +
+        self.assertEqual(self.test_stderr.getvalue(), "\nWarning: Command not "
                          "found:\n    hello world\n\n")
-        self.assertTrue("Available commands:" in self.stdout.getvalue())
-        sys.stderr = old_stderr
+        self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
     def test_argument_parsing_with_short_command(self):
-        old_stderr = sys.stderr
-        sys.stderr = test_stderr = StringIO.StringIO()
         try:
             main.parse_and_validate_commands(["topology"])
         except SystemExit as e:
             self.assertEqual(e.code, 2)
 
-        self.assertEqual(test_stderr.getvalue(), "\nWarning: Command not " +
+        self.assertEqual(self.test_stderr.getvalue(), "\nWarning: Command not "
                          "found:\n    topology\n\n")
-        self.assertTrue("Available commands:" in self.stdout.getvalue())
-        sys.stderr = old_stderr
+        self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
     def test_argument_parsing_with_valid_command(self):
         commands = main.parse_and_validate_commands(["topology", "show"])
@@ -119,23 +103,16 @@ class TestMain(unittest.TestCase):
         self.assertEqual(commands[0][1], ["f"])
 
     def test_arbitrary_remote_shell_disabled(self):
-        old_stderr = sys.stderr
-        sys.stderr = test_stderr = StringIO.StringIO()
         try:
             main.parse_and_validate_commands(["--", "echo", "hello"])
         except SystemExit as e:
             self.assertEqual(e.code, 2)
 
-        self.assertEqual(test_stderr.getvalue(), "\nWarning: Arbitrary "
+        self.assertEqual(self.test_stderr.getvalue(), "\nWarning: Arbitrary "
                          "remote shell commands not supported.\n\n")
-        self.assertTrue("Available commands:" in self.stdout.getvalue())
-        sys.stderr = old_stderr
+        self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
     # Test with too many arguments/make that error look much prettier
-
-    def tearDown(self):
-        self.stdout.close()
-        sys.stdout = self.old_stdout
 
 if __name__ == '__main__':
     unittest.main()
