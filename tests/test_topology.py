@@ -16,18 +16,22 @@
 Tests the presto topology config
 """
 
+from mock import patch
 import os
-from prestoadmin import topology
-from prestoadmin import configuration as config
 import utils
 import unittest
+
+from prestoadmin import topology
+from prestoadmin import configuration as config
+from prestoadmin.topology import env
 
 
 class TestTopologyConfig(utils.BaseTestCase):
 
-    def test_fill_conf(self):
-        topology._get_conf_from_file = lambda: {"username": "john",
-                                                "port": "100"}
+    @patch('prestoadmin.topology._get_conf_from_file')
+    def test_fill_conf(self, get_conf_from_file_mock):
+        get_conf_from_file_mock.return_value = \
+            {"username": "john", "port": "100"}
         conf = topology.get_conf()
         self.assertEqual(conf, {"username": "john", "port": "100",
                                 "coordinator": "localhost",
@@ -119,6 +123,18 @@ class TestTopologyConfig(utils.BaseTestCase):
         workers_list = ["172.16.1.10", "myslave", "FE80::0202:B3FF:FE1E:8329"]
         self.assertEqual(topology.validate_workers_for_prompt(workers_input),
                          workers_list)
+
+    def test_show(self):
+        env.roledefs = {'coordinator': ['hello'], 'worker': ['a', 'b'],
+                        'all': ['a', 'b', 'hello']}
+        env.user = 'user'
+        env.port = '22'
+        topology.show()
+        self.assertEqual("", self.test_stderr.getvalue())
+        self.assertEqual("{'coordinator': 'hello',\n 'port': '22',\n "
+                         "'username': 'user',\n 'worker': ['a',\n"
+                         "            'b']}\n",
+                         self.test_stdout.getvalue())
 
 if __name__ == "__main__":
     unittest.main()

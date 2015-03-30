@@ -20,12 +20,11 @@ presto-admin config
 
 import configuration as config
 import fabric
-from fabric.api import task
+from fabric.api import task, env
 import os
 import pprint
 import re
 import socket
-import sys
 
 
 __all__ = ["show"]
@@ -44,10 +43,14 @@ def write(conf):
 
 @task
 def show():
-    try:
-        pprint.pprint(get_conf(), width=1)
-    except config.ConfigurationError as e:
-        sys.stderr.write(type(e).__name__ + ": " + str(e))
+    pprint.pprint(get_conf_from_fabric(), width=1)
+
+
+def get_conf_from_fabric():
+    return {'coordinator': env.roledefs['coordinator'][0],
+            'worker': env.roledefs['worker'],
+            'port': env.port,
+            'username': env.user}
 
 
 def get_conf():
