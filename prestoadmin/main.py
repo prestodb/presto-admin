@@ -49,6 +49,8 @@ from prestoadmin import ___version___
 import os
 import sys
 import types
+import topology
+from configuration import ConfigurationError
 
 # For checking callables against the API, & easy mocking
 from fabric import api, state
@@ -654,12 +656,35 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     return commands_to_run
 
 
-def main():
+def load_topology():
+    try:
+        state.env.roledefs['coordinator'] = [topology.get_coordinator()]
+        state.env.roledefs['worker'] = topology.get_workers()
+        state.env['port'] = topology.get_port()
+        state.env['user'] = topology.get_username()
+    except ConfigurationError as e:
+        # If there is no topology file, or it is invalid, just store empty
+        # roledefs for now and save the error in the environment variables.
+        # If the task is an install task, we will set up a prompt for the
+        # user to interactively enter the config vars. Else, we will error
+        # out at a later point.
+        state.env['failed_topology_error'] = e
+        pass
+
+    state.env.roledefs['all'] = state.env.roledefs['worker'] + \
+        state.env.roledefs['coordinator']
+    # All commands will be run on all hosts by default
+    state.env.hosts = state.env.roledefs['all'][:]
+
+
+def main(args=sys.argv[1:]):
     """
     Main command-line execution loop.
     """
     try:
-        commands_to_run = parse_and_validate_commands()
+        load_topology()
+
+        commands_to_run = parse_and_validate_commands(args)
 
         if state.output.debug:
             names = ", ".join(x[0] for x in commands_to_run)

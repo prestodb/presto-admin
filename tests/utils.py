@@ -11,6 +11,7 @@ import sys
 import unittest
 from fabric.state import env
 
+
 class BaseTestCase(unittest.TestCase):
     test_stdout = None
     test_stderr = None

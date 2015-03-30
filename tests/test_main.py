@@ -23,11 +23,14 @@ test_prestoadmin
 Tests for `prestoadmin` module.
 """
 
+import os
+import prestoadmin
 import unittest
 import utils
 
-import prestoadmin
 from prestoadmin import main
+from prestoadmin.configuration import ConfigurationError
+from mock import patch
 
 
 class TestMain(utils.BaseTestCase):
@@ -36,7 +39,8 @@ class TestMain(utils.BaseTestCase):
         """
             Compares stdout from the CLI to the given file
         """
-        input_file = open(filename, 'r')
+        current_dir = os.path.abspath(os.path.dirname(__file__))
+        input_file = open(current_dir + filename, 'r')
         text = "".join(input_file.readlines())
         input_file.close()
         self.run_command_compare_to_string(command, exit_status, text)
@@ -55,17 +59,17 @@ class TestMain(utils.BaseTestCase):
     def test_help_text_short(self):
         # See if the help text matches what we expect it to be (in
         # tests/help.txt)
-        self.run_command_compare_to_file(["-h"], 0, "tests/files/help.txt")
+        self.run_command_compare_to_file(["-h"], 0, "/files/help.txt")
 
     def test_help_text_long(self):
-        self.run_command_compare_to_file(["--help"], 0, "tests/files/help.txt")
+        self.run_command_compare_to_file(["--help"], 0, "/files/help.txt")
 
     def test_help_displayed_with_no_args(self):
-        self.run_command_compare_to_file([], 0, "tests/files/help.txt")
+        self.run_command_compare_to_file([], 0, "/files/help.txt")
 
     def test_list_commands(self):
         # Note: this will have to be updated whenever we add a new command
-        self.run_command_compare_to_file(["-l"], 0, "tests/files/list.txt")
+        self.run_command_compare_to_file(["-l"], 0, "/files/list.txt")
 
     def test_version(self):
         # Note: this will have to be updated whenever we have a new version.
@@ -112,7 +116,47 @@ class TestMain(utils.BaseTestCase):
                          "remote shell commands not supported.\n\n")
         self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
-    # Test with too many arguments/make that error look much prettier
+    @patch('prestoadmin.main.topology')
+    def test_load_topology(self, topology_mock):
+        topology_mock.get_coordinator.return_value = 'hello'
+        topology_mock.get_workers.return_value = ['a', 'b']
+        topology_mock.get_port.return_value = '1234'
+        topology_mock.get_username.return_value = 'user'
+        main.load_topology()
+        self.assertEqual(main.state.env.roledefs,
+                         {'coordinator': ['hello'], 'worker': ['a', 'b'],
+                          'all': ['a', 'b', 'hello']})
+        self.assertEqual(main.state.env.port, '1234')
+        self.assertEqual(main.state.env.user, 'user')
+        self.assertEqual(main.state.env.hosts, ['a', 'b', 'hello'])
+
+    @patch('prestoadmin.main.topology')
+    def test_load_topology_failure(self, topology_mock):
+        e = ConfigurationError()
+
+        def func():
+            raise e
+        topology_mock.get_coordinator = func
+        main.load_topology()
+        self.assertEqual(main.state.env.roledefs,
+                         {'coordinator': [], 'worker': [], 'all': []})
+        self.assertEqual(main.state.env.port, '22')
+        self.assertNotEqual(main.state.env.user, 'user')
+        self.assertEqual(main.state.env.failed_topology_error, e)
+
+    @patch('prestoadmin.main.topology')
+    def test_hosts_on_cli_overrides_topology(self, topology_mock):
+        topology_mock.get_coordinator.return_value = 'hello'
+        topology_mock.get_workers.return_value = ['a', 'b']
+        try:
+            main.main(['--hosts', 'hello,a', 'topology', 'show'])
+        except SystemExit as e:
+            self.assertEqual(e.code, 0)
+
+        self.assertEqual(main.state.env.roledefs,
+                         {'coordinator': ['hello'], 'worker': ['a', 'b'],
+                          'all': ['a', 'b', 'hello']})
+        self.assertEqual(main.state.env.hosts, ['hello', 'a'])
 
 if __name__ == '__main__':
     unittest.main()
