@@ -158,5 +158,32 @@ class TestMain(utils.BaseTestCase):
                           'all': ['a', 'b', 'hello']})
         self.assertEqual(main.state.env.hosts, ['hello', 'a'])
 
+    @patch('prestoadmin.main.topology')
+    def test_env_vars_persisted(self, topology_mock):
+        topology_mock.get_coordinator.return_value = 'hello'
+        topology_mock.get_workers.return_value = ['a', 'b']
+        topology_mock.get_port.return_value = '1234'
+        topology_mock.get_username.return_value = 'user'
+        try:
+            main.main(['topology', 'show'])
+        except SystemExit as e:
+            self.assertEqual(e.code, 0)
+        self.assertEqual(['a', 'b', 'hello'], main.state.env.hosts)
+
+    @patch('prestoadmin.topology._get_conf_from_file')
+    def test_topology_defaults_override_fabric_defaults(self, get_conf_mock):
+        get_conf_mock.return_value = {}
+        try:
+            main.main(['topology', 'show'])
+        except SystemExit as e:
+            self.assertEqual(e.code, 0)
+        self.assertEqual(['localhost'], main.state.env.hosts)
+        self.assertEqual({'coordinator': ['localhost'],
+                          'worker': ['localhost'], 'all': ['localhost']},
+                         main.state.env.roledefs)
+        self.assertEqual('22', main.state.env.port)
+        self.assertEqual('root', main.state.env.user)
+
+
 if __name__ == '__main__':
     unittest.main()

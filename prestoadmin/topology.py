@@ -48,7 +48,7 @@ def show():
 
 def get_conf_from_fabric():
     return {'coordinator': env.roledefs['coordinator'][0],
-            'worker': env.roledefs['worker'],
+            'workers': env.roledefs['worker'],
             'port': env.port,
             'username': env.user}
 

@@ -44,7 +44,7 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import getpass
 from operator import isMappingType
-from optparse import OptionParser
+from optparse import OptionParser, Values
 from prestoadmin import ___version___
 import os
 import sys
@@ -581,19 +581,21 @@ def run_tasks(task_list, suppress_errors=False):
                 raise
 
 
-def parse_and_validate_commands(args=sys.argv[1:]):
-    # Parse command line options
-    parser = parser_for_options()
-    options, arguments = parser.parse_args(args)
-
-    # Handle regular args vs -- args
-    arguments = parser.largs
-
-    # Update env with any overridden option values
-    # NOTE: This needs to remain the first thing that occurs
-    # post-parsing, since so many things hinge on the values in env.
+def _update_env(options, non_default_options):
+    # Fill in the state with the default values
     for option in presto_env_options:
         state.env[option.dest] = getattr(options, option.dest)
+
+    # Load the values from the topology file, if it exists
+    load_topology()
+
+    # Go back through and add the non-default values (e.g. the values that
+    # were set on the CLI)
+    for option in presto_env_options:
+        try:
+            state.env[option.dest] = getattr(non_default_options, option.dest)
+        except AttributeError:
+            pass
 
     # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
     # list)
@@ -601,8 +603,23 @@ def parse_and_validate_commands(args=sys.argv[1:]):
         if key in state.env and isinstance(state.env[key], basestring):
             state.env[key] = state.env[key].split(',')
 
-    # Handle output control level show/hide
     update_output_levels(show=options.show, hide=options.hide)
+
+
+def parse_and_validate_commands(args=sys.argv[1:]):
+    # Parse command line options
+    parser = parser_for_options()
+
+    # Unless you pass in values, optparse fills in the default values for all
+    # of the options. We want to save the version of the options without
+    # default values, because that takes precedence over all other env vars.
+    non_default_options, arguments = parser.parse_args(args, values=Values())
+    options, arguments = parser.parse_args(args)
+
+    # Handle regular args vs -- args
+    arguments = parser.largs
+
+    _update_env(options, non_default_options)
 
     # Find local fabfile path or abort
     fabfile = "prestoadmin"  # TODO: shouldn't hard code
@@ -636,7 +653,7 @@ def parse_and_validate_commands(args=sys.argv[1:]):
         display_command(options.display)
 
     # If user didn't specify any commands to run, show help
-    if not (arguments):
+    if not arguments:
         parser.print_help()
         sys.exit(0)  # don't consider this an error
 
@@ -653,7 +670,17 @@ def parse_and_validate_commands(args=sys.argv[1:]):
         prompt = "Initial value for env.password: "
         state.env.password = getpass.getpass(prompt)
 
+    state.env['tasks'] = [x[0] for x in commands_to_run]
+
     return commands_to_run
+
+
+def dedup_list(host_list):
+    deduped_list = []
+    for item in host_list:
+        if item not in deduped_list:
+            deduped_list.append(item)
+    return deduped_list
 
 
 def load_topology():
@@ -671,8 +698,8 @@ def load_topology():
         state.env['failed_topology_error'] = e
         pass
 
-    state.env.roledefs['all'] = state.env.roledefs['worker'] + \
-        state.env.roledefs['coordinator']
+    state.env.roledefs['all'] = dedup_list(state.env.roledefs['worker'] +
+                                           state.env.roledefs['coordinator'])
     # All commands will be run on all hosts by default
     state.env.hosts = state.env.roledefs['all'][:]
 
@@ -682,8 +709,6 @@ def main(args=sys.argv[1:]):
     Main command-line execution loop.
     """
     try:
-        load_topology()
-
         commands_to_run = parse_and_validate_commands(args)
 
         if state.output.debug:

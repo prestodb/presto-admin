@@ -132,8 +132,8 @@ class TestTopologyConfig(utils.BaseTestCase):
         topology.show()
         self.assertEqual("", self.test_stderr.getvalue())
         self.assertEqual("{'coordinator': 'hello',\n 'port': '22',\n "
-                         "'username': 'user',\n 'worker': ['a',\n"
-                         "            'b']}\n",
+                         "'username': 'user',\n 'workers': ['a',\n"
+                         "             'b']}\n",
                          self.test_stdout.getvalue())
 
 if __name__ == "__main__":
