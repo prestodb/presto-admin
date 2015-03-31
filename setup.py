@@ -20,6 +20,8 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from packaging.bdist_prestoadmin import bdist_prestoadmin
+
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
@@ -62,5 +64,6 @@ setup(
     ],
     test_suite='tests',
     tests_require=test_requirements,
+    cmdclass={'bdist_prestoadmin': bdist_prestoadmin},
     entry_points={'console_scripts': ['presto-admin = prestoadmin.main:main']}
 )

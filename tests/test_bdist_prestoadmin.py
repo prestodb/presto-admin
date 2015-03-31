@@ -1,0 +1,154 @@
+# -*- coding: utf-8 -*-
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+
+from distutils.dir_util import remove_tree
+from distutils.dir_util import mkpath
+from mock import patch
+
+import utils
+from packaging.bdist_prestoadmin import bdist_prestoadmin
+from packaging import package_dir as packing_dir
+
+try:
+    from setuptools import Command
+except ImportError:
+    from distutils.core import Command
+
+from distutils.dist import Distribution
+
+class TestBDistPrestoAdmin(utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestBDistPrestoAdmin, self).setUp()
+        self.attrs = {
+            'name': 'prestoadmin',
+            'cmdclass': {'bdist_prestoadmin': bdist_prestoadmin},
+            'version': '0.1.0',
+            'packages': ['prestoadmin'],
+            'package_dir': {'prestoadmin': 'prestoadmin'},
+        }
+
+        # instantiation of the object calls intialize_options which is what we are testing
+        dist = Distribution(attrs=self.attrs)
+        self.bdist = dist.get_command_obj('bdist_prestoadmin')
+        self.bdist.finalize_options()
+
+
+    def test_initialize(self):
+        # we don't use the dist from setUp because we want to test before finalize is called
+        dist = Distribution(attrs=self.attrs)
+        bdist = dist.get_command_obj('bdist_prestoadmin')
+
+        self.assertEquals(bdist.bdist_dir, None)
+        self.assertEquals(bdist.dist_dir, None)
+        self.assertEquals(bdist.virtualenv_url_base, None)
+        self.assertEquals(bdist.virtualenv_version, None)
+        self.assertEquals(bdist.keep_temp, False)
+
+    def test_finalize(self):
+        self.assertEquals(self.bdist.bdist_dir, 'build/bdist.linux-x86_64/prestoadmin')
+        self.assertEquals(self.bdist.dist_dir, 'dist')
+        self.assertEquals(self.bdist.default_virtualenv_url, 'https://pypi.python.org/packages/source/v/virtualenv')
+        self.assertEquals(self.bdist.default_virtualenv_version , '12.0.7')
+        self.assertEquals(self.bdist.keep_temp, False)
+
+    def test_finalize_argvs(self):
+        self.attrs['script_args'] = ['bdist_prestoadmin',
+                                     '--bdist-dir=junk',
+                                     '--dist-dir=tmp',
+                                     '--virtualenv-url-base=http://',
+                                     '--virtualenv-version=12.0.1',
+                                     '-k'
+                                     ]
+
+        # we don't use the dist from setUp because we want to test with additional arguments
+        dist = Distribution(attrs=self.attrs)
+        dist.parse_command_line()
+        bdist = dist.get_command_obj('bdist_prestoadmin')
+        bdist.finalize_options()
+
+        self.assertEquals(bdist.bdist_dir, 'junk')
+        self.assertEquals(bdist.dist_dir, 'tmp')
+        self.assertEquals(bdist.virtualenv_url_base, 'http://')
+        self.assertEquals(bdist.virtualenv_version, '12.0.1')
+        self.assertEquals(bdist.keep_temp, True)
+
+    @patch('distutils.core.Command.run_command')
+    def test_build_wheel(self, run_command_mock):
+        self.assertEquals('prestoadmin-0.1.0-py2-none-any', self.bdist.build_wheel('build'))
+
+    def test_generate_install_script(self):
+        try:
+            os.chdir(packing_dir)
+            os.mkdir('build')
+
+            self.bdist.generate_install_script('wheel_name', 'build')
+
+            actual_install_script = open('build/install-prestoadmin.sh').read()
+
+            file_dir = os.path.abspath(os.path.dirname(__file__))
+            expected_install_script = open(os.path.join(file_dir, 'files', 'install-prestoadmin.sh.expected')).read()
+
+            self.assertEqual(expected_install_script, actual_install_script)
+        finally:
+            remove_tree('build')
+
+    def test_archive_dist(self):
+
+        build_path = os.path.join('build', 'prestoadmin')
+        try:
+            mkpath(build_path)
+            self.bdist.archive_dist(build_path, 'dist')
+
+            archive = os.path.join('dist', 'prestoadmin-0.1.0.tar.bz2')
+            self.assertTrue(os.path.exists(archive))
+        finally:
+            pass
+            remove_tree(os.path.dirname(build_path))
+            remove_tree('dist')
+
+
+    @patch('urllib.urlretrieve')
+    def test_retrieve_virtual_env(self, urlretrieve_mock):
+        self.assertEqual('virtualenv-12.0.7.tar.gz', self.bdist.retrieve_virtualenv('build'))
+
+    @patch('distutils.core.Command.mkpath')
+    @patch('packaging.bdist_prestoadmin.remove_tree')
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.build_wheel', return_value='wheel_name')
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.generate_install_script')
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.retrieve_virtualenv')
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.archive_dist')
+    def test_run(self, archive_dist_mock, retrieve_virtualenv_mock, install_script_mock, build_wheel_mock, remove_tree_mock, mkpath_mock):
+        self.bdist.run()
+
+        build_path = 'build/bdist.linux-x86_64/prestoadmin'
+        build_wheel_mock.assert_called_once_with(build_path)
+        install_script_mock.assert_called_once_with('wheel_name', build_path)
+        retrieve_virtualenv_mock.assert_called_once_with(build_path)
+        archive_dist_mock.assert_called_once_with(build_path, 'dist')
+
+    def test_description(self):
+        self.assertEquals('create a distribution for prestoadmin', self.bdist.description)
+
+    def test_user_options(self):
+        expected = [('bdist-dir=', 'b', 'temporary directory for creating the distribution'),
+                    ('dist-dir=', 'd', 'directory to put final built distributions in'),
+                    ('virtualenv-url-base=', None, 'base url for downloading virtualenv'),
+                    ('virtualenv-version=', None, 'version of virtualenv to download'),
+                    ('keep-temp', 'k','keep the pseudo-installation tree around after creating the distribution archive')]
+
+        self.assertEquals(expected, self.bdist.user_options)
+
