@@ -43,6 +43,10 @@ def write(conf):
 
 @task
 def show():
+    """
+    Shows the current topology configuration for the cluster (including the
+    coordinators, workers, SSH port, and SSH username)
+    """
     pprint.pprint(get_conf_from_fabric(), width=1)
 
 

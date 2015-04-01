@@ -42,9 +42,11 @@ fabfile, and executing the commands given.
 The other callables defined in this module are internal only. Anything useful
 to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
+import copy
 import getpass
+import inspect
 from operator import isMappingType
-from optparse import OptionParser, Values
+from optparse import OptionParser, Values, SUPPRESS_HELP
 from prestoadmin import ___version___
 import os
 import sys
@@ -75,12 +77,18 @@ _internals = reduce(lambda x, y: x + filter(
 
 
 def _get_presto_env_options():
-    presto_env_options = env_options[:]
-    commands_to_remove = ["fabfile", "rcfile"]
-    for option in env_options:
-        if option.dest in commands_to_remove:
-            presto_env_options.remove(option)
-    return presto_env_options
+    new_env_options = copy.deepcopy(env_options)
+    commands_to_remove = ['fabfile', 'rcfile']
+    new_env_options = \
+        [x for x in new_env_options if x not in commands_to_remove]
+
+    # Hide most of the options from the help text so it's simpler. Need to
+    # document the other options, however.
+    commands_to_show = ['hosts', 'exclude_hosts', 'password']
+    for option in new_env_options:
+        if option.dest not in commands_to_show:
+            option.help = SUPPRESS_HELP
+    return new_env_options
 
 presto_env_options = _get_presto_env_options()
 
@@ -103,16 +111,6 @@ class _ModuleCache(object):
         return self.cache.clear()
 
 _seen = _ModuleCache()
-
-
-def _is_package(path):
-    """
-    Is the given path a Python package?
-    """
-    return (
-        os.path.isdir(path)
-        and os.path.exists(os.path.join(path, '__init__.py'))
-    )
 
 
 def is_classic_task(tup):
@@ -272,7 +270,7 @@ def parser_for_options():
     #
 
     parser = OptionParser(
-        usage=("presto-admin [options] <command> [arg1]"),
+        usage="presto-admin [options] <command> [arg]",
         version="presto-admin %s" % ___version___)
 
     #
@@ -283,22 +281,23 @@ def parser_for_options():
 
     # Display info about a specific command
     parser.add_option(
-        # TODO: need to make this a vararg parser. unfortunately.
         '-d',
         '--display',
-        metavar='NAME',
-        help="print detailed info about command NAME"
+        dest='display',
+        action='store_true',
+        default=False,
+        help="print detailed information about command"
     )
 
     # Control behavior of --list
-    LIST_FORMAT_OPTIONS = ('short', 'normal', 'nested')
+    LIST_FORMAT_OPTIONS = ('short', 'normal')
     parser.add_option(
         '-F',
         '--list-format',
         choices=LIST_FORMAT_OPTIONS,
         default='normal',
         metavar='FORMAT',
-        help="formats --list, choices: %s" % ", ".join(LIST_FORMAT_OPTIONS)
+        help=SUPPRESS_HELP
     )
 
     parser.add_option(
@@ -325,7 +324,7 @@ def parser_for_options():
         action='store_true',
         dest='shortlist',
         default=False,
-        help="alias for -F short --list"
+        help="print out text processing friendly version of --list"
     )
 
     #
@@ -409,21 +408,7 @@ def _normal_list(docstrings=True):
     return result
 
 
-def _nested_list(mapping, level=1):
-    result = []
-    tasks, collections = _sift_tasks(mapping)
-    # Tasks come first
-    result.extend(map(lambda x: indent(x, spaces=level * 4), tasks))
-    for collection in collections:
-        module = mapping[collection]
-        # Section/module "header"
-        result.append(indent(collection + ":", spaces=level * 4))
-        # Recurse
-        result.extend(_nested_list(module, level + 1))
-    return result
-
 COMMANDS_HEADER = "Available commands"
-NESTED_REMINDER = " (remember to call as module.[...].task)"
 
 
 def list_commands(docstring, format_):
@@ -445,10 +430,8 @@ def list_commands(docstring, format_):
         trailer = "\n" if not docstring.endswith("\n") else ""
         result.append(docstring + trailer)
     header = COMMANDS_HEADER
-    if format_ == "nested":
-        header += NESTED_REMINDER
     result.append(header + ":\n")
-    c = _normal_list() if format_ == "normal" else _nested_list(state.commands)
+    c = _normal_list()
     result.extend(c)
     return result
 
@@ -459,6 +442,7 @@ def display_command(name):
     """
     # Sanity check
     command = crawl(name, state.commands)
+    name = name.replace(".", " ")
     if command is None:
         msg = "Task '%s' does not appear to exist. Valid task names:\n%s"
         abort(msg % (name, "\n".join(_normal_list(False))))
@@ -467,6 +451,13 @@ def display_command(name):
         task_details = command.__details__()
     else:
         task_details = get_task_details(command)
+
+    # Print out "None" if there aren't any arguments; otherwise the text just
+    # is "Arguments:\n\n", which is not clear.
+    argspec = inspect.getargspec(command.wrapped)
+    if len(argspec.args) == 0:
+        task_details += 'None'
+
     if task_details:
         print("Displaying detailed information for task '%s':" % name)
         print('')
@@ -476,33 +467,6 @@ def display_command(name):
     else:
         print("No detailed information available for task '%s':" % name)
     sys.exit(0)
-
-
-def _escape_split(sep, argstr):
-    """
-    Allows for escaping of the separator: e.g. task:arg='foo\, bar'
-
-    It should be noted that the way bash et. al. do command line parsing, those
-    single quotes are required.
-    """
-    escaped_sep = r'\%s' % sep
-
-    if escaped_sep not in argstr:
-        return argstr.split(sep)
-
-    before, _, after = argstr.partition(escaped_sep)
-    startlist = before.split(sep)  # a regular split is fine here
-    unfinished = startlist[-1]
-    startlist = startlist[:-1]
-
-    # recurse because there may be more escaped separators
-    endlist = _escape_split(sep, after)
-
-    # finish building the escaped value. we use endlist[0] becaue the first
-    # part of the string sent in recursion is the rest of the escaped value.
-    unfinished += sep + endlist[0]
-
-    return startlist + [unfinished] + endlist[1:]  # put together all the parts
 
 
 def parse_arguments(arguments, commands):
@@ -622,7 +586,7 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     _update_env(options, non_default_options)
 
     # Find local fabfile path or abort
-    fabfile = "prestoadmin"  # TODO: shouldn't hard code
+    fabfile = "prestoadmin"
 
     # Store absolute path to fabfile in case anyone needs it
     state.env.real_fabfile = fabfile
@@ -647,11 +611,6 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     if options.list_commands:
         show_commands(docstring, options.list_format)
 
-    # Handle show (command-specific help) option
-    if options.display:
-        print options.display
-        display_command(options.display)
-
     # If user didn't specify any commands to run, show help
     if not arguments:
         parser.print_help()
@@ -664,6 +623,10 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     except NameError as e:
         warn(e.message)
         show_commands(None, options.list_format, 2)
+
+    # Handle show (command-specific help) option
+    if options.display:
+        display_command(commands_to_run[0][0])
 
     # Initial password prompt, if requested
     if options.initial_password_prompt:

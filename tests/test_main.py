@@ -54,7 +54,7 @@ class TestMain(utils.BaseTestCase):
         except SystemExit as e:
             self.assertEqual(e.code, exit_status)
 
-        self.assertEqual(self.test_stdout.getvalue(), text)
+        self.assertEqual(text, self.test_stdout.getvalue())
 
     def test_help_text_short(self):
         # See if the help text matches what we expect it to be (in
@@ -157,6 +157,39 @@ class TestMain(utils.BaseTestCase):
                          {'coordinator': ['hello'], 'worker': ['a', 'b'],
                           'all': ['a', 'b', 'hello']})
         self.assertEqual(main.state.env.hosts, ['hello', 'a'])
+        self.assertEqual(main.api.env.hosts, ['hello', 'a'])
+
+    def test_describe(self):
+        self.run_command_compare_to_string(
+            ['-d', 'topology', 'show'],
+            0,
+            "Displaying detailed information for task 'topology show':\n\n   "
+            " Shows the current topology configuration for the cluster "
+            "(including the\n    coordinators, workers, SSH port, and SSH "
+            "username)\n    \n    Arguments: None\n\n"
+        )
+
+    def test_describe_with_args(self):
+        self.run_command_compare_to_string(
+            ['-d', 'topology', 'show', 'arg'],
+            0,
+            "Displaying detailed information for task 'topology show':\n\n   "
+            " Shows the current topology configuration for the cluster "
+            "(including the\n    coordinators, workers, SSH port, and SSH "
+            "username)\n    \n    Arguments: None\n\n"
+        )
+
+    def test_shortlist(self):
+        self.run_command_compare_to_file(["--shortlist"], 0,
+                                         "/files/shortlist.txt")
+
+    @patch('prestoadmin.main.getpass.getpass')
+    def test_initial_password(self, pass_mock):
+        try:
+            main.parse_and_validate_commands(['-I', 'topology', 'show'])
+        except SystemExit as e:
+            self.assertEqual(0, e.code)
+        pass_mock.assert_called_once_with('Initial value for env.password: ')
 
     @patch('prestoadmin.main.topology')
     def test_env_vars_persisted(self, topology_mock):

@@ -1,60 +1,16 @@
-Usage: presto-admin [options] <command> [arg1]
+Usage: presto-admin [options] <command> [arg]
 
 Options:
   --version             show program's version number and exit
   -h, --help            show this help message and exit
-  -d NAME, --display=NAME
-                        print detailed info about command NAME
-  -F FORMAT, --list-format=FORMAT
-                        formats --list, choices: short, normal, nested
+  -d, --display         print detailed information about command
   -I, --initial-password-prompt
                         Force password prompt up-front
   -l, --list            print list of possible commands and exit
-  --shortlist           alias for -F short --list
-  -a, --no_agent        don't use the running SSH agent
-  -A, --forward-agent   forward local agent to remote end
-  --abort-on-prompts    abort instead of prompting (for password, host, etc)
-  --colorize-errors     Color error output
-  -D, --disable-known-hosts
-                        do not load user known_hosts file
-  -e, --eagerly-disconnect
-                        disconnect from hosts as soon as possible
-  -g HOST, --gateway=HOST
-                        gateway host to connect through
-  --hide=LEVELS         comma-separated list of output levels to hide
+  --shortlist           print out text processing friendly version of --list
   -H HOSTS, --hosts=HOSTS
                         comma-separated list of hosts to operate on
-  -i PATH               path to SSH private key file. May be repeated.
-  -k, --no-keys         don't load private key files from ~/.ssh/
-  --keepalive=N         enables a keepalive every N seconds
-  --linewise            print line-by-line instead of byte-by-byte
-  -n M, --connection-attempts=M
-                        make M attempts to connect before giving up
-  --no-pty              do not use pseudo-terminal in run/sudo
   -p PASSWORD, --password=PASSWORD
                         password for use with authentication and/or sudo
-  -P, --parallel        default to parallel execution method
-  --port=PORT           SSH connection port
-  -r, --reject-unknown-hosts
-                        reject unknown hosts
-  --system-known-hosts=SYSTEM_KNOWN_HOSTS
-                        load system known_hosts file before reading user
-                        known_hosts
-  -R ROLES, --roles=ROLES
-                        comma-separated list of roles to operate on
-  -s SHELL, --shell=SHELL
-                        specify a new shell, defaults to '/bin/bash -l -c'
-  --show=LEVELS         comma-separated list of output levels to show
-  --skip-bad-hosts      skip over hosts that can't be reached
-  --skip-unknown-tasks  skip over unknown tasks
-  --ssh-config-path=PATH
-                        Path to SSH config file
-  -t N, --timeout=N     set connection timeout to N seconds
-  -T N, --command-timeout=N
-                        set remote command timeout to N seconds
-  -u USER, --user=USER  username to use when connecting to remote hosts
-  -w, --warn-only       warn, instead of abort, when commands fail
   -x HOSTS, --exclude-hosts=HOSTS
                         comma-separated list of hosts to exclude
-  -z INT, --pool-size=INT
-                        number of concurrent processes to use in parallel mode
