@@ -21,15 +21,15 @@ presto-admin config
 import configuration as config
 import fabric
 from fabric.api import task, env
-import os
 import pprint
+import prestoadmin
 import re
 import socket
 
 
 __all__ = ["show"]
 
-CONFIG_PATH = os.path.dirname(__file__) + "/../resources/config.json"
+CONFIG_PATH = prestoadmin.main_dir + "/resources/config.json"
 PRESTO_ADMIN_PROPERTIES = ["username", "port", "coordinator", "workers"]
 DEFAULT_PROPERTIES = {"username": "root",
                       "port": "22",
@@ -38,7 +38,7 @@ DEFAULT_PROPERTIES = {"username": "root",
 
 
 def write(conf):
-    config.write(conf, CONFIG_PATH)
+    config.write(config.json_to_string(conf), CONFIG_PATH)
 
 
 @task

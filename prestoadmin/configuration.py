@@ -31,16 +31,26 @@ def get_conf_from_file(path):
         raise ConfigurationError(e)
 
 
-def write(conf, path):
+def json_to_string(conf):
+    return json.dumps(conf, indent=4, separators=(',', ':'))
+
+
+def write(output, path):
     conf_directory = os.path.dirname(path)
     if not os.path.exists(conf_directory):
         os.makedirs(conf_directory)
 
     f = open(path, 'w')
-    json.dump(conf, f, indent=4, separators=(',', ':'))
+    f.write(output)
     f.close
 
 
 def fill_defaults(conf, defaults):
-    for k, v in defaults.iteritems():
+    try:
+        default_items = defaults.iteritems()
+    except AttributeError:
+        return
+
+    for k, v in default_items:
         conf.setdefault(k, v)
+        fill_defaults(conf[k], v)

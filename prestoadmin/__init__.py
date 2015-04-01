@@ -18,6 +18,7 @@
 ___version___ = '0.1.0'  # Make sure to update setup.py too
 
 from fabric.api import env
+import os
 
 __all__ = ['topology']
 
@@ -26,5 +27,7 @@ env.roledefs = {
     'worker': [],
     'all': []
 }
+
+main_dir = os.path.abspath(os.path.dirname(__file__))
 
 import topology
