@@ -17,7 +17,6 @@
 This module contains the methods for setting and validating the
 presto-admin config
 """
-
 import configuration as config
 import fabric
 from fabric.api import task, env
@@ -235,3 +234,11 @@ def get_username():
 def get_port():
     conf = get_conf()
     return conf["port"]
+
+
+def set_roledefs_from_conf():
+    env.roledefs['coordinator'] = [get_coordinator()]
+    env.roledefs['worker'] = get_workers()
+    env.roledefs['all'] = env.roledefs['worker'] + env.roledefs['coordinator']
+    if env.hosts == []:
+        env.hosts = env.roledefs['all'][:]

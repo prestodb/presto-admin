@@ -2,4 +2,5 @@ Presto-Admin tool for deploying and managing Presto clusters
 
 Available commands:
 
+    install server
     topology show

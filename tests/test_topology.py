@@ -136,5 +136,13 @@ class TestTopologyConfig(utils.BaseTestCase):
                          "             'b']}\n",
                          self.test_stdout.getvalue())
 
+    @patch('prestoadmin.main.topology.get_coordinator')
+    @patch('prestoadmin.main.topology.get_workers')
+    def test_hosts_set(self, workers_mock, coord_mock):
+        coord_mock.return_value = 'hello'
+        workers_mock.return_value = ['a', 'b']
+        topology.set_roledefs_from_conf()
+        self.assertEqual(topology.env.hosts, ['a', 'b', 'hello'])
+
 if __name__ == "__main__":
     unittest.main()
