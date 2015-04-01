@@ -108,6 +108,13 @@ class TestCoordinator(utils.BaseTestCase):
                                 "coordinator's config.properties",
                                 coordinator.validate, conf)
 
+    @patch('prestoadmin.configuration.get_conf_from_file',
+           side_effect=configuration.ConfigFileNotFoundError)
+    def test_conf_not_exists_is_default(self, get_conf_from_file_mock):
+        env.roledefs['coordinator'] = "j"
+        env.roledefs['workers'] = ["K", "L"]
+        self.assertEqual(coordinator.get_conf(), coordinator.build_defaults())
+
     @patch('prestoadmin.coordinator._get_conf_from_file')
     def test_get_conf_empty_is_default(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = "j"

@@ -52,7 +52,7 @@ import os
 import sys
 import types
 import topology
-from configuration import ConfigurationError
+from configuration import ConfigFileNotFoundError
 
 # For checking callables against the API, & easy mocking
 from fabric import api, state
@@ -652,13 +652,13 @@ def load_topology():
         state.env.roledefs['worker'] = topology.get_workers()
         state.env['port'] = topology.get_port()
         state.env['user'] = topology.get_username()
-    except ConfigurationError as e:
-        # If there is no topology file, or it is invalid, just store empty
+    except ConfigFileNotFoundError as e:
+        # If there is no topology file, just store empty
         # roledefs for now and save the error in the environment variables.
         # If the task is an install task, we will set up a prompt for the
         # user to interactively enter the config vars. Else, we will error
         # out at a later point.
-        state.env['failed_topology_error'] = e
+        state.env['topology_config_not_found'] = e
         pass
 
     state.env.roledefs['all'] = dedup_list(state.env.roledefs['worker'] +

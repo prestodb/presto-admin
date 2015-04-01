@@ -19,7 +19,7 @@ import utils
 
 class TestConfiguration(utils.BaseTestCase):
     def test_file_does_not_exist(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(config.ConfigFileNotFoundError,
                                 "Missing configuration file at",
                                 config.get_conf_from_file,
                                 ("does/not/exist/conf.json"))

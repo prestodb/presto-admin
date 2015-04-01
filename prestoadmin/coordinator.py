@@ -55,7 +55,10 @@ def get_conf():
 
 
 def _get_conf_from_file():
-    return configuration.get_conf_from_file(CONFIG_PATH)
+    try:
+        configuration.get_conf_from_file(CONFIG_PATH)
+    except configuration.ConfigFileNotFoundError:
+        return {}
 
 
 def build_defaults():

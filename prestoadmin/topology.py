@@ -17,13 +17,15 @@
 This module contains the methods for setting and validating the
 presto-admin config
 """
-import configuration as config
-import fabric
-from fabric.api import task, env
 import pprint
-import prestoadmin
 import re
 import socket
+
+import fabric
+from fabric.api import task, env
+
+import configuration as config
+import prestoadmin
 
 
 __all__ = ["show"]
@@ -69,6 +71,7 @@ def _get_conf_from_file():
 
 def set_conf_interactive():
     write(build_conf_interactive())
+    del env['topology_config_not_found']
 
 
 def build_conf_interactive():
@@ -211,7 +214,7 @@ def validate_host(host):
 
 
 def is_valid_hostname(hostname):
-    valid_name = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*"\
+    valid_name = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*" \
                  "([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"
     return re.match(valid_name, hostname)
 

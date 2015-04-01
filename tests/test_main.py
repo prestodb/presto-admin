@@ -29,7 +29,7 @@ import unittest
 import utils
 
 from prestoadmin import main
-from prestoadmin.configuration import ConfigurationError
+from prestoadmin.configuration import ConfigFileNotFoundError, ConfigurationError
 from mock import patch
 
 
@@ -131,8 +131,8 @@ class TestMain(utils.BaseTestCase):
         self.assertEqual(main.state.env.hosts, ['a', 'b', 'hello'])
 
     @patch('prestoadmin.main.topology')
-    def test_load_topology_failure(self, topology_mock):
-        e = ConfigurationError()
+    def test_load_topology_not_exists(self, topology_mock):
+        e = ConfigFileNotFoundError()
 
         def func():
             raise e
@@ -142,7 +142,16 @@ class TestMain(utils.BaseTestCase):
                          {'coordinator': [], 'worker': [], 'all': []})
         self.assertEqual(main.state.env.port, '22')
         self.assertNotEqual(main.state.env.user, 'user')
-        self.assertEqual(main.state.env.failed_topology_error, e)
+        self.assertEqual(main.state.env.topology_config_not_found, e)
+
+    @patch('prestoadmin.main.topology')
+    def test_load_topology_failure(self, topology_mock):
+        e = ConfigurationError()
+
+        def func():
+            raise e
+        topology_mock.get_coordinator = func
+        self.assertRaises(ConfigurationError, main.load_topology)
 
     @patch('prestoadmin.main.topology')
     def test_hosts_on_cli_overrides_topology(self, topology_mock):

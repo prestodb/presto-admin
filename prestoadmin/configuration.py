@@ -20,11 +20,16 @@ class ConfigurationError(Exception):
     pass
 
 
+class ConfigFileNotFoundError(ConfigurationError):
+    pass
+
+
 def get_conf_from_file(path):
     try:
         conf_file = open(path, 'r')
     except IOError:
-        raise ConfigurationError("Missing configuration file at " + repr(path))
+        raise ConfigFileNotFoundError("Missing configuration file at " +
+                                      repr(path))
     try:
         return json.load(conf_file)
     except ValueError as e:
@@ -42,7 +47,7 @@ def write(output, path):
 
     f = open(path, 'w')
     f.write(output)
-    f.close
+    f.close()
 
 
 def fill_defaults(conf, defaults):
