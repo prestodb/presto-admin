@@ -13,56 +13,14 @@
 # limitations under the License.
 
 """
-Tests setting the presto configuration
+Tests setting the presto configure
 """
 
-from prestoadmin import configuration, configure
-import re
+from prestoadmin import configure
 import utils
 
 
 class TestConfigure(utils.BaseTestCase):
-    def test_valid_conf(self):
-        conf = {"node.properties": {}, "jvm.config": [],
-                "config.properties": {}}
-        self.assertEqual(configure.validate(conf), conf)
-
-    def test_invalid_conf(self):
-        conf = {"jvm.config": [],
-                "config.properties": {}}
-        self.assertRaisesRegexp(configuration.ConfigurationError,
-                                "Missing configuration for required file:",
-                                configure.validate,
-                                conf)
-
-    def test_invalid_node_type(self):
-        conf = {"node.properties": "", "jvm.config": [],
-                "config.properties": {}}
-        self.assertRaisesRegexp(configuration.ConfigurationError,
-                                "node.properties must be an object with key-"
-                                "value property pairs",
-                                configure.validate,
-                                conf)
-
-    def test_invalid_jvm_type(self):
-        conf = {"node.properties": {}, "jvm.config": {},
-                "config.properties": {}}
-        self.assertRaisesRegexp(configuration.ConfigurationError,
-                                re.escape("jvm.config must contain a json "
-                                          "array of jvm arguments ([arg1, "
-                                          "arg2, arg3])"),
-                                configure.validate,
-                                conf)
-
-    def test_invalid_config_type(self):
-        conf = {"node.properties": {}, "jvm.config": [],
-                "config.properties": []}
-        self.assertRaisesRegexp(configuration.ConfigurationError,
-                                "config.properties must be an object with key-"
-                                "value property pairs",
-                                configure.validate,
-                                conf)
-
     def test_output_format_dict(self):
         conf = {'a': 'b', 'c': 'd'}
         self.assertEqual(configure.output_format(conf),

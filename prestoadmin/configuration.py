@@ -14,6 +14,10 @@
 
 import json
 import os
+import prestoadmin
+
+REQUIRED_FILES = ["node.properties", "jvm.config", "config.properties"]
+TMP_CONF_DIR = prestoadmin.main_dir + "/tmp/presto-conf"
 
 
 class ConfigurationError(Exception):
@@ -26,12 +30,11 @@ class ConfigFileNotFoundError(ConfigurationError):
 
 def get_conf_from_file(path):
     try:
-        conf_file = open(path, 'r')
+        with open(path, 'r') as conf_file:
+            return json.load(conf_file)
     except IOError:
         raise ConfigFileNotFoundError("Missing configuration file at " +
                                       repr(path))
-    try:
-        return json.load(conf_file)
     except ValueError as e:
         raise ConfigurationError(e)
 
@@ -45,9 +48,8 @@ def write(output, path):
     if not os.path.exists(conf_directory):
         os.makedirs(conf_directory)
 
-    f = open(path, 'w')
-    f.write(output)
-    f.close()
+    with open(path, 'w') as f:
+        f.write(output)
 
 
 def fill_defaults(conf, defaults):
@@ -59,3 +61,35 @@ def fill_defaults(conf, defaults):
     for k, v in default_items:
         conf.setdefault(k, v)
         fill_defaults(conf[k], v)
+
+
+def validate_presto_conf(conf):
+    for required in REQUIRED_FILES:
+        if required not in conf:
+            raise ConfigurationError("Missing configuration for required "
+                                     "file: " + required)
+
+    validate_presto_types(conf)
+    return conf
+
+
+def validate_presto_types(conf):
+    expect_object_msg = "%s must be an object with key-value property pairs"
+    try:
+        if not isinstance(conf["node.properties"], dict):
+            raise ConfigurationError(expect_object_msg % "node.properties")
+    except KeyError:
+        pass
+    try:
+        if not isinstance(conf["jvm.config"], list):
+            raise ConfigurationError("jvm.config must contain a json "
+                                     "array of jvm arguments "
+                                     "([arg1, arg2, arg3])")
+    except KeyError:
+        pass
+    try:
+        if not isinstance(conf["config.properties"], dict):
+            raise ConfigurationError(expect_object_msg % "config.properties")
+    except KeyError:
+        pass
+    return conf

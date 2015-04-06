@@ -44,7 +44,7 @@ class TestCoordinator(utils.BaseTestCase):
                     "config.properties": {"coordinator": "true",
                                           "discovery-server.enabled": "true",
                                           "discovery.uri": "http://a:8080",
-                                          "http-server.http.port": 8080,
+                                          "http-server.http.port": "8080",
                                           "task.max-memory": "1GB",
                                           "query.queue-config-file": ""},
                     }
@@ -52,8 +52,8 @@ class TestCoordinator(utils.BaseTestCase):
         self.assertEqual(actual_default, expected)
 
     def test_defaults_coord_is_worker(self):
-        env.roledefs['coordinator'] = "a"
-        env.roledefs['workers'] = ["a", "b", "c"]
+        env.roledefs['coordinator'] = ["a"]
+        env.roledefs['worker'] = ["a", "b", "c"]
         actual_default = coordinator.build_defaults()
         expected = {"node.properties": {"node.environment": "presto",
                                         "node.data-dir": "/var/lib/presto/"
@@ -70,7 +70,7 @@ class TestCoordinator(utils.BaseTestCase):
                     "config.properties": {"coordinator": "true",
                                           "discovery-server.enabled": "true",
                                           "discovery.uri": "http://a:8080",
-                                          "http-server.http.port": 8080,
+                                          "http-server.http.port": "8080",
                                           "node-scheduler."
                                           "include-coordinator": "true",
                                           "task.max-memory": "1GB",
@@ -145,7 +145,7 @@ class TestCoordinator(utils.BaseTestCase):
                     "config.properties": {"coordinator": "true",
                                           "discovery-server.enabled": "true",
                                           "discovery.uri": "http://j:8080",
-                                          "http-server.http.port": 8080,
+                                          "http-server.http.port": "8080",
                                           "task.max-memory": "1GB",
                                           "query.queue-config-file": ""},
                     }

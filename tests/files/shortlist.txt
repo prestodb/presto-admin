@@ -1,2 +1,3 @@
+configure coordinator
 install server
 topology show

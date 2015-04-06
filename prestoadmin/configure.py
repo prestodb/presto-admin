@@ -12,49 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module with common functions for presto configuration
-"""
 
-import configuration as config
+import os
+from fabric.contrib import files
+from fabric.operations import put, sudo
+from fabric.api import task
+import coordinator as coord
 import prestoadmin
+import configuration as config
 
-REQUIRED_FILES = ["node.properties", "jvm.config", "config.properties"]
+__all__ = ["coordinator"]
+REMOTE_DIR = "/etc/presto"
 TMP_CONF_DIR = prestoadmin.main_dir + "/tmp/presto-conf"
 
 
-def validate(conf):
-    for required in REQUIRED_FILES:
-        if required not in conf:
-            raise config.ConfigurationError("Missing configuration for "
-                                            "required file: " + required)
-
-    validate_types(conf)
-    return conf
+@task
+def coordinator():
+    configure(coord.get_conf(), coord.TMP_OUTPUT_DIR)
 
 
-def validate_types(conf):
-    expect_object_msg = "%s must be an object with key-value property pairs"
-    try:
-        if not isinstance(conf["node.properties"], dict):
-            raise config.ConfigurationError(expect_object_msg %
-                                            "node.properties")
-    except KeyError:
-        pass
-    try:
-        if not isinstance(conf["jvm.config"], list):
-            raise config.ConfigurationError("jvm.config must contain a json "
-                                            "array of jvm arguments "
-                                            "([arg1, arg2, arg3])")
-    except KeyError:
-        pass
-    try:
-        if not isinstance(conf["config.properties"], dict):
-            raise config.ConfigurationError(expect_object_msg %
-                                            "config.properties")
-    except KeyError:
-        pass
-    return conf
+def configure(conf, local_dir):
+    write_conf_to_tmp(conf, local_dir)
+    deploy(local_dir, REMOTE_DIR)
 
 
 def write_conf_to_tmp(conf, conf_dir):
@@ -89,3 +68,23 @@ def key_val_to_equal(items):
 def list_to_line_separated(conf):
     assert not isinstance(conf, basestring)
     return "\n".join(conf)
+
+
+def deploy(local_dir, remote_dir):
+    node_file = "node.properties"
+    node_file_path = (os.path.join(remote_dir, node_file))
+    node_id_command = \
+        "if ! ( grep -q 'node.id' " + node_file_path + " ); then " \
+        "uuid=$(uuidgen); " \
+        "echo node.id=$uuid >> " + node_file_path + ";" \
+        "fi; " \
+        "sed -i '/node.id/!d' " + node_file_path + "; "
+    sudo(node_id_command)
+    for name in os.listdir(local_dir):
+        if name != node_file:
+            put(os.path.join(local_dir, name),
+                os.path.join(remote_dir, name), True)
+        else:
+            with open(os.path.join(local_dir, node_file), 'r') as f:
+                properties = f.read()
+            files.append(os.path.join(remote_dir, node_file), properties, True)

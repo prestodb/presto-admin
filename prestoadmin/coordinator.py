@@ -19,13 +19,12 @@ to deploy on the presto cluster
 """
 
 import configuration
-import configure
 import copy
 from fabric.api import env
 import prestoadmin
 
 CONFIG_PATH = prestoadmin.main_dir + "/resources/coordinator.json"
-TMP_OUTPUT_DIR = configure.TMP_CONF_DIR + "/coordinator"
+TMP_OUTPUT_DIR = configuration.TMP_CONF_DIR + "/coordinator"
 DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                                           "node.data-dir": "/var/lib/presto"
                                                            "/data"},
@@ -40,14 +39,14 @@ DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                                      "-XX:ReservedCodeCacheSize=150M"],
                       "config.properties": {"coordinator": "true",
                                             "discovery-server.enabled": "true",
-                                            "http-server.http.port": 8080,
+                                            "http-server.http.port": "8080",
                                             "task.max-memory": "1GB",
                                             "query.queue-config-file": ""},
                       }
 
 
 def get_conf():
-    conf = configure.validate_types(_get_conf_from_file())
+    conf = configuration.validate_presto_types(_get_conf_from_file())
     defaults = build_defaults()
     configuration.fill_defaults(conf, defaults)
     validate(conf)
@@ -63,8 +62,8 @@ def _get_conf_from_file():
 
 def build_defaults():
     conf = copy.deepcopy(DEFAULT_PROPERTIES)
-    coordinator = env.roledefs['coordinator']
-    workers = env.roledefs['workers']
+    coordinator = env.roledefs['coordinator'][0]
+    workers = env.roledefs['worker']
     if coordinator in workers:
         conf["config.properties"]["node-scheduler."
                                   "include-coordinator"] = "true"
@@ -76,13 +75,9 @@ def build_defaults():
 
 
 def validate(conf):
-    configure.validate(conf)
+    configuration.validate_presto_conf(conf)
     if conf["config.properties"]["coordinator"] is not "true":
         raise configuration.ConfigurationError("Coordinator cannot be false "
                                                "in the coordinator's "
                                                "config.properties")
     return conf
-
-
-def write_tmp_files(conf):
-    configure.write_conf_to_tmp(conf, TMP_OUTPUT_DIR)
