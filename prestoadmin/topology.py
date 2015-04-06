@@ -17,6 +17,7 @@
 This module contains the methods for setting and validating the
 presto-admin config
 """
+import logging
 import pprint
 import re
 import socket
@@ -36,6 +37,7 @@ DEFAULT_PROPERTIES = {"username": "root",
                       "port": "22",
                       "coordinator": "localhost",
                       "workers": ["localhost"]}
+_LOGGER = logging.getLogger(__name__)
 
 
 def write(conf):
@@ -49,6 +51,7 @@ def show():
     coordinators, workers, SSH port, and SSH username)
     """
     pprint.pprint(get_conf_from_fabric(), width=1)
+    _LOGGER.debug("Task topology show: %s", str(get_conf_from_fabric()))
 
 
 def get_conf_from_fabric():

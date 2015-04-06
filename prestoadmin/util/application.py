@@ -1,0 +1,255 @@
+# -*- coding: utf-8 -*-
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Logic at the application level for logging and exception handling"""
+from prestoadmin import __version__
+from prestoadmin.util import constants
+from prestoadmin.util import filesystem
+from prestoadmin.util.exception import ExceptionWithCause
+from prestoadmin.util.exception import UserVisibleError
+
+import __main__ as main
+
+import functools
+import logging
+import logging.config
+import os
+import sys
+import traceback
+
+
+# Normally this would use the logger for __name__, however, this is
+# effectively the "root" logger for the application.  If this code
+# were running directly in the executable script __name__ would be
+# set to '__main__', so we emulate that same behavior here.  This should
+# resolve to the same logger that will be used by the entry point script.
+logger = logging.getLogger('__main__')
+
+
+def entry_point(name, version=None, log_file_path=None):
+    """
+    A decorator for application entry points.  The decorated function will
+    be wrapped in an Application object and executed in that safe environment.
+    Note that decorating a function with this decorator will not actually
+    cause it to be invoked.  You must explicitly call the function in the
+    script.
+
+    :param name: human readable name for the application
+    :param version: the version of the application, as a string
+    :param log_file_path: optional name of the log file including whatever
+        extension you may want to use.  For example, 'foo.log' would create
+        a file called 'foo.log' in the default presto-admin logging directory
+        tree.
+    """
+    def application_decorator(method):
+        @functools.wraps(method)
+        def wrapped_application(*args, **kwargs):
+            with Application(
+                name,
+                version=version,
+                log_file_path=log_file_path
+            ):
+                method(*args, **kwargs)
+
+        return wrapped_application
+
+    return application_decorator
+
+
+class Application(object):
+    """
+    A Presto-Admin application entry point.  Provides logging and exception
+    handling features.  This class is expected to be used as a base class
+    for various applications.
+
+    :param name: human readable name for the application
+    :param version: the version of the application, as a string
+    :param log_file_path: optional name of the log file including whatever
+        extension you may want to use.  For example, 'foo.log' would create
+        a file called 'foo.log' in the default presto-admin logging directory
+        tree.
+    """
+
+    def __init__(self, name, version=None, log_file_path=None):
+        self.name = str(name)
+        self.__log_file_path = log_file_path or (self.name + '.log')
+        if not os.path.isabs(self.__log_file_path):
+            self.__log_file_path = os.path.join(
+                constants.PRESTOADMIN_LOG,
+                self.__log_file_path
+            )
+
+        self.version = version or __version__
+
+    def __enter__(self):
+        self.__configure_logging()
+        return self
+
+    def __configure_logging(self):
+        config_file_path = None
+        try:
+            for maybe_file_path in self.__logging_configuration_file_paths():
+                if not os.path.exists(maybe_file_path):
+                    continue
+                else:
+                    config_file_path = maybe_file_path
+
+                filesystem.ensure_parent_directories_exist(
+                    self.__log_file_path
+                )
+                logging.config.fileConfig(
+                    config_file_path,
+                    defaults={'log_file_path': self.__log_file_path},
+                    disable_existing_loggers=False
+                )
+
+                self.__log_application_start()
+                logger.debug(
+                    'Loaded logging configuration from %s',
+                    config_file_path
+                )
+                break
+        except Exception as e:
+            sys.stderr.write(
+                'Unable to configure logging using file {path}, no messages '
+                'will be logged.\nError Message: {msg}'.format(
+                    path=config_file_path,
+                    msg=str(e)
+                )
+            )
+            logging.getLogger().addHandler(NullHandler())
+
+    def __logging_configuration_file_paths(self):
+        # Current working directory
+        yield constants.LOGGING_CONFIG_FILE_NAME
+        # Application specific
+        yield (self.__log_file_path + '.ini')
+        yield (self.__main_module_path() + '.ini')
+        # Global locations
+        for dir_path in constants.LOGGING_CONFIG_FILE_DIRECTORIES:
+            yield os.path.join(dir_path, constants.LOGGING_CONFIG_FILE_NAME)
+
+    def __main_module_path(self):
+        return os.path.abspath(main.__file__)
+
+    def __log_application_start(self):
+        LOG_SEPARATOR = '**************************************************'
+
+        logger.debug(LOG_SEPARATOR)
+        logger.debug(
+            'Starting {name} {version}'.format(
+                name=self.name,
+                version=self.version
+            )
+        )
+        logger.debug(LOG_SEPARATOR)
+        logger.debug('raw arguments = {0}'.format(sys.argv))
+
+    def __exit__(self, exc_type, exception, trace):
+        self.exc_type = exc_type
+        self.exception = exception
+        self.trace = trace
+
+        try:
+            if exc_type is None:
+                self.__handle_no_exception()
+            elif exc_type == SystemExit:
+                self.__handle_system_exit()
+            else:
+                self.__handle_error()
+                sys.exit(1)
+        finally:
+            logging.shutdown()
+
+    def __handle_no_exception(self):
+        logger.debug('Exiting normally')
+
+    def __handle_system_exit(self):
+        # Unfortunately a SystemExit can be raised with all kinds of
+        # wonky values.  This code attempts to determine the actual
+        # exit status.
+        code = None
+        try:
+            # according to the docs a None value for this is equivalent
+            # to a 0 value.
+            code = self.exception.code or 0
+        except:
+            try:
+                code = int(self.exception)
+            except:
+                if self.exception is None:
+                    code = 0
+                else:
+                    logger.exception('Unable to determine exit code')
+
+        if code is not None:
+            logger.debug('Application exiting with status %d', code)
+        else:
+            self.__log_exception()
+
+    def __handle_error(self):
+        self.__log_exception()
+        if isinstance(self.exception, UserVisibleError):
+            self.__handle_user_visible_error()
+        else:
+            self.__handle_unexpected_error()
+
+    def __handle_user_visible_error(self):
+        self.__display_error_message(str(self.exception))
+
+    def __display_error_message(self, message):
+        log_file_path = self.__get_root_log_file_path()
+        error_message = ''
+        if log_file_path:
+            error_message += '  More detailed information can be found in '
+            error_message += log_file_path
+        print >> sys.stderr, message + error_message
+
+    def __handle_unexpected_error(self):
+        self.__display_error_message('An unexpected error occurred.')
+
+    def __get_root_log_file_path(self):
+        for handler in logging.root.handlers:
+            if isinstance(handler, logging.FileHandler):
+                return handler.baseFilename
+        return None
+
+    def __log_exception(self):
+        formatted_stack_trace = ''.join(
+            traceback.format_exception(
+                self.exc_type,
+                self.exception,
+                self.trace
+            ) + [ExceptionWithCause.get_cause_if_supported(self.exception)]
+        )
+
+        logger.error(
+            'Handling uncaught exception: {t}, "{ex}"\n{tb}'.format(
+                t=self.exc_type,
+                ex=str(self.exception),
+                tb=formatted_stack_trace
+            )
+        )
+
+
+class NullHandler(logging.Handler):
+
+    def handle(self, record):
+        pass
+
+    def emit(self, record):
+        pass
+
+    def createLock(self):
+        self.lock = None

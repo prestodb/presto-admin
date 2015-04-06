@@ -5,6 +5,8 @@ prestoadmin.egg-info/
 .coverage
 htmlcov/
 resources/
+log/
+tmp/
 
 # Ignore generated Sphinx docs
 docs/prestoadmin.*

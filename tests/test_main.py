@@ -29,7 +29,8 @@ import unittest
 import utils
 
 from prestoadmin import main
-from prestoadmin.configuration import ConfigFileNotFoundError, ConfigurationError
+from prestoadmin.configuration import ConfigFileNotFoundError
+from prestoadmin.configuration import ConfigurationError
 from mock import patch
 
 
@@ -75,7 +76,7 @@ class TestMain(utils.BaseTestCase):
         # Note: this will have to be updated whenever we have a new version.
         self.run_command_compare_to_string(["--version"], 0,
                                            "presto-admin %s\n" %
-                                           prestoadmin.___version___)
+                                           prestoadmin.__version__)
 
     def test_argument_parsing_with_invalid_command(self):
         try:

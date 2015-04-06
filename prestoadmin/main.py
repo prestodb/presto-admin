@@ -47,7 +47,8 @@ import getpass
 import inspect
 from operator import isMappingType
 from optparse import OptionParser, Values, SUPPRESS_HELP
-from prestoadmin import ___version___
+from prestoadmin import __version__
+from prestoadmin.util.application import entry_point
 import os
 import sys
 import types
@@ -271,7 +272,7 @@ def parser_for_options():
 
     parser = OptionParser(
         usage="presto-admin [options] <command> [arg]",
-        version="presto-admin %s" % ___version___)
+        version="presto-admin %s" % __version__)
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -667,6 +668,8 @@ def load_topology():
     state.env.hosts = state.env.roledefs['all'][:]
 
 
+@entry_point('Presto Admin', version=__version__,
+             log_file_path="presto-admin.log")
 def main(args=sys.argv[1:]):
     """
     Main command-line execution loop.
@@ -698,3 +701,6 @@ def main(args=sys.argv[1:]):
     finally:
         disconnect_all()
     sys.exit(0)
+
+if __name__ == "__main__":
+    main()

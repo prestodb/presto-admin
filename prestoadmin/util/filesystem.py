@@ -1,4 +1,4 @@
-#!/bin/sh
+# -*- coding: utf-8 -*-
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,11 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-DEFAULT_ARGS="--disable-known-hosts --connection-attempts=3"
+""" Filesystem tools."""
 
-# if we had installed fabric normally you could just call "fab" here
-# since we're keeping it in the egg, this just calls the main function
-# manually
-exec python -c 'from prestoadmin.main import main; main();' $DEFAULT_ARGS "$@"
+import errno
+import logging
+import os
+
+
+logger = logging.getLogger(__name__)
+
+
+def ensure_parent_directories_exist(path):
+    try:
+        os.makedirs(os.path.dirname(path))
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e

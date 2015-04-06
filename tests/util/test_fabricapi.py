@@ -19,7 +19,7 @@ Tests the utility
 from mock import patch
 
 from prestoadmin.util.fabricapi import execute_fail_on_error
-import utils
+import tests.utils as utils
 
 
 class TestFabricapi(utils.BaseTestCase):

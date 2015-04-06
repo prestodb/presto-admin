@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,24 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-"""Presto-Admin tool for deploying and managing Presto clusters"""
+"""
+This modules contains read-only constants used throughout
+the presto admin project.
+"""
 
-__version__ = '0.1.0'  # Make sure to update setup.py too
-
-from fabric.api import env
 import os
 
-__all__ = ['topology', 'install']
+import prestoadmin
 
-env.roledefs = {
-    'coordinator': [],
-    'worker': [],
-    'all': []
-}
+PRESTOADMIN_LOG = os.path.join(prestoadmin.main_dir, 'log')
 
-main_dir = os.path.abspath(os.path.dirname(__file__) + "/..")
-
-import topology
-import install
+# Logging Config File Locations
+LOGGING_CONFIG_FILE_NAME = 'presto-admin-logging.ini'
+LOGGING_CONFIG_FILE_DIRECTORIES = [
+    os.path.join(prestoadmin.main_dir, 'resources')
+]
