@@ -26,5 +26,5 @@ PRESTOADMIN_LOG = os.path.join(prestoadmin.main_dir, 'log')
 # Logging Config File Locations
 LOGGING_CONFIG_FILE_NAME = 'presto-admin-logging.ini'
 LOGGING_CONFIG_FILE_DIRECTORIES = [
-    os.path.join(prestoadmin.main_dir, 'resources')
+    os.path.join(prestoadmin.main_dir, 'prestoadmin')
 ]
