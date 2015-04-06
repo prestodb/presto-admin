@@ -16,7 +16,7 @@
 #
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 
@@ -43,9 +43,7 @@ setup(
     author="Teradata Coporation",
     author_email='christina.wallin@teradata.com',
     url='https://github.com/teradatalabs/presto-admin',
-    packages=[
-        'prestoadmin',
-    ],
+    packages=find_packages(exclude=['*tests*']),
     package_dir={'prestoadmin':
                  'prestoadmin'},
     include_package_data=True,
