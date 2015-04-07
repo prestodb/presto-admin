@@ -4,4 +4,7 @@ Available commands:
 
     configure coordinator
     install server
+    service restart
+    service start
+    service stop
     topology show

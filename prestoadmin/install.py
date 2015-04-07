@@ -16,6 +16,7 @@
 import os
 
 from fabric.api import roles, task, sudo, put, env
+from fabric.decorators import runs_once
 
 from prestoadmin import topology
 from prestoadmin.util.fabricapi import execute_fail_on_error
@@ -29,6 +30,7 @@ PRESTO_RPM_PATH = PRESTO_ADMIN_PACKAGES_PATH + "/" + PRESTO_RPM
 
 
 @task
+@runs_once
 def server(local_path=None):
     """
     This task copies the presto-server rpm to all nodes in the cluster
@@ -45,7 +47,7 @@ def server(local_path=None):
 
 
 def set_hosts():
-        if 'failed_topology_error' in env and env.failed_topology_error \
+        if 'topology_config_not_found' in env and env.topology_config_not_found \
                 is not None:
             topology.set_conf_interactive()
             topology.set_roledefs_from_conf()

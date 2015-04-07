@@ -54,7 +54,7 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.main.topology.get_workers')
     def test_interactive_install(self,  workers_mock, coord_mock,
                                  mock_set_interactive):
-        env.failed_topology_error = ConfigurationError()
+        env.topology_config_not_found = ConfigurationError()
         coord_mock.return_value = 'a'
         workers_mock.return_value = ['b']
         install.set_hosts()

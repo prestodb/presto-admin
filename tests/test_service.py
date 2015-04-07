@@ -12,26 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-"""Presto-Admin tool for deploying and managing Presto clusters"""
+"""
+Tests the presto server service control
+"""
+from mock import patch
 
-__version__ = '0.1.0'  # Make sure to update setup.py too
+from prestoadmin import service
+from prestoadmin.service import INIT_SCRIPTS
+import utils
 
-from fabric.api import env
-import os
 
-__all__ = ['topology', 'configure', 'install', 'service']
-
-env.roledefs = {
-    'coordinator': [],
-    'worker': [],
-    'all': []
-}
-
-main_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-
-import topology
-import install
-import configure
-import service
+class TestServer(utils.BaseTestCase):
+    @patch('prestoadmin.service.sudo')
+    def test_control_command_is_called(self, mock_sudo):
+        service.start()
+        mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
