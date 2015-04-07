@@ -39,8 +39,7 @@ DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                                      "-XX:ReservedCodeCacheSize=150M"],
                       "config.properties": {"coordinator": "false",
                                             "http-server.http.port": "8080",
-                                            "task.max-memory": "1GB",
-                                            "query.queue-config-file": ""},
+                                            "task.max-memory": "1GB"}
                       }
 
 

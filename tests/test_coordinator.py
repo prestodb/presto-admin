@@ -45,8 +45,7 @@ class TestCoordinator(utils.BaseTestCase):
                                           "discovery-server.enabled": "true",
                                           "discovery.uri": "http://a:8080",
                                           "http-server.http.port": "8080",
-                                          "task.max-memory": "1GB",
-                                          "query.queue-config-file": ""},
+                                          "task.max-memory": "1GB"}
                     }
 
         self.assertEqual(actual_default, expected)
@@ -73,8 +72,7 @@ class TestCoordinator(utils.BaseTestCase):
                                           "http-server.http.port": "8080",
                                           "node-scheduler."
                                           "include-coordinator": "true",
-                                          "task.max-memory": "1GB",
-                                          "query.queue-config-file": ""},
+                                          "task.max-memory": "1GB"}
                     }
 
         self.assertEqual(actual_default, expected)
@@ -146,8 +144,7 @@ class TestCoordinator(utils.BaseTestCase):
                                           "discovery-server.enabled": "true",
                                           "discovery.uri": "http://j:8080",
                                           "http-server.http.port": "8080",
-                                          "task.max-memory": "1GB",
-                                          "query.queue-config-file": ""},
+                                          "task.max-memory": "1GB"}
                     }
         self.assertEqual(coordinator.get_conf(), expected)
 

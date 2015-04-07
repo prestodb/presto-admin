@@ -40,8 +40,7 @@ DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                       "config.properties": {"coordinator": "true",
                                             "discovery-server.enabled": "true",
                                             "http-server.http.port": "8080",
-                                            "task.max-memory": "1GB",
-                                            "query.queue-config-file": ""},
+                                            "task.max-memory": "1GB"}
                       }
 
 

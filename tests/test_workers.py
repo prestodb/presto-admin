@@ -44,8 +44,7 @@ class TestWorkers(utils.BaseTestCase):
                     "config.properties": {"coordinator": "false",
                                           "discovery.uri": "http://a:8080",
                                           "http-server.http.port": "8080",
-                                          "task.max-memory": "1GB",
-                                          "query.queue-config-file": ""},
+                                          "task.max-memory": "1GB"}
                     }
 
         self.assertEqual(actual_default, expected)
@@ -81,18 +80,18 @@ class TestWorkers(utils.BaseTestCase):
     @patch('prestoadmin.configuration.get_conf_from_file',
            side_effect=configuration.ConfigFileNotFoundError)
     def test_conf_not_exists_is_default(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = "j"
+        env.roledefs['coordinator'] = ["j"]
         self.assertEqual(workers.get_conf(), workers.build_defaults())
 
     @patch('prestoadmin.workers._get_conf_from_file')
     def test_get_conf_empty_is_default(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = "j"
+        env.roledefs['coordinator'] = ["j"]
         get_conf_from_file_mock.return_value = {}
         self.assertEqual(workers.get_conf(), workers.build_defaults())
 
     @patch('prestoadmin.workers._get_conf_from_file')
     def test_get_conf(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = "j"
+        env.roledefs['coordinator'] = ["j"]
         file_conf = {"node.properties": {"my-property": "value",
                                          "node.environment": "test"}}
         get_conf_from_file_mock.return_value = file_conf
@@ -112,14 +111,13 @@ class TestWorkers(utils.BaseTestCase):
                     "config.properties": {"coordinator": "false",
                                           "discovery.uri": "http://j:8080",
                                           "http-server.http.port": "8080",
-                                          "task.max-memory": "1GB",
-                                          "query.queue-config-file": ""},
+                                          "task.max-memory": "1GB"}
                     }
         self.assertEqual(workers.get_conf(), expected)
 
     @patch('prestoadmin.workers._get_conf_from_file')
     def test_get_conf_invalid(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = "j"
+        env.roledefs['coordinator'] = ["j"]
         file_conf = {"node.properties": "my string"}
         get_conf_from_file_mock.return_value = file_conf
         self.assertRaisesRegexp(configuration.ConfigurationError,
