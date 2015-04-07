@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Logic at the application level for logging and exception handling"""
+
 from prestoadmin import __version__
 from prestoadmin.util import constants
 from prestoadmin.util import filesystem
@@ -37,41 +38,11 @@ import traceback
 logger = logging.getLogger('__main__')
 
 
-def entry_point(name, version=None, log_file_path=None):
-    """
-    A decorator for application entry points.  The decorated function will
-    be wrapped in an Application object and executed in that safe environment.
-    Note that decorating a function with this decorator will not actually
-    cause it to be invoked.  You must explicitly call the function in the
-    script.
-
-    :param name: human readable name for the application
-    :param version: the version of the application, as a string
-    :param log_file_path: optional name of the log file including whatever
-        extension you may want to use.  For example, 'foo.log' would create
-        a file called 'foo.log' in the default presto-admin logging directory
-        tree.
-    """
-    def application_decorator(method):
-        @functools.wraps(method)
-        def wrapped_application(*args, **kwargs):
-            with Application(
-                name,
-                version=version,
-                log_file_path=log_file_path
-            ):
-                method(*args, **kwargs)
-
-        return wrapped_application
-
-    return application_decorator
-
-
 class Application(object):
     """
-    A Presto-Admin application entry point.  Provides logging and exception
-    handling features.  This class is expected to be used as a base class
-    for various applications.
+    A generic application entry point.  Provides logging and exception handling
+    features.  This class is expected to be used as a base class for various
+    applications.
 
     :param name: human readable name for the application
     :param version: the version of the application, as a string
@@ -167,10 +138,13 @@ class Application(object):
             elif exc_type == SystemExit:
                 self.__handle_system_exit()
             else:
-                self.__handle_error()
+                self._handle_error()
                 sys.exit(1)
         finally:
-            logging.shutdown()
+            self._exit_cleanup_hook()
+
+    def _exit_cleanup_hook(self):
+        logging.shutdown()
 
     def __handle_no_exception(self):
         logger.debug('Exiting normally')
@@ -183,29 +157,38 @@ class Application(object):
         try:
             # according to the docs a None value for this is equivalent
             # to a 0 value.
-            code = self.exception.code or 0
-        except:
+            if self.exception is None or self.exception.code is None:
+                code = 0
+            else:
+                code = int(self.exception.code)
+        except ValueError:
+            code = 1
+        except AttributeError:
+            # In Python 2.6, the exceptions are passed as strings sometimes.
+            # Thus exception.code gets an AttributeError.
             try:
                 code = int(self.exception)
-            except:
-                if self.exception is None:
-                    code = 0
-                else:
-                    logger.exception('Unable to determine exit code')
+            except ValueError:
+                code = 1
+        except:
+            logger.exception("Unknown exception: %s" % str(self.exception))
 
         if code is not None:
+            if code is not 0:
+                self._log_exception()
             logger.debug('Application exiting with status %d', code)
         else:
-            self.__log_exception()
+            self._log_exception()
+        sys.exit(code)
 
-    def __handle_error(self):
-        self.__log_exception()
+    def _handle_error(self):
+        self._log_exception()
         if isinstance(self.exception, UserVisibleError):
-            self.__handle_user_visible_error()
+            self._handle_user_visible_error()
         else:
-            self.__handle_unexpected_error()
+            self._handle_unexpected_error()
 
-    def __handle_user_visible_error(self):
+    def _handle_user_visible_error(self):
         self.__display_error_message(str(self.exception))
 
     def __display_error_message(self, message):
@@ -216,7 +199,7 @@ class Application(object):
             error_message += log_file_path
         print >> sys.stderr, message + error_message
 
-    def __handle_unexpected_error(self):
+    def _handle_unexpected_error(self):
         self.__display_error_message('An unexpected error occurred.')
 
     def __get_root_log_file_path(self):
@@ -225,7 +208,7 @@ class Application(object):
                 return handler.baseFilename
         return None
 
-    def __log_exception(self):
+    def _log_exception(self):
         formatted_stack_trace = ''.join(
             traceback.format_exception(
                 self.exc_type,
@@ -253,3 +236,36 @@ class NullHandler(logging.Handler):
 
     def createLock(self):
         self.lock = None
+
+
+def entry_point(name, version=None, log_file_path=None,
+                application_class=Application):
+    """
+    A decorator for application entry points.  The decorated function will
+    be wrapped in an Application object and executed in that safe environment.
+    Note that decorating a function with this decorator will not actually
+    cause it to be invoked.  You must explicitly call the function in the
+    script.
+
+    :param name: human readable name for the application
+    :param version: the version of the application, as a string
+    :param log_file_path: optional name of the log file including whatever
+        extension you may want to use.  For example, 'foo.log' would create
+        a file called 'foo.log' in the default prestoadmin logging directory
+        tree.
+    :param application_class: Type of application to run. The default is
+        Application but there can be subclasses of that class.
+    """
+    def application_decorator(method):
+        @functools.wraps(method)
+        def wrapped_application(*args, **kwargs):
+            with application_class(
+                    name,
+                    version=version,
+                    log_file_path=log_file_path
+            ):
+                method(*args, **kwargs)
+
+        return wrapped_application
+
+    return application_decorator

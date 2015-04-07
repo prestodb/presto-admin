@@ -17,7 +17,8 @@ from prestoadmin.util.application import Application
 from prestoadmin.util.application import NullHandler
 from prestoadmin.util.exception import UserVisibleError
 
-from unittest import TestCase
+from tests.utils import BaseTestCase
+
 from mock import patch
 from mock import call
 
@@ -31,7 +32,7 @@ APPLICATION_NAME = 'foo'
 
 @patch('prestoadmin.util.application.filesystem')
 @patch('prestoadmin.util.application.logging.config')
-class ApplicationTest(TestCase):
+class ApplicationTest(BaseTestCase):
 
     def setUp(self):
         # basicConfig is a noop if there are already handlers
@@ -240,10 +241,10 @@ class ApplicationTest(TestCase):
             ]
         )
 
-    @patch('prestoadmin.util.application.sys.stderr')
+    @patch('prestoadmin.util.application.logger')
     def test_handles_system_abnormal_exits(
         self,
-        stderr_mock,
+        logger_mock,
         logging_mock,
         filesystem_mock
     ):
@@ -252,11 +253,16 @@ class ApplicationTest(TestCase):
                 sys.exit(2)
 
         self.assertRaises(SystemExit, should_exit)
+        logger_mock.debug.assert_has_calls(
+            [
+                call('Application exiting with status %d', 2),
+            ]
+        )
 
-    @patch('prestoadmin.util.application.sys.stderr')
+    @patch('prestoadmin.util.application.logger')
     def test_handles_system_normal_exits(
         self,
-        stderr_mock,
+        logger_mock,
         logging_mock,
         filesystem_mock
     ):
@@ -265,6 +271,47 @@ class ApplicationTest(TestCase):
                 sys.exit()
 
         self.assertRaises(SystemExit, should_exit)
+        logger_mock.debug.assert_has_calls(
+            [
+                call('Application exiting with status %d', 0),
+            ]
+        )
+
+    @patch('prestoadmin.util.application.logger')
+    def test_handles_system_exit_none(
+        self,
+        logger_mock,
+        logging_mock,
+        filesystem_mock
+    ):
+        def should_exit_zero_with_none():
+            with Application(APPLICATION_NAME):
+                sys.exit(None)
+
+        self.assertRaises(SystemExit, should_exit_zero_with_none)
+        logger_mock.debug.assert_has_calls(
+            [
+                call('Application exiting with status %d', 0),
+            ]
+        )
+
+    @patch('prestoadmin.util.application.logger')
+    def test_handles_system_exit_string(
+            self,
+            logger_mock,
+            logging_mock,
+            filesystem_mock
+    ):
+        def should_exit_one_with_str():
+            with Application(APPLICATION_NAME):
+                sys.exit("exit")
+
+        self.assertRaises(SystemExit, should_exit_one_with_str)
+        logger_mock.debug.assert_has_calls(
+            [
+                call('Application exiting with status %d', 1),
+                ]
+        )
 
 
 class FakeError(Exception):

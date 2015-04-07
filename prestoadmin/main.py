@@ -45,10 +45,12 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 import copy
 import getpass
 import inspect
+import logging
 from operator import isMappingType
 from optparse import OptionParser, Values, SUPPRESS_HELP
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
+from prestoadmin.util.fabric_application import FabricApplication
 import os
 import sys
 import types
@@ -59,7 +61,6 @@ from configuration import ConfigFileNotFoundError
 from fabric import api, state
 from fabric.contrib import console, files, project
 
-from fabric.network import disconnect_all
 from fabric.state import env_options
 from fabric.tasks import Task, execute, get_task_details
 from fabric.task_utils import _Dict, crawl
@@ -75,13 +76,14 @@ _internals = reduce(lambda x, y: x + filter(
     _modules,
     []
 )
+_LOGGER = logging.getLogger(__name__)
 
 
 def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
     commands_to_remove = ['fabfile', 'rcfile']
     new_env_options = \
-        [x for x in new_env_options if x not in commands_to_remove]
+        [x for x in new_env_options if x.dest not in commands_to_remove]
 
     # Hide most of the options from the help text so it's simpler. Need to
     # document the other options, however.
@@ -568,6 +570,7 @@ def _update_env(options, non_default_options):
         if key in state.env and isinstance(state.env[key], basestring):
             state.env[key] = state.env[key].split(',')
 
+    state.output['running'] = False
     update_output_levels(show=options.show, hide=options.hide)
 
 
@@ -669,38 +672,20 @@ def load_topology():
 
 
 @entry_point('Presto Admin', version=__version__,
-             log_file_path="presto-admin.log")
+             log_file_path="presto-admin.log",
+             application_class=FabricApplication)
 def main(args=sys.argv[1:]):
     """
     Main command-line execution loop.
     """
-    try:
-        commands_to_run = parse_and_validate_commands(args)
+    commands_to_run = parse_and_validate_commands(args)
 
-        if state.output.debug:
-            names = ", ".join(x[0] for x in commands_to_run)
-            print("Commands to run: %s" % names)
+    names = ", ".join(x[0] for x in commands_to_run)
+    _LOGGER.debug("Commands to run: %s" % names)
 
-        # At this point all commands must exist, so execute them in order.
-        run_tasks(commands_to_run)
+    # At this point all commands must exist, so execute them in order.
+    run_tasks(commands_to_run)
 
-        # If we got here, no errors occurred, so print a final note.
-        if state.output.status:
-            print("\nDone.")
-    except SystemExit:
-        # a number of internal functions might raise this one.
-        raise
-    except KeyboardInterrupt:
-        if state.output.status:
-            sys.stderr.write("\nStopped.\n")
-        sys.exit(1)
-    except:
-        sys.excepthook(*sys.exc_info())
-        # we might leave stale threads if we don't explicitly exit()
-        sys.exit(1)
-    finally:
-        disconnect_all()
-    sys.exit(0)
 
 if __name__ == "__main__":
     main()

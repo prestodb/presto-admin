@@ -36,7 +36,7 @@ from mock import patch
 
 class TestMain(utils.BaseTestCase):
 
-    def run_command_compare_to_file(self, command, exit_status, filename):
+    def _run_command_compare_to_file(self, command, exit_status, filename):
         """
             Compares stdout from the CLI to the given file
         """
@@ -44,9 +44,11 @@ class TestMain(utils.BaseTestCase):
         input_file = open(current_dir + filename, 'r')
         text = "".join(input_file.readlines())
         input_file.close()
-        self.run_command_compare_to_string(command, exit_status, text)
+        self._run_command_compare_to_string(command, exit_status,
+                                            stdout_text=text)
 
-    def run_command_compare_to_string(self, command, exit_status, text):
+    def _run_command_compare_to_string(self, command, exit_status,
+                                       stdout_text=None, stderr_text=None):
         """
             Compares stdout from the CLI to the given string
         """
@@ -55,47 +57,47 @@ class TestMain(utils.BaseTestCase):
         except SystemExit as e:
             self.assertEqual(e.code, exit_status)
 
-        self.assertEqual(text, self.test_stdout.getvalue())
+        if stdout_text is not None:
+            self.assertEqual(stdout_text, self.test_stdout.getvalue())
+
+        if stderr_text is not None:
+            self.assertEqual(stderr_text, self.test_stderr.getvalue())
 
     def test_help_text_short(self):
         # See if the help text matches what we expect it to be (in
         # tests/help.txt)
-        self.run_command_compare_to_file(["-h"], 0, "/files/help.txt")
+        self._run_command_compare_to_file(["-h"], 0, "/files/help.txt")
 
     def test_help_text_long(self):
-        self.run_command_compare_to_file(["--help"], 0, "/files/help.txt")
+        self._run_command_compare_to_file(["--help"], 0, "/files/help.txt")
 
     def test_help_displayed_with_no_args(self):
-        self.run_command_compare_to_file([], 0, "/files/help.txt")
+        self._run_command_compare_to_file([], 0, "/files/help.txt")
 
     def test_list_commands(self):
         # Note: this will have to be updated whenever we add a new command
-        self.run_command_compare_to_file(["-l"], 0, "/files/list.txt")
+        self._run_command_compare_to_file(["-l"], 0, "/files/list.txt")
 
     def test_version(self):
         # Note: this will have to be updated whenever we have a new version.
-        self.run_command_compare_to_string(["--version"], 0,
-                                           "presto-admin %s\n" %
-                                           prestoadmin.__version__)
+        self._run_command_compare_to_string(["--version"], 0,
+                                            stdout_text="presto-admin %s\n" %
+                                            prestoadmin.__version__)
 
     def test_argument_parsing_with_invalid_command(self):
-        try:
-            main.parse_and_validate_commands(["hello", "world"])
-        except SystemExit as e:
-            self.assertEqual(e.code, 2)
-
-        self.assertEqual(self.test_stderr.getvalue(), "\nWarning: Command not "
-                         "found:\n    hello world\n\n")
+        self._run_command_compare_to_string(
+            ["hello", "world"],
+            2,
+            stderr_text="\nWarning: Command not found:\n    hello world\n\n"
+        )
         self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
     def test_argument_parsing_with_short_command(self):
-        try:
-            main.parse_and_validate_commands(["topology"])
-        except SystemExit as e:
-            self.assertEqual(e.code, 2)
-
-        self.assertEqual(self.test_stderr.getvalue(), "\nWarning: Command not "
-                         "found:\n    topology\n\n")
+        self._run_command_compare_to_string(
+            ["topology"],
+            2,
+            stderr_text="\nWarning: Command not found:\n    topology\n\n"
+        )
         self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
     def test_argument_parsing_with_valid_command(self):
@@ -108,13 +110,12 @@ class TestMain(utils.BaseTestCase):
         self.assertEqual(commands[0][1], ["f"])
 
     def test_arbitrary_remote_shell_disabled(self):
-        try:
-            main.parse_and_validate_commands(["--", "echo", "hello"])
-        except SystemExit as e:
-            self.assertEqual(e.code, 2)
-
-        self.assertEqual(self.test_stderr.getvalue(), "\nWarning: Arbitrary "
-                         "remote shell commands not supported.\n\n")
+        self._run_command_compare_to_string(
+            ["--", "echo", "hello"],
+            2,
+            stderr_text="\nWarning: Arbitrary remote shell commands not "
+                        "supported.\n\n"
+        )
         self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
     @patch('prestoadmin.main.topology')
@@ -170,7 +171,7 @@ class TestMain(utils.BaseTestCase):
         self.assertEqual(main.api.env.hosts, ['hello', 'a'])
 
     def test_describe(self):
-        self.run_command_compare_to_string(
+        self._run_command_compare_to_string(
             ['-d', 'topology', 'show'],
             0,
             "Displaying detailed information for task 'topology show':\n\n   "
@@ -180,7 +181,7 @@ class TestMain(utils.BaseTestCase):
         )
 
     def test_describe_with_args(self):
-        self.run_command_compare_to_string(
+        self._run_command_compare_to_string(
             ['-d', 'topology', 'show', 'arg'],
             0,
             "Displaying detailed information for task 'topology show':\n\n   "
@@ -190,8 +191,8 @@ class TestMain(utils.BaseTestCase):
         )
 
     def test_shortlist(self):
-        self.run_command_compare_to_file(["--shortlist"], 0,
-                                         "/files/shortlist.txt")
+        self._run_command_compare_to_file(["--shortlist"], 0,
+                                          "/files/shortlist.txt")
 
     @patch('prestoadmin.main.getpass.getpass')
     def test_initial_password(self, pass_mock):
@@ -226,6 +227,16 @@ class TestMain(utils.BaseTestCase):
                          main.state.env.roledefs)
         self.assertEqual('22', main.state.env.port)
         self.assertEqual('root', main.state.env.user)
+
+    def test_fabfile_option_not_present(self):
+        self._run_command_compare_to_string(["--fabfile"], 2)
+        self.assertTrue("no such option: --fabfile" in
+                        self.test_stderr.getvalue())
+
+    def test_rcfile_option_not_present(self):
+        self._run_command_compare_to_string(["--config"], 2)
+        self.assertTrue("no such option: --config" in
+                        self.test_stderr.getvalue())
 
 
 if __name__ == '__main__':
