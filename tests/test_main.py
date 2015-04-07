@@ -84,7 +84,8 @@ class TestMain(utils.BaseTestCase):
                                             stdout_text="presto-admin %s\n" %
                                             prestoadmin.__version__)
 
-    def test_argument_parsing_with_invalid_command(self):
+    @patch('prestoadmin.main._LOGGER')
+    def test_argument_parsing_with_invalid_command(self, logger_mock):
         self._run_command_compare_to_string(
             ["hello", "world"],
             2,
@@ -92,7 +93,8 @@ class TestMain(utils.BaseTestCase):
         )
         self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
-    def test_argument_parsing_with_short_command(self):
+    @patch('prestoadmin.main._LOGGER')
+    def test_argument_parsing_with_short_command(self, logger_mock):
         self._run_command_compare_to_string(
             ["topology"],
             2,

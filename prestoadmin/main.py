@@ -47,15 +47,17 @@ import getpass
 import inspect
 import logging
 from operator import isMappingType
-from optparse import OptionParser, Values, SUPPRESS_HELP
-from prestoadmin import __version__
-from prestoadmin.util.application import entry_point
-from prestoadmin.util.fabric_application import FabricApplication
+from optparse import Values, SUPPRESS_HELP
 import os
 import sys
 import types
-import topology
+
 from configuration import ConfigFileNotFoundError
+from prestoadmin import __version__
+from prestoadmin.util.application import entry_point
+from prestoadmin.util.fabric_application import FabricApplication
+from prestoadmin.util.parser import LoggingOptionParser
+import topology
 
 # For checking callables against the API, & easy mocking
 from fabric import api, state
@@ -262,7 +264,7 @@ def is_task_object(a):
 
 def parser_for_options():
     """
-    Handle command-line options with optparse.OptionParser.
+    Handle command-line options with LoggingOptionParser.
 
     Return parser, largely for use in `parse_arguments`.
 
@@ -272,7 +274,7 @@ def parser_for_options():
     # Initialize
     #
 
-    parser = OptionParser(
+    parser = LoggingOptionParser(
         usage="presto-admin [options] <command> [arg]",
         version="presto-admin %s" % __version__)
 
@@ -293,11 +295,11 @@ def parser_for_options():
     )
 
     # Control behavior of --list
-    LIST_FORMAT_OPTIONS = ('short', 'normal')
+    list_format_options = ('short', 'normal')
     parser.add_option(
         '-F',
         '--list-format',
-        choices=LIST_FORMAT_OPTIONS,
+        choices=list_format_options,
         default='normal',
         metavar='FORMAT',
         help=SUPPRESS_HELP
@@ -394,7 +396,6 @@ def _normal_list(docstrings=True):
     trail = '...'
     max_width = _pty_size()[1] - 1 - len(trail)
     for name in task_names:
-        output = None
         docstring = _print_docstring(docstrings, name)
         if docstring:
             lines = filter(None, docstring.splitlines())
@@ -626,6 +627,7 @@ def parse_and_validate_commands(args=sys.argv[1:]):
         commands_to_run = parse_arguments(arguments, state.commands)
     except NameError as e:
         warn(e.message)
+        _LOGGER.exception(e)
         show_commands(None, options.list_format, 2)
 
     # Handle show (command-specific help) option
