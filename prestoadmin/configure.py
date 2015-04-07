@@ -17,7 +17,7 @@ import os
 
 from fabric.contrib import files
 from fabric.operations import put, sudo
-from fabric.api import env, task, roles
+from fabric.api import env, task
 
 import configuration as config
 import coordinator as coord
@@ -44,22 +44,22 @@ def all():
 
 
 @task
-@roles('coordinator')
 def coordinator():
     """
     Deploy the coordinator configuration to the coordinator node
     """
-    configure(coord.get_conf(), coord.TMP_OUTPUT_DIR)
+    if env.host in util.get_coordinator_role():
+        configure(coord.get_conf(), coord.TMP_OUTPUT_DIR)
 
 
 @task
-@roles('worker')
 def workers():
     """
     Deploy workers configuration to the worker nodes.
     This will not deploy configuration for a coordinator that is also a worker
     """
-    if env.host not in util.get_coordinator_role():
+    if env.host in util.get_worker_role() and env.host \
+            not in util.get_coordinator_role():
         configure(w.get_conf(), w.TMP_OUTPUT_DIR)
 
 

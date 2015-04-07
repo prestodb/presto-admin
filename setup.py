@@ -34,7 +34,8 @@ requirements = [
 
 test_requirements = [
     'tox',
-    'mock'
+    'mock',
+    'wheel'
 ]
 
 setup(

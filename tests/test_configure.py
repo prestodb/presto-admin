@@ -17,6 +17,7 @@ Tests setting the presto configure
 """
 from mock import patch
 
+from fabric.api import env
 from prestoadmin import configure
 import utils
 
@@ -50,10 +51,9 @@ class TestConfigure(utils.BaseTestCase):
 
     @patch('prestoadmin.configure.configure')
     @patch('prestoadmin.configure.util.get_coordinator_role')
-    @patch('prestoadmin.configure.env')
-    def test_worker_not_coordinator(self, env_mock, coord_mock,
-                                    configure_mock):
-        env_mock.host = "my.host1"
+    def test_worker_not_coordinator(self, coord_mock, configure_mock):
+        env.host = "my.host1"
+        env.roledefs = {'worker': ['my.host1']}
         coord_mock.return_value = ["my.host2"]
         configure.workers()
         assert configure_mock.called
@@ -61,6 +61,8 @@ class TestConfigure(utils.BaseTestCase):
     @patch('prestoadmin.configure.configure')
     @patch('prestoadmin.configure.coord.get_conf')
     def test_coordinator(self, coord_mock, configure_mock):
+        env.host = "my.host1"
+        env.roledefs = {'coordinator': ['my.host1']}
         coord_mock.return_value = {}
         configure.coordinator()
         assert configure_mock.called

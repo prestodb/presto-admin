@@ -536,9 +536,9 @@ def run_tasks(task_list, suppress_errors=False):
         try:
             execute(
                 name,
-                hosts=arg_hosts,
+                hosts=state.env.hosts,
                 roles=arg_roles,
-                exclude_hosts=arg_excl_hosts,
+                exclude_hosts=state.env.exclude_hosts,
                 *args, **kwargs
             )
         except:
