@@ -15,8 +15,9 @@
 
 import os
 
-from fabric.api import roles, task, sudo, put, env
+from fabric.api import task, sudo, put, env
 from fabric.decorators import runs_once
+from prestoadmin import configure
 
 from prestoadmin import topology
 from prestoadmin.util.fabricapi import execute_fail_on_error
@@ -69,15 +70,4 @@ def rpm_install():
 
 
 def update_configs():
-    update_coordinator_config()
-    update_worker_config()
-
-
-@roles('coordinator')
-def update_coordinator_config():
-    pass
-
-
-@roles('worker')
-def update_worker_config():
-    pass
+    configure.all()
