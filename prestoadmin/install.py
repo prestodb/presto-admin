@@ -42,9 +42,9 @@ def server(local_path=None):
     if local_path is None:
         local_path = os.path.join(LOCAL_ARCHIVE_PATH, PRESTO_RPM)
 
-    set_hosts()
+    host_list = set_hosts()
     execute_fail_on_error(deploy_install_configure, local_path,
-                          hosts=env.hosts)
+                          hosts=host_list)
 
 
 def set_hosts():
@@ -52,6 +52,7 @@ def set_hosts():
                 is not None:
             topology.set_conf_interactive()
             topology.set_roledefs_from_conf()
+        return [host for host in env.hosts if host not in env.exclude_hosts]
 
 
 def deploy_install_configure(local_path):

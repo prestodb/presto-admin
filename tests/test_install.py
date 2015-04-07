@@ -59,3 +59,8 @@ class TestInstall(utils.BaseTestCase):
         workers_mock.return_value = ['b']
         install.set_hosts()
         self.assertEqual(install.env.hosts, ['b', 'a'])
+
+    def test_set_host_with_exclude(self):
+        env.hosts = ['a', 'b', 'bad']
+        env.exclude_hosts = ['bad']
+        self.assertEqual(install.set_hosts(), ['a', 'b'])
