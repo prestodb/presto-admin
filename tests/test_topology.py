@@ -124,11 +124,20 @@ class TestTopologyConfig(utils.BaseTestCase):
         self.assertEqual(topology.validate_workers_for_prompt(workers_input),
                          workers_list)
 
+    def remove_runs_once_flag(self, callable_obj):
+        # since we annotated show with @runs_once, we need to delete the
+        # attribute the Fabric decorator gives it to indicate that it has
+        # already run once in this session
+        if hasattr(callable_obj, 'return_value'):
+            delattr(callable_obj.wrapped, 'return_value')
+
     def test_show(self):
         env.roledefs = {'coordinator': ['hello'], 'worker': ['a', 'b'],
                         'all': ['a', 'b', 'hello']}
         env.user = 'user'
         env.port = '22'
+
+        self.remove_runs_once_flag(topology.show)
         topology.show()
         self.assertEqual("", self.test_stderr.getvalue())
         self.assertEqual("{'coordinator': 'hello',\n 'port': '22',\n "

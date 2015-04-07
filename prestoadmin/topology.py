@@ -22,7 +22,7 @@ import re
 import socket
 
 import fabric
-from fabric.api import task, env
+from fabric.api import task, env, runs_once
 
 import configuration as config
 import prestoadmin
@@ -44,6 +44,7 @@ def write(conf):
 
 
 @task
+@runs_once
 def show():
     """
     Shows the current topology configuration for the cluster (including the
