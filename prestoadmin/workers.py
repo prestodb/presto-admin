@@ -13,18 +13,18 @@
 # limitations under the License.
 
 """
-Module for the presto coordinator's configuration.
-Loads and validates the coordinator.json file and creates the files needed
+Module for the presto worker`'s configuration.
+Loads and validates the workers.json file and creates the files needed
 to deploy on the presto cluster
 """
 
 import configuration
 import copy
-from fabric.api import env
 import prestoadmin
+import prestoadmin.util.fabricapi as util
 
-CONFIG_PATH = prestoadmin.main_dir + "/resources/coordinator.json"
-TMP_OUTPUT_DIR = configuration.TMP_CONF_DIR + "/coordinator"
+CONFIG_PATH = prestoadmin.main_dir + "/resources/workers.json"
+TMP_OUTPUT_DIR = configuration.TMP_CONF_DIR + "/workers"
 DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                                           "node.data-dir": "/var/lib/presto"
                                                            "/data"},
@@ -37,8 +37,7 @@ DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                                      "-XX:+HeapDumpOnOutOfMemoryError",
                                      "-XX:OnOutOfMemoryError=kill -9 %p",
                                      "-XX:ReservedCodeCacheSize=150M"],
-                      "config.properties": {"coordinator": "true",
-                                            "discovery-server.enabled": "true",
+                      "config.properties": {"coordinator": "false",
                                             "http-server.http.port": "8080",
                                             "task.max-memory": "1GB",
                                             "query.queue-config-file": ""},
@@ -62,11 +61,7 @@ def _get_conf_from_file():
 
 def build_defaults():
     conf = copy.deepcopy(DEFAULT_PROPERTIES)
-    coordinator = env.roledefs['coordinator'][0]
-    workers = env.roledefs['worker']
-    if coordinator in workers:
-        conf["config.properties"]["node-scheduler."
-                                  "include-coordinator"] = "true"
+    coordinator = util.get_coordinator_role()[0]
     conf["config.properties"]["discovery.uri"] = "http://" + coordinator \
                                                  + ":8080"
 
@@ -76,8 +71,8 @@ def build_defaults():
 
 def validate(conf):
     configuration.validate_presto_conf(conf)
-    if conf["config.properties"]["coordinator"] != "true":
-        raise configuration.ConfigurationError("Coordinator cannot be false "
-                                               "in the coordinator's "
+    if conf["config.properties"]["coordinator"] != "false":
+        raise configuration.ConfigurationError("Coordinator must be false "
+                                               "in the worker's "
                                                "config.properties")
     return conf

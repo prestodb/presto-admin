@@ -17,7 +17,6 @@
 This module contains the methods for setting and validating the
 presto-admin config
 """
-import logging
 import pprint
 import re
 import socket
@@ -27,6 +26,7 @@ from fabric.api import task, env
 
 import configuration as config
 import prestoadmin
+import prestoadmin.util.fabricapi as util
 
 
 __all__ = ["show"]
@@ -37,7 +37,6 @@ DEFAULT_PROPERTIES = {"username": "root",
                       "port": "22",
                       "coordinator": "localhost",
                       "workers": ["localhost"]}
-_LOGGER = logging.getLogger(__name__)
 
 
 def write(conf):
@@ -51,12 +50,11 @@ def show():
     coordinators, workers, SSH port, and SSH username)
     """
     pprint.pprint(get_conf_from_fabric(), width=1)
-    _LOGGER.debug("Task topology show: %s", str(get_conf_from_fabric()))
 
 
 def get_conf_from_fabric():
-    return {'coordinator': env.roledefs['coordinator'][0],
-            'workers': env.roledefs['worker'],
+    return {'coordinator': util.get_coordinator_role()[0],
+            'workers': util.get_worker_role(),
             'port': env.port,
             'username': env.user}
 

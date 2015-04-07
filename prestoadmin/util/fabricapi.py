@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from fabric.api import env
 from fabric.tasks import execute
 
 
@@ -29,3 +30,11 @@ def execute_fail_on_error(callable, *args, **kwargs):
                 isinstance(execute_result[host], Exception)):
             raise Exception("command failed for some nodes; result=%s"
                             % execute_result)
+
+
+def get_coordinator_role():
+    return env.roledefs['coordinator']
+
+
+def get_worker_role():
+    return env.roledefs['worker']

@@ -45,6 +45,9 @@ class BaseTestCase(unittest.TestCase):
             self.assertTrue(re.search(expected_regexp, str(e)),
                             repr(expected_regexp) + " not found in "
                             + repr(str(e)))
+        else:
+            self.fail("Expected exception " + str(expected_exception) +
+                      " not raised")
 
     def tearDown(self):
         self.restore_stdout_stderr()

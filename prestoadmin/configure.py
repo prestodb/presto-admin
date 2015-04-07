@@ -14,21 +14,53 @@
 
 
 import os
+
 from fabric.contrib import files
 from fabric.operations import put, sudo
-from fabric.api import task
+from fabric.api import env, task, roles
+
+import configuration as config
 import coordinator as coord
 import prestoadmin
-import configuration as config
+import prestoadmin.util.fabricapi as util
+import workers as w
 
-__all__ = ["coordinator"]
+"""
+Common module for deploying the presto configuration
+"""
+
+__all__ = ["coordinator", "workers", "all"]
 REMOTE_DIR = "/etc/presto"
 TMP_CONF_DIR = prestoadmin.main_dir + "/tmp/presto-conf"
 
 
 @task
+def all():
+    """
+    Deploy configuration for all roles on the remote hosts
+    """
+    coordinator()
+    workers()
+
+
+@task
+@roles('coordinator')
 def coordinator():
+    """
+    Deploy the coordinator configuration to the coordinator node
+    """
     configure(coord.get_conf(), coord.TMP_OUTPUT_DIR)
+
+
+@task
+@roles('worker')
+def workers():
+    """
+    Deploy workers configuration to the worker nodes.
+    This will not deploy configuration for a coordinator that is also a worker
+    """
+    if env.host not in util.get_coordinator_role():
+        configure(w.get_conf(), w.TMP_OUTPUT_DIR)
 
 
 def configure(conf, local_dir):
@@ -73,12 +105,13 @@ def list_to_line_separated(conf):
 def deploy(local_dir, remote_dir):
     node_file = "node.properties"
     node_file_path = (os.path.join(remote_dir, node_file))
-    node_id_command = \
-        "if ! ( grep -q 'node.id' " + node_file_path + " ); then " \
-        "uuid=$(uuidgen); " \
-        "echo node.id=$uuid >> " + node_file_path + ";" \
-        "fi; " \
+    node_id_command = (
+        "if ! ( grep -q 'node.id' " + node_file_path + " ); then "
+        "uuid=$(uuidgen); "
+        "echo node.id=$uuid >> " + node_file_path + ";"
+        "fi; "
         "sed -i '/node.id/!d' " + node_file_path + "; "
+    )
     sudo(node_id_command)
     for name in os.listdir(local_dir):
         if name != node_file:
