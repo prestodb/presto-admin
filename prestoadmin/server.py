@@ -76,7 +76,7 @@ def deploy_package(local_path=None):
 
 
 def rpm_install():
-    _LOGGER.debug("Installing the rpm")
+    _LOGGER.info("Installing the rpm")
     sudo('rpm -i ' + PRESTO_RPM_PATH)
 
 
@@ -95,7 +95,7 @@ def uninstall():
 
 
 def service(control=None):
-    _LOGGER.debug("Executing %s on presto server" % control)
+    _LOGGER.info("Executing %s on presto server" % control)
     sudo(INIT_SCRIPTS + control, pty=False)
 
 
