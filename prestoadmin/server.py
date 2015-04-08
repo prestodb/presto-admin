@@ -37,8 +37,13 @@ _LOGGER = logging.getLogger(__name__)
 @runs_once
 def install(local_path=None):
     """
-    Copies the presto-server rpm to all nodes in the cluster,
-    installs it on the nodes and configures them
+    Copy and install the presto-server rpm to all the nodes in the cluster and
+    configure the nodes. Executed on all nodes unless some are excluded using
+    -x/--exclude-hosts.
+
+    The topology information will be read from the config.json file. If this
+    file is missing, then the co-ordinator and workers will be obtained
+    interactively.
 
     :param local_path: Path to local archive to be deployed
     """
@@ -82,14 +87,15 @@ def update_configs():
 @task
 def uninstall():
     """
-    Uninstalls Presto after stopping the services
+    Uninstall Presto after stopping the services on all nodes, unless some are
+    excluded using -x/--exclude-hosts.
     """
     stop()
     sudo('rpm -e presto')
 
 
 def service(control=None):
-    _LOGGER.info("Executing %s on presto server" % control)
+    _LOGGER.debug("Executing %s on presto server" % control)
     sudo(INIT_SCRIPTS + control, pty=False)
 
 
@@ -97,7 +103,8 @@ def service(control=None):
 @runs_once
 def start():
     """
-    Starts the Presto server
+    Start the Presto server on all nodes, unless some are excluded using
+    -x/--exclude-hosts.
     """
     execute_fail_on_error(service, ' start', roles=env.roles)
 
@@ -106,7 +113,8 @@ def start():
 @runs_once
 def stop():
     """
-    Stops the Presto server
+    Stop the Presto server on all nodes, unless some are excluded using
+    -x/--exclude-hosts.
     """
     execute_fail_on_error(service, ' stop', roles=env.roles)
 
@@ -115,6 +123,7 @@ def stop():
 @runs_once
 def restart():
     """
-    Restarts the Presto server
+    Restart the Presto server on all nodes, unless some are excluded using
+    -x/--exclude-hosts.
     """
     execute_fail_on_error(service, ' restart', roles=env.roles)
