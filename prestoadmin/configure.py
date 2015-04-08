@@ -17,6 +17,7 @@
 Common module for deploying the presto configuration
 """
 
+import logging
 import os
 
 from fabric.contrib import files
@@ -30,6 +31,7 @@ import prestoadmin.util.fabricapi as util
 import workers as w
 
 __all__ = ["coordinator", "workers", "all"]
+_LOGGER = logging.getLogger(__name__)
 
 
 @task
@@ -37,6 +39,7 @@ def all():
     """
     Deploy configuration for all roles on the remote hosts
     """
+    _LOGGER.info("Running configure all")
     coordinator()
     workers()
 
@@ -47,6 +50,7 @@ def coordinator():
     Deploy the coordinator configuration to the coordinator node
     """
     if env.host in util.get_coordinator_role():
+        _LOGGER.info("Setting coordinator configuration for " + env.host)
         configure_presto(coord.get_conf(), coord.TMP_OUTPUT_DIR,
                          constants.REMOTE_CONF_DIR)
 
@@ -59,6 +63,7 @@ def workers():
     """
     if env.host in util.get_worker_role() and env.host \
             not in util.get_coordinator_role():
+        _LOGGER.info("Setting worker configuration for " + env.host)
         configure_presto(w.get_conf(), w.TMP_OUTPUT_DIR,
                          constants.REMOTE_CONF_DIR)
 
@@ -76,6 +81,7 @@ def configure(conf, local_dir, remote_dir):
 
 
 def write_conf_to_tmp(conf, conf_dir):
+    _LOGGER.info("Writing configuration to temporary files.")
     for key, value in conf.iteritems():
         path = conf_dir + "/" + key
         config.write(output_format(value), path)
@@ -110,6 +116,7 @@ def list_to_line_separated(conf):
 
 
 def deploy(filenames, local_dir, remote_dir):
+    _LOGGER.debug("Deploying configurations for " + str(filenames))
     sudo("mkdir -p " + remote_dir)
     for name in filenames:
         put(os.path.join(local_dir, name),
@@ -117,6 +124,7 @@ def deploy(filenames, local_dir, remote_dir):
 
 
 def deploy_node_properties(local_dir, remote_dir):
+    _LOGGER.debug("Deploying node.properties configuration")
     name = "node.properties"
     node_file_path = (os.path.join(remote_dir, name))
     node_id_command = (
