@@ -13,25 +13,23 @@
 # limitations under the License.
 
 
+"""
+Common module for deploying the presto configuration
+"""
+
 import os
 
 from fabric.contrib import files
 from fabric.operations import put, sudo
 from fabric.api import env, task
+from prestoadmin.util import constants
 
 import configuration as config
 import coordinator as coord
-import prestoadmin
 import prestoadmin.util.fabricapi as util
 import workers as w
 
-"""
-Common module for deploying the presto configuration
-"""
-
 __all__ = ["coordinator", "workers", "all"]
-REMOTE_DIR = "/etc/presto"
-TMP_CONF_DIR = prestoadmin.main_dir + "/tmp/presto-conf"
 
 
 @task
@@ -49,7 +47,8 @@ def coordinator():
     Deploy the coordinator configuration to the coordinator node
     """
     if env.host in util.get_coordinator_role():
-        configure(coord.get_conf(), coord.TMP_OUTPUT_DIR)
+        configure_presto(coord.get_conf(), coord.TMP_OUTPUT_DIR,
+                         constants.REMOTE_CONF_DIR)
 
 
 @task
@@ -60,12 +59,20 @@ def workers():
     """
     if env.host in util.get_worker_role() and env.host \
             not in util.get_coordinator_role():
-        configure(w.get_conf(), w.TMP_OUTPUT_DIR)
+        configure_presto(w.get_conf(), w.TMP_OUTPUT_DIR,
+                         constants.REMOTE_CONF_DIR)
 
 
-def configure(conf, local_dir):
+def configure_presto(conf, local_dir, remote_dir):
     write_conf_to_tmp(conf, local_dir)
-    deploy(local_dir, REMOTE_DIR)
+    deploy([name for name in conf.keys() if name != "node.properties"],
+           local_dir, remote_dir)
+    deploy_node_properties(local_dir, remote_dir)
+
+
+def configure(conf, local_dir, remote_dir):
+    write_conf_to_tmp(conf, local_dir)
+    deploy(conf.keys(), local_dir, remote_dir)
 
 
 def write_conf_to_tmp(conf, conf_dir):
@@ -102,22 +109,24 @@ def list_to_line_separated(conf):
     return "\n".join(conf)
 
 
-def deploy(local_dir, remote_dir):
-    node_file = "node.properties"
-    node_file_path = (os.path.join(remote_dir, node_file))
+def deploy(filenames, local_dir, remote_dir):
+    sudo("mkdir -p " + remote_dir)
+    for name in filenames:
+        put(os.path.join(local_dir, name),
+            os.path.join(remote_dir, name), True)
+
+
+def deploy_node_properties(local_dir, remote_dir):
+    name = "node.properties"
+    node_file_path = (os.path.join(remote_dir, name))
     node_id_command = (
         "if ! ( grep -q 'node.id' " + node_file_path + " ); then "
         "uuid=$(uuidgen); "
         "echo node.id=$uuid >> " + node_file_path + ";"
         "fi; "
         "sed -i '/node.id/!d' " + node_file_path + "; "
-    )
+        )
     sudo(node_id_command)
-    for name in os.listdir(local_dir):
-        if name != node_file:
-            put(os.path.join(local_dir, name),
-                os.path.join(remote_dir, name), True)
-        else:
-            with open(os.path.join(local_dir, node_file), 'r') as f:
-                properties = f.read()
-            files.append(os.path.join(remote_dir, node_file), properties, True)
+    with open(os.path.join(local_dir, name), 'r') as f:
+        properties = f.read()
+    files.append(os.path.join(remote_dir, name), properties, True)

@@ -5,6 +5,7 @@ Available commands:
     configure all
     configure coordinator
     configure workers
+    connector add
     server install
     server restart
     server start

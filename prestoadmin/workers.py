@@ -73,7 +73,7 @@ def build_defaults():
 
 
 def islocalhost(hostname):
-    return hostname in ["localhost", "127.0.0.1"]
+    return hostname in ["localhost", "127.0.0.1", "::1"]
 
 
 def validate(conf):

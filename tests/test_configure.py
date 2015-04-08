@@ -40,7 +40,7 @@ class TestConfigure(utils.BaseTestCase):
         conf = 1
         self.assertEqual(configure.output_format(conf), str(conf))
 
-    @patch('prestoadmin.configure.configure')
+    @patch('prestoadmin.configure.configure_presto')
     @patch('prestoadmin.configure.util.get_coordinator_role')
     @patch('prestoadmin.configure.env')
     def test_worker_is_coordinator(self, env_mock, coord_mock, configure_mock):
@@ -49,36 +49,38 @@ class TestConfigure(utils.BaseTestCase):
         configure.workers()
         assert not configure_mock.called
 
-    @patch('prestoadmin.configure.configure')
-    @patch('prestoadmin.configure.util.get_coordinator_role')
-    def test_worker_not_coordinator(self, coord_mock, configure_mock):
+    @patch('prestoadmin.configure.configure_presto')
+    def test_worker_not_coordinator(self,  configure_mock):
         env.host = "my.host1"
-        env.roledefs = {'worker': ['my.host1']}
-        coord_mock.return_value = ["my.host2"]
+        env.roledefs["worker"] = ["my.host1"]
+        env.roledefs["coordinator"] = ["my.host2"]
         configure.workers()
         assert configure_mock.called
 
-    @patch('prestoadmin.configure.configure')
+    @patch('prestoadmin.configure.configure_presto')
     @patch('prestoadmin.configure.coord.get_conf')
     def test_coordinator(self, coord_mock, configure_mock):
-        env.host = "my.host1"
-        env.roledefs = {'coordinator': ['my.host1']}
+        env.roledefs['coordinator'] = ['master']
+        env.host = 'master'
         coord_mock.return_value = {}
         configure.coordinator()
         assert configure_mock.called
 
-    @patch('__builtin__.open')
-    @patch('prestoadmin.configure.os.listdir')
     @patch('prestoadmin.configure.sudo')
     @patch('prestoadmin.configure.put')
+    def test_deploy(self, put_mock, sudo_mock):
+        filenames = ["jvm.config"]
+        configure.deploy(filenames, "/my/local/dir", "/my/remote/dir")
+        sudo_mock.assert_called_with("mkdir -p /my/remote/dir")
+        put_mock.assert_called_with("/my/local/dir/jvm.config",
+                                    "/my/remote/dir/jvm.config", True)
+
+    @patch('__builtin__.open')
     @patch('prestoadmin.configure.files.append')
-    def test_deploy(self, append_mock, put_mock, sudo_mock,
-                    listdir_mock, open_mock):
-        listdir_mock.return_value = ["jvm.config", "node.properties"]
+    @patch('prestoadmin.configure.sudo')
+    def test_deploy_node_properties(self, sudo_mock, append_mock, open_mock):
         file_manager = open_mock.return_value.__enter__.return_value
         file_manager.read.return_value = ("key=value")
-        configure.deploy("/my/local/dir", "/my/remote/dir")
-
         command = (
             "if ! ( grep -q 'node.id' /my/remote/dir/node.properties ); "
             "then "
@@ -86,9 +88,8 @@ class TestConfigure(utils.BaseTestCase):
             "echo node.id=$uuid >> /my/remote/dir/node.properties;"
             "fi; "
             "sed -i '/node.id/!d' /my/remote/dir/node.properties; ")
+        configure.deploy_node_properties("/my/local/dir", "/my/remote/dir")
         sudo_mock.assert_called_with(command)
-        put_mock.assert_called_with("/my/local/dir/jvm.config",
-                                    "/my/remote/dir/jvm.config", True)
         append_mock.assert_called_with("/my/remote/dir/node.properties",
                                        "key=value", True)
 
@@ -100,3 +101,13 @@ class TestConfigure(utils.BaseTestCase):
         configure.write_conf_to_tmp(conf, conf_dir)
         write_mock.assert_any_call("k1=v1\nk2=v2", "/conf/file1")
         write_mock.assert_any_call("i1\ni2\ni3", "/conf/file2")
+
+    @patch('prestoadmin.configure.write_conf_to_tmp')
+    @patch('prestoadmin.configure.deploy')
+    @patch('prestoadmin.configure.deploy_node_properties')
+    def test_configure_presto(self, deploy_node_mock, deploy_mock, write_mock):
+        conf = {"node.properties": {"key": "value"}, "jvm.config": ["list"]}
+        local_dir = "/my/local/dir"
+        remote_dir = "/my/remote/der"
+        configure.configure_presto(conf, local_dir, remote_dir)
+        deploy_mock.assert_called_with(["jvm.config"], local_dir, remote_dir)

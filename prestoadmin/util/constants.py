@@ -28,3 +28,12 @@ LOGGING_CONFIG_FILE_NAME = 'presto-admin-logging.ini'
 LOGGING_CONFIG_FILE_DIRECTORIES = [
     os.path.join(prestoadmin.main_dir, 'prestoadmin')
 ]
+
+# local configuration
+CONNECTORS_CONFIG_FILE = os.path.join(prestoadmin.main_dir,
+                                      'resources/connectors.json')
+TMP_CONF_DIR = os.path.join(prestoadmin.main_dir, "tmp/presto-conf")
+
+# remote configuration
+REMOTE_CONF_DIR = "/etc/presto"
+REMOTE_CATALOG_DIR = os.path.join(REMOTE_CONF_DIR, "catalog")
