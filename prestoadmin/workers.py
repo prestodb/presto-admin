@@ -18,10 +18,14 @@ Loads and validates the workers.json file and creates the files needed
 to deploy on the presto cluster
 """
 
-import configuration
 import copy
+import urlparse
+
+import configuration
 import prestoadmin
 import prestoadmin.util.fabricapi as util
+from fabric.api import env
+
 
 CONFIG_PATH = prestoadmin.main_dir + "/resources/workers.json"
 TMP_OUTPUT_DIR = configuration.TMP_CONF_DIR + "/workers"
@@ -68,10 +72,23 @@ def build_defaults():
     return conf
 
 
+def islocalhost(hostname):
+    return hostname in ["localhost", "127.0.0.1"]
+
+
 def validate(conf):
     configuration.validate_presto_conf(conf)
     if conf["config.properties"]["coordinator"] != "false":
         raise configuration.ConfigurationError("Coordinator must be false "
                                                "in the worker's "
                                                "config.properties")
+    uri = urlparse.urlparse(conf["config.properties"]["discovery.uri"])
+    if islocalhost(uri.hostname) and len(env.roledefs['all']) > 1:
+            raise configuration.ConfigurationError(
+                "discovery.uri should not be local host in a "
+                "multi-node cluster, but found " + urlparse.urlunparse(uri) +
+                "You may have encountered this error by "
+                "choosing a coordinator that is localhost and a worker that "
+                "is not.  The default discovery-uri is "
+                "http://coordinator:8080")
     return conf

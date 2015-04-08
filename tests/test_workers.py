@@ -16,6 +16,7 @@
 """
 Tests the workers module
 """
+from prestoadmin.configuration import ConfigurationError
 
 import utils
 
@@ -52,7 +53,9 @@ class TestWorkers(utils.BaseTestCase):
     def test_validate_valid(self):
         conf = {"node.properties": {},
                 "jvm.config": [],
-                "config.properties": {"coordinator": "false"}}
+                "config.properties": {"coordinator": "false",
+                                      "discovery.uri": "http://host:8080"}}
+
         self.assertEqual(conf, workers.validate(conf))
 
     def test_validate_default(self):
@@ -124,3 +127,13 @@ class TestWorkers(utils.BaseTestCase):
                                 "node.properties must be an object with "
                                 "key-value property pairs",
                                 workers.get_conf)
+
+    @patch('prestoadmin.workers._get_conf_from_file')
+    @patch('prestoadmin.workers.util.get_coordinator_role')
+    def test_worker_not_localhost(self, coord_mock, get_conf_mock):
+        get_conf_mock.return_value = {}
+        coord_mock.return_value = ['localhost']
+        env.roledefs["all"] = ["localhost", "remote-host"]
+        self.assertRaisesRegexp(ConfigurationError,
+                                "discovery.uri should not be local host in a "
+                                "multi-node cluster", workers.get_conf)

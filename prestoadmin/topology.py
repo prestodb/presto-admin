@@ -101,7 +101,9 @@ def prompt_for_port():
 
 def prompt_for_coordinator():
     return fabric.operations.prompt("Enter host name or IP address for "
-                                    "coordinator node:",
+                                    "coordinator node.  Enter an external "
+                                    "host name or ip address if this is a "
+                                    "multi-node cluster:",
                                     default=DEFAULT_PROPERTIES["coordinator"],
                                     validate=validate_coordinator)
 
