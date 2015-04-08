@@ -1,9 +1,9 @@
 configure all
 configure coordinator
 configure workers
-install server
-service restart
-service start
-service stop
+server install
+server restart
+server start
+server stop
+server uninstall
 topology show
-uninstall server

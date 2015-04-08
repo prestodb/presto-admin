@@ -12,30 +12,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 import os
 
 from fabric.api import task, sudo, put, env
 from fabric.decorators import runs_once
-from prestoadmin import configure
 
+from prestoadmin import configure
 from prestoadmin import topology
 from prestoadmin.util.fabricapi import execute_fail_on_error
 
-__all__ = ["server"]
+__all__ = ['install', 'uninstall', 'start', 'stop', 'restart']
 
 PRESTO_ADMIN_PACKAGES_PATH = "/opt/presto-admin/packages"
 LOCAL_ARCHIVE_PATH = '/tmp'
 PRESTO_RPM = 'presto-*.rpm'
 PRESTO_RPM_PATH = PRESTO_ADMIN_PACKAGES_PATH + "/" + PRESTO_RPM
+INIT_SCRIPTS = '/etc/init.d/presto'
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @task
 @runs_once
-def server(local_path=None):
+def install(local_path=None):
     """
-    This task copies the presto-server rpm to all nodes in the cluster
-    and installs it on the nodes
+    Copies the presto-server rpm to all nodes in the cluster,
+    installs it on the nodes and configures them
 
     :param local_path: Path to local archive to be deployed
     """
@@ -62,13 +65,56 @@ def deploy_install_configure(local_path):
 
 
 def deploy_package(local_path=None):
+    _LOGGER.info("Deploying presto rpm to nodes")
     sudo('mkdir -p ' + PRESTO_ADMIN_PACKAGES_PATH)
     put(local_path, PRESTO_ADMIN_PACKAGES_PATH, use_sudo=True)
 
 
 def rpm_install():
+    _LOGGER.info("Installing the rpm")
     sudo('rpm -i ' + PRESTO_RPM_PATH)
 
 
 def update_configs():
     configure.all()
+
+
+@task
+def uninstall():
+    """
+    Uninstalls Presto after stopping the services
+    """
+    stop()
+    sudo('rpm -e presto')
+
+
+def service(control=None):
+    _LOGGER.info("Executing %s on presto server" % control)
+    sudo(INIT_SCRIPTS + control, pty=False)
+
+
+@task
+@runs_once
+def start():
+    """
+    Starts the Presto server
+    """
+    execute_fail_on_error(service, ' start', roles=env.roles)
+
+
+@task
+@runs_once
+def stop():
+    """
+    Stops the Presto server
+    """
+    execute_fail_on_error(service, ' stop', roles=env.roles)
+
+
+@task
+@runs_once
+def restart():
+    """
+    Restarts the Presto server
+    """
+    execute_fail_on_error(service, ' restart', roles=env.roles)
