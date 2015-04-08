@@ -12,27 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+from fabric.decorators import task
+from fabric.operations import sudo
+from prestoadmin import service
 
-"""Presto-Admin tool for deploying and managing Presto clusters"""
+__all__ = ["server"]
 
-__version__ = '0.1.0'  # Make sure to update setup.py too
 
-from fabric.api import env
-import os
-
-__all__ = ['topology', 'configure', 'install', 'service', 'uninstall']
-
-env.roledefs = {
-    'coordinator': [],
-    'worker': [],
-    'all': []
-}
-
-main_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-
-import topology
-import install
-import configure
-import service
-import uninstall
+@task
+def server():
+    service.stop()
+    sudo('rpm -e presto')

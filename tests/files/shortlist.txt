@@ -6,3 +6,4 @@ service restart
 service start
 service stop
 topology show
+uninstall server

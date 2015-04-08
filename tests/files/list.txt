@@ -10,3 +10,4 @@ Available commands:
     service start
     service stop
     topology show
+    uninstall server
