@@ -49,6 +49,7 @@ setup(
     packages=find_packages(exclude=['*tests*']),
     package_dir={'prestoadmin':
                  'prestoadmin'},
+    package_data={'prestoadmin': ['presto-admin-logging.ini']},
     include_package_data=True,
     install_requires=requirements,
     license="APLv2",
