@@ -70,13 +70,13 @@ def deploy_install_configure(local_path):
 
 
 def deploy_package(local_path=None):
-    _LOGGER.info("Deploying presto rpm to nodes")
+    _LOGGER.debug("Deploying presto rpm to nodes")
     sudo('mkdir -p ' + PRESTO_ADMIN_PACKAGES_PATH)
     put(local_path, PRESTO_ADMIN_PACKAGES_PATH, use_sudo=True)
 
 
 def rpm_install():
-    _LOGGER.info("Installing the rpm")
+    _LOGGER.debug("Installing the rpm")
     sudo('rpm -i ' + PRESTO_RPM_PATH)
 
 
