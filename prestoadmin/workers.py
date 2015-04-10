@@ -19,6 +19,7 @@ to deploy on the presto cluster
 """
 
 import copy
+import logging
 import urlparse
 
 import configuration
@@ -46,6 +47,8 @@ DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                                             "task.max-memory": "1GB"}
                       }
 
+_LOGGER = logging.getLogger(__name__)
+
 
 def get_conf():
     conf = configuration.validate_presto_types(_get_conf_from_file())
@@ -59,6 +62,9 @@ def _get_conf_from_file():
     try:
         configuration.get_conf_from_file(CONFIG_PATH)
     except configuration.ConfigFileNotFoundError:
+        _LOGGER.debug("Coordinator configuration %s not found. Default "
+                      "configuration will be deployed."
+                      % CONFIG_PATH)
         return {}
 
 

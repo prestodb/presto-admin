@@ -25,6 +25,12 @@ class TestConfiguration(utils.BaseTestCase):
                                 config.get_conf_from_file,
                                 "does/not/exist/conf.json")
 
+    def test_file_is_empty(self):
+        emptyconf = {}
+        conf = config.get_conf_from_file(prestoadmin.main_dir +
+                                         "/tests/files/empty.json")
+        self.assertEqual(conf, emptyconf)
+
     def test_invalid_json(self):
         self.assertRaisesRegexp(config.ConfigurationError,
                                 "Expecting , delimiter: line 3 column 3 "

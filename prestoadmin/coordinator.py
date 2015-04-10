@@ -17,6 +17,7 @@ Module for the presto coordinator's configuration.
 Loads and validates the coordinator.json file and creates the files needed
 to deploy on the presto cluster
 """
+import logging
 
 import configuration
 import copy
@@ -43,6 +44,8 @@ DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
                                             "task.max-memory": "1GB"}
                       }
 
+_LOGGER = logging.getLogger(__name__)
+
 
 def get_conf():
     conf = configuration.validate_presto_types(_get_conf_from_file())
@@ -56,6 +59,9 @@ def _get_conf_from_file():
     try:
         configuration.get_conf_from_file(CONFIG_PATH)
     except configuration.ConfigFileNotFoundError:
+        _LOGGER.debug("Coordinator configuration %s not found. Default "
+                      "configuration will be deployed."
+                      % CONFIG_PATH)
         return {}
 
 

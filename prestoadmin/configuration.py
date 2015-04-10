@@ -31,6 +31,8 @@ class ConfigFileNotFoundError(ConfigurationError):
 def get_conf_from_file(path):
     try:
         with open(path, 'r') as conf_file:
+            if os.path.getsize(conf_file.name) == 0:
+                return {}
             return json.load(conf_file)
     except IOError:
         raise ConfigFileNotFoundError("Missing configuration file at " +

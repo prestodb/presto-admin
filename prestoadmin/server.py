@@ -18,8 +18,11 @@ import os
 from fabric.api import task, sudo, put, env
 from fabric.decorators import runs_once
 
+from prestoadmin import connector
 from prestoadmin import configure
 from prestoadmin import topology
+from prestoadmin.configuration import ConfigFileNotFoundError
+from prestoadmin.util.constants import CONNECTORS_CONFIG_FILE
 from prestoadmin.util.fabricapi import execute_fail_on_error
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart']
@@ -44,6 +47,10 @@ def install(local_path=None):
     The topology information will be read from the config.json file. If this
     file is missing, then the co-ordinator and workers will be obtained
     interactively.
+
+    The connector configuration will be read from connectors.json. If this
+    file is missing or empty then no connector configuration is deployed.
+    Install will fail for invalid json configuration.
 
     :param local_path: Path to local archive to be deployed
     """
@@ -82,6 +89,13 @@ def rpm_install():
 
 def update_configs():
     configure.all()
+    try:
+        connector.add()
+    except ConfigFileNotFoundError:
+        _LOGGER.debug("Connector configuration %s not found. No connector "
+                      "configuration will be deployed."
+                      % CONNECTORS_CONFIG_FILE)
+        pass
 
 
 @task

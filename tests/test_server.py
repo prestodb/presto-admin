@@ -23,7 +23,8 @@ from mock import patch
 from prestoadmin.server import INIT_SCRIPTS
 
 from prestoadmin import server
-from prestoadmin.configuration import ConfigurationError
+from prestoadmin.configuration import ConfigurationError, \
+    ConfigFileNotFoundError
 from prestoadmin.server import PRESTO_ADMIN_PACKAGES_PATH, \
     LOCAL_ARCHIVE_PATH, PRESTO_RPM, deploy_install_configure
 import utils
@@ -75,3 +76,11 @@ class TestInstall(utils.BaseTestCase):
     def test_control_command_is_called(self, mock_sudo):
         server.start()
         mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
+
+    @patch('prestoadmin.connector')
+    @patch('prestoadmin.configure.all')
+    def test_update_config(self, mock_config, mock_connector):
+        e = ConfigFileNotFoundError
+        mock_connector.add = e
+        server.update_configs()
+        mock_config.assert_called_with()
