@@ -49,8 +49,9 @@ class TestConfigure(utils.BaseTestCase):
         configure.workers()
         assert not configure_mock.called
 
+    @patch('prestoadmin.configure.w.get_conf')
     @patch('prestoadmin.configure.configure_presto')
-    def test_worker_not_coordinator(self,  configure_mock):
+    def test_worker_not_coordinator(self,  configure_mock, get_conf_mock):
         env.host = "my.host1"
         env.roledefs["worker"] = ["my.host1"]
         env.roledefs["coordinator"] = ["my.host2"]

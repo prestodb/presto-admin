@@ -29,9 +29,11 @@ class TestCoordinator(utils.BaseTestCase):
         env.roledefs['coordinator'] = 'a'
         env.roledefs['workers'] = ["b", "c"]
         actual_default = coordinator.build_defaults()
-        expected = {"node.properties": {"node.environment": "presto",
-                                        "node.data-dir": "/var/lib/presto/"
-                                                         "data"},
+        expected = {"node.properties":
+                    {"node.environment": "presto",
+                     "node.data-dir": "/var/lib/presto/data",
+                     "plugin.config-dir": "/etc/presto/catalog",
+                     "plugin.dir": "/usr/lib/presto/lib/plugin"},
                     "jvm.config": ["-server",
                                    "-Xmx1G",
                                    "-XX:+UseConcMarkSweepGC",
@@ -54,9 +56,11 @@ class TestCoordinator(utils.BaseTestCase):
         env.roledefs['coordinator'] = ["a"]
         env.roledefs['worker'] = ["a", "b", "c"]
         actual_default = coordinator.build_defaults()
-        expected = {"node.properties": {"node.environment": "presto",
-                                        "node.data-dir": "/var/lib/presto/"
-                                                         "data"},
+        expected = {"node.properties":
+                    {"node.environment": "presto",
+                     "node.data-dir": "/var/lib/presto/data",
+                     "plugin.config-dir": "/etc/presto/catalog",
+                     "plugin.dir": "/usr/lib/presto/lib/plugin"},
                     "jvm.config": ["-server",
                                    "-Xmx1G",
                                    "-XX:+UseConcMarkSweepGC",
@@ -127,10 +131,12 @@ class TestCoordinator(utils.BaseTestCase):
         file_conf = {"node.properties": {"my-property": "value",
                                          "node.environment": "test"}}
         get_conf_from_file_mock.return_value = file_conf
-        expected = {"node.properties": {"my-property": "value",
-                                        "node.environment": "test",
-                                        "node.data-dir": "/var/lib/presto/"
-                                                         "data"},
+        expected = {"node.properties":
+                    {"my-property": "value",
+                     "node.environment": "test",
+                     "node.data-dir": "/var/lib/presto/data",
+                     "plugin.config-dir": "/etc/presto/catalog",
+                     "plugin.dir": "/usr/lib/presto/lib/plugin"},
                     "jvm.config": ["-server",
                                    "-Xmx1G",
                                    "-XX:+UseConcMarkSweepGC",

@@ -26,9 +26,11 @@ import prestoadmin
 
 CONFIG_PATH = prestoadmin.main_dir + "/resources/coordinator.json"
 TMP_OUTPUT_DIR = configuration.TMP_CONF_DIR + "/coordinator"
-DEFAULT_PROPERTIES = {"node.properties": {"node.environment": "presto",
-                                          "node.data-dir": "/var/lib/presto"
-                                                           "/data"},
+DEFAULT_PROPERTIES = {"node.properties":
+                      {"node.environment": "presto",
+                       "node.data-dir": "/var/lib/presto/data",
+                       "plugin.config-dir": "/etc/presto/catalog",
+                       "plugin.dir": "/usr/lib/presto/lib/plugin"},
                       "jvm.config": ["-server",
                                      "-Xmx1G",
                                      "-XX:+UseConcMarkSweepGC",
