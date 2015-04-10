@@ -29,6 +29,7 @@ except ImportError:
 
 from packaging import package_dir
 
+
 class bdist_prestoadmin(Command):
 
     description = 'create a distribution for prestoadmin'
@@ -46,7 +47,8 @@ class bdist_prestoadmin(Command):
                      "creating the distribution archive")
                     ]
 
-    default_virtualenv_url = 'https://pypi.python.org/packages/source/v/virtualenv'
+    default_virtualenv_url = ('https://pypi.python.org/packages/'
+                              'source/v/virtualenv')
     default_virtualenv_version = '12.0.7'
 
     def build_wheel(self, build_dir):
@@ -59,11 +61,14 @@ class bdist_prestoadmin(Command):
         return wheel_name
 
     def generate_install_script(self, wheel_name, build_dir):
-        template = open(os.path.join(package_dir, 'install-prestoadmin.template'), 'r')
-        install_script = open(os.path.join(build_dir, 'install-prestoadmin.sh'), 'w')
+        template = open(os.path.join(package_dir,
+                                     'install-prestoadmin.template'), 'r')
+        install_script = open(os.path.join(build_dir,
+                              'install-prestoadmin.sh'), 'w')
         for line in template.readlines():
             line = re.sub(r'%WHEEL_NAME%', wheel_name, line)
-            line = re.sub(r'%VIRTUALENV_VERSION%', self.virtualenv_version, line)
+            line = re.sub(r'%VIRTUALENV_VERSION%', self.virtualenv_version,
+                          line)
             install_script.write(line)
         install_script.close()
         template.close()
@@ -81,12 +86,11 @@ class bdist_prestoadmin(Command):
         archive_basename = self.distribution.get_fullname()
         archive_file = os.path.join(dist_dir, archive_basename)
         self.mkpath(os.path.dirname(archive_file))
-        self.make_archive(archive_file, 'bztar', root_dir=os.path.dirname(build_dir))
+        self.make_archive(archive_file, 'bztar',
+                          root_dir=os.path.dirname(build_dir))
         logger.info('created %s.tar.bz2', archive_file)
 
-
     def run(self):
-
         build_dir = self.bdist_dir
         self.mkpath(build_dir)
 
@@ -108,12 +112,13 @@ class bdist_prestoadmin(Command):
     def finalize_options(self):
         if self.bdist_dir is None:
             bdist_base = self.get_finalized_command('bdist').bdist_base
-            self.bdist_dir = os.path.join(bdist_base, self.distribution.get_name())
+            self.bdist_dir = os.path.join(bdist_base,
+                                          self.distribution.get_name())
 
         if self.dist_dir is None:
             self.dist_dir = 'dist'
 
-        if self.virtualenv_url_base  is None:
+        if self.virtualenv_url_base is None:
             self.virtualenv_url_base = self.default_virtualenv_url
 
         if self.virtualenv_version is None:

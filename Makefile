@@ -36,7 +36,7 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 prestoadmin tests
+	flake8 prestoadmin packaging tests
 
 test:
 	python setup.py test
