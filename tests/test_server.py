@@ -25,8 +25,8 @@ from prestoadmin.server import INIT_SCRIPTS
 from prestoadmin import server
 from prestoadmin.configuration import ConfigurationError, \
     ConfigFileNotFoundError
-from prestoadmin.server import PRESTO_ADMIN_PACKAGES_PATH, \
-    LOCAL_ARCHIVE_PATH, PRESTO_RPM, deploy_install_configure
+from prestoadmin.server import PRESTO_ADMIN_PACKAGES_PATH,\
+    deploy_install_configure
 import utils
 
 
@@ -41,15 +41,28 @@ class TestInstall(utils.BaseTestCase):
                                     use_sudo=True)
 
     @patch('prestoadmin.server.execute_fail_on_error')
-    @patch('prestoadmin.server.deploy_package')
-    @patch('prestoadmin.server.rpm_install')
-    @patch('prestoadmin.server.update_configs')
-    def test_install_server(self, mock_configure, mock_rpm_i, mock_deploy,
-                            mock_execute):
-        server.install()
-        local_path = os.path.join(LOCAL_ARCHIVE_PATH, PRESTO_RPM)
+    def test_install_server(self, mock_execute):
+        local_path = os.path.join("/any/path/rpm")
+        server.install(local_path)
         mock_execute.assert_called_with(deploy_install_configure,
                                         local_path, hosts=[])
+
+    @patch('prestoadmin.server.deploy_package')
+    @patch('prestoadmin.server.rpm_install')
+    def test_deploy_install(self, mock_rpm, mock_deploy):
+        local_path = "/any/path/rpm"
+        server.deploy_install_configure(local_path)
+
+        mock_deploy.assert_called_with(local_path)
+        mock_rpm.assert_called_with('rpm')
+
+    def test_fail_install(self):
+        local_path = None
+        self.assertRaisesRegexp(SystemExit,
+                                "Missing argument local_path: Absolute path "
+                                "to local rpm to be deployed",
+                                server.install,
+                                local_path)
 
     @patch('prestoadmin.topology.set_conf_interactive')
     @patch('prestoadmin.main.topology.get_coordinator')
