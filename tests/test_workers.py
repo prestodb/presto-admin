@@ -94,7 +94,7 @@ class TestWorkers(utils.BaseTestCase):
         get_conf_from_file_mock.return_value = {}
         self.assertEqual(workers.get_conf(), workers.build_defaults())
 
-    @patch('prestoadmin.workers._get_conf_from_file')
+    @patch('prestoadmin.workers.configuration.get_conf_from_file')
     def test_get_conf(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = ["j"]
         file_conf = {"node.properties": {"my-property": "value",

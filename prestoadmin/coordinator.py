@@ -59,7 +59,7 @@ def get_conf():
 
 def _get_conf_from_file():
     try:
-        configuration.get_conf_from_file(CONFIG_PATH)
+        return configuration.get_conf_from_file(CONFIG_PATH)
     except configuration.ConfigFileNotFoundError:
         _LOGGER.debug("Coordinator configuration %s not found. Default "
                       "configuration will be deployed."
