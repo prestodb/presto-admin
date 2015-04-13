@@ -47,14 +47,16 @@ class TestInstall(utils.BaseTestCase):
         mock_execute.assert_called_with(deploy_install_configure,
                                         local_path, hosts=[])
 
+    @patch('prestoadmin.server.update_configs')
     @patch('prestoadmin.server.deploy_package')
     @patch('prestoadmin.server.rpm_install')
-    def test_deploy_install(self, mock_rpm, mock_deploy):
+    def test_deploy_install(self, mock_rpm, mock_deploy, mock_update):
         local_path = "/any/path/rpm"
         server.deploy_install_configure(local_path)
 
         mock_deploy.assert_called_with(local_path)
         mock_rpm.assert_called_with('rpm')
+        mock_update.assert_called_with()
 
     def test_fail_install(self):
         local_path = None
@@ -90,8 +92,8 @@ class TestInstall(utils.BaseTestCase):
         server.start()
         mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
 
-    @patch('prestoadmin.connector')
-    @patch('prestoadmin.configure.all')
+    @patch('prestoadmin.server.connector')
+    @patch('prestoadmin.server.configure.all')
     def test_update_config(self, mock_config, mock_connector):
         e = ConfigFileNotFoundError
         mock_connector.add = e

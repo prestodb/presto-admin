@@ -29,7 +29,6 @@ class ExceptionTest(TestCase):
                 raise ExceptionWithCause('outer exception')
         except ExceptionWithCause as e:
             self.assertEqual(str(e), 'outer exception')
-            print e.inner_exception
             m = re.match(
                 r'Traceback \(most recent call last\):\n  File ".*", line \d+,'
                 ' in test_exception_with_cause\n    raise ValueError\('
