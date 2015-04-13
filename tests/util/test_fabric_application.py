@@ -25,6 +25,7 @@ import logging
 APPLICATION_NAME = 'foo'
 
 
+@patch('prestoadmin.util.application.logging.config')
 class FabricApplicationTest(BaseTestCase):
 
     def setUp(self):
@@ -45,7 +46,7 @@ class FabricApplicationTest(BaseTestCase):
         BaseTestCase.tearDown(self)
 
     @patch('prestoadmin.util.fabric_application.disconnect_all', autospec=True)
-    def test_disconnect_all(self, disconnect_mock):
+    def test_disconnect_all(self, disconnect_mock, logging_conf_mock):
         def should_disconnect():
             with FabricApplication(APPLICATION_NAME):
                 sys.exit()
@@ -53,7 +54,8 @@ class FabricApplicationTest(BaseTestCase):
         self.assertRaises(SystemExit, should_disconnect)
         disconnect_mock.assert_called_with()
 
-    def test_keyboard_interrupt(self):
+    @patch('prestoadmin.util.application.logger')
+    def test_keyboard_interrupt(self, logger_mock, logging_conf_mock):
         def should_not_error():
             with FabricApplication(APPLICATION_NAME):
                 raise KeyboardInterrupt
