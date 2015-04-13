@@ -2,6 +2,7 @@ configure all
 configure coordinator
 configure workers
 connector add
+connector remove
 server install
 server restart
 server start

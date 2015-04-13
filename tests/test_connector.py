@@ -50,3 +50,9 @@ class TestConnector(utils.BaseTestCase):
         configure_mock.assert_called_with(connector_conf,
                                           constants.TMP_CONF_DIR,
                                           constants.REMOTE_CATALOG_DIR)
+
+    @patch("prestoadmin.connector.remove_file")
+    def test_remove(self, remove_mock):
+        connector.remove("tpch")
+        remove_mock.assert_called_with(constants.REMOTE_CATALOG_DIR +
+                                       "/tpch.properties")

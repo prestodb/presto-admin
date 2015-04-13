@@ -17,6 +17,7 @@ Module for presto connector configurations
 """
 
 from fabric.api import task
+from fabric.operations import sudo, os
 
 from prestoadmin.util import constants
 import configuration
@@ -25,8 +26,7 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-
-__all__ = ['add']
+__all__ = ['add', 'remove']
 
 
 @task
@@ -54,3 +54,19 @@ def add(name=None):
     _LOGGER.info("Adding connector configurations: " + str(conf.keys()))
     configure.configure(conf, constants.TMP_CONF_DIR,
                         constants.REMOTE_CATALOG_DIR)
+
+
+@task
+def remove(name):
+    """
+    Remove a connector from the cluster.
+    Usage: presto-admin connector remove <name>
+    """
+    _LOGGER.info("Removing connector: " + name)
+    remove_file(os.path.join(constants.REMOTE_CATALOG_DIR,
+                             name + ".properties"))
+    print "Connector removed. Restart the server for the change to take effect"
+
+
+def remove_file(name):
+    sudo("rm " + name)
