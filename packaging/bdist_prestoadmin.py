@@ -17,7 +17,7 @@
 
 import os
 import re
-import urllib
+import pip
 
 from distutils.dir_util import remove_tree
 from distutils import log as logger
@@ -38,17 +38,13 @@ class bdist_prestoadmin(Command):
                      "temporary directory for creating the distribution"),
                     ('dist-dir=', 'd',
                      "directory to put final built distributions in"),
-                    ('virtualenv-url-base=', None,
-                     "base url for downloading virtualenv"),
                     ('virtualenv-version=', None,
-                    "version of virtualenv to download"),
+                     "version of virtualenv to download"),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
                      "creating the distribution archive")
                     ]
 
-    default_virtualenv_url = ('https://pypi.python.org/packages/'
-                              'source/v/virtualenv')
     default_virtualenv_version = '12.0.7'
 
     def build_wheel(self, build_dir):
@@ -74,13 +70,22 @@ class bdist_prestoadmin(Command):
         template.close()
         os.chmod(os.path.join(build_dir, 'install-prestoadmin.sh'), 0o755)
 
-    def retrieve_virtualenv(self, build_dir):
-        virtualenv_file = 'virtualenv-' + self.virtualenv_version + '.tar.gz'
-        url = self.virtualenv_url_base + '/' + virtualenv_file
-        logger.info('downloading %s to %s', url, build_dir)
-        urllib.urlretrieve(url, os.path.join(build_dir, virtualenv_file))
+    def package_dependencies(self, build_dir):
+        thirdparty_dir = os.path.join(build_dir, 'third-party')
 
-        return virtualenv_file
+        requirements = self.distribution.install_requires
+        for requirement in requirements:
+            pip.main(['wheel',
+                      '--wheel-dir={0}'.format(thirdparty_dir),
+                      '--no-cache',
+                      requirement])
+
+        pip.main(['install',
+                  '-d',
+                  thirdparty_dir,
+                  '--no-cache',
+                  '--no-use-wheel',
+                  'virtualenv=={0}'.format(self.virtualenv_version)])
 
     def archive_dist(self, build_dir, dist_dir):
         archive_basename = self.distribution.get_fullname()
@@ -96,7 +101,7 @@ class bdist_prestoadmin(Command):
 
         wheel_name = self.build_wheel(build_dir)
         self.generate_install_script(wheel_name, build_dir)
-        self.retrieve_virtualenv(build_dir)
+        self.package_dependencies(build_dir)
         self.archive_dist(build_dir, self.dist_dir)
 
         if not self.keep_temp:
@@ -117,9 +122,6 @@ class bdist_prestoadmin(Command):
 
         if self.dist_dir is None:
             self.dist_dir = 'dist'
-
-        if self.virtualenv_url_base is None:
-            self.virtualenv_url_base = self.default_virtualenv_url
 
         if self.virtualenv_version is None:
             self.virtualenv_version = self.default_virtualenv_version

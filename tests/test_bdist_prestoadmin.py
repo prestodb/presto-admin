@@ -17,10 +17,11 @@ import os
 from distutils.dir_util import remove_tree
 from distutils.dir_util import mkpath
 from mock import patch
+from mock import call
 
 import utils
 from packaging.bdist_prestoadmin import bdist_prestoadmin
-from packaging import package_dir as packing_dir
+from packaging import package_dir as packaging_dir
 
 from distutils.dist import Distribution
 
@@ -34,6 +35,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
             'version': '0.1.0',
             'packages': ['prestoadmin'],
             'package_dir': {'prestoadmin': 'prestoadmin'},
+            'install_requires': ['fabric']
         }
 
         # instantiation of the object calls
@@ -50,7 +52,6 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
 
         self.assertEquals(bdist.bdist_dir, None)
         self.assertEquals(bdist.dist_dir, None)
-        self.assertEquals(bdist.virtualenv_url_base, None)
         self.assertEquals(bdist.virtualenv_version, None)
         self.assertEquals(bdist.keep_temp, False)
 
@@ -58,8 +59,6 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
         self.assertEquals(self.bdist.bdist_dir,
                           'build/bdist.linux-x86_64/prestoadmin')
         self.assertEquals(self.bdist.dist_dir, 'dist')
-        expected_url = 'https://pypi.python.org/packages/source/v/virtualenv'
-        self.assertEquals(self.bdist.default_virtualenv_url, expected_url)
         self.assertEquals(self.bdist.default_virtualenv_version, '12.0.7')
         self.assertEquals(self.bdist.keep_temp, False)
 
@@ -67,7 +66,6 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
         self.attrs['script_args'] = ['bdist_prestoadmin',
                                      '--bdist-dir=junk',
                                      '--dist-dir=tmp',
-                                     '--virtualenv-url-base=http://',
                                      '--virtualenv-version=12.0.1',
                                      '-k'
                                      ]
@@ -81,7 +79,6 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
 
         self.assertEquals(bdist.bdist_dir, 'junk')
         self.assertEquals(bdist.dist_dir, 'tmp')
-        self.assertEquals(bdist.virtualenv_url_base, 'http://')
         self.assertEquals(bdist.virtualenv_version, '12.0.1')
         self.assertEquals(bdist.keep_temp, True)
 
@@ -90,9 +87,27 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
         self.assertEquals('prestoadmin-0.1.0-py2-none-any',
                           self.bdist.build_wheel('build'))
 
+    @patch('pip.main')
+    def test_package_dependencies(self, pip_mock):
+        build_path = os.path.join('build', 'prestoadmin')
+        self.bdist.package_dependencies(build_path)
+
+        requirements_dir = os.path.join(packaging_dir, 'third-party.txt')
+        calls = [call(['wheel',
+                       '--wheel-dir=build/prestoadmin/third-party',
+                       '--no-cache',
+                       'fabric']),
+                 call(['install',
+                       '-d',
+                       'build/prestoadmin/third-party',
+                       '--no-cache',
+                       '--no-use-wheel',
+                       'virtualenv==12.0.7'])]
+        pip_mock.assert_has_calls(calls, any_order=False)
+
     def test_generate_install_script(self):
         try:
-            os.chdir(packing_dir)
+            os.chdir(packaging_dir)
             os.mkdir('build')
 
             self.bdist.generate_install_script('wheel_name', 'build')
@@ -123,22 +138,18 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
             remove_tree(os.path.dirname(build_path))
             remove_tree('dist')
 
-    @patch('urllib.urlretrieve')
-    def test_retrieve_virtual_env(self, urlretrieve_mock):
-        self.assertEqual('virtualenv-12.0.7.tar.gz',
-                         self.bdist.retrieve_virtualenv('build'))
-
     @patch('distutils.core.Command.mkpath')
     @patch('packaging.bdist_prestoadmin.remove_tree')
     @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.build_wheel',
            return_value='wheel_name')
     @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.' +
            'generate_install_script')
-    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.retrieve_virtualenv')
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.' +
+           'package_dependencies')
     @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.archive_dist')
     def test_run(self,
                  archive_dist_mock,
-                 retrieve_virtualenv_mock,
+                 package_dependencies_mock,
                  install_script_mock,
                  build_wheel_mock,
                  remove_tree_mock,
@@ -148,7 +159,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
         build_path = 'build/bdist.linux-x86_64/prestoadmin'
         build_wheel_mock.assert_called_once_with(build_path)
         install_script_mock.assert_called_once_with('wheel_name', build_path)
-        retrieve_virtualenv_mock.assert_called_once_with(build_path)
+        package_dependencies_mock.assert_called_once_with(build_path)
         archive_dist_mock.assert_called_once_with(build_path, 'dist')
 
     def test_description(self):
@@ -160,8 +171,6 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
                      'temporary directory for creating the distribution'),
                     ('dist-dir=', 'd',
                      'directory to put final built distributions in'),
-                    ('virtualenv-url-base=', None,
-                     'base url for downloading virtualenv'),
                     ('virtualenv-version=', None,
                      'version of virtualenv to download'),
                     ('keep-temp', 'k',

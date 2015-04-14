@@ -1,9 +1,9 @@
 #!/bin/bash
 
-tar xvzf virtualenv-%VIRTUALENV_VERSION%.tar.gz
+tar xvzf third-party/virtualenv-%VIRTUALENV_VERSION%.tar.gz -C third-party
 
-python virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
+python third-party/virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
 
 source presto-admin-install/bin/activate
-pip install %WHEEL_NAME%.whl
+pip install --no-index --find-links=third-party %WHEEL_NAME%.whl
 deactivate
