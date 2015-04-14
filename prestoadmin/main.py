@@ -49,6 +49,7 @@ import logging
 from operator import isMappingType
 from optparse import Values, SUPPRESS_HELP
 import os
+import re
 import sys
 import types
 
@@ -440,7 +441,7 @@ def list_commands(docstring, format_):
     return result
 
 
-def display_command(name):
+def display_command(name, code=0):
     """
     Print command function's docstring, then exit. Invoked with -d/--display.
     """
@@ -470,7 +471,7 @@ def display_command(name):
     # Or print notice if not
     else:
         print("No detailed information available for task '%s':" % name)
-    sys.exit(0)
+    sys.exit(code)
 
 
 def parse_arguments(arguments, commands):
@@ -534,7 +535,7 @@ def show_commands(docstring, format, code=0):
     sys.exit(code)
 
 
-def run_tasks(task_list, suppress_errors=False):
+def run_tasks(task_list):
     for name, args, kwargs, arg_hosts, arg_roles, arg_excl_hosts in task_list:
         try:
             execute(
@@ -544,9 +545,16 @@ def run_tasks(task_list, suppress_errors=False):
                 exclude_hosts=state.env.exclude_hosts,
                 *args, **kwargs
             )
-        except:
-            if not suppress_errors:
+        except TypeError as e:
+            if re.match(r".+\(\) takes (at most \d+|no) arguments? "
+                        r"\(\d+ given\)", e.message):
+                print("Invalid argument(s) to task.\n")
+                _LOGGER.exception(e)
+                display_command(name, 2)
+            else:
                 raise
+        except BaseException as e:
+            raise
 
 
 def _update_env(options, non_default_options):

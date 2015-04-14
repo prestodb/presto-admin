@@ -49,6 +49,13 @@ class BaseTestCase(unittest.TestCase):
             self.fail("Expected exception " + str(expected_exception) +
                       " not raised")
 
+    def remove_runs_once_flag(self, callable_obj):
+        # since we annotated show with @runs_once, we need to delete the
+        # attribute the Fabric decorator gives it to indicate that it has
+        # already run once in this session
+        if hasattr(callable_obj, 'return_value'):
+            delattr(callable_obj.wrapped, 'return_value')
+
     def tearDown(self):
         self.restore_stdout_stderr()
         env.clear()

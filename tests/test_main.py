@@ -218,6 +218,7 @@ class TestMain(utils.BaseTestCase):
 
     @patch('prestoadmin.topology._get_conf_from_file')
     def test_topology_defaults_override_fabric_defaults(self, get_conf_mock):
+        self.remove_runs_once_flag(main.topology.show)
         get_conf_mock.return_value = {}
         try:
             main.main(['topology', 'show'])
@@ -240,6 +241,24 @@ class TestMain(utils.BaseTestCase):
         self.assertTrue("no such option: --config" in
                         self.test_stderr.getvalue())
 
+    def test_wrong_arguments_expecting_none(self):
+        self.remove_runs_once_flag(main.topology.show)
+        try:
+            main.main(['topology', 'show', "extra_arg"])
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
+        self.assertTrue('Invalid argument(s) to task.\n\nDisplaying '
+                        'detailed information for task \'topology show\''
+                        in self.test_stdout.getvalue())
 
+    def test_wrong_arguments_expecting_fewer(self):
+        self.remove_runs_once_flag(prestoadmin.server.install)
+        try:
+            main.main(['server', 'install', "local_path", "extra_arg"])
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
+        self.assertTrue('Invalid argument(s) to task.\n\nDisplaying '
+                        'detailed information for task \'server install\''
+                        in self.test_stdout.getvalue())
 if __name__ == '__main__':
     unittest.main()
