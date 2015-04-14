@@ -57,6 +57,7 @@ from configuration import ConfigFileNotFoundError
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
 from prestoadmin.util.fabric_application import FabricApplication
+from prestoadmin.util.hiddenoptgroup import HiddenOptionGroup
 from prestoadmin.util.parser import LoggingOptionParser
 import topology
 
@@ -87,13 +88,6 @@ def _get_presto_env_options():
     commands_to_remove = ['fabfile', 'rcfile']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
-
-    # Hide most of the options from the help text so it's simpler. Need to
-    # document the other options, however.
-    commands_to_show = ['hosts', 'exclude_hosts', 'password']
-    for option in new_env_options:
-        if option.dest not in commands_to_show:
-            option.help = SUPPRESS_HELP
     return new_env_options
 
 presto_env_options = _get_presto_env_options()
@@ -333,12 +327,31 @@ def parser_for_options():
         help="print out text processing friendly version of --list"
     )
 
+    # Like --list, but text processing friendly
+    parser.add_option(
+        '--extended-help',
+        action='store_true',
+        dest='extended_help',
+        default=False,
+        help="print out all options, including advanced ones"
+    )
     #
     # Add in options which are also destined to show up as `env` vars.
     #
 
+    advanced_options = HiddenOptionGroup(parser, "Advanced Options",
+                                         suppress_help=True)
+
+    # Hide most of the options from the help text so it's simpler. Need to
+    # document the other options, however.
+    commands_to_show = ['hosts', 'exclude_hosts', 'password']
     for option in presto_env_options:
-        parser.add_option(option)
+        if option.dest in commands_to_show:
+            parser.add_option(option)
+        else:
+            advanced_options.add_option(option)
+
+    parser.add_option_group(advanced_options)
 
     # Return parser
     return parser
@@ -623,6 +636,10 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     # List available commands
     if options.list_commands:
         show_commands(docstring, options.list_format)
+
+    if options.extended_help:
+        parser.print_extended_help()
+        sys.exit(0)
 
     # If user didn't specify any commands to run, show help
     if not arguments:

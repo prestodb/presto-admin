@@ -8,9 +8,11 @@ Options:
                         Force password prompt up-front
   -l, --list            print list of possible commands and exit
   --shortlist           print out text processing friendly version of --list
+  --extended-help       print out all options, including advanced ones
   -H HOSTS, --hosts=HOSTS
                         comma-separated list of hosts to operate on
   -p PASSWORD, --password=PASSWORD
                         password for use with authentication and/or sudo
   -x HOSTS, --exclude-hosts=HOSTS
                         comma-separated list of hosts to exclude
+

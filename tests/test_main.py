@@ -241,6 +241,10 @@ class TestMain(utils.BaseTestCase):
         self.assertTrue("no such option: --config" in
                         self.test_stderr.getvalue())
 
+    def test_extended_help(self):
+        self._run_command_compare_to_file(['--extended-help'], 0,
+                                          "/files/extended-help.txt")
+
     def test_wrong_arguments_expecting_none(self):
         self.remove_runs_once_flag(main.topology.show)
         try:
@@ -260,5 +264,6 @@ class TestMain(utils.BaseTestCase):
         self.assertTrue('Invalid argument(s) to task.\n\nDisplaying '
                         'detailed information for task \'server install\''
                         in self.test_stdout.getvalue())
+
 if __name__ == '__main__':
     unittest.main()
