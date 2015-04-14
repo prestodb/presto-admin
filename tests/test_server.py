@@ -20,7 +20,7 @@ import os
 from fabric.api import env
 
 from mock import patch
-from prestoadmin.server import INIT_SCRIPTS
+from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL
 
 from prestoadmin import server
 from prestoadmin.configuration import ConfigurationError, \
@@ -88,9 +88,15 @@ class TestInstall(utils.BaseTestCase):
         mock_sudo.assert_called_with('rpm -e presto')
 
     @patch('prestoadmin.server.sudo')
-    def test_control_command_is_called(self, mock_sudo):
+    @patch('prestoadmin.server.check_server_status')
+    @patch('prestoadmin.server.warn')
+    def test_control_command_is_called(self, mock_warn, mock_status,
+                                       mock_sudo):
+        mock_status.return_value = ['failed_node1', 'bad_node2']
         server.start()
         mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
+        mock_warn.assert_called_with("Server failed to start on these nodes: "
+                                     "failed_node1,bad_node2")
 
     @patch('prestoadmin.server.connector')
     @patch('prestoadmin.server.configure.all')
@@ -99,3 +105,19 @@ class TestInstall(utils.BaseTestCase):
         mock_connector.add = e
         server.update_configs()
         mock_config.assert_called_with()
+
+    @patch('prestoadmin.server.execute_query')
+    @patch('prestoadmin.server.run')
+    def test_check_success_status(self, mock_sleep, mock_execute_query):
+        env.hosts = ['bad_server']
+        mock_execute_query.side_effect = [False, True]
+        self.assertEqual(server.check_server_status(), [])
+
+    @patch('prestoadmin.server.execute_query')
+    @patch('prestoadmin.server.run')
+    def test_check_success_fail(self,  mock_sleep,
+                                mock_execute_query):
+        env.hosts = ['bad_server']
+        server.RETRY_TIMEOUT = SLEEP_INTERVAL + 1
+        mock_execute_query.side_effect = [False, False]
+        self.assertEqual(server.check_server_status(), ['bad_server'])

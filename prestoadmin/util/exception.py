@@ -51,3 +51,7 @@ class ExceptionWithCause(Exception):
 class UserVisibleError(ExceptionWithCause):
     """The error message for this error will be displayed to the user"""
     pass
+
+
+class InvalidArgumentError(ExceptionWithCause):
+    pass

@@ -17,19 +17,25 @@ import os
 
 from fabric.api import task, sudo, put, env
 from fabric.decorators import runs_once
-from fabric.utils import abort
+from fabric.operations import run
+from fabric.utils import abort, warn
 
 from prestoadmin import connector
 from prestoadmin import configure
 from prestoadmin import topology
 from prestoadmin.configuration import ConfigFileNotFoundError
+from prestoadmin.prestoclient import execute_query
 from prestoadmin.util.constants import CONNECTORS_CONFIG_FILE
 from prestoadmin.util.fabricapi import execute_fail_on_error
+
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart']
 
 PRESTO_ADMIN_PACKAGES_PATH = "/opt/presto-admin/packages"
 INIT_SCRIPTS = '/etc/init.d/presto'
+RETRY_TIMEOUT = 60
+SLEEP_INTERVAL = 5
+SERVER_CHECK_SQL = "select * from sys.node"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,11 +68,11 @@ def install(local_path=None):
 
 
 def set_hosts():
-        if 'topology_config_not_found' in env and env.topology_config_not_found \
-                is not None:
-            topology.set_conf_interactive()
-            topology.set_roledefs_from_conf()
-        return [host for host in env.hosts if host not in env.exclude_hosts]
+    if 'topology_config_not_found' in env and env.topology_config_not_found \
+            is not None:
+        topology.set_conf_interactive()
+        topology.set_roledefs_from_conf()
+    return [host for host in env.hosts if host not in env.exclude_hosts]
 
 
 def deploy_install_configure(local_path):
@@ -118,8 +124,15 @@ def start():
     """
     Start the Presto server on all nodes, unless some are excluded using
     -x/--exclude-hosts.
+
+    A status check is performed on the entire cluster and a list of
+    servers that did not start, if any, are reported at the end.
     """
     execute_fail_on_error(service, ' start', roles=env.roles)
+    failed_hosts = check_server_status()
+    if failed_hosts:
+        warn("Server failed to start on these nodes: " +
+             ','.join(failed_hosts))
 
 
 @task
@@ -140,3 +153,22 @@ def restart():
     -x/--exclude-hosts.
     """
     execute_fail_on_error(service, ' restart', roles=env.roles)
+
+
+def check_server_status():
+    host_status = {}
+    for host in env.hosts:
+        time = 0
+        while time < RETRY_TIMEOUT:
+            result = execute_query(SERVER_CHECK_SQL, host, env.user)
+            host_status[host] = result
+            if not result:
+                run('sleep %d' % SLEEP_INTERVAL)
+                _LOGGER.debug("Status retrieval for the server failed after "
+                              "waiting for %d seconds. Retrying..." % time)
+                time += SLEEP_INTERVAL
+            else:
+                break
+
+    failed_hosts = [host for host, status in host_status.items() if not status]
+    return failed_hosts
