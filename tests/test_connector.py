@@ -15,6 +15,7 @@
 """
 tests for connector module
 """
+import fabric.api
 from mock import patch
 from prestoadmin.util import constants
 import utils
@@ -49,7 +50,13 @@ class TestConnector(utils.BaseTestCase):
                                        constants.REMOTE_CATALOG_DIR)
 
     @patch("prestoadmin.connector.remove_file")
-    def test_remove(self, remove_mock):
+    @patch("prestoadmin.connector.os.path.exists")
+    @patch("prestoadmin.connector.os.remove")
+    def test_remove(self, local_rm_mock, exists_mock, remote_rm_mock):
+        exists_mock.return_value = True
+        fabric.api.env.host = "localhost"
         connector.remove("tpch")
-        remove_mock.assert_called_with(constants.REMOTE_CATALOG_DIR +
-                                       "/tpch.properties")
+        remote_rm_mock.assert_called_with(constants.REMOTE_CATALOG_DIR +
+                                          "/tpch.properties")
+        local_rm_mock.assert_called_with(constants.CONNECTORS_DIR +
+                                         "/tpch.properties")
