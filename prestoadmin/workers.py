@@ -23,13 +23,11 @@ import logging
 import urlparse
 
 import configuration
-import prestoadmin
+from prestoadmin.util import constants
 import prestoadmin.util.fabricapi as util
 from fabric.api import env
 
 
-CONFIG_PATH = prestoadmin.main_dir + "/resources/workers.json"
-TMP_OUTPUT_DIR = configuration.TMP_CONF_DIR + "/workers"
 DEFAULT_PROPERTIES = {"node.properties":
                       {"node.environment": "presto",
                        "node.data-dir": "/var/lib/presto/data",
@@ -53,21 +51,19 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def get_conf():
-    conf = configuration.validate_presto_types(_get_conf_from_file())
+    conf = _get_conf()
+    for name in configuration.REQUIRED_FILES:
+        if name not in conf:
+            _LOGGER.debug("Coordinator configuration for %s not found.  "
+                          "Default configuration will be deployed", name)
     defaults = build_defaults()
     configuration.fill_defaults(conf, defaults)
     validate(conf)
     return conf
 
 
-def _get_conf_from_file():
-    try:
-        return configuration.get_conf_from_file(CONFIG_PATH)
-    except configuration.ConfigFileNotFoundError:
-        _LOGGER.debug("Workers configuration %s not found. Default "
-                      "configuration will be deployed."
-                      % CONFIG_PATH)
-        return {}
+def _get_conf():
+    return configuration.get_presto_conf(constants.WORKERS_DIR)
 
 
 def build_defaults():
@@ -75,8 +71,6 @@ def build_defaults():
     coordinator = util.get_coordinator_role()[0]
     conf["config.properties"]["discovery.uri"] = "http://" + coordinator \
                                                  + ":8080"
-
-    validate(conf)
     return conf
 
 
@@ -95,8 +89,8 @@ def validate(conf):
             raise configuration.ConfigurationError(
                 "discovery.uri should not be local host in a "
                 "multi-node cluster, but found " + urlparse.urlunparse(uri) +
-                "You may have encountered this error by "
+                ".  You may have encountered this error by "
                 "choosing a coordinator that is localhost and a worker that "
                 "is not.  The default discovery-uri is "
-                "http://coordinator:8080")
+                "http://<coordinator>:8080")
     return conf

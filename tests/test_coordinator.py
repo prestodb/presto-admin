@@ -110,21 +110,14 @@ class TestCoordinator(utils.BaseTestCase):
                                 "coordinator's config.properties",
                                 coordinator.validate, conf)
 
-    @patch('prestoadmin.configuration.get_conf_from_file',
-           side_effect=configuration.ConfigFileNotFoundError)
-    def test_conf_not_exists_is_default(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = "j"
-        env.roledefs['workers'] = ["K", "L"]
-        self.assertEqual(coordinator.get_conf(), coordinator.build_defaults())
-
-    @patch('prestoadmin.coordinator._get_conf_from_file')
+    @patch('prestoadmin.coordinator._get_conf')
     def test_get_conf_empty_is_default(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = "j"
         env.roledefs['workers'] = ["K", "L"]
         get_conf_from_file_mock.return_value = {}
         self.assertEqual(coordinator.get_conf(), coordinator.build_defaults())
 
-    @patch('prestoadmin.coordinator.configuration.get_conf_from_file')
+    @patch('prestoadmin.coordinator.configuration.get_presto_conf')
     def test_get_conf(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = "j"
         env.roledefs['workers'] = ["K", "L"]
@@ -153,14 +146,3 @@ class TestCoordinator(utils.BaseTestCase):
                                           "task.max-memory": "1GB"}
                     }
         self.assertEqual(coordinator.get_conf(), expected)
-
-    @patch('prestoadmin.coordinator._get_conf_from_file')
-    def test_get_conf_invalid(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = "j"
-        env.roledefs['workers'] = ["K", "L"]
-        file_conf = {"node.properties": "my string"}
-        get_conf_from_file_mock.return_value = file_conf
-        self.assertRaisesRegexp(configuration.ConfigurationError,
-                                "node.properties must be an object with "
-                                "key-value property pairs",
-                                coordinator.get_conf)

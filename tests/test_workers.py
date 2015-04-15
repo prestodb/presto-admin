@@ -82,24 +82,18 @@ class TestWorkers(utils.BaseTestCase):
                                 "worker's config.properties",
                                 workers.validate, conf)
 
-    @patch('prestoadmin.configuration.get_conf_from_file',
-           side_effect=configuration.ConfigFileNotFoundError)
-    def test_conf_not_exists_is_default(self, get_conf_from_file_mock):
+    @patch('prestoadmin.workers._get_conf')
+    def test_get_conf_empty_is_default(self, get_conf_mock):
         env.roledefs['coordinator'] = ["j"]
+        get_conf_mock.return_value = {}
         self.assertEqual(workers.get_conf(), workers.build_defaults())
 
-    @patch('prestoadmin.workers._get_conf_from_file')
-    def test_get_conf_empty_is_default(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = ["j"]
-        get_conf_from_file_mock.return_value = {}
-        self.assertEqual(workers.get_conf(), workers.build_defaults())
-
-    @patch('prestoadmin.workers.configuration.get_conf_from_file')
-    def test_get_conf(self, get_conf_from_file_mock):
+    @patch('prestoadmin.workers.configuration.get_presto_conf')
+    def test_get_conf(self, get_presto_conf_mock):
         env.roledefs['coordinator'] = ["j"]
         file_conf = {"node.properties": {"my-property": "value",
                                          "node.environment": "test"}}
-        get_conf_from_file_mock.return_value = file_conf
+        get_presto_conf_mock.return_value = file_conf
         expected = {"node.properties":
                     {"my-property": "value",
                      "node.environment": "test",
@@ -122,17 +116,7 @@ class TestWorkers(utils.BaseTestCase):
                     }
         self.assertEqual(workers.get_conf(), expected)
 
-    @patch('prestoadmin.workers._get_conf_from_file')
-    def test_get_conf_invalid(self, get_conf_from_file_mock):
-        env.roledefs['coordinator'] = ["j"]
-        file_conf = {"node.properties": "my string"}
-        get_conf_from_file_mock.return_value = file_conf
-        self.assertRaisesRegexp(configuration.ConfigurationError,
-                                "node.properties must be an object with "
-                                "key-value property pairs",
-                                workers.get_conf)
-
-    @patch('prestoadmin.workers._get_conf_from_file')
+    @patch('prestoadmin.workers._get_conf')
     @patch('prestoadmin.workers.util.get_coordinator_role')
     def test_worker_not_localhost(self, coord_mock, get_conf_mock):
         get_conf_mock.return_value = {}

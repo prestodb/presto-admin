@@ -68,7 +68,7 @@ def get_conf():
 
 
 def _get_conf_from_file():
-    return config.get_conf_from_file(CONFIG_PATH)
+    return config.get_conf_from_json_file(CONFIG_PATH)
 
 
 def set_conf_interactive():

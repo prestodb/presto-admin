@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import re
+
+from mock import patch
 
 from prestoadmin import configuration as config
 import prestoadmin
@@ -19,25 +22,92 @@ import utils
 
 
 class TestConfiguration(utils.BaseTestCase):
-    def test_file_does_not_exist(self):
+    def test_file_does_not_exist_json(self):
         self.assertRaisesRegexp(config.ConfigFileNotFoundError,
                                 "Missing configuration file at",
-                                config.get_conf_from_file,
+                                config.get_conf_from_json_file,
                                 "does/not/exist/conf.json")
 
-    def test_file_is_empty(self):
+    def test_file_is_empty_json(self):
         emptyconf = {}
-        conf = config.get_conf_from_file(prestoadmin.main_dir +
-                                         "/tests/files/empty.json")
+        conf = config.get_conf_from_json_file(prestoadmin.main_dir +
+                                              "/tests/files/empty.txt")
+        self.assertEqual(conf, emptyconf)
+
+    def test_file_is_empty_properties(self):
+        emptyconf = {}
+        conf = config.get_conf_from_properties_file(
+            prestoadmin.main_dir + "/tests/files/empty.txt")
+        self.assertEqual(conf, emptyconf)
+
+    def test_file_is_empty_config(self):
+        emptyconf = []
+        conf = config.get_conf_from_config_file(
+            prestoadmin.main_dir + "/tests/files/empty.txt")
         self.assertEqual(conf, emptyconf)
 
     def test_invalid_json(self):
         self.assertRaisesRegexp(config.ConfigurationError,
                                 "Expecting , delimiter: line 3 column 3 "
                                 "\(char 19\)",
-                                config.get_conf_from_file,
+                                config.get_conf_from_json_file,
                                 prestoadmin.main_dir +
                                 "/tests/files/invalid_json_conf.json")
+
+    def test_get_config(self):
+        config_file = os.path.join(prestoadmin.main_dir, "tests", "files",
+                                   "valid.config")
+        conf = config.get_conf_from_config_file(config_file)
+        self.assertEqual(conf, ["prop1", "prop2", "prop3"])
+
+    def test_get_properties(self):
+        config_file = os.path.join(prestoadmin.main_dir, "tests", "files",
+                                   "valid.properties")
+        conf = config.get_conf_from_properties_file(config_file)
+        self.assertEqual(conf, {"a": "1", "b": "2", "c": "3"})
+
+    @patch('__builtin__.open')
+    def test_get_properties_ignores_whitespace(self, open_mock):
+        file_manager = open_mock.return_value.__enter__.return_value
+        file_manager.read.return_value = "key1=value1 \n   \n key2=value2"
+        conf = config.get_conf_from_properties_file("/dummy/path")
+        self.assertEqual(conf, {"key1": "value1", "key2": "value2"})
+
+    def test_get_properties_invalid(self):
+        config_file = os.path.join(prestoadmin.main_dir, "tests", "files",
+                                   "invalid.properties")
+        self.assertRaisesRegexp(config.ConfigurationError,
+                                "abcd is not in the expected format: "
+                                "<property>=<value>",
+                                config.get_conf_from_properties_file,
+                                config_file)
+
+    @patch("prestoadmin.configuration.os.path.isdir")
+    @patch("prestoadmin.configuration.os.listdir")
+    @patch("prestoadmin.configuration.get_conf_from_properties_file")
+    @patch("prestoadmin.configuration.get_conf_from_config_file")
+    def test_get_presto_conf(self, config_mock, props_mock, listdir_mock,
+                             isdir_mock):
+        isdir_mock.return_value = True
+        listdir_mock.return_value = ["log.properties", "jvm.config", ]
+        config_mock.return_value = ["prop1", "prop2"]
+        props_mock.return_value = {"a": "1", "b": "2"}
+        conf = config.get_presto_conf("dummy/dir")
+        config_mock.assert_called_with("dummy/dir/jvm.config")
+        props_mock.assert_called_with("dummy/dir/log.properties")
+        self.assertEqual(conf, {"log.properties": {"a": "1", "b": "2"},
+                                "jvm.config": ["prop1", "prop2"]})
+
+    @patch("prestoadmin.configuration.os.listdir")
+    @patch("prestoadmin.configure.os.path.isdir")
+    @patch("prestoadmin.configuration.get_conf_from_properties_file")
+    def test_get_non_presto_file(self, get_mock, isdir_mock, listdir_mock):
+        isdir_mock.return_value = True
+        listdir_mock.return_value = ["test.properties"]
+        self.assertFalse(config.get_conf_from_properties_file.called)
+
+    def test_conf_not_exists_is_empty(self):
+        self.assertEqual(config.get_presto_conf("/does/not/exist"), {})
 
     def test_fill_defaults_no_missing(self):
         orig = {"key1": "val1", "key2": "val2", "key3": "val3"}

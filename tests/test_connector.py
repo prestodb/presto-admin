@@ -22,34 +22,31 @@ from prestoadmin import configuration, connector
 
 
 class TestConnector(utils.BaseTestCase):
-    @patch("prestoadmin.connector.configuration.get_conf_from_file")
-    def test_add_not_exist(self, get_conf_mock):
-        get_conf_mock.return_value = {}
+    @patch("prestoadmin.connector.os.path.isfile")
+    def test_add_not_exist(self, isfile_mock):
+        isfile_mock.return_value = False
         self.assertRaisesRegexp(configuration.ConfigurationError,
                                 "Configuration for connector dummy not found",
                                 connector.add, "dummy")
 
-    @patch("prestoadmin.connector.configure.configure")
-    @patch("prestoadmin.connector.configuration.get_conf_from_file")
-    def test_add_exists(self, get_conf_mock, configure_mock):
-        connector_conf = {"tpch.properties": {"connector.name": "tpch"},
-                          "another.properties": {"connector.name": "another"}}
-        get_conf_mock.return_value = connector_conf
-        tpch_conf = {"tpch.properties": {"connector.name": "tpch"}}
+    @patch("prestoadmin.connector.configure.deploy")
+    @patch("prestoadmin.connector.os.path.isfile")
+    def test_add_exists(self, isfile_mock, deploy_mock):
+        isfile_mock.return_value = True
         connector.add("tpch")
-        configure_mock.assert_called_with(tpch_conf, constants.TMP_CONF_DIR,
-                                          constants.REMOTE_CATALOG_DIR)
+        deploy_mock.assert_called_with(["tpch.properties"],
+                                       constants.CONNECTORS_DIR,
+                                       constants.REMOTE_CATALOG_DIR)
 
-    @patch("prestoadmin.connector.configure.configure")
-    @patch("prestoadmin.connector.configuration.get_conf_from_file")
-    def test_add_all(self, get_conf_mock, configure_mock):
-        connector_conf = {"tpch.properties": {"connector.name": "tpch"},
-                          "another.properties": {"connector.name": "another"}}
-        get_conf_mock.return_value = connector_conf
+    @patch("prestoadmin.connector.configure.deploy")
+    @patch("prestoadmin.connector.os.listdir")
+    def test_add_all(self, listdir_mock, deploy_mock):
+        catalogs = ["tpch.properties", "another.properties"]
+        listdir_mock.return_value = catalogs
         connector.add()
-        configure_mock.assert_called_with(connector_conf,
-                                          constants.TMP_CONF_DIR,
-                                          constants.REMOTE_CATALOG_DIR)
+        deploy_mock.assert_called_with(catalogs,
+                                       constants.CONNECTORS_DIR,
+                                       constants.REMOTE_CATALOG_DIR)
 
     @patch("prestoadmin.connector.remove_file")
     def test_remove(self, remove_mock):

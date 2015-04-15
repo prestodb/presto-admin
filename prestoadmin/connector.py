@@ -23,6 +23,7 @@ from prestoadmin.util import constants
 import configuration
 import configure
 import logging
+import fabric.utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,20 +41,30 @@ def add(name=None):
     defined by tpch.properties in connectors.json.
 
     If no connector name is specified, then  configurations for all connectors
-    in connectors.json will be deployed.
+    in the connector directory will be deployed
     """
-    conf = configuration.get_conf_from_file(constants.CONNECTORS_CONFIG_FILE)
     if name:
-        prop = name + ".properties"
-        try:
-            value = conf[prop]
-            conf = {prop: value}
-        except KeyError:
+        filename = name + ".properties"
+        if not os.path.isfile(
+                os.path.join(constants.CONNECTORS_DIR, filename)):
             raise configuration.ConfigurationError(
                 "Configuration for connector " + name + " not found")
-    _LOGGER.info("Adding connector configurations: " + str(conf.keys()))
-    configure.configure(conf, constants.TMP_CONF_DIR,
-                        constants.REMOTE_CATALOG_DIR)
+        filenames = [filename]
+    elif not os.path.isdir(constants.CONNECTORS_DIR):
+        raise configuration.ConfigurationError(
+            "Cannot add connectors because directory %s does not exist",
+            constants.CONNECTORS_DIR)
+    else:
+        filenames = os.listdir(constants.CONNECTORS_DIR)
+        if not filenames:
+            fabric.utils.warn(
+                "Directory %s is empty. No connectors will be deployed",
+                constants.CONNECTORS_DIR)
+
+    _LOGGER.info("Adding connector configurations: " + str(filenames))
+
+    configure.deploy(filenames, constants.CONNECTORS_DIR,
+                     constants.REMOTE_CATALOG_DIR)
 
 
 @task

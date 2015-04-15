@@ -30,8 +30,10 @@ LOGGING_CONFIG_FILE_DIRECTORIES = [
 ]
 
 # local configuration
-CONNECTORS_CONFIG_FILE = os.path.join(prestoadmin.main_dir,
-                                      'resources/connectors.json')
+RESOURCES_DIR = os.path.join(prestoadmin.main_dir, "resources")
+COORDINATOR_DIR = os.path.join(RESOURCES_DIR, "coordinator")
+WORKERS_DIR = os.path.join(RESOURCES_DIR, "workers")
+CONNECTORS_DIR = os.path.join(RESOURCES_DIR, "connectors")
 TMP_CONF_DIR = os.path.join(prestoadmin.main_dir, "tmp/presto-conf")
 
 # remote configuration

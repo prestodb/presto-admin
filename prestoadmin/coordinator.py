@@ -22,10 +22,8 @@ import logging
 import configuration
 import copy
 from fabric.api import env
-import prestoadmin
+from prestoadmin.util import constants
 
-CONFIG_PATH = prestoadmin.main_dir + "/resources/coordinator.json"
-TMP_OUTPUT_DIR = configuration.TMP_CONF_DIR + "/coordinator"
 DEFAULT_PROPERTIES = {"node.properties":
                       {"node.environment": "presto",
                        "node.data-dir": "/var/lib/presto/data",
@@ -50,21 +48,19 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def get_conf():
-    conf = configuration.validate_presto_types(_get_conf_from_file())
+    conf = _get_conf()
+    for name in configuration.REQUIRED_FILES:
+        if name not in conf:
+            _LOGGER.debug("Coordinator configuration for %s not found.  "
+                          "Default configuration will be deployed", name)
     defaults = build_defaults()
     configuration.fill_defaults(conf, defaults)
     validate(conf)
     return conf
 
 
-def _get_conf_from_file():
-    try:
-        return configuration.get_conf_from_file(CONFIG_PATH)
-    except configuration.ConfigFileNotFoundError:
-        _LOGGER.debug("Coordinator configuration %s not found. Default "
-                      "configuration will be deployed."
-                      % CONFIG_PATH)
-        return {}
+def _get_conf():
+    return configuration.get_presto_conf(constants.COORDINATOR_DIR)
 
 
 def build_defaults():
