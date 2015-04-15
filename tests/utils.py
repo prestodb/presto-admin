@@ -5,6 +5,7 @@ unittest.TestCase
 """
 
 import copy
+import logging
 import re
 import StringIO
 import sys
@@ -22,6 +23,7 @@ class BaseTestCase(unittest.TestCase):
     def setUp(self):
         self.capture_stdout_stderr()
         self.env_vars = copy.deepcopy(env)
+        logging.disable(logging.CRITICAL)
 
     def capture_stdout_stderr(self):
         sys.stdout = self.test_stdout = StringIO.StringIO()
@@ -60,3 +62,4 @@ class BaseTestCase(unittest.TestCase):
         self.restore_stdout_stderr()
         env.clear()
         env.update(self.env_vars)
+        logging.disable(logging.NOTSET)
