@@ -46,18 +46,18 @@ def add(name=None):
         filename = name + ".properties"
         if not os.path.isfile(
                 os.path.join(constants.CONNECTORS_DIR, filename)):
-            raise configuration.ConfigurationError(
+            raise configuration.ConfigFileNotFoundError(
                 "Configuration for connector " + name + " not found")
         filenames = [filename]
     elif not os.path.isdir(constants.CONNECTORS_DIR):
-        raise configuration.ConfigurationError(
-            "Cannot add connectors because directory %s does not exist",
-            constants.CONNECTORS_DIR)
+        message = ("Cannot add connectors because directory %s does not exist"
+                   % constants.CONNECTORS_DIR)
+        raise configuration.ConfigFileNotFoundError(message)
     else:
         filenames = os.listdir(constants.CONNECTORS_DIR)
         if not filenames:
             fabric.utils.warn(
-                "Directory %s is empty. No connectors will be deployed",
+                "Directory %s is empty. No connectors will be deployed" %
                 constants.CONNECTORS_DIR)
 
     _LOGGER.info("Adding connector configurations: " + str(filenames))

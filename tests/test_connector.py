@@ -40,8 +40,9 @@ class TestConnector(utils.BaseTestCase):
                                        constants.REMOTE_CATALOG_DIR)
 
     @patch("prestoadmin.connector.configure.deploy")
+    @patch("prestoadmin.connector.os.path.isdir")
     @patch("prestoadmin.connector.os.listdir")
-    def test_add_all(self, listdir_mock, deploy_mock):
+    def test_add_all(self, listdir_mock, isdir_mock, deploy_mock):
         catalogs = ["tpch.properties", "another.properties"]
         listdir_mock.return_value = catalogs
         connector.add()
@@ -49,14 +50,24 @@ class TestConnector(utils.BaseTestCase):
                                        constants.CONNECTORS_DIR,
                                        constants.REMOTE_CATALOG_DIR)
 
-    @patch("prestoadmin.connector.remove_file")
+    @patch("prestoadmin.connector.configure.deploy")
+    @patch("prestoadmin.connector.os.path.isdir")
+    def test_add_all_fails_if_dir_not_there(self, isdir_mock, deploy_mock):
+        isdir_mock.return_value = False
+        self.assertRaisesRegexp(configuration.ConfigFileNotFoundError,
+                                r"Cannot add connectors because directory .+"
+                                r" does not exist",
+                                connector.add)
+        self.assertFalse(deploy_mock.called)
+
+    @patch("prestoadmin.connector.sudo")
     @patch("prestoadmin.connector.os.path.exists")
     @patch("prestoadmin.connector.os.remove")
-    def test_remove(self, local_rm_mock, exists_mock, remote_rm_mock):
+    def test_remove(self, local_rm_mock, exists_mock, sudo_mock):
         exists_mock.return_value = True
         fabric.api.env.host = "localhost"
         connector.remove("tpch")
-        remote_rm_mock.assert_called_with(constants.REMOTE_CATALOG_DIR +
-                                          "/tpch.properties")
+        sudo_mock.assert_called_with("rm " + constants.REMOTE_CATALOG_DIR +
+                                     "/tpch.properties")
         local_rm_mock.assert_called_with(constants.CONNECTORS_DIR +
                                          "/tpch.properties")

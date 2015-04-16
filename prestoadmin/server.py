@@ -20,8 +20,9 @@ from fabric.decorators import runs_once
 from fabric.operations import run
 from fabric.utils import abort, warn
 
-from prestoadmin import connector
+from prestoadmin.configuration import ConfigFileNotFoundError
 from prestoadmin import configure
+from prestoadmin import connector
 from prestoadmin import topology
 from prestoadmin.prestoclient import execute_query
 from prestoadmin.util.fabricapi import execute_fail_on_error
@@ -92,7 +93,10 @@ def rpm_install(rpm_name):
 
 def update_configs():
     configure.all()
-    connector.add()
+    try:
+        connector.add()
+    except ConfigFileNotFoundError:
+        _LOGGER.info("No connector directory found, not adding connectors.")
 
 
 @task
