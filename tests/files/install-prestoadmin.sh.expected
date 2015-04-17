@@ -7,3 +7,13 @@ python third-party/virtualenv-12.0.7/virtualenv.py presto-admin-install
 source presto-admin-install/bin/activate
 pip install --no-index --find-links=third-party wheel_name.whl
 deactivate
+
+cat > `pwd`/presto-admin << EOT
+#!/bin/bash
+export VIRTUAL_ENV="`pwd`/presto-admin-install"
+export PATH="\$VIRTUAL_ENV/bin:\$PATH"
+unset PYTHON_HOME
+
+exec presto-admin \$@
+EOT
+chmod 755 `pwd`/presto-admin
