@@ -67,15 +67,21 @@ class TestInstall(utils.BaseTestCase):
                                 local_path)
 
     @patch('prestoadmin.topology.set_conf_interactive')
-    @patch('prestoadmin.main.topology.get_coordinator')
-    @patch('prestoadmin.main.topology.get_workers')
-    def test_interactive_install(self,  workers_mock, coord_mock,
+    @patch('prestoadmin.topology.get_conf')
+    def test_interactive_install(self,  get_conf_mock,
                                  mock_set_interactive):
         env.topology_config_not_found = ConfigurationError()
-        coord_mock.return_value = 'a'
-        workers_mock.return_value = ['b']
+        get_conf_mock.return_value = {'username': 'bob', 'port': '225',
+                                      'coordinator': 'master',
+                                      'workers': ['slave1', 'slave2']}
         server.set_hosts()
-        self.assertEqual(server.env.hosts, ['b', 'a'])
+        self.assertEqual(server.env.user, 'bob'),
+        self.assertEqual(server.env.port, '225')
+        self.assertEqual(server.env.hosts, ['master', 'slave1', 'slave2'])
+        self.assertEqual(server.env.roledefs['all'],
+                         ['master', 'slave1', 'slave2'])
+        self.assertEqual(server.env.roledefs['coordinator'], ['master'])
+        self.assertEqual(server.env.roledefs['worker'], ['slave1', 'slave2'])
 
     def test_set_host_with_exclude(self):
         env.hosts = ['a', 'b', 'bad']

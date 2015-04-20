@@ -223,29 +223,23 @@ def is_valid_hostname(hostname):
     return re.match(valid_name, hostname)
 
 
-def get_coordinator():
+def dedup_list(host_list):
+    deduped_list = []
+    for item in host_list:
+        if item not in deduped_list:
+            deduped_list.append(item)
+    return deduped_list
+
+
+def set_env_from_conf():
     conf = get_conf()
-    return conf["coordinator"]
 
+    env.user = conf["username"]
+    env.port = conf["port"]
+    env.roledefs["coordinator"] = [conf["coordinator"]]
+    env.roledefs["worker"] = conf["workers"]
+    env.roledefs["all"] = dedup_list(util.get_coordinator_role()
+                                     + util.get_worker_role())
 
-def get_workers():
-    conf = get_conf()
-    return conf["workers"]
-
-
-def get_username():
-    conf = get_conf()
-    return conf["username"]
-
-
-def get_port():
-    conf = get_conf()
-    return conf["port"]
-
-
-def set_roledefs_from_conf():
-    env.roledefs['coordinator'] = [get_coordinator()]
-    env.roledefs['worker'] = get_workers()
-    env.roledefs['all'] = env.roledefs['worker'] + env.roledefs['coordinator']
-    if env.hosts == []:
-        env.hosts = env.roledefs['all'][:]
+    if not env.hosts:
+        env.hosts = env.roledefs["all"][:]

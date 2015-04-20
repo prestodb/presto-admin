@@ -70,7 +70,7 @@ def set_hosts():
     if 'topology_config_not_found' in env and env.topology_config_not_found \
             is not None:
         topology.set_conf_interactive()
-        topology.set_roledefs_from_conf()
+        topology.set_env_from_conf()
     return [host for host in env.hosts if host not in env.exclude_hosts]
 
 

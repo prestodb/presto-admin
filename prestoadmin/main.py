@@ -669,20 +669,9 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     return commands_to_run
 
 
-def dedup_list(host_list):
-    deduped_list = []
-    for item in host_list:
-        if item not in deduped_list:
-            deduped_list.append(item)
-    return deduped_list
-
-
 def load_topology():
     try:
-        state.env.roledefs['coordinator'] = [topology.get_coordinator()]
-        state.env.roledefs['worker'] = topology.get_workers()
-        state.env['port'] = topology.get_port()
-        state.env['user'] = topology.get_username()
+        topology.set_env_from_conf()
     except ConfigFileNotFoundError as e:
         # If there is no topology file, just store empty
         # roledefs for now and save the error in the environment variables.
@@ -691,11 +680,6 @@ def load_topology():
         # out at a later point.
         state.env['topology_config_not_found'] = e
         pass
-
-    state.env.roledefs['all'] = dedup_list(state.env.roledefs['worker'] +
-                                           state.env.roledefs['coordinator'])
-    # All commands will be run on all hosts by default
-    state.env.hosts = state.env.roledefs['all'][:]
 
 
 @entry_point('Presto Admin', version=__version__,

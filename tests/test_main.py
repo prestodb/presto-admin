@@ -120,27 +120,25 @@ class TestMain(utils.BaseTestCase):
         )
         self.assertTrue("Available commands:" in self.test_stdout.getvalue())
 
-    @patch('prestoadmin.main.topology')
-    def test_load_topology(self, topology_mock):
-        topology_mock.get_coordinator.return_value = 'hello'
-        topology_mock.get_workers.return_value = ['a', 'b']
-        topology_mock.get_port.return_value = '1234'
-        topology_mock.get_username.return_value = 'user'
+    @patch('prestoadmin.main.topology.get_conf')
+    def test_load_topology(self, get_conf_mock):
+        get_conf_mock.return_value = {'username': 'user',
+                                      'port': '1234',
+                                      'coordinator': 'hello',
+                                      'workers': ['a', 'b']}
         main.load_topology()
         self.assertEqual(main.state.env.roledefs,
                          {'coordinator': ['hello'], 'worker': ['a', 'b'],
-                          'all': ['a', 'b', 'hello']})
+                          'all': ['hello', 'a', 'b']})
         self.assertEqual(main.state.env.port, '1234')
         self.assertEqual(main.state.env.user, 'user')
-        self.assertEqual(main.state.env.hosts, ['a', 'b', 'hello'])
+        self.assertEqual(main.state.env.hosts, ['hello', 'a', 'b'])
 
-    @patch('prestoadmin.main.topology')
-    def test_load_topology_not_exists(self, topology_mock):
+    @patch('prestoadmin.main.topology.get_conf')
+    def test_load_topology_not_exists(self, get_conf_mock):
         e = ConfigFileNotFoundError()
 
-        def func():
-            raise e
-        topology_mock.get_coordinator = func
+        get_conf_mock.side_effect = e
         main.load_topology()
         self.assertEqual(main.state.env.roledefs,
                          {'coordinator': [], 'worker': [], 'all': []})
@@ -148,19 +146,18 @@ class TestMain(utils.BaseTestCase):
         self.assertNotEqual(main.state.env.user, 'user')
         self.assertEqual(main.state.env.topology_config_not_found, e)
 
-    @patch('prestoadmin.main.topology')
-    def test_load_topology_failure(self, topology_mock):
+    @patch('prestoadmin.topology.get_conf')
+    def test_load_topology_failure(self, get_conf_mock):
         e = ConfigurationError()
 
-        def func():
-            raise e
-        topology_mock.get_coordinator = func
+        get_conf_mock.side_effect = e
         self.assertRaises(ConfigurationError, main.load_topology)
 
-    @patch('prestoadmin.main.topology')
-    def test_hosts_on_cli_overrides_topology(self, topology_mock):
-        topology_mock.get_coordinator.return_value = 'hello'
-        topology_mock.get_workers.return_value = ['a', 'b']
+    @patch('prestoadmin.main.topology.get_conf')
+    def test_hosts_on_cli_overrides_topology(self, get_conf_mock):
+        get_conf_mock.return_value = {'username': 'root', 'port': '22',
+                                      'coordinator': 'hello',
+                                      'workers': ['a', 'b']}
         try:
             main.main(['--hosts', 'hello,a', 'topology', 'show'])
         except SystemExit as e:
@@ -168,7 +165,7 @@ class TestMain(utils.BaseTestCase):
 
         self.assertEqual(main.state.env.roledefs,
                          {'coordinator': ['hello'], 'worker': ['a', 'b'],
-                          'all': ['a', 'b', 'hello']})
+                          'all': ['hello', 'a', 'b']})
         self.assertEqual(main.state.env.hosts, ['hello', 'a'])
         self.assertEqual(main.api.env.hosts, ['hello', 'a'])
 
@@ -204,17 +201,16 @@ class TestMain(utils.BaseTestCase):
             self.assertEqual(0, e.code)
         pass_mock.assert_called_once_with('Initial value for env.password: ')
 
-    @patch('prestoadmin.main.topology')
-    def test_env_vars_persisted(self, topology_mock):
-        topology_mock.get_coordinator.return_value = 'hello'
-        topology_mock.get_workers.return_value = ['a', 'b']
-        topology_mock.get_port.return_value = '1234'
-        topology_mock.get_username.return_value = 'user'
+    @patch('prestoadmin.main.topology.get_conf')
+    def test_env_vars_persisted(self, get_conf_mock):
+        get_conf_mock.return_value = {'username': 'user', 'port': '1234',
+                                      'coordinator': 'hello',
+                                      'workers': ['a', 'b']}
         try:
             main.main(['topology', 'show'])
         except SystemExit as e:
             self.assertEqual(e.code, 0)
-        self.assertEqual(['a', 'b', 'hello'], main.state.env.hosts)
+        self.assertEqual(['hello', 'a', 'b'], main.state.env.hosts)
 
     @patch('prestoadmin.topology._get_conf_from_file')
     def test_topology_defaults_override_fabric_defaults(self, get_conf_mock):
