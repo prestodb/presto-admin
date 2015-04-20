@@ -92,7 +92,6 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
         build_path = os.path.join('build', 'prestoadmin')
         self.bdist.package_dependencies(build_path)
 
-        requirements_dir = os.path.join(packaging_dir, 'third-party.txt')
         calls = [call(['wheel',
                        '--wheel-dir=build/prestoadmin/third-party',
                        '--no-cache',
