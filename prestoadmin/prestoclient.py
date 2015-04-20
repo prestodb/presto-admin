@@ -16,63 +16,124 @@ from httplib import HTTPConnection, HTTPException
 import logging
 import socket
 import json
+from urllib2 import HTTPError, urlopen, URLError
 from prestoadmin.util.exception import InvalidArgumentError
+
 
 _LOGGER = logging.getLogger(__name__)
 URL_TIMEOUT_MS = 5000
+NUM_ROWS = 1000
+DATA_RESP = "data"
+NEXT_URI_RESP = "nextUri"
 
 
-def execute_query(sql, server, user, port=8080, schema="default",
-                  catalog="hive"):
-    """
-    Execute a query connecting to Presto server using passed parameters
+class PrestoClient:
+    response_from_server = {}
+    # rows returned by the query
+    rows = []
+    next_uri = ""
 
-    :param server: IP Address where the server runs
-    :param port: Port running the presto server (default=8080)
-    :param sql: sql query to be executed
-    :param schema: Presto schema to be used while executing query
-    (default=default)
-    :param catalog: Catalog to be used by the server
-    :return: True or False exit status
-    """
-    if sql == "":
-        raise InvalidArgumentError("SQL query missing")
+    def __init__(self, server, user, port=8080):
+        self.server = server
+        self.user = user
+        self.port = port
 
-    if server == "":
-        raise InvalidArgumentError("Server IP missing")
+    def execute_query(self, sql, schema="default", catalog="hive"):
+        """
+        Execute a query connecting to Presto server using passed parameters
 
-    if user == "":
-        raise InvalidArgumentError("Username missing")
+        :param sql: sql query to be executed
+        :param schema: Presto schema to be used while executing query
+        (default=default)
+        :param catalog: Catalog to be used by the server
+        :return: True or False exit status
+        """
+        if not sql:
+            raise InvalidArgumentError("SQL query missing")
 
-    headers = {"X-Presto-Catalog": catalog,
-               "X-Presto-Schema": schema,
-               "X-Presto-User": user}
+        if not self.server:
+            raise InvalidArgumentError("Server IP missing")
 
-    try:
-        _LOGGER.info("Connecting to server at: " + server +
-                     ":" + str(port) + "/" + user)
-        conn = HTTPConnection(server, port, False, URL_TIMEOUT_MS)
-        conn.request("POST", "/v1/statement", sql, headers)
-        response = conn.getresponse()
+        if not self.user:
+            raise InvalidArgumentError("Username missing")
 
-        if response.status != 200:
+        headers = {"X-Presto-Catalog": catalog,
+                   "X-Presto-Schema": schema,
+                   "X-Presto-User": self.user}
+
+        try:
+            _LOGGER.info("Connecting to server at: " + self.server +
+                         ":" + str(self.port) + " as user " + self.user)
+            conn = HTTPConnection(self.server, self.port, False,
+                                  URL_TIMEOUT_MS)
+            conn.request("POST", "/v1/statement", sql, headers)
+            response = conn.getresponse()
+
+            if response.status != 200:
+                conn.close()
+                _LOGGER.error("Connection error: "
+                              + str(response.status) + " " + response.reason)
+                return False
+
+            answer = response.read()
             conn.close()
-            _LOGGER.error("Connection error: "
-                          + str(response.status) + " " + response.reason)
+
+            self.response_from_server = json.loads(answer)
+            return True
+        except (HTTPException, socket.error):
+            _LOGGER.error("Error connecting to presto server at: " +
+                          self.server + ":" + str(self.port))
             return False
 
-        answer = response.read()
-        conn.close()
+    def get_response_from(self, uri):
+        """
+        Sends a GET request to the Presto server at the specified next_uri
+        and updates the response
+        """
+        try:
+            conn = urlopen(uri, None, URL_TIMEOUT_MS)
+            answer = conn.read()
+            conn.close()
 
-        response_from_server = json.loads(answer)
-        get_results_from(response_from_server)
-        return True
-    except (HTTPException, socket.error):
-        _LOGGER.error("Error connecting to presto server at: " +
-                      server + ":" + str(port))
-        return False
+            self.response_from_server = json.loads(answer)
+            return True
+        except (HTTPError, URLError) as e:
+            _LOGGER.error("Error opening the presto response uri: " +
+                          str(e.reason))
+            return False
 
+    def build_results_from_response(self):
+        if NEXT_URI_RESP in self.response_from_server:
+            self.next_uri = self.response_from_server[NEXT_URI_RESP]
+        else:
+            self.next_uri = ""
 
-def get_results_from(response_from_server):
-    # TODO: Implement various getters/api after analyzing the response
-    pass
+        if DATA_RESP in self.response_from_server:
+            if self.rows:
+                self.rows.extend(self.response_from_server[DATA_RESP])
+            else:
+                self.rows = self.response_from_server[DATA_RESP]
+
+    def get_rows(self, num_of_rows=NUM_ROWS):
+        """
+        Get the rows returned from the query.
+        :param num_of_rows: to be retrieved. 1000 by default
+        :return:
+        """
+        if num_of_rows == 0:
+            return []
+
+        self.build_results_from_response()
+
+        if not self.get_next_uri():
+            return []
+
+        while self.get_next_uri():
+            if not self.get_response_from(self.get_next_uri()):
+                return []
+            if (len(self.rows) <= num_of_rows):
+                self.build_results_from_response()
+        return self.rows
+
+    def get_next_uri(self):
+        return self.next_uri

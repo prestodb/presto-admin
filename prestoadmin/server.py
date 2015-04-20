@@ -16,26 +16,31 @@ import logging
 import os
 
 from fabric.api import task, sudo, put, env
+from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
 from fabric.operations import run
+from fabric.tasks import execute
 from fabric.utils import abort, warn
 
-from prestoadmin.configuration import ConfigFileNotFoundError
 from prestoadmin import configure
 from prestoadmin import connector
 from prestoadmin import topology
-from prestoadmin.prestoclient import execute_query
+from prestoadmin.configuration import ConfigFileNotFoundError
+from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.util.fabricapi import execute_fail_on_error
 
 
-__all__ = ['install', 'uninstall', 'start', 'stop', 'restart']
+__all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 
 PRESTO_ADMIN_PACKAGES_PATH = "/opt/presto-admin/packages"
 INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 60
 SLEEP_INTERVAL = 5
-SERVER_CHECK_SQL = "select * from sys.node"
-
+SERVER_CHECK_SQL = "select * from system.runtime.nodes"
+STATUS_INFO_SQL = "select http_uri, node_version, active from " \
+                  "system.runtime.nodes"
+CONNECTOR_INFO_SQL = "select catalog_name from system.metadata.catalogs"
+PRESTO_RPM_VERSION = 100
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -125,6 +130,7 @@ def start():
     servers that did not start, if any, are reported at the end.
     """
     execute_fail_on_error(service, ' start', roles=env.roles)
+    execute(check_presto_version, roles=env.roles)
     failed_hosts = check_server_status()
     if failed_hosts:
         warn("Server failed to start on these nodes: " +
@@ -151,12 +157,28 @@ def restart():
     execute_fail_on_error(service, ' restart', roles=env.roles)
 
 
+def check_presto_version():
+    with settings(hide('warnings', 'stdout'), warn_only=True):
+        version = run("rpm -q --qf \"%{VERSION}\\n\" presto")
+        _LOGGER.debug("Presto rpm version: " + version)
+    try:
+        float(version)
+        version_number = version.strip().split('.')
+        if int(version_number[1]) < PRESTO_RPM_VERSION:
+            warn("%s: Status check requires Presto version >= 0.%d"
+                 % (env.host, PRESTO_RPM_VERSION))
+    except ValueError:
+        warn("%s: No suitable presto version found" % env.host)
+        pass
+
+
 def check_server_status():
     host_status = {}
     for host in env.hosts:
         time = 0
         while time < RETRY_TIMEOUT:
-            result = execute_query(SERVER_CHECK_SQL, host, env.user)
+            client = PrestoClient(host, env.user)
+            result = client.execute_query(SERVER_CHECK_SQL)
             host_status[host] = result
             if not result:
                 run('sleep %d' % SLEEP_INTERVAL)
@@ -168,3 +190,87 @@ def check_server_status():
 
     failed_hosts = [host for host, status in host_status.items() if not status]
     return failed_hosts
+
+
+def run_sql(host, sql):
+    client = PrestoClient(host, env.user)
+    status = client.execute_query(sql, host, env.user)
+    if status:
+        return client.get_rows()
+    else:
+        # TODO: Check if we can get some error cause from server response and
+        # log that to the user
+        _LOGGER.error("Querying server failed")
+        return []
+
+
+def get_status_info(host):
+    """
+    Returns [[http_uri, node_version, active]]
+    from nodes system table
+    :param host:
+    :return:
+    """
+    return run_sql(host, STATUS_INFO_SQL)
+
+
+def get_connector_info(host):
+    """
+    Returns [[catalog_name]] from catalogs system table
+    :param host:
+    :return:
+    """
+    return run_sql(host, CONNECTOR_INFO_SQL)
+
+
+def is_server_up(status):
+    if status:
+        return "Running"
+    else:
+        return "Not Running"
+
+
+def get_status_for(host):
+    """
+    Returns presto server status
+    :param host:
+    :return:server status eg format:
+    {"node": http://node1/statement,
+     "version": presto-main:0.97-SNAPSHOT,
+     "status": Running,
+     "connector": hive, tpch, system}
+    """
+    output = {}
+    status_info = get_status_info(host)
+    if status_info:
+        sysnode_data = status_info[0]
+        if sysnode_data:
+            output = {"node": sysnode_data[0],
+                      "version": sysnode_data[1],
+                      "status": is_server_up(sysnode_data[2])}
+            connector_info = get_connector_info(host)
+            if connector_info:
+                syscatalog_data = connector_info[0]
+                if syscatalog_data:
+                    output["connector"] = str(", ".join(syscatalog_data))
+    _LOGGER.info("Server status: %s ", output)
+    return output
+
+
+def status_show():
+    server_status = get_status_for(env.host)
+    print('Node: ' + env.host)
+    if server_status:
+        print('\tNode URI(http) :' + str(server_status['node']) +
+              '\n\tPresto Version :' + str(server_status['version']) +
+              '\n\tServer Status  :' + str(server_status['status']))
+        if 'connector' in server_status:
+            print('\tConnectors     :' + server_status['connector'])
+    else:
+        print('\tNo status available')
+
+
+@task
+def status():
+    check_presto_version()
+    status_show()

@@ -20,7 +20,9 @@ import os
 from fabric.api import env
 
 from mock import patch
-from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL
+from prestoadmin.prestoclient import PrestoClient
+from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
+    PRESTO_RPM_VERSION
 
 from prestoadmin import server
 from prestoadmin.configuration import ConfigurationError, \
@@ -96,8 +98,9 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.warn')
-    def test_control_command_is_called(self, mock_warn, mock_status,
-                                       mock_sudo):
+    @patch('prestoadmin.server.execute')
+    def test_control_command_is_called(self, mock_version_check, mock_warn,
+                                       mock_status, mock_sudo):
         mock_status.return_value = ['failed_node1', 'bad_node2']
         server.start()
         mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
@@ -112,14 +115,14 @@ class TestInstall(utils.BaseTestCase):
         server.update_configs()
         mock_config.assert_called_with()
 
-    @patch('prestoadmin.server.execute_query')
+    @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.run')
     def test_check_success_status(self, mock_sleep, mock_execute_query):
         env.hosts = ['bad_server']
         mock_execute_query.side_effect = [False, True]
         self.assertEqual(server.check_server_status(), [])
 
-    @patch('prestoadmin.server.execute_query')
+    @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.run')
     def test_check_success_fail(self,  mock_sleep,
                                 mock_execute_query):
@@ -127,3 +130,51 @@ class TestInstall(utils.BaseTestCase):
         server.RETRY_TIMEOUT = SLEEP_INTERVAL + 1
         mock_execute_query.side_effect = [False, False]
         self.assertEqual(server.check_server_status(), ['bad_server'])
+
+    @patch("prestoadmin.server.get_status_info")
+    @patch("prestoadmin.server.get_connector_info")
+    def test_server_status(self, mock_conn, mock_status):
+        env.host = ['node1']
+        mock_status.side_effect = [
+            [['http://node1/statement', 'presto-main:0.97-SNAPSHOT', True]],
+            [['http://node2/statement', 'presto-main:0.97-SNAPSHOT', True]],
+            [['http://down/statement', 'presto-main:0.97-SNAPSHOT', False]],
+            [[]]]
+        mock_conn.side_effect = [
+            [['hive', 'tpch', 'system']],
+            [[]],
+            [['system']],
+            [[]]]
+        env.host = 'node1'
+        server.status_show()
+        env.host = 'node2'
+        server.status_show()
+        env.host = 'downnode'
+        server.status_show()
+        env.host = 'badnode'
+        server.status_show()
+        expected = self.read_file_output('/files/valid_server'
+                                         '_status.txt')
+        self.assertEqual(expected, self.test_stdout.getvalue())
+
+    def read_file_output(self, filename):
+        dir = os.path.abspath(os.path.dirname(__file__))
+        result_file = open(dir + filename, 'r')
+        file_content = "".join(result_file.readlines())
+        result_file.close()
+        return file_content
+
+    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.warn')
+    def test_warning_presto_version(self, mock_warn, mock_run):
+        mock_run.return_value = '0.97'
+        env.host = 'node1'
+        server.check_presto_version()
+        mock_warn.assert_called_with("node1: Status check requires "
+                                     "Presto version >= 0.%d"
+                                     % PRESTO_RPM_VERSION)
+
+        mock_run.return_value = 'No presto installed'
+        env.host = 'node1'
+        server.check_presto_version()
+        mock_warn.assert_called_with("node1: No suitable presto version found")

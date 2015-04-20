@@ -6,6 +6,7 @@ connector remove
 server install
 server restart
 server start
+server status
 server stop
 server uninstall
 topology show
