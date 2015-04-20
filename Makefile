@@ -56,7 +56,9 @@ docs:
 	sphinx-apidoc -o docs/ prestoadmin
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
-	open docs/_build/html/index.html
+
+open-docs:
+	xdg-open docs/_build/html/index.html
 
 release: clean
 	python setup.py sdist upload
