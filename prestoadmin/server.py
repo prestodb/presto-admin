@@ -26,6 +26,7 @@ from prestoadmin import connector
 from prestoadmin import topology
 from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.prestoclient import PrestoClient
+from prestoadmin.topology import requires_topology
 from prestoadmin.util.fabricapi import execute_fail_on_error
 
 import package
@@ -93,6 +94,7 @@ def update_configs():
 
 
 @task
+@requires_topology
 def uninstall():
     """
     Uninstall Presto after stopping the services on all nodes, unless some are
@@ -109,6 +111,7 @@ def service(control=None):
 
 @task
 @runs_once
+@requires_topology
 def start():
     """
     Start the Presto server on all nodes, unless some are excluded using
@@ -127,6 +130,7 @@ def start():
 
 @task
 @runs_once
+@requires_topology
 def stop():
     """
     Stop the Presto server on all nodes, unless some are excluded using
@@ -137,6 +141,7 @@ def stop():
 
 @task
 @runs_once
+@requires_topology
 def restart():
     """
     Restart the Presto server on all nodes, unless some are excluded using
@@ -259,6 +264,7 @@ def status_show():
 
 
 @task
+@requires_topology
 def status():
     check_presto_version()
     status_show()

@@ -17,6 +17,7 @@
 This module contains the methods for setting and validating the
 presto-admin config
 """
+from functools import wraps
 import pprint
 import re
 import socket
@@ -24,8 +25,8 @@ import socket
 import fabric
 from fabric.api import task, env, runs_once
 
+import config
 from prestoadmin.util import constants
-import config as config
 import prestoadmin.util.fabricapi as util
 
 
@@ -42,8 +43,20 @@ def write(conf):
     config.write(config.json_to_string(conf), constants.CONFIG_PATH)
 
 
+def requires_topology(func):
+    @wraps(func)
+    def required(*args, **kwargs):
+        if 'topology_config_not_found' in env \
+                and env.topology_config_not_found:
+            raise config.ConfigFileNotFoundError("Missing topology "
+                                                 "configuration")
+        return func(*args, **kwargs)
+    return required
+
+
 @task
 @runs_once
+@requires_topology
 def show():
     """
     Shows the current topology configuration for the cluster (including the

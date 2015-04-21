@@ -2,6 +2,7 @@ import logging
 from fabric.decorators import task
 
 from fabric.operations import sudo, put, os
+from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
 
 _LOGGER = logging.getLogger(__name__)
@@ -9,6 +10,7 @@ __all__ = ['install']
 
 
 @task
+@requires_topology
 def install(local_path):
     deploy(local_path)
     rpm_install(os.path.basename(local_path))

@@ -53,7 +53,7 @@ import re
 import sys
 import types
 
-from config import ConfigFileNotFoundError
+from config import ConfigFileNotFoundError, ConfigurationError
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
 from prestoadmin.util.fabric_application import FabricApplication
@@ -570,21 +570,26 @@ def run_tasks(task_list):
             raise
 
 
-def _update_env(options, non_default_options):
+def _update_env(default_options, non_default_options):
     # Fill in the state with the default values
-    for option in presto_env_options:
-        state.env[option.dest] = getattr(options, option.dest)
+    for opt, value in default_options.__dict__.items():
+            state.env[opt] = value
 
     # Load the values from the topology file, if it exists
     load_topology()
 
     # Go back through and add the non-default values (e.g. the values that
     # were set on the CLI)
-    for option in presto_env_options:
-        try:
-            state.env[option.dest] = getattr(non_default_options, option.dest)
-        except AttributeError:
-            pass
+    for opt, value in non_default_options.__dict__.items():
+        # raise error if hosts not in topology
+        if opt == 'hosts':
+            command_hosts = set(value.split(','))
+            topology_hosts = set(state.env.hosts)
+            if not command_hosts.issubset(topology_hosts):
+                raise ConfigurationError('Hosts defined in --hosts/-H must be '
+                                         'in the topology file.')
+
+        state.env[opt] = value
 
     # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
     # list)
@@ -593,7 +598,15 @@ def _update_env(options, non_default_options):
             state.env[key] = state.env[key].split(',')
 
     state.output['running'] = False
-    update_output_levels(show=options.show, hide=options.hide)
+    update_output_levels(show=state.env.show, hide=state.env.hide)
+
+
+def get_default_options(options, non_default_options):
+    options_dict = vars(options)
+    non_default_options_dict = vars(non_default_options)
+    default_options = Values(dict((k, options_dict[k]) for k in options_dict
+                                  if k not in non_default_options_dict))
+    return default_options
 
 
 def parse_and_validate_commands(args=sys.argv[1:]):
@@ -605,11 +618,12 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     # default values, because that takes precedence over all other env vars.
     non_default_options, arguments = parser.parse_args(args, values=Values())
     options, arguments = parser.parse_args(args)
+    default_options = get_default_options(options, non_default_options)
 
     # Handle regular args vs -- args
     arguments = parser.largs
 
-    _update_env(options, non_default_options)
+    _update_env(default_options, non_default_options)
 
     # Find local fabfile path or abort
     fabfile = "prestoadmin"

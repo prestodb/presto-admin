@@ -22,7 +22,7 @@ import utils
 import unittest
 
 from prestoadmin import topology
-from prestoadmin import config as config
+from prestoadmin import config
 from prestoadmin.topology import env
 
 
@@ -145,6 +145,24 @@ class TestTopologyConfig(utils.BaseTestCase):
                                   "workers": ["a", "b"]}
         topology.set_env_from_conf()
         self.assertEqual(topology.env.hosts, ['hello', 'a', 'b'])
+
+    def test_decorator_no_topology(self):
+        env.topology_config_not_found = True
+
+        @topology.requires_topology
+        def func():
+            pass
+        self.assertRaisesRegexp(config.ConfigFileNotFoundError,
+                                "Missing topology configuration",
+                                func)
+
+    def test_decorator_has_topology(self):
+        env.topology_config_not_found = False
+
+        @topology.requires_topology
+        def func():
+            return "runs"
+        self.assertEqual(func(), "runs")
 
 if __name__ == "__main__":
     unittest.main()

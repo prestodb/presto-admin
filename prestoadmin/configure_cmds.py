@@ -21,6 +21,7 @@ from fabric.operations import get
 from fabric.state import env
 from fabric.utils import abort, warn
 from prestoadmin import configure
+from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
 
 CONFIG_PROPERTIES = "config.properties"
@@ -34,6 +35,7 @@ __all__ = ['deploy', 'show']
 
 
 @task
+@requires_topology
 def deploy(rolename=None):
     """
     Deploy configuration on the remote hosts.

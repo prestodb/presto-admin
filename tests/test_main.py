@@ -22,6 +22,7 @@ test_prestoadmin
 
 Tests for `prestoadmin` module.
 """
+from optparse import Values
 
 import os
 import prestoadmin
@@ -241,7 +242,8 @@ class TestMain(utils.BaseTestCase):
         self._run_command_compare_to_file(['--extended-help'], 0,
                                           "/files/extended-help.txt")
 
-    def test_wrong_arguments_expecting_none(self):
+    @patch('prestoadmin.main.load_topology')
+    def test_wrong_arguments_expecting_none(self, load_topology_mock):
         self.remove_runs_once_flag(main.topology.show)
         try:
             main.main(['topology', 'show', "extra_arg"])
@@ -260,6 +262,27 @@ class TestMain(utils.BaseTestCase):
         self.assertTrue('Invalid argument(s) to task.\n\nDisplaying '
                         'detailed information for task \'server install\''
                         in self.test_stdout.getvalue())
+
+    @patch('prestoadmin.main.topology.get_conf')
+    def test_hosts_no_topology_raises_error(self, conf_mock):
+        conf_mock.side_effect = ConfigFileNotFoundError
+        self.assertRaisesRegexp(ConfigurationError,
+                                "Hosts defined in --hosts/-H must be in the "
+                                "topology file",
+                                main._update_env,
+                                Values(), Values({'hosts': 'master'}))
+
+    @patch('prestoadmin.main.topology.get_conf')
+    def test_hosts_not_in_topology_raises_error(self, conf_mock):
+        conf_mock.return_value = {'username': 'root',
+                                  'port': '22',
+                                  'coordinator': 'master',
+                                  'workers': ['slave']}
+        self.assertRaisesRegexp(ConfigurationError,
+                                "Hosts defined in --hosts/-H must be in the "
+                                "topology file",
+                                main._update_env,
+                                Values(), Values({'hosts': 'bob'}))
 
 if __name__ == '__main__':
     unittest.main()
