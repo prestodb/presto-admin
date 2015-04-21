@@ -6,6 +6,7 @@ Available commands:
     configuration show
     connector add
     connector remove
+    package install
     server install
     server restart
     server start

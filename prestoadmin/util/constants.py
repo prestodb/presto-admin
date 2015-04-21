@@ -42,3 +42,4 @@ TMP_CONF_DIR = os.path.join(tempfile.gettempdir(), "presto-admin")
 # remote configuration
 REMOTE_CONF_DIR = "/etc/presto"
 REMOTE_CATALOG_DIR = os.path.join(REMOTE_CONF_DIR, "catalog")
+REMOTE_PACKAGES_PATH = "/opt/presto-admin/packages"

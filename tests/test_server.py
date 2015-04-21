@@ -27,21 +27,11 @@ from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
 from prestoadmin import server
 from prestoadmin.config import ConfigurationError, \
     ConfigFileNotFoundError
-from prestoadmin.server import PRESTO_ADMIN_PACKAGES_PATH,\
-    deploy_install_configure
+from prestoadmin.server import deploy_install_configure
 import utils
 
 
 class TestInstall(utils.BaseTestCase):
-    @patch('prestoadmin.server.sudo')
-    @patch('prestoadmin.server.put')
-    def test_deploy_is_called(self, mock_put, mock_sudo):
-        server.deploy_package("/any/path/rpm")
-        mock_sudo.assert_called_with("mkdir -p " + PRESTO_ADMIN_PACKAGES_PATH)
-        mock_put.assert_called_with("/any/path/rpm",
-                                    PRESTO_ADMIN_PACKAGES_PATH,
-                                    use_sudo=True)
-
     @patch('prestoadmin.server.execute_fail_on_error')
     def test_install_server(self, mock_execute):
         local_path = os.path.join("/any/path/rpm")
@@ -50,14 +40,11 @@ class TestInstall(utils.BaseTestCase):
                                         local_path, hosts=[])
 
     @patch('prestoadmin.server.update_configs')
-    @patch('prestoadmin.server.deploy_package')
-    @patch('prestoadmin.server.rpm_install')
-    def test_deploy_install(self, mock_rpm, mock_deploy, mock_update):
+    @patch('prestoadmin.server.package.install')
+    def test_deploy_install(self, mock_install, mock_update):
         local_path = "/any/path/rpm"
         server.deploy_install_configure(local_path)
-
-        mock_deploy.assert_called_with(local_path)
-        mock_rpm.assert_called_with('rpm')
+        mock_install.assert_called_with(local_path)
         mock_update.assert_called_with()
 
     def test_fail_install(self):

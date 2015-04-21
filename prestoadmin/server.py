@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-import os
 
-from fabric.api import task, sudo, put, env
+from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
 from fabric.operations import run
@@ -29,10 +28,11 @@ from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.util.fabricapi import execute_fail_on_error
 
+import package
+
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 
-PRESTO_ADMIN_PACKAGES_PATH = "/opt/presto-admin/packages"
 INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 60
 SLEEP_INTERVAL = 5
@@ -80,20 +80,8 @@ def set_hosts():
 
 
 def deploy_install_configure(local_path):
-    deploy_package(local_path)
-    rpm_install(os.path.basename(local_path))
+    package.install(local_path)
     update_configs()
-
-
-def deploy_package(local_path=None):
-    _LOGGER.debug("Deploying presto rpm to nodes")
-    sudo('mkdir -p ' + PRESTO_ADMIN_PACKAGES_PATH)
-    put(local_path, PRESTO_ADMIN_PACKAGES_PATH, use_sudo=True)
-
-
-def rpm_install(rpm_name):
-    _LOGGER.info("Installing the rpm")
-    sudo('rpm -i ' + PRESTO_ADMIN_PACKAGES_PATH + "/" + rpm_name)
 
 
 def update_configs():
