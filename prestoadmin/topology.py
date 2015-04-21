@@ -25,13 +25,12 @@ import fabric
 from fabric.api import task, env, runs_once
 
 import configuration as config
-import prestoadmin
+from prestoadmin.util import constants
 import prestoadmin.util.fabricapi as util
 
 
 __all__ = ["show"]
 
-CONFIG_PATH = prestoadmin.main_dir + "/resources/config.json"
 PRESTO_ADMIN_PROPERTIES = ["username", "port", "coordinator", "workers"]
 DEFAULT_PROPERTIES = {"username": "root",
                       "port": "22",
@@ -40,7 +39,7 @@ DEFAULT_PROPERTIES = {"username": "root",
 
 
 def write(conf):
-    config.write(config.json_to_string(conf), CONFIG_PATH)
+    config.write(config.json_to_string(conf), constants.CONFIG_PATH)
 
 
 @task
@@ -68,7 +67,7 @@ def get_conf():
 
 
 def _get_conf_from_file():
-    return config.get_conf_from_json_file(CONFIG_PATH)
+    return config.get_conf_from_json_file(constants.CONFIG_PATH)
 
 
 def set_conf_interactive():

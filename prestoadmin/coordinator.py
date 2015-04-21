@@ -50,6 +50,7 @@ _LOGGER = logging.getLogger(__name__)
 def get_conf():
     conf = _get_conf()
     for name in configuration.REQUIRED_FILES:
+
         if name not in conf:
             _LOGGER.debug("Coordinator configuration for %s not found.  "
                           "Default configuration will be deployed", name)

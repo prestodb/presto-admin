@@ -55,7 +55,9 @@ class FabricApplicationTest(BaseTestCase):
         disconnect_mock.assert_called_with()
 
     @patch('prestoadmin.util.application.logger')
-    def test_keyboard_interrupt(self, logger_mock, logging_conf_mock):
+    @patch('prestoadmin.util.filesystem.os.makedirs')
+    def test_keyboard_interrupt(self, make_dirs_mock, logger_mock,
+                                logging_conf_mock):
         def should_not_error():
             with FabricApplication(APPLICATION_NAME):
                 raise KeyboardInterrupt

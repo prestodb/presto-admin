@@ -17,3 +17,11 @@ unset PYTHON_HOME
 exec presto-admin \$@
 EOT
 chmod 755 `pwd`/presto-admin
+
+LOG_DIR=/var/log/presto-admin
+sudo mkdir -p $LOG_DIR
+sudo chmod 777 $LOG_DIR
+
+CONF_DIR=/etc/opt/presto-admin
+sudo mkdir -p $CONF_DIR
+sudo chmod 777 $CONF_DIR

@@ -18,10 +18,12 @@ the presto admin project.
 """
 
 import os
+import tempfile
 
 import prestoadmin
 
-PRESTOADMIN_LOG = os.path.join(prestoadmin.main_dir, 'log')
+
+PRESTOADMIN_LOG = "/var/log/presto-admin"
 
 # Logging Config File Locations
 LOGGING_CONFIG_FILE_NAME = 'presto-admin-logging.ini'
@@ -30,11 +32,12 @@ LOGGING_CONFIG_FILE_DIRECTORIES = [
 ]
 
 # local configuration
-RESOURCES_DIR = os.path.join(prestoadmin.main_dir, "resources")
-COORDINATOR_DIR = os.path.join(RESOURCES_DIR, "coordinator")
-WORKERS_DIR = os.path.join(RESOURCES_DIR, "workers")
-CONNECTORS_DIR = os.path.join(RESOURCES_DIR, "connectors")
-TMP_CONF_DIR = os.path.join(prestoadmin.main_dir, "tmp/presto-conf")
+LOCAL_CONF_DIR = "/etc/opt/presto-admin"
+CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, "config.json")
+COORDINATOR_DIR = os.path.join(LOCAL_CONF_DIR, "coordinator")
+WORKERS_DIR = os.path.join(LOCAL_CONF_DIR, "workers")
+CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, "connectors")
+TMP_CONF_DIR = os.path.join(tempfile.gettempdir(), "presto-admin")
 
 # remote configuration
 REMOTE_CONF_DIR = "/etc/presto"
