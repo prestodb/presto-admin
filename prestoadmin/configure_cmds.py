@@ -24,6 +24,7 @@ from prestoadmin import configure
 from prestoadmin.util import constants
 
 CONFIG_PROPERTIES = "config.properties"
+LOG_PROPERTIES = "log.properties"
 JVM_CONFIG = "jvm.config"
 NODE_PROPERTIES = "node.properties"
 
@@ -78,9 +79,9 @@ def show(config=None):
     """
     Print to the user the contents of the configuration deployed
 
-    It takes arguments: node jvm or config. If no arguments given. then
-    prints out all the three
-    :param config: [node|jvm|config]
+    It takes arguments: node jvm, config or log. If no arguments given. then
+    prints out all the four
+    :param config: [node|jvm|config|log]
     :return:
     """
     file_name = ''
@@ -89,6 +90,7 @@ def show(config=None):
         configuration_show(NODE_PROPERTIES)
         configuration_show(JVM_CONFIG)
         configuration_show(CONFIG_PROPERTIES)
+        configuration_show(LOG_PROPERTIES)
     else:
         if config.lower() == 'node':
             file_name = NODE_PROPERTIES
@@ -96,7 +98,9 @@ def show(config=None):
             file_name = JVM_CONFIG
         elif config.lower() == 'config':
             file_name = CONFIG_PROPERTIES
+        elif config.lower() == 'log':
+            file_name = LOG_PROPERTIES
         else:
-            abort("Invalid Argument. Possible values: node, jvm, config")
+            abort("Invalid Argument. Possible values: node, jvm, config, log")
 
         configuration_show(file_name)
