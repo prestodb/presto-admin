@@ -1,6 +1,5 @@
-configure all
-configure coordinator
-configure workers
+configuration deploy
+configuration show
 connector add
 connector remove
 server install

@@ -24,8 +24,8 @@ import socket
 import fabric
 from fabric.api import task, env, runs_once
 
-import configuration as config
 from prestoadmin.util import constants
+import config as config
 import prestoadmin.util.fabricapi as util
 
 

@@ -19,7 +19,7 @@ from fabric.api import task, env
 from fabric.operations import sudo, os
 
 from prestoadmin.util import constants
-import configuration
+import config
 import configure
 import logging
 import fabric.utils
@@ -46,13 +46,13 @@ def add(name=None):
         filename = name + ".properties"
         if not os.path.isfile(
                 os.path.join(constants.CONNECTORS_DIR, filename)):
-            raise configuration.ConfigFileNotFoundError(
+            raise config.ConfigFileNotFoundError(
                 "Configuration for connector " + name + " not found")
         filenames = [filename]
     elif not os.path.isdir(constants.CONNECTORS_DIR):
         message = ("Cannot add connectors because directory %s does not exist"
                    % constants.CONNECTORS_DIR)
-        raise configuration.ConfigFileNotFoundError(message)
+        raise config.ConfigFileNotFoundError(message)
     else:
         filenames = os.listdir(constants.CONNECTORS_DIR)
         if not filenames:

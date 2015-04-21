@@ -22,7 +22,7 @@ import utils
 import unittest
 
 from prestoadmin import topology
-from prestoadmin import configuration as config
+from prestoadmin import config as config
 from prestoadmin.topology import env
 
 

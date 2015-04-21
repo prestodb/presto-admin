@@ -29,8 +29,8 @@ import unittest
 import utils
 
 from prestoadmin import main
-from prestoadmin.configuration import ConfigFileNotFoundError
-from prestoadmin.configuration import ConfigurationError
+from prestoadmin.config import ConfigFileNotFoundError
+from prestoadmin.config import ConfigurationError
 from mock import patch
 
 

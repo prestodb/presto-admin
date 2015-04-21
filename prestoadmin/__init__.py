@@ -21,7 +21,7 @@ __version__ = '0.1.0'  # Make sure to update setup.py too
 from fabric.api import env
 import os
 
-__all__ = ['topology', 'configure', 'server', 'connector']
+__all__ = ['topology', 'configuration', 'server', 'connector']
 
 env.roledefs = {
     'coordinator': [],
@@ -31,7 +31,7 @@ env.roledefs = {
 
 main_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 
-import configure
+import configure_cmds as configuration
 import connector
 import server
 import topology

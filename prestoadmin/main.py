@@ -53,7 +53,7 @@ import re
 import sys
 import types
 
-from configuration import ConfigFileNotFoundError
+from config import ConfigFileNotFoundError
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
 from prestoadmin.util.fabric_application import FabricApplication

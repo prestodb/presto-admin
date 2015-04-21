@@ -16,12 +16,12 @@
 """
 Tests the workers module
 """
-from prestoadmin.configuration import ConfigurationError
+from prestoadmin.config import ConfigurationError
 
 import utils
 
 from fabric.api import env
-from prestoadmin import configuration, workers
+from prestoadmin import config, workers
 from mock import patch
 
 
@@ -67,7 +67,7 @@ class TestWorkers(utils.BaseTestCase):
 
     def test_invalid_conf(self):
         conf = {"node.propoerties": {}}
-        self.assertRaisesRegexp(configuration.ConfigurationError,
+        self.assertRaisesRegexp(config.ConfigurationError,
                                 "Missing configuration for required file: ",
                                 workers.validate, conf)
 
@@ -77,7 +77,7 @@ class TestWorkers(utils.BaseTestCase):
                 "config.properties": {"coordinator": "true"}
                 }
 
-        self.assertRaisesRegexp(configuration.ConfigurationError,
+        self.assertRaisesRegexp(config.ConfigurationError,
                                 "Coordinator must be false in the "
                                 "worker's config.properties",
                                 workers.validate, conf)
@@ -88,7 +88,7 @@ class TestWorkers(utils.BaseTestCase):
         get_conf_mock.return_value = {}
         self.assertEqual(workers.get_conf(), workers.build_defaults())
 
-    @patch('prestoadmin.workers.configuration.get_presto_conf')
+    @patch('prestoadmin.workers.config.get_presto_conf')
     def test_get_conf(self, get_presto_conf_mock):
         env.roledefs['coordinator'] = ["j"]
         file_conf = {"node.properties": {"my-property": "value",

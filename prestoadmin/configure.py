@@ -22,29 +22,17 @@ import os
 
 from fabric.contrib import files
 from fabric.operations import put, sudo
-from fabric.api import env, task
+from fabric.api import env
 from prestoadmin.util import constants
 
-import configuration as config
+import config
 import coordinator as coord
 import prestoadmin.util.fabricapi as util
 import workers as w
 
-__all__ = ["coordinator", "workers", "all"]
 _LOGGER = logging.getLogger(__name__)
 
 
-@task
-def all():
-    """
-    Deploy configuration for all roles on the remote hosts
-    """
-    _LOGGER.info("Running configure all")
-    coordinator()
-    workers()
-
-
-@task
 def coordinator():
     """
     Deploy the coordinator configuration to the coordinator node
@@ -55,7 +43,6 @@ def coordinator():
                          constants.REMOTE_CONF_DIR)
 
 
-@task
 def workers():
     """
     Deploy workers configuration to the worker nodes.

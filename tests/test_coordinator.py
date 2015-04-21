@@ -20,7 +20,7 @@ Tests the coordinator module
 import utils
 
 from fabric.api import env
-from prestoadmin import coordinator, configuration
+from prestoadmin import coordinator, config
 from mock import patch
 
 
@@ -95,7 +95,7 @@ class TestCoordinator(utils.BaseTestCase):
 
     def test_invalid_conf(self):
         conf = {"node.propoerties": {}}
-        self.assertRaisesRegexp(configuration.ConfigurationError,
+        self.assertRaisesRegexp(config.ConfigurationError,
                                 "Missing configuration for required file: ",
                                 coordinator.validate, conf)
 
@@ -105,7 +105,7 @@ class TestCoordinator(utils.BaseTestCase):
                 "config.properties": {"coordinator": "false"}
                 }
 
-        self.assertRaisesRegexp(configuration.ConfigurationError,
+        self.assertRaisesRegexp(config.ConfigurationError,
                                 "Coordinator cannot be false in the "
                                 "coordinator's config.properties",
                                 coordinator.validate, conf)
@@ -117,7 +117,7 @@ class TestCoordinator(utils.BaseTestCase):
         get_conf_from_file_mock.return_value = {}
         self.assertEqual(coordinator.get_conf(), coordinator.build_defaults())
 
-    @patch('prestoadmin.coordinator.configuration.get_presto_conf')
+    @patch('prestoadmin.coordinator.config.get_presto_conf')
     def test_get_conf(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = "j"
         env.roledefs['workers'] = ["K", "L"]

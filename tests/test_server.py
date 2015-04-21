@@ -25,7 +25,7 @@ from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
     PRESTO_RPM_VERSION
 
 from prestoadmin import server
-from prestoadmin.configuration import ConfigurationError, \
+from prestoadmin.config import ConfigurationError, \
     ConfigFileNotFoundError
 from prestoadmin.server import PRESTO_ADMIN_PACKAGES_PATH,\
     deploy_install_configure
@@ -108,7 +108,7 @@ class TestInstall(utils.BaseTestCase):
                                      "failed_node1,bad_node2")
 
     @patch('prestoadmin.server.connector')
-    @patch('prestoadmin.server.configure.all')
+    @patch('prestoadmin.server.configure_cmds.deploy')
     def test_update_config(self, mock_config, mock_connector):
         e = ConfigFileNotFoundError
         mock_connector.add = e

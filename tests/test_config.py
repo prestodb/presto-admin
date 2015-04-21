@@ -16,7 +16,7 @@ import re
 
 from mock import patch
 
-from prestoadmin import configuration as config
+from prestoadmin import config
 import prestoadmin
 import utils
 
@@ -82,10 +82,10 @@ class TestConfiguration(utils.BaseTestCase):
                                 config.get_conf_from_properties_file,
                                 config_file)
 
-    @patch("prestoadmin.configuration.os.path.isdir")
-    @patch("prestoadmin.configuration.os.listdir")
-    @patch("prestoadmin.configuration.get_conf_from_properties_file")
-    @patch("prestoadmin.configuration.get_conf_from_config_file")
+    @patch("prestoadmin.config.os.path.isdir")
+    @patch("prestoadmin.config.os.listdir")
+    @patch("prestoadmin.config.get_conf_from_properties_file")
+    @patch("prestoadmin.config.get_conf_from_config_file")
     def test_get_presto_conf(self, config_mock, props_mock, listdir_mock,
                              isdir_mock):
         isdir_mock.return_value = True
@@ -98,9 +98,9 @@ class TestConfiguration(utils.BaseTestCase):
         self.assertEqual(conf, {"log.properties": {"a": "1", "b": "2"},
                                 "jvm.config": ["prop1", "prop2"]})
 
-    @patch("prestoadmin.configuration.os.listdir")
-    @patch("prestoadmin.configure.os.path.isdir")
-    @patch("prestoadmin.configuration.get_conf_from_properties_file")
+    @patch("prestoadmin.config.os.listdir")
+    @patch("prestoadmin.config.os.path.isdir")
+    @patch("prestoadmin.config.get_conf_from_properties_file")
     def test_get_non_presto_file(self, get_mock, isdir_mock, listdir_mock):
         isdir_mock.return_value = True
         listdir_mock.return_value = ["test.properties"]

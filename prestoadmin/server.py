@@ -22,10 +22,10 @@ from fabric.operations import run
 from fabric.tasks import execute
 from fabric.utils import abort, warn
 
-from prestoadmin import configure
+from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import topology
-from prestoadmin.configuration import ConfigFileNotFoundError
+from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.util.fabricapi import execute_fail_on_error
 
@@ -97,7 +97,7 @@ def rpm_install(rpm_name):
 
 
 def update_configs():
-    configure.all()
+    configure_cmds.deploy()
     try:
         connector.add()
     except ConfigFileNotFoundError:
