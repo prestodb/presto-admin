@@ -57,7 +57,7 @@ class Application(object):
         self.__log_file_path = log_file_path or (self.name + '.log')
         if not os.path.isabs(self.__log_file_path):
             self.__log_file_path = os.path.join(
-                constants.PRESTOADMIN_LOG,
+                constants.PRESTOADMIN_LOG_DIR,
                 self.__log_file_path
             )
 

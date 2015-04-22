@@ -30,11 +30,11 @@ class ApplicationTest(TestCase):
     def setUp(self):
         # monkey patch the log directory constant so that
         # we force log files to a temporary dir
-        self.__old_prestoadmin_log = constants.PRESTOADMIN_LOG
+        self.__old_prestoadmin_log = constants.PRESTOADMIN_LOG_DIR
         self.__temporary_dir_path = tempfile.mkdtemp(
             prefix='app-int-test-'
         )
-        constants.PRESTOADMIN_LOG = self.__temporary_dir_path
+        constants.PRESTOADMIN_LOG_DIR = self.__temporary_dir_path
 
         # monkey patch in a fake logging config file
         self.__old_log_dirs = list(constants.LOGGING_CONFIG_FILE_DIRECTORIES)
@@ -53,7 +53,7 @@ class ApplicationTest(TestCase):
         constants.LOGGING_CONFIG_FILE_DIRECTORIES = self.__old_log_dirs
 
         # restore the log constant
-        constants.PRESTOADMIN_LOG = self.__old_prestoadmin_log
+        constants.PRESTOADMIN_LOG_DIR = self.__old_prestoadmin_log
 
         # clean up the temporary directory
         os.system('rm -rf ' + self.__temporary_dir_path)
@@ -69,7 +69,7 @@ class ApplicationTest(TestCase):
             pass
 
         log_file_path = os.path.join(
-            constants.PRESTOADMIN_LOG,
+            constants.PRESTOADMIN_LOG_DIR,
             APPLICATION_NAME + '.log'
         )
         self.assertTrue(

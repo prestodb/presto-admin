@@ -22,8 +22,8 @@ import tempfile
 
 import prestoadmin
 
+PRESTOADMIN_LOG_DIR = "/var/log/presto-admin"
 
-PRESTOADMIN_LOG = "/var/log/presto-admin"
 
 # Logging Config File Locations
 LOGGING_CONFIG_FILE_NAME = 'presto-admin-logging.ini'
@@ -43,3 +43,4 @@ TMP_CONF_DIR = os.path.join(tempfile.gettempdir(), "presto-admin")
 REMOTE_CONF_DIR = "/etc/presto"
 REMOTE_CATALOG_DIR = os.path.join(REMOTE_CONF_DIR, "catalog")
 REMOTE_PACKAGES_PATH = "/opt/presto-admin/packages"
+REMOTE_PRESTO_LOG_DIR = "/var/log/presto"

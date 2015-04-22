@@ -1,3 +1,4 @@
+collect logs
 configuration deploy
 configuration show
 connector add

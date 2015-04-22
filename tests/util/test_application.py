@@ -62,7 +62,7 @@ class ApplicationTest(BaseTestCase):
             pass
 
         file_path = os.path.join(
-            constants.PRESTOADMIN_LOG,
+            constants.PRESTOADMIN_LOG_DIR,
             APPLICATION_NAME + '.log'
         )
         self.__assert_logging_setup_with_file(
@@ -108,7 +108,7 @@ class ApplicationTest(BaseTestCase):
             pass
 
         file_path = os.path.join(
-            constants.PRESTOADMIN_LOG,
+            constants.PRESTOADMIN_LOG_DIR,
             log_file_path
         )
         self.__assert_logging_setup_with_file(
