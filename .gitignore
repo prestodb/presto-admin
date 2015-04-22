@@ -19,3 +19,8 @@ dist/
 .eggs/
 .idea/
 *.egg/
+
+# tmp backup files
+*~
+\#*#
+.#*
