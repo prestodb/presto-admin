@@ -318,6 +318,15 @@ def parser_for_options():
         help="print list of possible commands and exit"
     )
 
+    # Allow setting of arbitrary env vars at runtime.
+    parser.add_option(
+        '--set',
+        metavar="KEY=VALUE,...",
+        dest='env_settings',
+        default="",
+        help="comma separated KEY=VALUE pairs to set env vars"
+    )
+
     # Like --list, but text processing friendly
     parser.add_option(
         '--shortlist',
@@ -579,6 +588,76 @@ def run_tasks(task_list):
             raise
 
 
+def _escape_split(sep, argstr):
+    """
+    Allows for escaping of the separator: e.g. task:arg='foo\, bar'
+
+    It should be noted that the way bash et. al. do command line parsing, those
+    single quotes are required.
+    """
+    escaped_sep = r'\%s' % sep
+
+    if escaped_sep not in argstr:
+        return argstr.split(sep)
+
+    before, _, after = argstr.partition(escaped_sep)
+    startlist = before.split(sep)  # a regular split is fine here
+    unfinished = startlist[-1]
+    startlist = startlist[:-1]
+
+    # recurse because there may be more escaped separators
+    endlist = _escape_split(sep, after)
+
+    # finish building the escaped value. we use endlist[0] becaue the first
+    # part of the string sent in recursion is the rest of the escaped value.
+    unfinished += sep + endlist[0]
+
+    return startlist + [unfinished] + endlist[1:]  # put together all the parts
+
+
+def _to_boolean(string):
+    """
+    Parses the given string into a boolean.  If its already a boolean, its
+    returned unchanged.
+
+    This method does strict parsing; only the string "True" returns the boolean
+    True, and only the string "False" returns the boolean False.  All other
+    values throw a ValueError.
+
+    :param string: the string to parse
+    """
+    if string is True or string == 'True':
+        return True
+    elif string is False or string == 'False':
+        return False
+
+    raise ValueError("invalid boolean string: %s" % string)
+
+
+def _set_arbitrary_env_vars(non_default_options):
+    if not hasattr(non_default_options, 'env_settings'):
+        return
+
+    # Allow setting of arbitrary env keys.
+    # This comes *before* the "specific" env_options so that those may
+    # override these ones. Specific should override generic, if somebody
+    # was silly enough to specify the same key in both places.
+    # E.g. "fab --set shell=foo --shell=bar" should have env.shell set to
+    # 'bar', not 'foo'.
+    for pair in _escape_split(',', non_default_options.env_settings):
+        pair = _escape_split('=', pair)
+        # "--set x" => set env.x to True
+        # "--set x=" => set env.x to ""
+        key = pair[0]
+        value = True
+        if len(pair) == 2:
+            try:
+                value = _to_boolean(pair[1])
+            except ValueError:
+                value = pair[1]
+        state.env[key] = value
+
+
 def _update_env(default_options, non_default_options):
     # Fill in the state with the default values
     for opt, value in default_options.__dict__.items():
@@ -586,6 +665,8 @@ def _update_env(default_options, non_default_options):
 
     # Load the values from the topology file, if it exists
     load_topology()
+
+    _set_arbitrary_env_vars(non_default_options)
 
     # Go back through and add the non-default values (e.g. the values that
     # were set on the CLI)

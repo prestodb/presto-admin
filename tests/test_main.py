@@ -294,5 +294,16 @@ class TestMain(utils.BaseTestCase):
                                           "local_path"])
         self.assertEqual(env.parallel, True)
 
+    def test_set_vars(self):
+        main.parse_and_validate_commands(
+            ['--set', 'skip_bad_hosts,shell=,hosts=m\,slave1\,slave2,'
+                      'skip_unknown_tasks=True,use_shell=False',
+             'server', 'install', "local_path"])
+        self.assertEqual(env.skip_bad_hosts, True)
+        self.assertEqual(env.shell, '')
+        self.assertEqual(env.hosts, ['m', 'slave1', 'slave2'])
+        self.assertEqual(env.use_shell, False)
+        self.assertEqual(env.skip_unknown_tasks, True)
+
 if __name__ == '__main__':
     unittest.main()
