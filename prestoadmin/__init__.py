@@ -21,7 +21,8 @@ __version__ = '0.1.0'  # Make sure to update setup.py too
 from fabric.api import env
 import os
 
-__all__ = ['topology', 'configuration', 'server', 'connector', 'package', 'collect']
+__all__ = ['topology', 'configuration', 'server', 'connector',
+           'package', 'collect']
 
 env.roledefs = {
     'coordinator': [],

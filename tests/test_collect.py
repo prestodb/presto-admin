@@ -20,6 +20,7 @@ Tests the presto diagnostic information using presto-admin collect
 from os import path
 
 from mock import patch
+from fabric.api import env
 
 import prestoadmin.collect as collect
 import utils
@@ -47,3 +48,30 @@ class TestCollect(utils.BaseTestCase):
         tar.add.assert_called_with(collect.TMP_PRESTO_DEBUG,
                                    arcname=path.basename(
                                        collect.TMP_PRESTO_DEBUG))
+
+    @patch("prestoadmin.collect.get")
+    @patch("prestoadmin.collect.exists")
+    def test_file_get(self, exists_mock, get_mock):
+        remote_path = "/a/b"
+        local_path = "/c/d"
+        exists_mock.return_value = True
+
+        collect.file_get(remote_path, local_path)
+
+        exists_mock.assert_is_called_with(remote_path, True)
+        get_mock.assert_is_called_with(remote_path,
+                                       local_path + '%(host)s', True)
+
+    @patch("prestoadmin.collect.warn")
+    @patch("prestoadmin.collect.exists")
+    def test_file_get_warning(self, exists_mock, warn_mock):
+        remote_path = "/a/b"
+        local_path = "/c/d"
+        env.host = "remote_host"
+        exists_mock.return_value = False
+
+        collect.file_get(remote_path, local_path)
+
+        exists_mock.assert_is_called_with(remote_path, True)
+        warn_mock.assert_is_called_with("remote path " + remote_path
+                                        + " not found on " + env.host)
