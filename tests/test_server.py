@@ -85,14 +85,35 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.warn')
-    @patch('prestoadmin.server.execute')
-    def test_control_command_is_called(self, mock_version_check, mock_warn,
-                                       mock_status, mock_sudo):
-        mock_status.return_value = ['failed_node1', 'bad_node2']
+    @patch('prestoadmin.server.check_presto_version')
+    def test_server_start(self, mock_version_check, mock_warn, mock_status,
+                          mock_sudo):
+        mock_status.return_value = False
+        env.host = "failed_node1"
         server.start()
         mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
-        mock_warn.assert_called_with("Server failed to start on these nodes: "
-                                     "failed_node1,bad_node2")
+        mock_version_check.assert_called_with()
+        mock_warn.assert_called_with("Server failed to start on : "
+                                     "failed_node1")
+
+    @patch('prestoadmin.server.sudo')
+    def test_server_stop(self, mock_sudo):
+        server.stop()
+        mock_sudo.assert_called_with(INIT_SCRIPTS + ' stop', pty=False)
+
+    @patch('prestoadmin.server.sudo')
+    @patch('prestoadmin.server.check_server_status')
+    @patch('prestoadmin.server.warn')
+    @patch('prestoadmin.server.check_presto_version')
+    def test_server_restart(self, mock_version_check, mock_warn, mock_status,
+                            mock_sudo):
+        mock_status.return_value = False
+        env.host = "failed_node1"
+        server.restart()
+        mock_sudo.assert_called_with(INIT_SCRIPTS + ' restart', pty=False)
+        mock_version_check.assert_called_with()
+        mock_warn.assert_called_with("Server failed to start on : "
+                                     "failed_node1")
 
     @patch('prestoadmin.server.connector')
     @patch('prestoadmin.server.configure_cmds.deploy')
@@ -105,18 +126,16 @@ class TestInstall(utils.BaseTestCase):
     @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.run')
     def test_check_success_status(self, mock_sleep, mock_execute_query):
-        env.hosts = ['bad_server']
         mock_execute_query.side_effect = [False, True]
-        self.assertEqual(server.check_server_status(), [])
+        self.assertEqual(server.check_server_status(), True)
 
     @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.run')
     def test_check_success_fail(self,  mock_sleep,
                                 mock_execute_query):
-        env.hosts = ['bad_server']
         server.RETRY_TIMEOUT = SLEEP_INTERVAL + 1
         mock_execute_query.side_effect = [False, False]
-        self.assertEqual(server.check_server_status(), ['bad_server'])
+        self.assertEqual(server.check_server_status(), False)
 
     @patch("prestoadmin.server.get_status_info")
     @patch("prestoadmin.server.get_connector_info")

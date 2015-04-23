@@ -25,6 +25,7 @@ Tests for `prestoadmin` module.
 from optparse import Values
 
 import os
+from fabric.state import env
 import prestoadmin
 import unittest
 import utils
@@ -283,6 +284,15 @@ class TestMain(utils.BaseTestCase):
                                 "topology file",
                                 main._update_env,
                                 Values(), Values({'hosts': 'bob'}))
+
+    def test_env_parallel(self):
+        main.parse_and_validate_commands(['server', 'install',
+                                          "local_path", "--serial"])
+        self.assertEqual(env.parallel, False)
+
+        main.parse_and_validate_commands(['server', 'install',
+                                          "local_path"])
+        self.assertEqual(env.parallel, True)
 
 if __name__ == '__main__':
     unittest.main()

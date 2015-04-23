@@ -15,6 +15,7 @@
 import logging
 import os
 from StringIO import StringIO
+from fabric.context_managers import settings
 from fabric.contrib import files
 from fabric.decorators import task
 from fabric.operations import get
@@ -63,17 +64,18 @@ def deploy(rolename=None):
 
 
 def configuration_show(file_name):
-    file_path = os.path.join(constants.REMOTE_CONF_DIR, file_name)
-    if not files.exists(file_path):
-        warn("No configuration file found for %s at %s"
-             % (env.host, file_path))
-    else:
-        print ("\n%s: Configuration file at %s:" % (env.host, file_path))
-        file_content_buffer = StringIO()
-        get(file_path, file_content_buffer)
-        config_values = file_content_buffer.getvalue()
-        file_content_buffer.close()
-        print config_values
+    with settings(parallel=False):
+        file_path = os.path.join(constants.REMOTE_CONF_DIR, file_name)
+        if not files.exists(file_path):
+            warn("No configuration file found for %s at %s"
+                 % (env.host, file_path))
+        else:
+            file_content_buffer = StringIO()
+            get(file_path, file_content_buffer)
+            config_values = file_content_buffer.getvalue()
+            file_content_buffer.close()
+            print ("\n%s: Configuration file at %s:" % (env.host, file_path))
+            print config_values
 
 
 @task
@@ -87,7 +89,6 @@ def show(config=None):
     :return:
     """
     file_name = ''
-
     if config is None:
         configuration_show(NODE_PROPERTIES)
         configuration_show(JVM_CONFIG)

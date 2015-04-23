@@ -335,6 +335,14 @@ def parser_for_options():
         default=False,
         help="print out all options, including advanced ones"
     )
+
+    parser.add_option(
+        '--serial',
+        action='store_true',
+        dest='serial',
+        default=False,
+        help="run the tasks serially"
+    )
     #
     # Add in options which are also destined to show up as `env` vars.
     #
@@ -345,6 +353,7 @@ def parser_for_options():
     # Hide most of the options from the help text so it's simpler. Need to
     # document the other options, however.
     commands_to_show = ['hosts', 'exclude_hosts', 'password']
+
     for option in presto_env_options:
         if option.dest in commands_to_show:
             parser.add_option(option)
@@ -672,6 +681,9 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     # Handle show (command-specific help) option
     if options.display:
         display_command(commands_to_run[0][0])
+
+    if not options.serial:
+        state.env.parallel = True
 
     # Initial password prompt, if requested
     if options.initial_password_prompt:

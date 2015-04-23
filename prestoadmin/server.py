@@ -18,7 +18,6 @@ from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
 from fabric.operations import run
-from fabric.tasks import execute
 from fabric.utils import abort, warn
 
 from prestoadmin import configure_cmds
@@ -28,7 +27,6 @@ from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
 from prestoadmin.util.fabricapi import execute_fail_on_error
-
 import package
 
 
@@ -67,7 +65,8 @@ def install(local_path=None):
         abort("Missing argument local_path: Absolute path to "
               "local rpm to be deployed")
 
-    host_list = set_hosts()
+    with settings(parallel=False):
+        host_list = set_hosts()
     execute_fail_on_error(deploy_install_configure, local_path,
                           hosts=host_list)
 
@@ -110,7 +109,6 @@ def service(control=None):
 
 
 @task
-@runs_once
 @requires_topology
 def start():
     """
@@ -120,34 +118,33 @@ def start():
     A status check is performed on the entire cluster and a list of
     servers that did not start, if any, are reported at the end.
     """
-    execute_fail_on_error(service, ' start', roles=env.roles)
-    execute(check_presto_version, roles=env.roles)
-    failed_hosts = check_server_status()
-    if failed_hosts:
-        warn("Server failed to start on these nodes: " +
-             ','.join(failed_hosts))
+    service(' start')
+    check_presto_version()
+    if not check_server_status():
+        warn("Server failed to start on : " + env.host)
 
 
 @task
-@runs_once
 @requires_topology
 def stop():
     """
     Stop the Presto server on all nodes, unless some are excluded using
     -x/--exclude-hosts.
     """
-    execute_fail_on_error(service, ' stop', roles=env.roles)
+    service(' stop')
 
 
 @task
-@runs_once
 @requires_topology
 def restart():
     """
     Restart the Presto server on all nodes, unless some are excluded using
     -x/--exclude-hosts.
     """
-    execute_fail_on_error(service, ' restart', roles=env.roles)
+    service(' restart')
+    check_presto_version()
+    if not check_server_status():
+        warn("Server failed to start on : " + env.host)
 
 
 def check_presto_version():
@@ -166,23 +163,19 @@ def check_presto_version():
 
 
 def check_server_status():
-    host_status = {}
-    for host in env.hosts:
-        time = 0
-        while time < RETRY_TIMEOUT:
-            client = PrestoClient(host, env.user)
-            result = client.execute_query(SERVER_CHECK_SQL)
-            host_status[host] = result
-            if not result:
-                run('sleep %d' % SLEEP_INTERVAL)
-                _LOGGER.debug("Status retrieval for the server failed after "
-                              "waiting for %d seconds. Retrying..." % time)
-                time += SLEEP_INTERVAL
-            else:
-                break
-
-    failed_hosts = [host for host, status in host_status.items() if not status]
-    return failed_hosts
+    result = True
+    time = 0
+    while time < RETRY_TIMEOUT:
+        client = PrestoClient(env.host, env.user)
+        result = client.execute_query(SERVER_CHECK_SQL)
+        if not result:
+            run('sleep %d' % SLEEP_INTERVAL)
+            _LOGGER.debug("Status retrieval for the server failed after "
+                          "waiting for %d seconds. Retrying..." % time)
+            time += SLEEP_INTERVAL
+        else:
+            break
+    return result
 
 
 def run_sql(host, sql):
@@ -267,4 +260,5 @@ def status_show():
 @requires_topology
 def status():
     check_presto_version()
-    status_show()
+    with settings(parallel=False):
+        status_show()
