@@ -18,6 +18,7 @@ from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
 from fabric.operations import run
+from fabric.tasks import execute
 from fabric.utils import abort, warn
 
 from prestoadmin import configure_cmds
@@ -192,7 +193,7 @@ def run_sql(host, sql):
 
 def get_status_info(host):
     """
-    Returns [[http_uri, node_version, active]]
+    Returns [[http_uri, node_version, active], [http_uri2, ..]..]
     from nodes system table
     :param host:
     :return:
@@ -202,7 +203,7 @@ def get_status_info(host):
 
 def get_connector_info(host):
     """
-    Returns [[catalog_name]] from catalogs system table
+    Returns [[catalog_name], [catalog_2]..] from catalogs system table
     :param host:
     :return:
     """
@@ -221,44 +222,49 @@ def get_status_for(host):
     Returns presto server status
     :param host:
     :return:server status eg format:
-    {"node": http://node1/statement,
-     "version": presto-main:0.97-SNAPSHOT,
-     "status": Running,
-     "connector": hive, tpch, system}
+    {"http://node1/statement": [presto-main:0.97-SNAPSHOT, Running]}
     """
     output = {}
     status_info = get_status_info(host)
-    if status_info:
-        sysnode_data = status_info[0]
-        if sysnode_data:
-            output = {"node": sysnode_data[0],
-                      "version": sysnode_data[1],
-                      "status": is_server_up(sysnode_data[2])}
-            connector_info = get_connector_info(host)
-            if connector_info:
-                syscatalog_data = connector_info[0]
-                if syscatalog_data:
-                    output["connector"] = str(", ".join(syscatalog_data))
+    for status in status_info:
+        if status:
+            output[status[0]] = [status[1], is_server_up(status[2])]
+
     _LOGGER.info("Server status: %s ", output)
     return output
 
 
+def get_conn_for(host):
+    """
+    Returns installed connectors
+    :param host:
+    :return: : comma delimited connectors eg: tpch, hive, system
+    """
+    syscatalog = []
+    connector_info = get_connector_info(host)
+    for conn_info in connector_info:
+        if conn_info:
+            syscatalog.append(conn_info[0])
+    return ', '.join(syscatalog)
+
+
 def status_show():
     server_status = get_status_for(env.host)
-    print('Node: ' + env.host)
-    if server_status:
-        print('\tNode URI(http) :' + str(server_status['node']) +
-              '\n\tPresto Version :' + str(server_status['version']) +
-              '\n\tServer Status  :' + str(server_status['status']))
-        if 'connector' in server_status:
-            print('\tConnectors     :' + server_status['connector'])
-    else:
-        print('\tNo status available')
+    connector_status = get_conn_for(env.host)
+
+    for k in server_status:
+        print('Node status:')
+        print('\tNode URI(http) :' + str(k) +
+              '\n\tPresto Version :' + str(server_status[k][0]) +
+              '\n\tServer Status  :' + str(server_status[k][1]))
+        if connector_status:
+            print('\tConnectors     :' + connector_status)
 
 
 @task
 @requires_topology
+@runs_once
 def status():
-    check_presto_version()
+    execute(check_presto_version, roles=env.roles)
     with settings(parallel=False):
         status_show()

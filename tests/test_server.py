@@ -140,28 +140,25 @@ class TestInstall(utils.BaseTestCase):
     @patch("prestoadmin.server.get_status_info")
     @patch("prestoadmin.server.get_connector_info")
     def test_server_status(self, mock_conn, mock_status):
-        env.host = ['node1']
         mock_status.side_effect = [
-            [['http://node1/statement', 'presto-main:0.97-SNAPSHOT', True]],
-            [['http://node2/statement', 'presto-main:0.97-SNAPSHOT', True]],
+            [['http://node1/statement', 'presto-main:0.97-SNAPSHOT', True],
+             ['http://node12/statement', 'presto-main:0.100-SNAPSHOT', True]],
+            [['http://node2/statement', 'presto-main:0.97-SNAPSHOT', True],
+                []],
             [['http://down/statement', 'presto-main:0.97-SNAPSHOT', False]],
             [[]]]
         mock_conn.side_effect = [
-            [['hive', 'tpch', 'system']],
+            [['hive'], ['system'], ['tpch']],
             [[]],
-            [['system']],
+            [['system'], []],
             [[]]]
-        env.host = 'node1'
         server.status_show()
-        env.host = 'node2'
         server.status_show()
-        env.host = 'downnode'
         server.status_show()
-        env.host = 'badnode'
         server.status_show()
         expected = self.read_file_output('/files/valid_server'
                                          '_status.txt')
-        self.assertEqual(expected, self.test_stdout.getvalue())
+        self.assertEqual(sorted(expected), sorted(self.test_stdout.getvalue()))
 
     def read_file_output(self, filename):
         dir = os.path.abspath(os.path.dirname(__file__))

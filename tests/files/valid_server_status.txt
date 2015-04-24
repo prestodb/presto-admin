@@ -1,16 +1,19 @@
-Node: node1
+Node status:
 	Node URI(http) :http://node1/statement
 	Presto Version :presto-main:0.97-SNAPSHOT
 	Server Status  :Running
-	Connectors     :hive, tpch, system
-Node: node2
+	Connectors     :hive, system, tpch
+Node status:
+	Node URI(http) :http://node12/statement
+	Presto Version :presto-main:0.100-SNAPSHOT
+	Server Status  :Running
+	Connectors     :hive, system, tpch
+Node status:
 	Node URI(http) :http://node2/statement
 	Presto Version :presto-main:0.97-SNAPSHOT
 	Server Status  :Running
-Node: downnode
+Node status:
 	Node URI(http) :http://down/statement
 	Presto Version :presto-main:0.97-SNAPSHOT
 	Server Status  :Not Running
 	Connectors     :system
-Node: badnode
-	No status available
