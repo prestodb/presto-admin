@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 tar xvzf third-party/virtualenv-12.0.7.tar.gz -C third-party
 
