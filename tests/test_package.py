@@ -33,7 +33,7 @@ class TestPackage(utils.BaseTestCase):
     @patch('prestoadmin.package.put')
     def test_deploy_with_fallback_location(self, mock_put, mock_sudo):
         package.deploy("/any/path/rpm")
-        e = IOError()
+        e = SystemExit()
         mock_put.side_effect = [e, None]
         package.deploy("/any/path/rpm")
         mock_put.assert_called_with("/any/path/rpm",

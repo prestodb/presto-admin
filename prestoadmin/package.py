@@ -21,7 +21,7 @@ def deploy(local_path=None):
     sudo('mkdir -p ' + constants.REMOTE_PACKAGES_PATH)
     try:
         put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
-    except Exception as e:
+    except BaseException as e:
         _LOGGER.warn("Failure during put. Now using /tmp as temp dir...", e)
         put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True,
             temp_dir='/tmp')
