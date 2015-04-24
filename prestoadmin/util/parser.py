@@ -38,7 +38,7 @@ class LoggingOptionParser(OptionParser):
         _LOGGER.debug("Exiting option parser!")
         if msg:
             sys.stderr.write(msg)
-            _LOGGER.exception(msg)
+            _LOGGER.error(msg)
         sys.exit(status)
 
     def print_extended_help(self, filename=None):

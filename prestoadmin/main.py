@@ -580,7 +580,7 @@ def run_tasks(task_list):
             if re.match(r".+\(\) takes (at most \d+|no) arguments? "
                         r"\(\d+ given\)", e.message):
                 print("Invalid argument(s) to task.\n")
-                _LOGGER.exception(e)
+                _LOGGER.error("Invalid argument(s) to task", exc_info=True)
                 display_command(name, 2)
             else:
                 raise
@@ -756,7 +756,7 @@ def parse_and_validate_commands(args=sys.argv[1:]):
         commands_to_run = parse_arguments(arguments, state.commands)
     except NameError as e:
         warn(e.message)
-        _LOGGER.exception(e)
+        _LOGGER.warn("Unable to parse arguments", exc_info=True)
         show_commands(None, options.list_format, 2)
 
     # Handle show (command-specific help) option
