@@ -28,3 +28,15 @@ class TestPackage(utils.BaseTestCase):
         package.install("/any/path/rpm")
         mock_deploy.assert_called_with("/any/path/rpm")
         mock_install.assert_called_with("rpm")
+
+    @patch('prestoadmin.package.sudo')
+    @patch('prestoadmin.package.put')
+    def test_deploy_with_fallback_location(self, mock_put, mock_sudo):
+        package.deploy("/any/path/rpm")
+        e = IOError()
+        mock_put.side_effect = [e, None]
+        package.deploy("/any/path/rpm")
+        mock_put.assert_called_with("/any/path/rpm",
+                                    constants.REMOTE_PACKAGES_PATH,
+                                    use_sudo=True,
+                                    temp_dir='/tmp')

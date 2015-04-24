@@ -19,7 +19,12 @@ def install(local_path):
 def deploy(local_path=None):
     _LOGGER.debug("Deploying rpm to nodes")
     sudo('mkdir -p ' + constants.REMOTE_PACKAGES_PATH)
-    put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
+    try:
+        put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
+    except Exception as e:
+        _LOGGER.warn("Failure during put. Now using /tmp as temp dir...", e)
+        put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True,
+            temp_dir='/tmp')
 
 
 def rpm_install(rpm_name):
