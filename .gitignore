@@ -25,3 +25,6 @@ dist/
 *~
 \#*#
 .#*
+
+#mvn targets
+presto-admin-test/target
