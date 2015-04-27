@@ -95,10 +95,32 @@ class TestPrestoClient(utils.BaseTestCase):
             "http://localhost:8080/v1/statement/2015_harih/2", ""
         ]
 
-        expected_row = [["7298eeff-e6b", "http://localhost:8080",
-                         "presto-main:0.97-SNAPSHOT", True]]
+        expected_row = [["uuid1", "http://localhost:8080", "presto-main:0.97",
+                         True],
+                        ["uuid2", "http://worker:8080", "presto-main:0.97",
+                         False]]
         self.assertEqual(client.get_rows(), expected_row)
         self.assertEqual(client.next_uri, "")
+
+    @patch.object(PrestoClient, 'get_response_from')
+    @patch.object(PrestoClient, 'get_next_uri')
+    def test_append_rows(self, mock_uri, mock_get_from_uri):
+        client = PrestoClient("any_host", "any_user")
+        dir = os.path.abspath(os.path.dirname(__file__))
+
+        with open(dir + '/files/valid_rest_response_level2.txt') as json_file:
+            client.response_from_server = json.load(json_file)
+        mock_get_from_uri.return_value = True
+        mock_uri.side_effect = ["any_next_uri", "any_next_next_uri", "", ""]
+        expected_row = [["uuid1", "http://localhost:8080", "presto-main:0.97",
+                         True],
+                        ["uuid2", "http://worker:8080", "presto-main:0.97",
+                         False],
+                        ["uuid1", "http://localhost:8080", "presto-main:0.97",
+                         True],
+                        ["uuid2", "http://worker:8080",  "presto-main:0.97",
+                         False]]
+        self.assertEqual(client.get_rows(), expected_row)
 
     @patch.object(PrestoClient, 'get_response_from')
     @patch.object(PrestoClient, 'get_next_uri')
@@ -108,8 +130,16 @@ class TestPrestoClient(utils.BaseTestCase):
         with open(dir + '/files/valid_rest_response_level2.txt') as json_file:
             client.response_from_server = json.load(json_file)
         mock_get_from_uri.return_value = True
-        mock_uri.side_effect = [
-            "http://localhost:8080/v1/statement/2015_harih/2", ""
-        ]
+        mock_uri.side_effect = ["any_next_uri", ""]
 
         self.assertEqual(client.get_rows(0), [])
+
+    @patch('prestoadmin.prestoclient.urlopen')
+    @patch('httplib.HTTPResponse')
+    def test_get_response(self, mock_resp, mock_urlopen):
+        client = PrestoClient("any_host", "any_user")
+        mock_urlopen.return_value = mock_resp
+        mock_resp.read.return_value = '{"message": "ok!"}'
+
+        client.get_response_from('any_uri')
+        self.assertEqual(client.response_from_server, {"message": "ok!"})
