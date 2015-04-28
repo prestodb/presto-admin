@@ -109,6 +109,14 @@ def service(control=None):
     sudo(INIT_SCRIPTS + control, pty=False)
 
 
+def check_status_for_control_commands():
+    check_presto_version()
+    if check_server_status():
+        print("Server started successfully on: " + env.host)
+    else:
+        warn("Server failed to start on: " + env.host)
+
+
 @task
 @requires_topology
 def start():
@@ -120,9 +128,7 @@ def start():
     servers that did not start, if any, are reported at the end.
     """
     service(' start')
-    check_presto_version()
-    if not check_server_status():
-        warn("Server failed to start on : " + env.host)
+    check_status_for_control_commands()
 
 
 @task
@@ -143,9 +149,7 @@ def restart():
     -x/--exclude-hosts.
     """
     service(' restart')
-    check_presto_version()
-    if not check_server_status():
-        warn("Server failed to start on : " + env.host)
+    check_status_for_control_commands()
 
 
 def check_presto_version():
