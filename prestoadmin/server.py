@@ -17,10 +17,10 @@ import logging
 from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
-from fabric.operations import run
-from fabric.tasks import execute
+from fabric.operations import run, os
 from fabric.utils import abort, warn
 
+from prestoadmin.util import constants
 from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import topology
@@ -37,8 +37,11 @@ INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 60
 SLEEP_INTERVAL = 5
 SERVER_CHECK_SQL = "select * from system.runtime.nodes"
-STATUS_INFO_SQL = "select http_uri, node_version, active from " \
-                  "system.runtime.nodes"
+NODE_INFO_PER_URI_SQL = "select http_uri, node_version, active from " \
+                        "system.runtime.nodes where " \
+                        "url_extract_host(http_uri) = '%s'"
+EXTERNAL_IP_SQL = "select url_extract_host(http_uri) from system.runtime.nodes" \
+                  " WHERE node_id = '%s'"
 CONNECTOR_INFO_SQL = "select catalog_name from system.metadata.catalogs"
 PRESTO_RPM_VERSION = 100
 _LOGGER = logging.getLogger(__name__)
@@ -168,6 +171,11 @@ def check_presto_version():
 
 
 def check_server_status():
+    """
+    Checks if server is running for env.host. Retries connecting to server
+    until server is up or till RETRY_TIMEOUT is reached
+    :return: True or False
+    """
     result = True
     time = 0
     while time < RETRY_TIMEOUT:
@@ -195,23 +203,65 @@ def run_sql(host, sql):
         return []
 
 
-def get_status_info(host):
-    """
-    Returns [[http_uri, node_version, active], [http_uri2, ..]..]
-    from nodes system table
-    :param host:
-    :return:
-    """
-    return run_sql(host, STATUS_INFO_SQL)
-
-
-def get_connector_info(host):
+def execute_connector_info_sql(host):
     """
     Returns [[catalog_name], [catalog_2]..] from catalogs system table
     :param host:
     :return:
     """
     return run_sql(host, CONNECTOR_INFO_SQL)
+
+
+def execute_external_ip_sql(host, uuid):
+    """
+    Returns external ip of the host with uuid after parsing the http_uri column
+    from nodes system table
+    :param host:
+    :param uuid:
+    :return:
+    """
+    return run_sql(host, EXTERNAL_IP_SQL % uuid)
+
+
+def get_sysnode_info_from(node_info_row):
+    """
+    Returns system node info dict from node info row for a node
+    :param node_info_row:
+    :return:server row eg format:
+    {"http://node1/statement": [presto-main:0.97-SNAPSHOT, True]}
+    """
+    output = {}
+    for row in node_info_row:
+        if row:
+            output[row[0]] = [row[1], row[2]]
+
+    _LOGGER.info("Node info: %s ", output)
+    return output
+
+
+def get_connector_info_from(host):
+    """
+    Returns installed connectors
+    :param host:
+    :return: : comma delimited connectors eg: tpch, hive, system
+    """
+    syscatalog = []
+    connector_info = execute_connector_info_sql(host)
+    for conn_info in connector_info:
+        if conn_info:
+            syscatalog.append(conn_info[0])
+    return ', '.join(syscatalog)
+
+
+def get_server_status(host):
+    """
+    Check if the server is running for host.
+    :param host:
+    :return: True or False
+    """
+    client = PrestoClient(host, env.user)
+    result = client.execute_query(SERVER_CHECK_SQL)
+    return result
 
 
 def is_server_up(status):
@@ -221,54 +271,71 @@ def is_server_up(status):
         return "Not Running"
 
 
-def get_status_for(host):
-    """
-    Returns presto server status
-    :param host:
-    :return:server status eg format:
-    {"http://node1/statement": [presto-main:0.97-SNAPSHOT, Running]}
-    """
-    output = {}
-    status_info = get_status_info(host)
-    for status in status_info:
-        if status:
-            output[status[0]] = [status[1], is_server_up(status[2])]
-
-    _LOGGER.info("Server status: %s ", output)
-    return output
+def get_roles_for(host):
+    roles = []
+    for role in ['coordinator', 'worker']:
+        if host in env.roledefs[role]:
+            roles.append(role)
+    return roles
 
 
-def get_conn_for(host):
-    """
-    Returns installed connectors
-    :param host:
-    :return: : comma delimited connectors eg: tpch, hive, system
-    """
-    syscatalog = []
-    connector_info = get_connector_info(host)
-    for conn_info in connector_info:
-        if conn_info:
-            syscatalog.append(conn_info[0])
-    return ', '.join(syscatalog)
-
-
-def status_show():
-    server_status = get_status_for(env.host)
-    connector_status = get_conn_for(env.host)
-
-    for k in server_status:
-        print('Node status:')
-        print('\tNode URI(http) :' + str(k) +
-              '\n\tPresto Version :' + str(server_status[k][0]) +
-              '\n\tServer Status  :' + str(server_status[k][1]))
+def print_node_info(node_status, connector_status):
+    for k in node_status:
+        print('\tNode URI(http): ' + str(k) +
+              '\n\tPresto Version: ' + str(node_status[k][0]) +
+              '\n\tNode is active: ' + str(node_status[k][1]))
         if connector_status:
-            print('\tConnectors     :' + connector_status)
+            print('\tConnectors:     ' + connector_status)
+
+
+def get_ext_ip_of_node():
+    node_properties_file = os.path.join(constants.REMOTE_CONF_DIR,
+                                        'node.properties')
+    with settings(hide('stdout')):
+        node_uuid = run("sed -n s/^node.id=//p " + node_properties_file)
+    external_ip_row = execute_external_ip_sql(env.host, node_uuid)
+    external_ip = ''
+    if len(external_ip_row) > 1:
+        warn_more_than_one_ip = "More than one external ip found for " \
+                                + env.host + ". There could be multiple nodes " \
+                                             "associated with the same node.id"
+        _LOGGER.debug(warn_more_than_one_ip)
+        warn(warn_more_than_one_ip)
+        return external_ip
+    for row in external_ip_row:
+        if row:
+            external_ip = row[0]
+    if not external_ip:
+        warn_no_ip = "Cannot get external IP for " + env.host
+        _LOGGER.debug(warn_no_ip)
+        warn(warn_no_ip)
+    return external_ip
+
+
+def get_status():
+    external_ip = get_ext_ip_of_node()
+
+    server_status = get_server_status(env.host)
+    print('Server Status:')
+    print('\t%s(IP: %s roles: %s): %s' % (env.host, external_ip,
+                                          ', '.join(get_roles_for(env.host)),
+                                          is_server_up(server_status)))
+    if server_status:
+        # just get the node_info row for the host if server is up
+        node_info_row = run_sql(env.host, NODE_INFO_PER_URI_SQL % external_ip)
+        node_status = get_sysnode_info_from(node_info_row)
+        if node_status:
+            connector_status = get_connector_info_from(env.host)
+            print_node_info(node_status, connector_status)
+        else:
+            print("\tNo information available")
+    else:
+        print("\tNo information available")
 
 
 @task
 @requires_topology
-@runs_once
 def status():
-    execute(check_presto_version, roles=env.roles)
+    check_presto_version()
     with settings(parallel=False):
-        status_show()
+        get_status()

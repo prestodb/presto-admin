@@ -160,28 +160,62 @@ class TestInstall(utils.BaseTestCase):
         mock_execute_query.side_effect = [False, False]
         self.assertEqual(server.check_server_status(), False)
 
-    @patch("prestoadmin.server.get_status_info")
-    @patch("prestoadmin.server.get_connector_info")
-    def test_server_status(self, mock_conn, mock_status):
-        mock_status.side_effect = [
-            [['http://node1/statement', 'presto-main:0.97-SNAPSHOT', True],
-             ['http://node12/statement', 'presto-main:0.100-SNAPSHOT', True]],
-            [['http://node2/statement', 'presto-main:0.97-SNAPSHOT', True],
-                []],
-            [['http://down/statement', 'presto-main:0.97-SNAPSHOT', False]],
-            [[]]]
-        mock_conn.side_effect = [
-            [['hive'], ['system'], ['tpch']],
+    @patch("prestoadmin.server.execute_connector_info_sql")
+    @patch("prestoadmin.server.get_server_status")
+    @patch("prestoadmin.server.get_ext_ip_of_node")
+    @patch("prestoadmin.server.run_sql")
+    def test_status_from_each_node(self, mock_nodeinfo, mock_ext_ip,
+                                   mock_server_up, mock_conninfo):
+        env.roledefs = {
+            'coordinator': ["Node1"],
+            'worker': ["Node1", "Node2", "Node3", "Node4"],
+            'all': ["Node1", "Node2", "Node3", "Node4"]
+        }
+        mock_ext_ip.side_effect = ["IP1", "IP2", "IP3", ""]
+        mock_server_up.side_effect = [True, True, True, False]
+        mock_nodeinfo.side_effect = [
+            [['http://active/statement', 'presto-main:0.97-SNAPSHOT', True]],
+            [['http://inactive/stmt', 'presto-main:0.99-SNAPSHOT', False]],
             [[]],
-            [['system'], []],
-            [[]]]
-        server.status_show()
-        server.status_show()
-        server.status_show()
-        server.status_show()
-        expected = self.read_file_output('/files/valid_server'
-                                         '_status.txt')
+            [['http://servrdown/statement', 'any', True]]
+        ]
+        mock_conninfo.side_effect = [[['hive'], ['system'], ['tpch']],
+                                     [[]],
+                                     [['any']],
+                                     [['any']]]
+
+        env.host = "Node1"
+        server.get_status()
+        env.host = "Node2"
+        server.get_status()
+        env.host = "Node3"
+        server.get_status()
+        env.host = "Node4"
+        server.get_status()
+
+        expected = self.read_file_output('/files/server_status_out.txt')
         self.assertEqual(sorted(expected), sorted(self.test_stdout.getvalue()))
+
+    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.execute_external_ip_sql')
+    def test_get_external_ip(self, mock_ip_row, mock_nodeuuid):
+        mock_ip_row.return_value = [['IP']]
+        self.assertEqual(server.get_ext_ip_of_node(), 'IP')
+
+    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.execute_external_ip_sql')
+    @patch('prestoadmin.server.warn')
+    def test_warn_external_ip(self, mock_warn, mock_ip_row, mock_nodeuuid):
+        env.host = 'node'
+        mock_ip_row.return_value = [[]]
+        server.get_ext_ip_of_node()
+        mock_warn.assert_called_with("Cannot get external IP for node")
+
+        mock_ip_row.return_value = [['IP1'], ['IP2']]
+        server.get_ext_ip_of_node()
+        mock_warn.assert_called_with("More than one external ip found for "
+                                     "node. There could be multiple nodes "
+                                     "associated with the same node.id")
 
     def read_file_output(self, filename):
         dir = os.path.abspath(os.path.dirname(__file__))

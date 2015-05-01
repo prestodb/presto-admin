@@ -1,0 +1,17 @@
+Server Status:
+	Node1(IP: IP1 roles: coordinator, worker): Running
+	Node URI(http): http://active/statement
+	Presto Version: presto-main:0.97-SNAPSHOT
+	Node is active: True
+	Connectors:     hive, system, tpch
+Server Status:
+	Node2(IP: IP2 roles: worker): Running
+	Node URI(http): http://inactive/stmt
+	Presto Version: presto-main:0.99-SNAPSHOT
+	Node is active: False
+Server Status:
+	Node3(IP: IP3 roles: worker): Running
+	No information available
+Server Status:
+	Node4(IP:  roles: worker): Not Running
+	No information available
