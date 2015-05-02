@@ -3,6 +3,7 @@ Presto-Admin tool for deploying and managing Presto clusters
 Available commands:
 
     collect logs
+    collect query_info
     configuration deploy
     configuration show
     connector add

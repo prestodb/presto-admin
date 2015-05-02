@@ -21,8 +21,12 @@ from os import path
 
 from mock import patch
 from fabric.api import env
+import requests
 
-import prestoadmin.collect as collect
+from prestoadmin import collect
+from prestoadmin.collect import TMP_PRESTO_DEBUG, \
+    PRESTOADMIN_LOG_NAME, PRESTOADMIN_LOG_DIR, \
+    REMOTE_PRESTO_LOG_DIR, OUTPUT_FILENAME
 import utils
 
 
@@ -31,23 +35,26 @@ class TestCollect(utils.BaseTestCase):
     @patch("prestoadmin.collect.tarfile.open")
     @patch("prestoadmin.collect.shutil.copy")
     @patch("prestoadmin.collect.os.mkdir")
-    def test_collect_logs(self, mkdirs_mock, copy_mock,
+    @patch("prestoadmin.collect.os.path.exists")
+    def test_collect_logs(self, path_exists_mock, mkdirs_mock, copy_mock,
                           tarfile_open_mock, mock_execute):
+        path_exists_mock.return_value = False
+
         collect.logs()
-        mkdirs_mock.assert_called_with(collect.TMP_PRESTO_DEBUG)
-        copy_mock.assert_called_with(
-            path.join(collect.PRESTOADMIN_LOG_DIR, collect.
-                      PRESTOADMIN_LOG_NAME), collect.TMP_PRESTO_DEBUG)
+
+        mkdirs_mock.assert_called_with(TMP_PRESTO_DEBUG)
+        copy_mock.assert_called_with(path.join(PRESTOADMIN_LOG_DIR,
+                                               PRESTOADMIN_LOG_NAME),
+                                     TMP_PRESTO_DEBUG)
 
         mock_execute.assert_called_with(collect.file_get,
-                                        collect.REMOTE_PRESTO_LOG_DIR,
-                                        collect.TMP_PRESTO_DEBUG,
+                                        REMOTE_PRESTO_LOG_DIR,
+                                        TMP_PRESTO_DEBUG,
                                         roles=[])
-        tarfile_open_mock.assert_called_with(collect.OUTPUT_FILENAME, 'w:bz2')
+        tarfile_open_mock.assert_called_with(OUTPUT_FILENAME, 'w:bz2')
         tar = tarfile_open_mock.return_value
-        tar.add.assert_called_with(collect.TMP_PRESTO_DEBUG,
-                                   arcname=path.basename(
-                                       collect.TMP_PRESTO_DEBUG))
+        tar.add.assert_called_with(TMP_PRESTO_DEBUG,
+                                   arcname=path.basename(TMP_PRESTO_DEBUG))
 
     @patch("prestoadmin.collect.get")
     @patch("prestoadmin.collect.exists")
@@ -58,9 +65,8 @@ class TestCollect(utils.BaseTestCase):
 
         collect.file_get(remote_path, local_path)
 
-        exists_mock.assert_is_called_with(remote_path, True)
-        get_mock.assert_is_called_with(remote_path,
-                                       local_path + '%(host)s', True)
+        exists_mock.assert_called_with(remote_path, True)
+        get_mock.assert_called_with(remote_path, local_path + '%(host)s', True)
 
     @patch("prestoadmin.collect.warn")
     @patch("prestoadmin.collect.exists")
@@ -72,6 +78,63 @@ class TestCollect(utils.BaseTestCase):
 
         collect.file_get(remote_path, local_path)
 
-        exists_mock.assert_is_called_with(remote_path, True)
-        warn_mock.assert_is_called_with("remote path " + remote_path
-                                        + " not found on " + env.host)
+        exists_mock.assert_called_with(remote_path, True)
+        warn_mock.assert_called_with("remote path " + remote_path +
+                                     " not found on " + env.host)
+
+    def test_query_info_fail_no_id(self):
+        env.host = "myhost"
+        env.roledefs["coordinator"] = ["myhost"]
+        query_id = None
+        self.assertRaisesRegexp(SystemExit, "Missing argument query_id",
+                                collect.query_info, query_id)
+
+    @patch("prestoadmin.collect.requests.get")
+    def test_query_info_not_run_on_workers(self, req_get_mock):
+        env.host = ["worker1"]
+        env.roledefs["worker"] = ["worker1"]
+        collect.query_info("any_query_id")
+        assert not req_get_mock.called
+
+    @patch("prestoadmin.collect.requests.get")
+    def test_query_info_fail_invalid_id(self, req_get_mock):
+        env.host = "myhost"
+        env.roledefs["coordinator"] = ["myhost"]
+        query_id = "invalid_id"
+        req_get_mock.return_value.status_code = requests.codes.ok + 10
+        self.assertRaisesRegexp(SystemExit, "Unable to retrieve information. "
+                                            "Please check that the query_id "
+                                            "is correct, or check that server "
+                                            "is up with command server status",
+                                collect.query_info, query_id)
+
+    @patch("prestoadmin.collect.json.dumps")
+    @patch("prestoadmin.collect.requests.models.json")
+    @patch("__builtin__.open")
+    @patch("prestoadmin.collect.os.mkdir")
+    @patch("prestoadmin.collect.os.path.exists")
+    @patch("prestoadmin.collect.requests.get")
+    def test_collect_query_info(self, requests_get_mock,
+                                path_exist_mock, mkdir_mock, open_mock,
+                                req_json_mock, json_dumps_mock):
+        query_id = "1234_abcd"
+        query_info_file_name = path.join(TMP_PRESTO_DEBUG,
+                                         "query_info_" + query_id + ".json")
+        path_exist_mock.return_value = False
+        file_obj = open_mock.return_value.__enter__.return_value
+        requests_get_mock.return_value.json.return_value = req_json_mock
+        requests_get_mock.return_value.status_code = requests.codes.ok
+        env.host = "myhost"
+        env.roledefs["coordinator"] = ["myhost"]
+
+        collect.query_info(query_id)
+
+        requests_get_mock.assert_called_with(collect.QUERY_REQUEST_URL
+                                             + query_id)
+        mkdir_mock.assert_called_with(TMP_PRESTO_DEBUG)
+
+        open_mock.assert_called_with(query_info_file_name, "w")
+
+        json_dumps_mock.assert_called_with(req_json_mock, indent=4)
+
+        file_obj.write.assert_called_with(json_dumps_mock.return_value)
