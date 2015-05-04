@@ -106,7 +106,7 @@ def uninstall():
 
 def service(control=None):
     _LOGGER.info("Executing %s on presto server" % control)
-    sudo(INIT_SCRIPTS + control, pty=False)
+    sudo("set -m; " + INIT_SCRIPTS + control)
 
 
 def check_status_for_control_commands():

@@ -91,7 +91,7 @@ class TestInstall(utils.BaseTestCase):
         mock_status.return_value = False
         env.host = "failed_node1"
         server.start()
-        mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
+        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
         mock_warn.assert_called_with("Server failed to start on: failed_node1")
 
@@ -111,7 +111,7 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.sudo')
     def test_server_stop(self, mock_sudo):
         server.stop()
-        mock_sudo.assert_called_with(INIT_SCRIPTS + ' stop', pty=False)
+        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' stop')
 
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
@@ -122,7 +122,7 @@ class TestInstall(utils.BaseTestCase):
         mock_status.return_value = False
         env.host = "failed_node1"
         server.restart()
-        mock_sudo.assert_called_with(INIT_SCRIPTS + ' restart', pty=False)
+        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' restart')
         mock_version_check.assert_called_with()
         mock_warn.assert_called_with("Server failed to start on: failed_node1")
 
