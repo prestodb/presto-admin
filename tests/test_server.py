@@ -103,7 +103,7 @@ class TestInstall(utils.BaseTestCase):
         mock_status.return_value = True
         env.host = "good_node"
         server.start()
-        mock_sudo.assert_called_with(INIT_SCRIPTS + ' start', pty=False)
+        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
         self.assertEqual("Server started successfully on: good_node\n",
                          self.test_stdout.getvalue())
@@ -133,7 +133,7 @@ class TestInstall(utils.BaseTestCase):
         mock_status.return_value = True
         env.host = "good_node"
         server.restart()
-        mock_sudo.assert_called_with(INIT_SCRIPTS + ' restart', pty=False)
+        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' restart')
         mock_version_check.assert_called_with()
         self.assertEqual("Server started successfully on: good_node\n",
                          self.test_stdout.getvalue())
