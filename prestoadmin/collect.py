@@ -20,19 +20,22 @@ for incident reporting using presto-admin
 
 import logging
 import json
+import platform
 import shutil
 import tarfile
 
 import requests
 from fabric.contrib.files import exists
-from fabric.operations import os, get
+from fabric.context_managers import settings, hide
+from fabric.operations import os, get, run
 from fabric.tasks import execute
 from fabric.api import env, runs_once, task
 from fabric.utils import abort, warn
 
 from prestoadmin.topology import requires_topology
+from prestoadmin.server import get_presto_version
 import prestoadmin.util.fabricapi as fabricapi
-
+import prestoadmin
 from util.constants import REMOTE_PRESTO_LOG_DIR, PRESTOADMIN_LOG_DIR
 
 
@@ -41,8 +44,9 @@ OUTPUT_FILENAME = '/tmp/presto-debug-logs.tar.bz2'
 PRESTOADMIN_LOG_NAME = 'presto-admin.log'
 _LOGGER = logging.getLogger(__name__)
 QUERY_REQUEST_URL = "http://localhost:8080/v1/query/"
+NODES_REQUEST_URL = "http://localhost:8080/v1/node"
 
-__all__ = ['logs', 'query_info']
+__all__ = ['logs', 'query_info', 'system_info']
 
 
 @task
@@ -118,3 +122,50 @@ def query_info(query_id=None):
         out_file.write(json.dumps(req.json(), indent=4))
 
     print("Gathered query information in file : " + query_info_file_name)
+
+
+@task
+@requires_topology
+def system_info():
+    """
+    Gather system information like nodes in the system, presto
+    version, presto-admin version, os version etc.
+    """
+
+    if env.host not in fabricapi.get_coordinator_role():
+        return
+
+    req = requests.get(NODES_REQUEST_URL)
+
+    if not req.status_code == requests.codes.ok:
+        abort("Unable to access node information. "
+              "Please check that server is up with command server status")
+
+    node_info_file_name = os.path.join(TMP_PRESTO_DEBUG, "node_info.json")
+
+    if not os.path.exists(TMP_PRESTO_DEBUG):
+        os.mkdir(TMP_PRESTO_DEBUG)
+
+    with open(node_info_file_name, "w") as out_file:
+        out_file.write(json.dumps(req.json(), indent=4))
+
+    print("Gathered node information in file : " + node_info_file_name)
+
+    version_file_name = os.path.join(TMP_PRESTO_DEBUG, "version_info.txt")
+
+    with open(version_file_name, "w") as out_file:
+        out_file.write("platform information : " + platform.platform() + "\n")
+        out_file.write("Java version : " + get_java_version() + "\n")
+        out_file.write("presto admin version : "
+                       + prestoadmin.__version__ + "\n")
+        out_file.write("presto server version : "
+                       + get_presto_version() + "\n")
+
+    print("Gathered version information in file : " + version_file_name)
+
+
+def get_java_version():
+    with settings(hide('warnings', 'stdout'), warn_only=True):
+        version = run("java -version")
+        _LOGGER.debug("java version: " + version)
+        return version

@@ -156,9 +156,7 @@ def restart():
 
 
 def check_presto_version():
-    with settings(hide('warnings', 'stdout'), warn_only=True):
-        version = run("rpm -q --qf \"%{VERSION}\\n\" presto")
-        _LOGGER.debug("Presto rpm version: " + version)
+    version = get_presto_version()
     try:
         float(version)
         version_number = version.strip().split('.')
@@ -168,6 +166,13 @@ def check_presto_version():
     except ValueError:
         warn("%s: No suitable presto version found" % env.host)
         pass
+
+
+def get_presto_version():
+    with settings(hide('warnings', 'stdout'), warn_only=True):
+        version = run("rpm -q --qf \"%{VERSION}\\n\" presto")
+        _LOGGER.debug("Presto rpm version: " + version)
+        return version
 
 
 def check_server_status():

@@ -27,6 +27,7 @@ from prestoadmin import collect
 from prestoadmin.collect import TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, PRESTOADMIN_LOG_DIR, \
     REMOTE_PRESTO_LOG_DIR, OUTPUT_FILENAME
+import prestoadmin
 import utils
 
 
@@ -138,3 +139,63 @@ class TestCollect(utils.BaseTestCase):
         json_dumps_mock.assert_called_with(req_json_mock, indent=4)
 
         file_obj.write.assert_called_with(json_dumps_mock.return_value)
+
+    @patch("prestoadmin.collect.requests.get")
+    def test_system_info_not_run_on_workers(self, req_get_mock):
+        env.host = ["worker1"]
+        env.roledefs["worker"] = ["worker1"]
+        collect.system_info()
+        assert not req_get_mock.called
+
+    @patch('prestoadmin.collect.run')
+    @patch('prestoadmin.server.run')
+    @patch("prestoadmin.collect.platform.platform")
+    @patch("prestoadmin.collect.json.dumps")
+    @patch("prestoadmin.collect.requests.models.json")
+    @patch("__builtin__.open")
+    @patch("prestoadmin.collect.os.mkdir")
+    @patch("prestoadmin.collect.os.path.exists")
+    @patch("prestoadmin.collect.requests.get")
+    def test_collect_system_info(self, requests_get_mock,
+                                 path_exist_mock, mkdir_mock, open_mock,
+                                 req_json_mock, json_dumps_mock,
+                                 platform_mock, run_server_mock,
+                                 run_collect_mock):
+        node_info_file_name = path.join(TMP_PRESTO_DEBUG, "node_info.json")
+        version_info_file_name = path.join(TMP_PRESTO_DEBUG,
+                                           "version_info.txt")
+        path_exist_mock.return_value = False
+        file_obj = open_mock.return_value.__enter__.return_value
+        requests_get_mock.return_value.json.return_value = req_json_mock
+        requests_get_mock.return_value.status_code = requests.codes.ok
+
+        platform_value = platform_mock.return_value
+        server_version = "dummy_verion"
+        run_server_mock.return_value = server_version
+        java_version = "java dummy version"
+        run_collect_mock.return_value = java_version
+
+        env.host = "myhost"
+        env.roledefs["coordinator"] = ["myhost"]
+
+        collect.system_info()
+
+        requests_get_mock.assert_called_with(collect.NODES_REQUEST_URL)
+        mkdir_mock.assert_called_with(TMP_PRESTO_DEBUG)
+
+        open_mock.assert_any_call(node_info_file_name, "w")
+
+        json_dumps_mock.assert_called_with(req_json_mock, indent=4)
+
+        file_obj.write.assert_any_call(json_dumps_mock.return_value)
+
+        open_mock.assert_called_with(version_info_file_name, "w")
+
+        file_obj.write.assert_any_call("platform information : "
+                                       + platform_value + "\n")
+        file_obj.write.assert_any_call("Java version : "
+                                       + java_version + "\n")
+        file_obj.write.assert_any_call("presto admin version : "
+                                       + prestoadmin.__version__ + "\n")
+        file_obj.write.assert_any_call("presto server version : "
+                                       + server_version + "\n")

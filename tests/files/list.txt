@@ -4,6 +4,7 @@ Available commands:
 
     collect logs
     collect query_info
+    collect system_info
     configuration deploy
     configuration show
     connector add
