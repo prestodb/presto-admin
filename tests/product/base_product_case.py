@@ -37,35 +37,44 @@ class BaseProductTestCase(utils.BaseTestCase):
         self.tear_down_docker_cluster()
         self.create_host_mount_dirs()
 
-        self.client.pull("jdeath/centos-ssh")
-        ret = self.client.build(path=os.path.join(prestoadmin.main_dir,
-                                                  "tests/product/resources/"
-                                                  "centos6-ssh-test"),
-                                tag="teradatalabs/centos6-ssh-test", rm=True)
+        if not self.client.images("jdeathe/centos-ssh"):
+            self._execute_and_wait(self.client.pull, "jdeathe/centos-ssh")
+        self._execute_and_wait(self.client.build,
+                               path=os.path.join(prestoadmin.main_dir,
+                                                 "tests/product/resources/"
+                                                 "centos6-ssh-test"),
+                               tag="teradatalabs/centos6-ssh-test", rm=True)
 
-        # Go through all of the lines returned by build to make sure we wait
-        # till build is finished.
-        for line in ret:
-            pass
         for container_name in self.slaves:
-            self.client.create_container("teradatalabs/centos6-ssh-test",
-                                         detach=True, name=container_name,
-                                         volumes=LOCAL_MOUNT_POINT %
-                                         container_name)
+            self._execute_and_wait(self.client.create_container,
+                                   "teradatalabs/centos6-ssh-test",
+                                   detach=True,
+                                   name=container_name,
+                                   volumes=LOCAL_MOUNT_POINT %
+                                   container_name)
+
             self.client.start(container_name,
                               binds={LOCAL_MOUNT_POINT % container_name:
                                      {"bind": DOCKER_MOUNT_POINT,
                                       "ro": False}})
 
-        self.client.create_container("teradatalabs/centos6-ssh-test",
-                                     detach=True, name=self.master,
-                                     volumes=LOCAL_MOUNT_POINT % self.master)
+        self._execute_and_wait(self.client.create_container,
+                               "teradatalabs/centos6-ssh-test",
+                               detach=True,
+                               name=self.master,
+                               volumes=LOCAL_MOUNT_POINT % self.master)
 
-        self.client.start("master",
+        self.client.start(self.master,
                           binds={LOCAL_MOUNT_POINT % self.master:
                                  {"bind": DOCKER_MOUNT_POINT,
                                   "ro": False}},
                           links=zip(self.slaves, self.slaves))
+
+    def _execute_and_wait(self, func, *args, **kwargs):
+        ret = func(*args, **kwargs)
+        # go through all lines in returned stream to ensure func finishes
+        for line in ret:
+            pass
 
     def remove_host_mount_dirs(self):
         for container_name in [self.master] + self.slaves:
@@ -86,6 +95,7 @@ class BaseProductTestCase(utils.BaseTestCase):
         for container in [self.master] + self.slaves:
             try:
                 self.client.stop(container)
+                self.client.wait(container)
                 self.client.remove_container(container)
             except APIError as e:
                 # container does not exist
