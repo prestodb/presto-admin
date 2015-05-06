@@ -37,11 +37,15 @@ class BaseProductTestCase(utils.BaseTestCase):
         self.create_host_mount_dirs()
 
         self.client.pull("jdeath/centos-ssh")
-        self.client.build(path=os.path.join(prestoadmin.main_dir,
-                                            "tests/product/resources/"
-                                            "centos6-ssh-test"),
-                          tag="teradatalabs/centos6-ssh-test", rm=True)
+        ret = self.client.build(path=os.path.join(prestoadmin.main_dir,
+                                                  "tests/product/resources/"
+                                                  "centos6-ssh-test"),
+                                tag="teradatalabs/centos6-ssh-test", rm=True)
 
+        # Go through all of the lines returned by build to make sure we wait
+        # till build is finished.
+        for line in ret:
+            pass
         for container_name in self.slaves:
             self.client.create_container("teradatalabs/centos6-ssh-test",
                                          detach=True, name=container_name,
