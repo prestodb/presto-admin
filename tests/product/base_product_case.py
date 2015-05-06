@@ -2,6 +2,7 @@ import os
 import shutil
 from docker.errors import APIError
 import errno
+import requests.exceptions
 import prestoadmin
 from docker import Client
 from tests import utils
@@ -90,6 +91,8 @@ class BaseProductTestCase(utils.BaseTestCase):
                 # container does not exist
                 if e.response.status_code == 404:
                     pass
+            except requests.exceptions.ConnectionError as e:
+                print e
 
         self.remove_host_mount_dirs()
 
