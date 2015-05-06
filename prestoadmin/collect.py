@@ -14,8 +14,8 @@
 
 
 """
-This module contains the methods for gathering various debug information
-for incident reporting using presto-admin
+Module for gathering various debug information for incident reporting
+using presto-admin
 """
 
 import logging
@@ -97,6 +97,9 @@ def query_info(query_id=None):
     """
     Gather information about the query identified by the given
     query_id and store that in a JSON file.
+
+    Parameters:
+        query_id - id of the query for which info has to be gathered
     """
 
     if env.host not in fabricapi.get_coordinator_role():

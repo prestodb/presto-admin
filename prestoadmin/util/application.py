@@ -44,9 +44,10 @@ class Application(object):
     features.  This class is expected to be used as a base class for various
     applications.
 
-    :param name: human readable name for the application
-    :param version: the version of the application, as a string
-    :param log_file_path: optional name of the log file including whatever
+    Parameters:
+        name - human readable name for the application
+        version - the version of the application, as a string
+        log_file_path - optional name of the log file including whatever
         extension you may want to use.  For example, 'foo.log' would create
         a file called 'foo.log' in the default presto-admin logging directory
         tree.
@@ -247,13 +248,14 @@ def entry_point(name, version=None, log_file_path=None,
     cause it to be invoked.  You must explicitly call the function in the
     script.
 
-    :param name: human readable name for the application
-    :param version: the version of the application, as a string
-    :param log_file_path: optional name of the log file including whatever
+    Parameters:
+        name - human readable name for the application
+        version - the version of the application, as a string
+        log_file_path - optional name of the log file including whatever
         extension you may want to use.  For example, 'foo.log' would create
         a file called 'foo.log' in the default prestoadmin logging directory
         tree.
-    :param application_class: Type of application to run. The default is
+        application_class - Type of application to run. The default is
         Application but there can be subclasses of that class.
     """
     def application_decorator(method):

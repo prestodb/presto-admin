@@ -14,8 +14,7 @@
 
 
 """
-This module contains the methods for setting and validating the
-presto-admin config
+Module for setting and validating the presto-admin config
 """
 from functools import wraps
 import pprint

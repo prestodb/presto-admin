@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Module for installing, monitoring and controlling presto server
+using presto-admin
+"""
 import logging
 
 from fabric.api import task, sudo, env
@@ -63,11 +67,12 @@ def install(local_path=None):
     file is missing or empty then no connector configuration is deployed.
     Install will fail for invalid json configuration.
 
-    :param local_path: Absolute path to local rpm to be deployed
+    Parameters:
+        local_path - Absolute path to the presto rpm to be installed
     """
     if local_path is None:
         abort("Missing argument local_path: Absolute path to "
-              "local rpm to be deployed")
+              "the presto rpm to be installed")
 
     with settings(parallel=False):
         host_list = set_hosts()
@@ -150,6 +155,9 @@ def restart():
     """
     Restart the Presto server on all nodes, unless some are excluded using
     -x/--exclude-hosts.
+
+    A status check is performed on the entire cluster and a list of
+    servers that did not start, if any, are reported at the end.
     """
     service(' restart')
     check_status_for_control_commands()
@@ -179,7 +187,9 @@ def check_server_status():
     """
     Checks if server is running for env.host. Retries connecting to server
     until server is up or till RETRY_TIMEOUT is reached
-    :return: True or False
+
+    Returns:
+        True or False
     """
     result = True
     time = 0
@@ -211,8 +221,9 @@ def run_sql(host, sql):
 def execute_connector_info_sql(host):
     """
     Returns [[catalog_name], [catalog_2]..] from catalogs system table
-    :param host:
-    :return:
+
+    Parameters:
+        host - host on which the client executes the query
     """
     return run_sql(host, CONNECTOR_INFO_SQL)
 
@@ -221,9 +232,10 @@ def execute_external_ip_sql(host, uuid):
     """
     Returns external ip of the host with uuid after parsing the http_uri column
     from nodes system table
-    :param host:
-    :param uuid:
-    :return:
+
+    Parameters:
+        host - host on which the client executes the query
+        uuid - node_id of the node
     """
     return run_sql(host, EXTERNAL_IP_SQL % uuid)
 
@@ -231,9 +243,13 @@ def execute_external_ip_sql(host, uuid):
 def get_sysnode_info_from(node_info_row):
     """
     Returns system node info dict from node info row for a node
-    :param node_info_row:
-    :return:server row eg format:
-    {"http://node1/statement": [presto-main:0.97-SNAPSHOT, True]}
+
+    Parameters:
+        node_info_row -
+
+    Returns:
+        Node info dict in format:
+        {"http://node1/statement": [presto-main:0.97-SNAPSHOT, True]}
     """
     output = {}
     for row in node_info_row:
@@ -261,8 +277,12 @@ def get_connector_info_from(host):
 def get_server_status(host):
     """
     Check if the server is running for host.
-    :param host:
-    :return: True or False
+
+    Parameters:
+        host -
+
+    Returns:
+        True or False
     """
     client = PrestoClient(host, env.user)
     result = client.execute_query(SERVER_CHECK_SQL)
@@ -341,6 +361,9 @@ def get_status():
 @task
 @requires_topology
 def status():
+    """
+    Print the status of presto in the cluster
+    """
     check_presto_version()
     with settings(parallel=False):
         get_status()

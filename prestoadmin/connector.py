@@ -32,8 +32,7 @@ __all__ = ['add', 'remove']
 @task
 def add(name=None):
     """
-    Deploy configuration for a connector onto a cluster. Use the name argument
-    to add a particular connector.
+    Deploy configuration for a connector onto a cluster.
 
     E.g.: 'presto-admin connector add tpch'
     deploys a configuration file for the tpch connector.  The configuration is
@@ -41,6 +40,9 @@ def add(name=None):
 
     If no connector name is specified, then  configurations for all connectors
     in the connector directory will be deployed
+
+    Parameters:
+        name - Name of the connector to be added
     """
     if name:
         filename = name + ".properties"
@@ -70,7 +72,9 @@ def add(name=None):
 def remove(name):
     """
     Remove a connector from the cluster.
-    Usage: presto-admin connector remove <name>
+
+    Parameters:
+        name - Name of the connector to be removed
     """
     _LOGGER.info("[" + env.host + "] Removing connector: " + name)
     try:

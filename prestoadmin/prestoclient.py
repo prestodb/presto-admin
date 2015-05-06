@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Simple client to communicate with a Presto server.
+"""
 from httplib import HTTPConnection, HTTPException
 import logging
 import socket
@@ -40,13 +43,20 @@ class PrestoClient:
 
     def execute_query(self, sql, schema="default", catalog="hive"):
         """
-        Execute a query connecting to Presto server using passed parameters
+        Execute a query connecting to Presto server using passed parameters.
 
-        :param sql: sql query to be executed
-        :param schema: Presto schema to be used while executing query
-        (default=default)
-        :param catalog: Catalog to be used by the server
-        :return: True or False exit status
+        Client sends http POST request to the Presto server, page:
+        "/v1/statement". Header information should
+        include: X-Presto-Catalog, X-Presto-Schema,  X-Presto-User
+
+        Parameters:
+            sql - sql query to be executed
+            schema - Presto schema to be used while executing query
+                    (default=default)
+            catalog - Catalog to be used by the server
+
+        Returns:
+            True or False exit status
         """
         if not sql:
             raise InvalidArgumentError("SQL query missing")
@@ -103,6 +113,14 @@ class PrestoClient:
             return False
 
     def build_results_from_response(self):
+        """
+        Build result from the response
+
+        The reponse_from_server may contain up to 3 uri's.
+        1. link to fetch the next packet of data ('nextUri')
+        2. TODO: information about the query execution ('infoUri')
+        3. TODO: cancel the query ('partialCancelUri').
+        """
         if NEXT_URI_RESP in self.response_from_server:
             self.next_uri = self.response_from_server[NEXT_URI_RESP]
         else:
@@ -117,8 +135,14 @@ class PrestoClient:
     def get_rows(self, num_of_rows=NUM_ROWS):
         """
         Get the rows returned from the query.
-        :param num_of_rows: to be retrieved. 1000 by default
-        :return:
+
+        The client sends GET requests to the server using the 'nextUri'
+        from the previous response until the servers response does not
+        contain anymore 'nextUri's.  When there is no 'nextUri' the query is
+        finished
+
+        Parameters:
+            num_of_rows: to be retrieved. 1000 by default
         """
         if num_of_rows == 0:
             return []

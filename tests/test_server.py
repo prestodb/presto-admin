@@ -51,7 +51,7 @@ class TestInstall(utils.BaseTestCase):
         local_path = None
         self.assertRaisesRegexp(SystemExit,
                                 "Missing argument local_path: Absolute path "
-                                "to local rpm to be deployed",
+                                "to the presto rpm to be installed",
                                 server.install,
                                 local_path)
 

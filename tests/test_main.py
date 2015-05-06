@@ -178,7 +178,7 @@ class TestMain(utils.BaseTestCase):
             "Displaying detailed information for task 'topology show':\n\n   "
             " Shows the current topology configuration for the cluster "
             "(including the\n    coordinators, workers, SSH port, and SSH "
-            "username)\n    \n    Arguments: None\n\n"
+            "username)\n\n"
         )
 
     def test_describe_with_args(self):
@@ -188,7 +188,7 @@ class TestMain(utils.BaseTestCase):
             "Displaying detailed information for task 'topology show':\n\n   "
             " Shows the current topology configuration for the cluster "
             "(including the\n    coordinators, workers, SSH port, and SSH "
-            "username)\n    \n    Arguments: None\n\n"
+            "username)\n\n"
         )
 
     def test_shortlist(self):

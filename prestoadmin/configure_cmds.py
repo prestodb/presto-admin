@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Module for various configuration management tasks using presto-admin
+"""
 import logging
 import os
 from StringIO import StringIO
@@ -41,14 +44,17 @@ def deploy(rolename=None):
     """
     Deploy configuration on the remote hosts.
 
-    By default, deploys configuration for all roles on the remote hosts
-    Possible arguments:
-        coordinator: Deploy the coordinator configuration to the coordinator
+    Possible arguments are -
+        coordinator - Deploy the coordinator configuration to the coordinator
         node
-        workers: Deploy workers configuration to the worker nodes. This will
+        workers - Deploy workers configuration to the worker nodes. This will
         not deploy configuration for a coordinator that is also a worker
-    :param rolename: [coordinator|workers]
-    :return:
+
+    If no rolename is specified, then configuration for all roles will be
+    deployed
+
+    Parameters:
+        rolename - [coordinator|workers]
     """
     if rolename is None:
         _LOGGER.info("Running configure all")
@@ -79,29 +85,32 @@ def configuration_show(file_name):
 
 
 @task
-def show(config=None):
+def show(config_type=None):
     """
     Print to the user the contents of the configuration deployed
 
-    It takes arguments: node jvm, config or log. If no arguments given. then
-    prints out all the four
-    :param config: [node|jvm|config|log]
-    :return:
+    Possible arguments are node,jvm,config or log.
+
+    If no config_type is specified, then all four configurations will be
+    printed
+
+    Parameters:
+        config_type: [node|jvm|config|log]
     """
     file_name = ''
-    if config is None:
+    if config_type is None:
         configuration_show(NODE_PROPERTIES)
         configuration_show(JVM_CONFIG)
         configuration_show(CONFIG_PROPERTIES)
         configuration_show(LOG_PROPERTIES)
     else:
-        if config.lower() == 'node':
+        if config_type.lower() == 'node':
             file_name = NODE_PROPERTIES
-        elif config.lower() == 'jvm':
+        elif config_type.lower() == 'jvm':
             file_name = JVM_CONFIG
-        elif config.lower() == 'config':
+        elif config_type.lower() == 'config':
             file_name = CONFIG_PROPERTIES
-        elif config.lower() == 'log':
+        elif config_type.lower() == 'log':
             file_name = LOG_PROPERTIES
         else:
             abort("Invalid Argument. Possible values: node, jvm, config, log")

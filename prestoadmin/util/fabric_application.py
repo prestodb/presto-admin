@@ -51,7 +51,9 @@ class FabricApplication(Application):
         """
         Handle KeyboardInterrupt in a special way: don't indicate
         that it's an error.
-        :return:Nothing
+
+        Returns:
+            Nothing
         """
         self._log_exception()
         if isinstance(self.exception, UserVisibleError):

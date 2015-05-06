@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ##
-#  This file was copied from Fabric-1.8.0 with some modifications.
+# This file was copied from Fabric-1.8.0 with some modifications.
 #
-#  This distribution of fabric is distributed under the following BSD license:
+# This distribution of fabric is distributed under the following BSD license:
 #
 #  Copyright (c) 2009, Christian Vest Hansen and Jeffrey E. Forcier
 #  All rights reserved.
@@ -44,13 +44,13 @@ to individuals leveraging Fabric as a library, should be kept elsewhere.
 """
 import copy
 import getpass
-import inspect
 import logging
 from operator import isMappingType
 from optparse import Values, SUPPRESS_HELP
 import os
 import re
 import sys
+import textwrap
 import types
 
 from config import ConfigFileNotFoundError, ConfigurationError
@@ -61,12 +61,13 @@ from prestoadmin.util.hiddenoptgroup import HiddenOptionGroup
 from prestoadmin.util.parser import LoggingOptionParser
 import topology
 
+
 # For checking callables against the API, & easy mocking
 from fabric import api, state
 from fabric.contrib import console, files, project
 
 from fabric.state import env_options
-from fabric.tasks import Task, execute, get_task_details
+from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
@@ -74,12 +75,8 @@ from fabric.utils import abort, indent, warn, _pty_size
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).
 _modules = [api, project, files, console]
-_internals = reduce(lambda x, y: x + filter(
-    callable,
-    vars(y).values()),
-    _modules,
-    []
-)
+_internals = reduce(lambda x, y: x + filter(callable, vars(y).values()),
+                    _modules, [])
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -90,6 +87,7 @@ def _get_presto_env_options():
         [x for x in new_env_options if x.dest not in commands_to_remove]
     return new_env_options
 
+
 presto_env_options = _get_presto_env_options()
 
 
@@ -98,6 +96,7 @@ class _ModuleCache(object):
     """
     Set-like object operating on modules and storing __name__s internally.
     """
+
     def __init__(self):
         self.cache = set()
 
@@ -109,6 +108,7 @@ class _ModuleCache(object):
 
     def clear(self):
         return self.cache.clear()
+
 
 _seen = _ModuleCache()
 
@@ -472,6 +472,15 @@ def list_commands(docstring, format_):
     return result
 
 
+def get_task_docstring(task):
+    details = [
+        textwrap.dedent(task.__doc__)
+        if task.__doc__
+        else 'No docstring provided']
+
+    return '\n'.join(details)
+
+
 def display_command(name, code=0):
     """
     Print command function's docstring, then exit. Invoked with -d/--display.
@@ -482,17 +491,8 @@ def display_command(name, code=0):
     if command is None:
         msg = "Task '%s' does not appear to exist. Valid task names:\n%s"
         abort(msg % (name, "\n".join(_normal_list(False))))
-    # Print out nicely presented docstring if found
-    if hasattr(command, '__details__'):
-        task_details = command.__details__()
-    else:
-        task_details = get_task_details(command)
-
-    # Print out "None" if there aren't any arguments; otherwise the text just
-    # is "Arguments:\n\n", which is not clear.
-    argspec = inspect.getargspec(command.wrapped)
-    if len(argspec.args) == 0:
-        task_details += 'None'
+    # get the presented docstring if found
+    task_details = get_task_docstring(command)
 
     if task_details:
         print("Displaying detailed information for task '%s':" % name)
@@ -624,7 +624,8 @@ def _to_boolean(string):
     True, and only the string "False" returns the boolean False.  All other
     values throw a ValueError.
 
-    :param string: the string to parse
+    Parameters:
+        string - the string to parse
     """
     if string is True or string == 'True':
         return True
@@ -661,7 +662,7 @@ def _set_arbitrary_env_vars(non_default_options):
 def _update_env(default_options, non_default_options):
     # Fill in the state with the default values
     for opt, value in default_options.__dict__.items():
-            state.env[opt] = value
+        state.env[opt] = value
 
     # Load the values from the topology file, if it exists
     load_topology()

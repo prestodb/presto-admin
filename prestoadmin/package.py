@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Module for rpm package deploy and install using presto-admin
+"""
 import logging
 from fabric.decorators import task
 
@@ -12,6 +29,12 @@ __all__ = ['install']
 @task
 @requires_topology
 def install(local_path):
+    """
+    Install the rpm package on the cluster
+
+    Parameters:
+        ocal_path - Absolute path to the rpm to be installed
+    """
     deploy(local_path)
     rpm_install(os.path.basename(local_path))
 

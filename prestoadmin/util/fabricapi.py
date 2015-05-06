@@ -12,7 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""
+Module to add extensions and helpers for fabric api methods
+"""
 from fabric.api import env
 from fabric.tasks import execute
 
