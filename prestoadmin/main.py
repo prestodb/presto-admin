@@ -82,7 +82,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
-    commands_to_remove = ['fabfile', 'rcfile']
+    commands_to_remove = ['fabfile', 'rcfile', 'parallel']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
     return new_env_options
@@ -289,6 +289,15 @@ def parser_for_options():
         help="print detailed information about command"
     )
 
+    # Like --list, but text processing friendly
+    parser.add_option(
+        '--extended-help',
+        action='store_true',
+        dest='extended_help',
+        default=False,
+        help="print out all options, including advanced ones"
+    )
+
     # Control behavior of --list
     list_format_options = ('short', 'normal')
     parser.add_option(
@@ -336,22 +345,6 @@ def parser_for_options():
         help="print out text processing friendly version of --list"
     )
 
-    # Like --list, but text processing friendly
-    parser.add_option(
-        '--extended-help',
-        action='store_true',
-        dest='extended_help',
-        default=False,
-        help="print out all options, including advanced ones"
-    )
-
-    parser.add_option(
-        '--serial',
-        action='store_true',
-        dest='serial',
-        default=False,
-        help="run the tasks serially"
-    )
     #
     # Add in options which are also destined to show up as `env` vars.
     #
@@ -368,6 +361,14 @@ def parser_for_options():
             parser.add_option(option)
         else:
             advanced_options.add_option(option)
+
+    advanced_options.add_option(
+        '--serial',
+        action='store_true',
+        dest='serial',
+        default=False,
+        help="default to serial execution method"
+    )
 
     parser.add_option_group(advanced_options)
 

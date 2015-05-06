@@ -89,6 +89,7 @@ class PrestoClient:
             conn.close()
 
             self.response_from_server = json.loads(answer)
+            _LOGGER.info("Query executed successfully")
             return True
         except (HTTPException, socket.error):
             _LOGGER.error("Error connecting to presto server at: " +
@@ -106,6 +107,7 @@ class PrestoClient:
             conn.close()
 
             self.response_from_server = json.loads(answer)
+            _LOGGER.info("GET request successful for uri: " + uri)
             return True
         except (HTTPError, URLError) as e:
             _LOGGER.error("Error opening the presto response uri: " +

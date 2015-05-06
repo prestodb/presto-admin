@@ -40,7 +40,7 @@ def install(local_path):
 
 
 def deploy(local_path=None):
-    _LOGGER.debug("Deploying rpm to nodes")
+    _LOGGER.info("Deploying rpm to nodes")
     sudo('mkdir -p ' + constants.REMOTE_PACKAGES_PATH)
     try:
         put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
