@@ -4,7 +4,6 @@ prestoadmin.egg-info/
 .tox/
 .coverage
 htmlcov/
-resources/
 log/
 tmp/
 

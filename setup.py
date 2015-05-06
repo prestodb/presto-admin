@@ -37,7 +37,8 @@ requirements = [
 test_requirements = [
     'tox',
     'mock',
-    'wheel'
+    'wheel',
+    'docker-py'
 ]
 
 # =====================================================
