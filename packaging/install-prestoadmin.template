@@ -21,8 +21,6 @@ chmod 755 `pwd`/presto-admin
 
 LOG_DIR=/var/log/presto-admin
 mkdir -p $LOG_DIR
-chmod 777 $LOG_DIR
 
 CONF_DIR=/etc/opt/presto-admin
 mkdir -p $CONF_DIR
-chmod 777 $CONF_DIR
