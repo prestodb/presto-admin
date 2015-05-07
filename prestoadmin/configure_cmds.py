@@ -18,9 +18,8 @@ Module for various configuration management tasks using presto-admin
 import logging
 import os
 from StringIO import StringIO
-from fabric.context_managers import settings
 from fabric.contrib import files
-from fabric.decorators import task
+from fabric.decorators import task, serial
 from fabric.operations import get
 from fabric.state import env
 from fabric.utils import abort, warn
@@ -70,21 +69,21 @@ def deploy(rolename=None):
 
 
 def configuration_show(file_name):
-    with settings(parallel=False):
-        file_path = os.path.join(constants.REMOTE_CONF_DIR, file_name)
-        if not files.exists(file_path):
-            warn("No configuration file found for %s at %s"
-                 % (env.host, file_path))
-        else:
-            file_content_buffer = StringIO()
-            get(file_path, file_content_buffer)
-            config_values = file_content_buffer.getvalue()
-            file_content_buffer.close()
-            print ("\n%s: Configuration file at %s:" % (env.host, file_path))
-            print config_values
+    file_path = os.path.join(constants.REMOTE_CONF_DIR, file_name)
+    if not files.exists(file_path):
+        warn("No configuration file found for %s at %s"
+             % (env.host, file_path))
+    else:
+        file_content_buffer = StringIO()
+        get(file_path, file_content_buffer)
+        config_values = file_content_buffer.getvalue()
+        file_content_buffer.close()
+        print ("\n%s: Configuration file at %s:" % (env.host, file_path))
+        print config_values
 
 
 @task
+@serial
 def show(config_type=None):
     """
     Print to the user the contents of the configuration deployed
