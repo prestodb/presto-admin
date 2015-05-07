@@ -1,5 +1,7 @@
 import os
 import shutil
+import subprocess
+import sys
 from docker.errors import APIError
 import errno
 import prestoadmin
@@ -17,11 +19,19 @@ class BaseProductTestCase(utils.BaseTestCase):
 
     def setUp(self):
         self.capture_stdout_stderr()
+        self.check_if_docker_exists()
         self.create_docker_cluster()
 
     def tearDown(self):
         self.restore_stdout_stderr()
         self.tear_down_docker_cluster()
+
+    def check_if_docker_exists(self):
+        try:
+            subprocess.call(['docker'])
+        except OSError:
+            sys.exit('Docker is not installed. Try installing it with '
+                     'presto-admin/bin/docker-install.sh.')
 
     def create_host_mount_dirs(self):
         for container_name in [self.master] + self.slaves:
