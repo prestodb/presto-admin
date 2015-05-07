@@ -17,3 +17,20 @@ Options:
   -x HOSTS, --exclude-hosts=HOSTS
                         comma-separated list of hosts to exclude
 
+Commands:
+    collect logs
+    collect query_info
+    collect system_info
+    configuration deploy
+    configuration show
+    connector add
+    connector remove
+    package install
+    server install
+    server restart
+    server start
+    server status
+    server stop
+    server uninstall
+    topology show
+

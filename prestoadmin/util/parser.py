@@ -57,3 +57,12 @@ class LoggingOptionParser(OptionParser):
             # Restore the suppressed help when applicable
             if old_suppress_help[group]:
                 group.suppress_help = True
+
+    def format_epilog(self, formatter):
+        """
+        The default format_epilog strips the newlines (using textwrap),
+        so we override format_epilog here to use its own epilog
+        """
+        if not self.epilog:
+            self.epilog = ""
+        return self.epilog

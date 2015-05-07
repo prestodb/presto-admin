@@ -62,3 +62,20 @@ Options:
     -z INT, --pool-size=INT
                         number of concurrent processes to use in parallel mode
     --serial            default to serial execution method
+Commands:
+    collect logs
+    collect query_info
+    collect system_info
+    configuration deploy
+    configuration show
+    connector add
+    connector remove
+    package install
+    server install
+    server restart
+    server start
+    server status
+    server stop
+    server uninstall
+    topology show
+

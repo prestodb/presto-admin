@@ -93,7 +93,7 @@ class TestMain(utils.BaseTestCase):
             2,
             stderr_text="\nWarning: Command not found:\n    hello world\n\n"
         )
-        self.assertTrue("Available commands:" in self.test_stdout.getvalue())
+        self.assertTrue("Commands:" in self.test_stdout.getvalue())
 
     @patch('prestoadmin.main._LOGGER')
     def test_argument_parsing_with_short_command(self, logger_mock):
@@ -102,7 +102,7 @@ class TestMain(utils.BaseTestCase):
             2,
             stderr_text="\nWarning: Command not found:\n    topology\n\n"
         )
-        self.assertTrue("Available commands:" in self.test_stdout.getvalue())
+        self.assertTrue("Commands:" in self.test_stdout.getvalue())
 
     def test_argument_parsing_with_valid_command(self):
         commands = main.parse_and_validate_commands(["topology", "show"])
@@ -120,7 +120,7 @@ class TestMain(utils.BaseTestCase):
             stderr_text="\nWarning: Arbitrary remote shell commands not "
                         "supported.\n\n"
         )
-        self.assertTrue("Available commands:" in self.test_stdout.getvalue())
+        self.assertTrue("Commands:" in self.test_stdout.getvalue())
 
     @patch('prestoadmin.main.topology.get_conf')
     def test_load_topology(self, get_conf_mock):

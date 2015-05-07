@@ -268,10 +268,10 @@ def parser_for_options():
     #
     # Initialize
     #
-
     parser = LoggingOptionParser(
         usage="presto-admin [options] <command> [arg]",
-        version="presto-admin %s" % __version__)
+        version="presto-admin %s" % __version__,
+        epilog="\n".join(list_commands(None, 'normal')))
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -451,7 +451,7 @@ def _normal_list(docstrings=True):
     return result
 
 
-COMMANDS_HEADER = "Available commands"
+COMMANDS_HEADER = "Commands:"
 
 
 def list_commands(docstring, format_):
@@ -473,9 +473,10 @@ def list_commands(docstring, format_):
         trailer = "\n" if not docstring.endswith("\n") else ""
         result.append(docstring + trailer)
     header = COMMANDS_HEADER
-    result.append(header + ":\n")
+    result.append(header)
     c = _normal_list()
     result.extend(c)
+    result.extend("\n")
     return result
 
 
@@ -708,6 +709,18 @@ def get_default_options(options, non_default_options):
 
 
 def parse_and_validate_commands(args=sys.argv[1:]):
+    # Find local fabfile path or abort
+    fabfile = "prestoadmin"
+
+    # Store absolute path to fabfile in case anyone needs it
+    state.env.real_fabfile = fabfile
+
+    # Load fabfile (which calls its module-level code, including
+    # tweaks to env values) and put its commands in the shared commands
+    # dict
+    docstring, callables = load_fabfile(fabfile)
+    state.commands.update(callables)
+
     # Parse command line options
     parser = parser_for_options()
 
@@ -722,18 +735,6 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     arguments = parser.largs
 
     _update_env(default_options, non_default_options)
-
-    # Find local fabfile path or abort
-    fabfile = "prestoadmin"
-
-    # Store absolute path to fabfile in case anyone needs it
-    state.env.real_fabfile = fabfile
-
-    # Load fabfile (which calls its module-level code, including
-    # tweaks to env values) and put its commands in the shared commands
-    # dict
-    docstring, callables = load_fabfile(fabfile)
-    state.commands.update(callables)
 
     # Shortlist is now just an alias for the "short" list format;
     # it overrides use of --list-format if somebody were to specify both
@@ -765,7 +766,8 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     except NameError as e:
         warn(e.message)
         _LOGGER.warn("Unable to parse arguments", exc_info=True)
-        show_commands(None, options.list_format, 2)
+        parser.print_help()
+        sys.exit(2)
 
     # Handle show (command-specific help) option
     if options.display:
