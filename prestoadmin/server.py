@@ -93,8 +93,20 @@ def deploy_install_configure(local_path):
     update_configs()
 
 
+def add_tpch_connector():
+    if not os.path.exists(constants.CONNECTORS_DIR):
+        os.makedirs(constants.CONNECTORS_DIR)
+    tpch_connector_config = os.path.join(constants.CONNECTORS_DIR,
+                                         'tpch.properties')
+    if not os.path.exists(tpch_connector_config):
+        with open(tpch_connector_config, 'w') as conf:
+            conf.write("connector.name=tpch")
+
+
 def update_configs():
     configure_cmds.deploy()
+
+    add_tpch_connector()
     try:
         connector.add()
     except ConfigFileNotFoundError:

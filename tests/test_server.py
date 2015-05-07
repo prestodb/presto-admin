@@ -20,6 +20,7 @@ import os
 from fabric.api import env
 
 from mock import patch
+from prestoadmin.util import constants
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
     PRESTO_RPM_VERSION
@@ -39,13 +40,18 @@ class TestInstall(utils.BaseTestCase):
         mock_execute.assert_called_with(deploy_install_configure,
                                         local_path, hosts=[])
 
-    @patch('prestoadmin.server.update_configs')
     @patch('prestoadmin.server.package.install')
-    def test_deploy_install(self, mock_install, mock_update):
+    @patch('prestoadmin.server.configure_cmds.deploy')
+    @patch('prestoadmin.server.add_tpch_connector')
+    @patch('prestoadmin.server.connector.add')
+    def test_deploy_install(self, mock_conn_add, mock_tpch_add,
+                            mock_config_deploy, mock_install):
         local_path = "/any/path/rpm"
         server.deploy_install_configure(local_path)
         mock_install.assert_called_with(local_path)
-        mock_update.assert_called_with()
+        mock_config_deploy.assert_called_with()
+        mock_tpch_add.assert_called_with()
+        mock_conn_add.assert_called_with()
 
     def test_fail_install(self):
         local_path = None
@@ -140,11 +146,23 @@ class TestInstall(utils.BaseTestCase):
 
     @patch('prestoadmin.server.connector')
     @patch('prestoadmin.server.configure_cmds.deploy')
-    def test_update_config(self, mock_config, mock_connector):
+    @patch('prestoadmin.server.os.path.exists')
+    @patch('prestoadmin.server.os.makedirs')
+    @patch('__builtin__.open')
+    def test_update_config(self, mock_open, mock_makedir, mock_path_exists,
+                           mock_config, mock_connector):
         e = ConfigFileNotFoundError
         mock_connector.add = e
+        mock_path_exists.side_effect = [False, False]
+
         server.update_configs()
+
         mock_config.assert_called_with()
+        mock_makedir.assert_called_with(constants.CONNECTORS_DIR)
+        mock_open.assert_called_with(os.path.join(constants.CONNECTORS_DIR,
+                                                  'tpch.properties'), 'w')
+        file_manager = mock_open.return_value.__enter__.return_value
+        file_manager.write.assert_called_with("connector.name=tpch")
 
     @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.run')
