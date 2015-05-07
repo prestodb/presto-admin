@@ -22,7 +22,7 @@ from fabric.api import env
 import os
 
 __all__ = ['topology', 'configuration', 'server', 'connector',
-           'package', 'collect']
+           'package', 'collect', 'fabric_patches']
 
 env.roledefs = {
     'coordinator': [],
@@ -32,6 +32,7 @@ env.roledefs = {
 
 main_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 
+import fabric_patches
 import collect
 import configure_cmds as configuration
 import connector

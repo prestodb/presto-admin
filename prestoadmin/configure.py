@@ -98,7 +98,7 @@ def list_to_line_separated(conf):
 
 
 def deploy(filenames, local_dir, remote_dir):
-    _LOGGER.debug("Deploying configurations for " + str(filenames))
+    _LOGGER.info("Deploying configurations for " + str(filenames))
     sudo("mkdir -p " + remote_dir)
     for name in filenames:
         put(os.path.join(local_dir, name),
@@ -106,7 +106,7 @@ def deploy(filenames, local_dir, remote_dir):
 
 
 def deploy_node_properties(local_dir, remote_dir):
-    _LOGGER.debug("Deploying node.properties configuration")
+    _LOGGER.info("Deploying node.properties configuration")
     name = "node.properties"
     node_file_path = (os.path.join(remote_dir, name))
     node_id_command = (

@@ -76,14 +76,14 @@ def remove(name):
     Parameters:
         name - Name of the connector to be removed
     """
-    _LOGGER.info("[" + env.host + "] Removing connector: " + name)
-    try:
-        remove_file(os.path.join(constants.REMOTE_CATALOG_DIR,
-                                 name + ".properties"))
-        print "Connector removed. Restart the server for the change to take " \
-              "effect"
-    except SystemExit as e:
-        _LOGGER.error("[" + env.host + "] " + str(e))
+    _LOGGER.info('[' + env.host + '] Removing connector: ' + name)
+    ret = remove_file(os.path.join(constants.REMOTE_CATALOG_DIR,
+                                   name + '.properties'))
+    if ret.succeeded:
+        print('Connector removed. Restart the server for the change to take '
+              'effect')
+    else:
+        print('Failed to remove connector ' + name + '.')
 
     local_path = os.path.join(constants.CONNECTORS_DIR, name + ".properties")
     if os.path.exists(local_path):
@@ -91,4 +91,4 @@ def remove(name):
 
 
 def remove_file(name):
-    sudo("rm " + name)
+    return sudo("rm " + name)

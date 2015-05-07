@@ -18,6 +18,7 @@ Options:
                         comma-separated list of hosts to exclude
 
   Advanced Options:
+    --abort-on-error    abort, instead of warn, if a command fails on any node
     -a, --no_agent      don't use the running SSH agent
     -A, --forward-agent
                         forward local agent to remote end
@@ -58,7 +59,6 @@ Options:
                         set remote command timeout to N seconds
     -u USER, --user=USER
                         username to use when connecting to remote hosts
-    -w, --warn-only     warn, instead of abort, when commands fail
     -z INT, --pool-size=INT
                         number of concurrent processes to use in parallel mode
     --serial            default to serial execution method

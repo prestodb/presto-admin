@@ -34,8 +34,8 @@ class TestPackage(utils.BaseTestCase):
     @patch('prestoadmin.package.put')
     def test_deploy_with_fallback_location(self, mock_put, mock_sudo):
         package.deploy("/any/path/rpm")
-        e = SystemExit()
-        mock_put.side_effect = [e, None]
+        mock_put.return_value = lambda: None
+        setattr(mock_put.return_value, 'succeeded', False)
         package.deploy("/any/path/rpm")
         mock_put.assert_called_with("/any/path/rpm",
                                     constants.REMOTE_PACKAGES_PATH,

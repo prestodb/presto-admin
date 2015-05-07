@@ -117,7 +117,8 @@ def uninstall():
 
 def service(control=None):
     _LOGGER.info("Executing %s on presto server" % control)
-    sudo("set -m; " + INIT_SCRIPTS + control)
+    ret = sudo("set -m; " + INIT_SCRIPTS + control)
+    return ret.succeeded
 
 
 def check_status_for_control_commands():
@@ -138,8 +139,8 @@ def start():
     A status check is performed on the entire cluster and a list of
     servers that did not start, if any, are reported at the end.
     """
-    service(' start')
-    check_status_for_control_commands()
+    if service(' start'):
+        check_status_for_control_commands()
 
 
 @task
@@ -162,8 +163,8 @@ def restart():
     A status check is performed on the entire cluster and a list of
     servers that did not start, if any, are reported at the end.
     """
-    service(' restart')
-    check_status_for_control_commands()
+    if service(' restart'):
+        check_status_for_control_commands()
 
 
 def check_presto_version():

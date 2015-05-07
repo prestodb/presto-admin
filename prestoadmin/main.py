@@ -82,7 +82,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
-    commands_to_remove = ['fabfile', 'rcfile', 'parallel']
+    commands_to_remove = ['fabfile', 'rcfile', 'parallel', 'warn_only']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
     return new_env_options
@@ -351,7 +351,13 @@ def parser_for_options():
 
     advanced_options = HiddenOptionGroup(parser, "Advanced Options",
                                          suppress_help=True)
-
+    advanced_options.add_option(
+        '--abort-on-error',
+        action='store_true',
+        dest='abort_on_error',
+        default=False,
+        help="abort, instead of warn, if a command fails on any node"
+    )
     # Hide most of the options from the help text so it's simpler. Need to
     # document the other options, however.
     commands_to_show = ['hosts', 'exclude_hosts', 'password']
@@ -767,6 +773,9 @@ def parse_and_validate_commands(args=sys.argv[1:]):
 
     if not options.serial:
         state.env.parallel = True
+
+    if not options.abort_on_error:
+        state.env.warn_only = True
 
     # Initial password prompt, if requested
     if options.initial_password_prompt:

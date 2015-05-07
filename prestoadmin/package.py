@@ -48,14 +48,14 @@ def deploy_install(local_path):
 def deploy(local_path=None):
     _LOGGER.info("Deploying rpm to nodes")
     sudo('mkdir -p ' + constants.REMOTE_PACKAGES_PATH)
-    try:
-        put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
-    except BaseException as e:
-        _LOGGER.warn("Failure during put. Now using /tmp as temp dir...", e)
+    ret_list = put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
+    if not ret_list.succeeded:
+        _LOGGER.warn("Failure during put. Now using /tmp as temp dir...")
         put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True,
             temp_dir='/tmp')
 
 
 def rpm_install(rpm_name):
     _LOGGER.info("Installing the rpm")
-    sudo('rpm -i ' + constants.REMOTE_PACKAGES_PATH + "/" + rpm_name)
+    sudo('rpm -i ' + constants.REMOTE_PACKAGES_PATH + "/" + rpm_name,
+         )

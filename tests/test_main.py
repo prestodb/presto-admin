@@ -305,5 +305,14 @@ class TestMain(utils.BaseTestCase):
         self.assertEqual(env.use_shell, False)
         self.assertEqual(env.skip_unknown_tasks, True)
 
+    def test_env_abort_on_error(self):
+        main.parse_and_validate_commands(['server', 'install',
+                                          "local_path", "--abort-on-error"])
+        self.assertEqual(env.warn_only, False)
+
+        main.parse_and_validate_commands(['server', 'install',
+                                          "local_path"])
+        self.assertEqual(env.warn_only, True)
+
 if __name__ == '__main__':
     unittest.main()
