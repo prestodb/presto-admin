@@ -24,6 +24,7 @@ RUN printf " if [[ -e /etc/services-config/ssh/id_rsa ]]; then \n \
             cp -f /etc/services-config/ssh/id_rsa \${OPTS_SSH_USER_HOME_DIR}/.ssh/id_rsa\n \
 	    chown -R \${OPTS_SSH_USER}:${OPTS_SSH_USER} \${OPTS_SSH_USER_HOME_DIR}/.ssh/id_rsa\n \
 	    chmod 600 \${OPTS_SSH_USER_HOME_DIR}/.ssh/id_rsa\n \
+	    cp -r \${OPTS_SSH_USER_HOME_DIR}/.ssh /root/.ssh\n \
 	  fi\n\
 	  " > /etc/bootstrap-extra
 
