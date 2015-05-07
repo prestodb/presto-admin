@@ -27,30 +27,24 @@ from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
 
 from prestoadmin import server
 from prestoadmin.config import ConfigFileNotFoundError
-from prestoadmin.server import deploy_install_configure
 import utils
 
 
 class TestInstall(utils.BaseTestCase):
-    @patch('prestoadmin.server.execute_fail_on_error')
-    def test_install_server(self, mock_execute):
+    @patch('prestoadmin.server.deploy_install_configure')
+    def test_install_server(self, mock_install):
         local_path = os.path.join("/any/path/rpm")
         server.install(local_path)
-        mock_execute.assert_called_with(deploy_install_configure,
-                                        local_path, hosts=[])
+        mock_install.assert_called_with(local_path)
 
     @patch('prestoadmin.server.package.install')
-    @patch('prestoadmin.server.configure_cmds.deploy')
-    @patch('prestoadmin.server.add_tpch_connector')
-    @patch('prestoadmin.server.connector.add')
-    def test_deploy_install(self, mock_conn_add, mock_tpch_add,
-                            mock_config_deploy, mock_install):
+    @patch('prestoadmin.server.execute_fail_on_error')
+    def test_deploy_install(self, mock_execute, mock_install):
         local_path = "/any/path/rpm"
+        env.hosts = []
         server.deploy_install_configure(local_path)
         mock_install.assert_called_with(local_path)
-        mock_config_deploy.assert_called_with()
-        mock_tpch_add.assert_called_with()
-        mock_conn_add.assert_called_with()
+        mock_execute.assert_called_with(server.update_configs, hosts=[])
 
     def test_fail_install(self):
         local_path = None

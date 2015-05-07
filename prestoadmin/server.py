@@ -75,13 +75,12 @@ def install(local_path=None):
               "the presto rpm to be installed")
 
     topology.set_topology_if_missing()
-    execute_fail_on_error(deploy_install_configure, local_path,
-                          hosts=get_host_list())
+    deploy_install_configure(local_path)
 
 
 def deploy_install_configure(local_path):
     package.install(local_path)
-    update_configs()
+    execute_fail_on_error(update_configs, hosts=get_host_list())
 
 
 def add_tpch_connector():
