@@ -86,7 +86,7 @@ def validate(conf):
     uri = urlparse.urlparse(conf["config.properties"]["discovery.uri"])
     if islocalhost(uri.hostname) and len(env.roledefs['all']) > 1:
             raise config.ConfigurationError(
-                "discovery.uri should not be local host in a "
+                "discovery.uri should not be localhost in a "
                 "multi-node cluster, but found " + urlparse.urlunparse(uri) +
                 ".  You may have encountered this error by "
                 "choosing a coordinator that is localhost and a worker that "

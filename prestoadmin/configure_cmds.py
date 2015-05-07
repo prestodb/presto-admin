@@ -56,7 +56,7 @@ def deploy(rolename=None):
         rolename - [coordinator|workers]
     """
     if rolename is None:
-        _LOGGER.info("Running configure all")
+        _LOGGER.info("Running configuration deploy")
         configure.coordinator()
         configure.workers()
     else:

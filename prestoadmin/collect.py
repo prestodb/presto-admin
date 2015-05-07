@@ -61,13 +61,13 @@ def logs():
     if not os.path.exists(TMP_PRESTO_DEBUG):
         os.mkdir(TMP_PRESTO_DEBUG)
 
-    print 'Downloading logs from all the nodes'
+    print 'Downloading logs from all the nodes...'
     execute(file_get, REMOTE_PRESTO_LOG_DIR, TMP_PRESTO_DEBUG, roles=env.roles)
 
     copy_admin_log()
 
     make_tarfile(OUTPUT_FILENAME, TMP_PRESTO_DEBUG)
-    print 'logs archive created : ' + OUTPUT_FILENAME
+    print 'logs archive created: ' + OUTPUT_FILENAME
 
 
 def copy_admin_log():
@@ -113,7 +113,7 @@ def query_info(query_id=None):
     if not req.status_code == requests.codes.ok:
         abort("Unable to retrieve information. "
               "Please check that the query_id is correct, or check that "
-              "server is up with command server status")
+              "server is up with command: server status")
 
     query_info_file_name = os.path.join(TMP_PRESTO_DEBUG,
                                         "query_info_" + query_id + ".json")
@@ -124,7 +124,7 @@ def query_info(query_id=None):
     with open(query_info_file_name, "w") as out_file:
         out_file.write(json.dumps(req.json(), indent=4))
 
-    print("Gathered query information in file : " + query_info_file_name)
+    print("Gathered query information in file: " + query_info_file_name)
 
 
 @task
@@ -142,7 +142,7 @@ def system_info():
 
     if not req.status_code == requests.codes.ok:
         abort("Unable to access node information. "
-              "Please check that server is up with command server status")
+              "Please check that server is up with command: server status")
 
     node_info_file_name = os.path.join(TMP_PRESTO_DEBUG, "node_info.json")
 
@@ -152,19 +152,19 @@ def system_info():
     with open(node_info_file_name, "w") as out_file:
         out_file.write(json.dumps(req.json(), indent=4))
 
-    print("Gathered node information in file : " + node_info_file_name)
+    print("Gathered node information in file: " + node_info_file_name)
 
     version_file_name = os.path.join(TMP_PRESTO_DEBUG, "version_info.txt")
 
     with open(version_file_name, "w") as out_file:
-        out_file.write("platform information : " + platform.platform() + "\n")
-        out_file.write("Java version : " + get_java_version() + "\n")
-        out_file.write("presto admin version : "
+        out_file.write("platform information: " + platform.platform() + "\n")
+        out_file.write("Java version: " + get_java_version() + "\n")
+        out_file.write("presto admin version: "
                        + prestoadmin.__version__ + "\n")
-        out_file.write("presto server version : "
+        out_file.write("presto server version: "
                        + get_presto_version() + "\n")
 
-    print("Gathered version information in file : " + version_file_name)
+    print("Gathered version information in file: " + version_file_name)
 
 
 def get_java_version():

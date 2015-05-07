@@ -106,7 +106,8 @@ class TestCollect(utils.BaseTestCase):
         self.assertRaisesRegexp(SystemExit, "Unable to retrieve information. "
                                             "Please check that the query_id "
                                             "is correct, or check that server "
-                                            "is up with command server status",
+                                            "is up with command: "
+                                            "server status",
                                 collect.query_info, query_id)
 
     @patch("prestoadmin.collect.json.dumps")
@@ -191,11 +192,11 @@ class TestCollect(utils.BaseTestCase):
 
         open_mock.assert_called_with(version_info_file_name, "w")
 
-        file_obj.write.assert_any_call("platform information : "
+        file_obj.write.assert_any_call("platform information: "
                                        + platform_value + "\n")
-        file_obj.write.assert_any_call("Java version : "
+        file_obj.write.assert_any_call("Java version: "
                                        + java_version + "\n")
-        file_obj.write.assert_any_call("presto admin version : "
+        file_obj.write.assert_any_call("presto admin version: "
                                        + prestoadmin.__version__ + "\n")
-        file_obj.write.assert_any_call("presto server version : "
+        file_obj.write.assert_any_call("presto server version: "
                                        + server_version + "\n")

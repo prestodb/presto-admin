@@ -57,5 +57,4 @@ def deploy(local_path=None):
 
 def rpm_install(rpm_name):
     _LOGGER.info("Installing the rpm")
-    sudo('rpm -i ' + constants.REMOTE_PACKAGES_PATH + "/" + rpm_name,
-         )
+    sudo('rpm -i ' + constants.REMOTE_PACKAGES_PATH + "/" + rpm_name)

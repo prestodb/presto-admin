@@ -123,5 +123,5 @@ class TestWorkers(utils.BaseTestCase):
         coord_mock.return_value = ['localhost']
         env.roledefs["all"] = ["localhost", "remote-host"]
         self.assertRaisesRegexp(ConfigurationError,
-                                "discovery.uri should not be local host in a "
+                                "discovery.uri should not be localhost in a "
                                 "multi-node cluster", workers.get_conf)

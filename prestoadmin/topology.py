@@ -179,7 +179,7 @@ def validate(conf):
 
 def validate_username(username):
     if not isinstance(username, basestring):
-        raise config.ConfigurationError("username must be of type string")
+        raise config.ConfigurationError("Username must be of type string")
     return username
 
 
