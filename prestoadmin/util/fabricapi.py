@@ -34,6 +34,10 @@ def execute_fail_on_error(callable, *args, **kwargs):
                             % execute_result)
 
 
+def get_host_list():
+    return [host for host in env.hosts if host not in env.exclude_hosts]
+
+
 def get_coordinator_role():
     return env.roledefs['coordinator']
 

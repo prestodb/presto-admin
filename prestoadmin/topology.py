@@ -23,6 +23,7 @@ import socket
 
 import fabric
 from fabric.api import task, env, runs_once
+from fabric.context_managers import settings
 
 import config
 from prestoadmin.util import constants
@@ -51,6 +52,16 @@ def requires_topology(func):
                                                  "configuration")
         return func(*args, **kwargs)
     return required
+
+
+def set_topology_if_missing():
+    # this setting is here to avoid errors about prompts in parallel mode
+    with settings(parallel=False):
+        if 'topology_config_not_found' in env and \
+                env.topology_config_not_found:
+            set_conf_interactive()
+            set_env_from_conf()
+            env.topology_config_not_found = None
 
 
 @task

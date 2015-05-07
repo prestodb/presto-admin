@@ -25,6 +25,7 @@ class TestPackage(utils.BaseTestCase):
     @patch('prestoadmin.package.rpm_install')
     @patch('prestoadmin.package.deploy')
     def test_install(self, mock_deploy, mock_install):
+        self.remove_runs_once_flag(package.install)
         package.install("/any/path/rpm")
         mock_deploy.assert_called_with("/any/path/rpm")
         mock_install.assert_called_with("rpm")

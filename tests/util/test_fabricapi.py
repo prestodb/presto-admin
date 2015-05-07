@@ -16,7 +16,9 @@
 """
 Tests the utility
 """
+from fabric.api import env
 from mock import patch
+from prestoadmin.util import fabricapi
 
 from prestoadmin.util.fabricapi import execute_fail_on_error
 import tests.utils as utils
@@ -36,3 +38,8 @@ class TestFabricapi(utils.BaseTestCase):
                                 "command failed for some nodes; "
                                 "result={'some_host': Exception\(\)}",
                                 execute_fail_on_error, dummyfunc)
+
+    def test_get_host_with_exclude(self):
+        env.hosts = ['a', 'b', 'bad']
+        env.exclude_hosts = ['bad']
+        self.assertEqual(fabricapi.get_host_list(), ['a', 'b'])

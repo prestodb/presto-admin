@@ -164,5 +164,42 @@ class TestTopologyConfig(utils.BaseTestCase):
             return "runs"
         self.assertEqual(func(), "runs")
 
+    @patch('prestoadmin.topology.set_conf_interactive')
+    @patch('prestoadmin.topology.set_env_from_conf')
+    def test_set_has_topology(self, set_conf_mock, set_env_mock):
+        env.topology_config_not_found = False
+        topology.set_topology_if_missing()
+        self.assertFalse(set_conf_mock.called)
+        self.assertFalse(set_env_mock.called)
+
+    @patch('prestoadmin.topology.set_conf_interactive')
+    @patch('prestoadmin.topology.set_env_from_conf')
+    def test_set_missing_no_topology(self, set_conf_mock, set_env_mock):
+        env.topology_config_not_found = True
+
+        topology.set_topology_if_missing()
+        self.assertTrue(set_conf_mock.called)
+        self.assertTrue(set_env_mock.called)
+        self.assertFalse(env.topology_config_not_found)
+
+    @patch('prestoadmin.topology.set_conf_interactive')
+    @patch('prestoadmin.topology.get_conf')
+    def test_interactive_install(self,  get_conf_mock,
+                                 mock_set_interactive):
+        env.topology_config_not_found = config.ConfigurationError()
+        get_conf_mock.return_value = {'username': 'bob', 'port': '225',
+                                      'coordinator': 'master',
+                                      'workers': ['slave1', 'slave2']}
+        topology.set_topology_if_missing()
+
+        self.assertEqual(env.user, 'bob'),
+        self.assertEqual(env.port, '225')
+        self.assertEqual(env.hosts, ['master', 'slave1', 'slave2'])
+        self.assertEqual(env.roledefs['all'],
+                         ['master', 'slave1', 'slave2'])
+        self.assertEqual(env.roledefs['coordinator'], ['master'])
+        self.assertEqual(env.roledefs['worker'], ['slave1', 'slave2'])
+        self.assertFalse(env.topology_config_not_found)
+
 if __name__ == "__main__":
     unittest.main()

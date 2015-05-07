@@ -31,7 +31,7 @@ from prestoadmin import topology
 from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
-from prestoadmin.util.fabricapi import execute_fail_on_error
+from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
 import package
 
 
@@ -74,18 +74,9 @@ def install(local_path=None):
         abort("Missing argument local_path: Absolute path to "
               "the presto rpm to be installed")
 
-    with settings(parallel=False):
-        host_list = set_hosts()
+    topology.set_topology_if_missing()
     execute_fail_on_error(deploy_install_configure, local_path,
-                          hosts=host_list)
-
-
-def set_hosts():
-    if 'topology_config_not_found' in env and env.topology_config_not_found \
-            is not None:
-        topology.set_conf_interactive()
-        topology.set_env_from_conf()
-    return [host for host in env.hosts if host not in env.exclude_hosts]
+                          hosts=get_host_list())
 
 
 def deploy_install_configure(local_path):

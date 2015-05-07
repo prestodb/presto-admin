@@ -16,25 +16,31 @@
 Module for rpm package deploy and install using presto-admin
 """
 import logging
-from fabric.decorators import task
-
+from fabric.decorators import task, runs_once
 from fabric.operations import sudo, put, os
-from prestoadmin.topology import requires_topology
+from prestoadmin import topology
 from prestoadmin.util import constants
+from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
 
 _LOGGER = logging.getLogger(__name__)
 __all__ = ['install']
 
 
 @task
-@requires_topology
+@runs_once
 def install(local_path):
     """
     Install the rpm package on the cluster
 
     Parameters:
-        ocal_path - Absolute path to the rpm to be installed
+        local_path - Absolute path to the rpm to be installed
     """
+    topology.set_topology_if_missing()
+    execute_fail_on_error(deploy_install, local_path,
+                          hosts=get_host_list())
+
+
+def deploy_install(local_path):
     deploy(local_path)
     rpm_install(os.path.basename(local_path))
 

@@ -26,8 +26,7 @@ from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
     PRESTO_RPM_VERSION
 
 from prestoadmin import server
-from prestoadmin.config import ConfigurationError, \
-    ConfigFileNotFoundError
+from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.server import deploy_install_configure
 import utils
 
@@ -60,28 +59,6 @@ class TestInstall(utils.BaseTestCase):
                                 "to the presto rpm to be installed",
                                 server.install,
                                 local_path)
-
-    @patch('prestoadmin.topology.set_conf_interactive')
-    @patch('prestoadmin.topology.get_conf')
-    def test_interactive_install(self,  get_conf_mock,
-                                 mock_set_interactive):
-        env.topology_config_not_found = ConfigurationError()
-        get_conf_mock.return_value = {'username': 'bob', 'port': '225',
-                                      'coordinator': 'master',
-                                      'workers': ['slave1', 'slave2']}
-        server.set_hosts()
-        self.assertEqual(server.env.user, 'bob'),
-        self.assertEqual(server.env.port, '225')
-        self.assertEqual(server.env.hosts, ['master', 'slave1', 'slave2'])
-        self.assertEqual(server.env.roledefs['all'],
-                         ['master', 'slave1', 'slave2'])
-        self.assertEqual(server.env.roledefs['coordinator'], ['master'])
-        self.assertEqual(server.env.roledefs['worker'], ['slave1', 'slave2'])
-
-    def test_set_host_with_exclude(self):
-        env.hosts = ['a', 'b', 'bad']
-        env.exclude_hosts = ['bad']
-        self.assertEqual(server.set_hosts(), ['a', 'b'])
 
     @patch('prestoadmin.server.sudo')
     def test_uninstall_is_called(self, mock_sudo):
