@@ -52,6 +52,7 @@ coverage:
 
 docs:
 	rm -f docs/prestoadmin.rst
+	rm -f docs/prestoadmin.util.rst
 	rm -f docs/modules.rst
 	sphinx-apidoc -o docs/ prestoadmin
 	$(MAKE) -C docs clean

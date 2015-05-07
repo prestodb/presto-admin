@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/teradatalabs/presto-admin/issues.
+Report bugs at https://github.com/prestodb/presto-admin/issues.
 
 If you are reporting a bug, please include:
 
@@ -43,7 +43,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/teradatalabs/presto-admin/issues.
+The best way to send feedback is to file an issue at https://github.com/prestodb/presto-admin/issues.
 
 If you are proposing a feature:
 
@@ -99,10 +99,3 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-
-Tips
-----
-
-To run a subset of tests::
-
-    $ python -m unittest tests.test_prestoadmin
