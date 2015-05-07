@@ -196,10 +196,6 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.warn')
     def test_warn_external_ip(self, mock_warn, mock_ip_row, mock_nodeuuid):
         env.host = 'node'
-        mock_ip_row.return_value = [[]]
-        server.get_ext_ip_of_node()
-        mock_warn.assert_called_with("Cannot get external IP for node")
-
         mock_ip_row.return_value = [['IP1'], ['IP2']]
         server.get_ext_ip_of_node()
         mock_warn.assert_called_with("More than one external ip found for "

@@ -334,9 +334,7 @@ def get_ext_ip_of_node():
         if row:
             external_ip = row[0]
     if not external_ip:
-        warn_no_ip = "Cannot get external IP for " + env.host
-        _LOGGER.debug(warn_no_ip)
-        warn(warn_no_ip)
+        _LOGGER.debug("Cannot get external IP for " + env.host)
     return external_ip
 
 
