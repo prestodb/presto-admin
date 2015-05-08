@@ -26,6 +26,7 @@ import logging
 APPLICATION_NAME = 'foo'
 
 
+@patch('prestoadmin.util.application.filesystem')
 @patch('prestoadmin.util.application.logging.config')
 class FabricPatchesTest(BaseTestCase):
 
@@ -48,7 +49,8 @@ class FabricPatchesTest(BaseTestCase):
         BaseTestCase.tearDown(self)
 
     @patch('prestoadmin.fabric_patches._LOGGER')
-    def test_warn_api_prints_out_message(self, logger_mock, log_conf_mock):
+    def test_warn_api_prints_out_message(self, logger_mock, log_conf_mock,
+                                         filesystem_mock):
         with Application(APPLICATION_NAME):
             fabric.api.warn("Test warning.")
 
@@ -63,7 +65,8 @@ class FabricPatchesTest(BaseTestCase):
         )
 
     @patch('prestoadmin.fabric_patches._LOGGER')
-    def test_warn_utils_prints_out_message(self, logger_mock, log_conf_mock):
+    def test_warn_utils_prints_out_message(self, logger_mock, log_conf_mock,
+                                           filesystem_mock):
         with Application(APPLICATION_NAME):
             fabric.utils.warn("Test warning.")
 
@@ -79,7 +82,7 @@ class FabricPatchesTest(BaseTestCase):
 
     @patch('prestoadmin.fabric_patches._LOGGER')
     def test_warn_utils_prints_out_message_with_host(self, logger_mock,
-                                                     log_conf_mock):
+                                                     log_conf_mock, fs_mock):
         fabric.api.env.host = 'host'
         with Application(APPLICATION_NAME):
             fabric.utils.warn("Test warning.")
@@ -97,28 +100,28 @@ class FabricPatchesTest(BaseTestCase):
     @patch('fabric.operations._run_command')
     @patch('prestoadmin.fabric_patches._LOGGER')
     def test_run_api_logs_stdout(self, logger_mock, run_command_mock,
-                                 logging_config_mock):
+                                 logging_config_mock, filesystem_mock):
         self._execute_operation_test(run_command_mock, logger_mock,
                                      fabric.api.run)
 
     @patch('fabric.operations._run_command')
     @patch('prestoadmin.fabric_patches._LOGGER')
     def test_run_op_logs_stdout(self, logger_mock, run_command_mock,
-                                logging_config_mock):
+                                logging_config_mock, filesystem_mock):
         self._execute_operation_test(run_command_mock, logger_mock,
                                      fabric.operations.run)
 
     @patch('fabric.operations._run_command')
     @patch('prestoadmin.fabric_patches._LOGGER')
     def test_sudo_api_logs_stdout(self, logger_mock, run_command_mock,
-                                  logging_config_mock):
+                                  logging_config_mock, filesystem_mock):
         self._execute_operation_test(run_command_mock, logger_mock,
                                      fabric.api.sudo)
 
     @patch('fabric.operations._run_command')
     @patch('prestoadmin.fabric_patches._LOGGER')
     def test_sudo_op_logs_stdout(self, logger_mock, run_command_mock,
-                                 logging_config_mock):
+                                 logging_config_mock, filesystem_mock):
         self._execute_operation_test(run_command_mock, logger_mock,
                                      fabric.operations.sudo)
 
