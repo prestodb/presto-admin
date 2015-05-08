@@ -38,6 +38,10 @@ class BaseTestCase(unittest.TestCase):
             self.test_stderr.close()
         sys.stderr = self.old_stderr
 
+    def restore_stdout_stderr_keep_open(self):
+        sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
+
     # This method is equivalent to Python 2.7's unittest.assertRaisesRegexp()
     def assertRaisesRegexp(self, expected_exception, expected_regexp,
                            callable_object, *args):

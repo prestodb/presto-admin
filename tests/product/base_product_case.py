@@ -1,3 +1,25 @@
+# -*- coding: utf-8 -*-
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Base class for product tests.  Handles setting up a docker cluster and has
+other utilities
+"""
+
+import distutils.core
+import fnmatch
+import json
 import os
 import shutil
 import subprocess
@@ -23,7 +45,7 @@ class BaseProductTestCase(utils.BaseTestCase):
         self.create_docker_cluster()
 
     def tearDown(self):
-        self.restore_stdout_stderr()
+        self.restore_stdout_stderr_keep_open()
         self.tear_down_docker_cluster()
 
     def check_if_docker_exists(self):
@@ -113,5 +135,43 @@ class BaseProductTestCase(utils.BaseTestCase):
 
         self.remove_host_mount_dirs()
 
-    def test_setup_teardown(self):
-        pass
+    def copy_to_master(self, source):
+        shutil.copy(source, LOCAL_MOUNT_POINT % self.master)
+
+    def install_presto_admin(self):
+        dist_dir = os.path.join(prestoadmin.main_dir, "dist")
+        if not os.path.exists(dist_dir) or not fnmatch.filter(
+                os.listdir(dist_dir), "prestoadmin-*.tar.bz2"):
+            # setup.py expects you to be in the main directory
+            saved_path = os.getcwd()
+            os.chdir(prestoadmin.main_dir)
+            distutils.core.run_setup("setup.py",
+                                     ["bdist_prestoadmin"]).run_commands()
+            os.chdir(saved_path)
+        for dist_file in os.listdir(dist_dir):
+            if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
+                self.copy_to_master(os.path.join(dist_dir, dist_file))
+        self.copy_to_master(prestoadmin.main_dir +
+                            "/tests/product/resources/install-admin.sh")
+        self.exec_create_start(self.master,
+                               DOCKER_MOUNT_POINT + "/install-admin.sh")
+
+    def exec_create_start(self, host, command):
+        ex = self.client.exec_create(host, command)
+        return self.client.exec_start(ex['Id'])
+
+    def upload_topology(self, topology=None):
+        if not topology:
+            topology = {"coordinator": "master",
+                        "workers": ["slave1", "slave2", "slave3"]}
+        with open(os.path.join(LOCAL_MOUNT_POINT % self.master,
+                               "config.json"), "w") as conf_file:
+            json.dump(topology, conf_file)
+
+        self.exec_create_start(self.master, "cp %s /etc/opt/presto-admin/" %
+                               os.path.join(DOCKER_MOUNT_POINT, "config.json"))
+
+    def run_prestoadmin(self, command):
+        return self.exec_create_start(self.master,
+                                      "/opt/prestoadmin/presto-admin %s"
+                                      % command)
