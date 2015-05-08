@@ -111,7 +111,9 @@ def uninstall():
     excluded using -x/--exclude-hosts.
     """
     stop()
-    sudo('rpm -e presto')
+    ret = sudo('rpm -e presto')
+    if ret.succeeded:
+        print("Package uninstalled successfully on: " + env.host)
 
 
 def service(control=None):

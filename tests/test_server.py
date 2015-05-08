@@ -56,6 +56,7 @@ class TestInstall(utils.BaseTestCase):
 
     @patch('prestoadmin.server.sudo')
     def test_uninstall_is_called(self, mock_sudo):
+        env.host = "any_host"
         server.uninstall()
         mock_sudo.assert_called_with('rpm -e presto')
 

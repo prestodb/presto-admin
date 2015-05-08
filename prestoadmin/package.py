@@ -18,6 +18,7 @@ Module for rpm package deploy and install using presto-admin
 import logging
 from fabric.decorators import task, runs_once
 from fabric.operations import sudo, put, os
+from fabric.state import env
 from prestoadmin import topology
 from prestoadmin.util import constants
 from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
@@ -36,6 +37,7 @@ def install(local_path):
         local_path - Absolute path to the rpm to be installed
     """
     topology.set_topology_if_missing()
+    print("Deploying rpm...")
     execute_fail_on_error(deploy_install, local_path,
                           hosts=get_host_list())
 
@@ -51,10 +53,14 @@ def deploy(local_path=None):
     ret_list = put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
     if not ret_list.succeeded:
         _LOGGER.warn("Failure during put. Now using /tmp as temp dir...")
-        put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True,
-            temp_dir='/tmp')
+        ret_list = put(local_path, constants.REMOTE_PACKAGES_PATH,
+                       use_sudo=True, temp_dir='/tmp')
+    if ret_list.succeeded:
+        print("Package deployed successfully on: " + env.host)
 
 
 def rpm_install(rpm_name):
     _LOGGER.info("Installing the rpm")
-    sudo('rpm -i ' + constants.REMOTE_PACKAGES_PATH + "/" + rpm_name)
+    ret = sudo('rpm -i ' + constants.REMOTE_PACKAGES_PATH + "/" + rpm_name)
+    if ret.succeeded:
+        print("Package installed successfully on: " + env.host)

@@ -70,6 +70,7 @@ class TestConfigureCmds(utils.BaseTestCase):
     @patch('prestoadmin.configure.workers')
     @patch('prestoadmin.configure.coordinator')
     def test_config_deploy(self, mock_coordinator, mock_workers, mock_abort):
+        env.host = "any_host"
         configure_cmds.deploy("invalid_config")
         mock_abort.assert_called_with("Invalid Argument. "
                                       "Possible values: coordinator, workers")
@@ -81,6 +82,7 @@ class TestConfigureCmds(utils.BaseTestCase):
     @patch('prestoadmin.configure.workers')
     @patch('prestoadmin.configure.coordinator')
     def test_config_deploy_coord(self, mock_coordinator, mock_workers):
+        env.host = "any_host"
         configure_cmds.deploy("coordinator")
         mock_coordinator.assert_called_with()
         assert not mock_workers.called
@@ -88,6 +90,7 @@ class TestConfigureCmds(utils.BaseTestCase):
     @patch('prestoadmin.configure.workers')
     @patch('prestoadmin.configure.coordinator')
     def test_config_deploy_workers(self, mock_coordinator, mock_workers):
+        env.host = "any_host"
         configure_cmds.deploy("workers")
         mock_workers.assert_called_with()
         assert not mock_coordinator.called

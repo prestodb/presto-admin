@@ -63,6 +63,8 @@ def add(name=None):
                 constants.CONNECTORS_DIR)
 
     _LOGGER.info("Adding connector configurations: " + str(filenames))
+    print("Deploying %s connector configurations on: %s " %
+          (', '.join(filenames), env.host))
 
     configure.deploy(filenames, constants.CONNECTORS_DIR,
                      constants.REMOTE_CATALOG_DIR)
