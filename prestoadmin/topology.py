@@ -132,7 +132,7 @@ def prompt_for_coordinator():
 
 def prompt_for_workers():
     return fabric.operations.prompt("Enter host names or IP addresses for "
-                                    "worker nodes separtated by spaces:",
+                                    "worker nodes separated by spaces:",
                                     default=" ".join(
                                         DEFAULT_PROPERTIES["workers"]),
                                     validate=validate_workers_for_prompt)
