@@ -23,7 +23,7 @@ Software Requirements
 
 **Other Software**
 
-* Passworless SSH between the machine running ``presto-admin`` and the node where Presto will be installed
+* Passwordless SSH between the machine running ``presto-admin`` and the nodes where Presto will be installed
 * python-devel (``yum install python-devel``)
 * gcc (``yum install gcc``)
 
