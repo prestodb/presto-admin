@@ -24,10 +24,12 @@ import os
 import shutil
 import subprocess
 import sys
-from docker.errors import APIError
 import errno
-import prestoadmin
+
+from docker.errors import APIError
 from docker import Client
+
+import prestoadmin
 from tests import utils
 
 LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, "tmp/docker-pa/%s")
@@ -50,7 +52,7 @@ class BaseProductTestCase(utils.BaseTestCase):
 
     def check_if_docker_exists(self):
         try:
-            subprocess.call(['docker'])
+            subprocess.call(['docker', '--version'])
         except OSError:
             sys.exit('Docker is not installed. Try installing it with '
                      'presto-admin/bin/install-docker.sh.')
