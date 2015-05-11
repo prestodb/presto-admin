@@ -53,7 +53,7 @@ class BaseProductTestCase(utils.BaseTestCase):
             subprocess.call(['docker'])
         except OSError:
             sys.exit('Docker is not installed. Try installing it with '
-                     'presto-admin/bin/docker-install.sh.')
+                     'presto-admin/bin/install-docker.sh.')
 
     def create_host_mount_dirs(self):
         for container_name in [self.master] + self.slaves:
