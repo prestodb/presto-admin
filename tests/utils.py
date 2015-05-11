@@ -55,6 +55,10 @@ class BaseTestCase(unittest.TestCase):
             self.fail("Expected exception " + str(expected_exception) +
                       " not raised")
 
+    # equivalent to python 2.7's unittest.assertRegexpMatches()
+    def assertRegexpMatches(self, text, expected_regexp, msg=None):
+        self.assertTrue(re.search(expected_regexp, text), msg)
+
     def remove_runs_once_flag(self, callable_obj):
         # since we annotated show with @runs_once, we need to delete the
         # attribute the Fabric decorator gives it to indicate that it has

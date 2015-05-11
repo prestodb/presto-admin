@@ -28,6 +28,8 @@ RUN printf " if [[ -e /etc/services-config/ssh/id_rsa ]]; then \n \
 	  fi\n\
 	  " > /etc/bootstrap-extra
 
+RUN sed -i -e 's/^PermitRootLogin no/PermitRootLogin without-password/g' /etc/ssh/sshd_config
+
 RUN awk -v file="/etc/bootstrap-extra" -v lineno=$(($(wc -l < /etc/ssh-bootstrap) - 3)) ' \
     NR==lineno {system("echo ""; cat " file); print; next} \
     1' /etc/ssh-bootstrap > /etc/ssh-bootstrap2 && \

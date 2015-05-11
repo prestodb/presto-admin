@@ -33,6 +33,7 @@ import prestoadmin
 from tests import utils
 
 LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, "tmp/docker-pa/%s")
+LOCAL_RESOURCES_DIR = prestoadmin.main_dir + "/tests/product/resources/"
 DOCKER_MOUNT_POINT = "/mnt/presto-admin"
 
 
@@ -58,7 +59,7 @@ class BaseProductTestCase(utils.BaseTestCase):
                      'presto-admin/bin/install-docker.sh.')
 
     def create_host_mount_dirs(self):
-        for container_name in [self.master] + self.slaves:
+        for container_name in self.all_hosts():
             try:
                 os.makedirs(LOCAL_MOUNT_POINT % container_name)
             except OSError as e:
@@ -95,6 +96,7 @@ class BaseProductTestCase(utils.BaseTestCase):
                                "teradatalabs/centos6-ssh-test",
                                detach=True,
                                name=self.master,
+                               hostname=self.master,
                                volumes=LOCAL_MOUNT_POINT % self.master)
 
         self.client.start(self.master,
@@ -110,7 +112,7 @@ class BaseProductTestCase(utils.BaseTestCase):
             pass
 
     def remove_host_mount_dirs(self):
-        for container_name in [self.master] + self.slaves:
+        for container_name in self.all_hosts():
             try:
                 shutil.rmtree(LOCAL_MOUNT_POINT % container_name)
             except OSError as e:
@@ -125,7 +127,7 @@ class BaseProductTestCase(utils.BaseTestCase):
                 pass
 
     def tear_down_docker_cluster(self):
-        for container in [self.master] + self.slaves:
+        for container in self.all_hosts():
             try:
                 self.client.stop(container)
                 self.client.wait(container)
@@ -153,8 +155,7 @@ class BaseProductTestCase(utils.BaseTestCase):
         for dist_file in os.listdir(dist_dir):
             if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
                 self.copy_to_master(os.path.join(dist_dir, dist_file))
-        self.copy_to_master(prestoadmin.main_dir +
-                            "/tests/product/resources/install-admin.sh")
+        self.copy_to_master(LOCAL_RESOURCES_DIR + "/install-admin.sh")
         self.exec_create_start(self.master,
                                DOCKER_MOUNT_POINT + "/install-admin.sh")
 
@@ -177,3 +178,6 @@ class BaseProductTestCase(utils.BaseTestCase):
         return self.exec_create_start(self.master,
                                       "/opt/prestoadmin/presto-admin %s"
                                       % command)
+
+    def all_hosts(self):
+        return self.slaves[:] + [self.master]
