@@ -73,7 +73,7 @@ class TestCommands(BaseProductTestCase):
                     'Deploying configuration on: slave3',
                     'Deploying tpch.properties connector configurations '
                     'on: '
-                    'slave3',
+                    'slave3 ',
                     'Deploying configuration on: slave1',
                     'Deploying tpch.properties connector configurations '
                     'on: '
@@ -82,9 +82,13 @@ class TestCommands(BaseProductTestCase):
                     'Deploying tpch.properties connector configurations on: '
                     'slave2 ',
                     'Deploying configuration on: master',
-                    'Deploying tpch.properties connector configurations on:'
-                    ' master ']
-        self.assertEqual(expected.sort(), cmd_output.splitlines().sort())
+                    'Deploying tpch.properties connector configurations on: '
+                    'master ']
+
+        actual = cmd_output.splitlines()
+        expected.sort()
+        actual.sort()
+        self.assertEqual(expected, actual)
 
         for container in self.all_hosts():
             self.assert_installed(container)
