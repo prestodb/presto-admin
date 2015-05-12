@@ -181,7 +181,7 @@ class BaseProductTestCase(utils.BaseTestCase):
 
     def run_prestoadmin(self, command):
         return self.exec_create_start(self.master,
-                                      "/opt/prestoadmin/presto-admin %s"
+                                      "/opt/presto-admin/presto-admin %s"
                                       % command)
 
     def all_hosts(self):
