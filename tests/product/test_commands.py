@@ -36,6 +36,16 @@ class TestCommands(BaseProductTestCase):
 """
         self.assertEqual(expected, actual)
 
+    def test_topology_show_not_exists(self):
+        self.install_presto_admin()
+        self.assertRaisesRegexp(OSError,
+                                'An unexpected error occurred.  '
+                                'More detailed information can be found in'
+                                ' /var/log/presto-admin/presto-admin.log',
+                                self.run_prestoadmin,
+                                'topology show'
+                                )
+
     def test_install_presto(self):
         self.install_presto_admin()
         self.upload_topology()

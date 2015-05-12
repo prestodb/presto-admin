@@ -161,7 +161,12 @@ class BaseProductTestCase(utils.BaseTestCase):
 
     def exec_create_start(self, host, command):
         ex = self.client.exec_create(host, command)
-        return self.client.exec_start(ex['Id'])
+        output = self.client.exec_start(ex['Id'])
+        exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
+        if exit_code:
+            raise OSError(output)
+
+        return output
 
     def upload_topology(self, topology=None):
         if not topology:
