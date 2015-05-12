@@ -28,13 +28,14 @@ RUN printf " if [[ -e /etc/services-config/ssh/id_rsa ]]; then \n \
 	  fi\n\
 	  " > /etc/bootstrap-extra
 
-RUN sed -i -e 's/^PermitRootLogin no/PermitRootLogin without-password/g' /etc/ssh/sshd_config
-
 RUN awk -v file="/etc/bootstrap-extra" -v lineno=$(($(wc -l < /etc/ssh-bootstrap) - 3)) ' \
     NR==lineno {system("echo ""; cat " file); print; next} \
     1' /etc/ssh-bootstrap > /etc/ssh-bootstrap2 && \
     mv /etc/ssh-bootstrap2 /etc/ssh-bootstrap && \
     chmod +x /etc/ssh-bootstrap
+
+RUN sed -i -e 's/^PermitRootLogin no/PermitRootLogin without-password/g' /etc/ssh/sshd_config
+RUN service sshd reload
 
 # Set default password for testing
 RUN printf "\nSSH_USER_PASSWORD=password" >> /etc/services-config/ssh/ssh-bootstrap.conf
