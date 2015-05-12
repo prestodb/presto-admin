@@ -33,7 +33,8 @@ import prestoadmin
 from tests import utils
 
 LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, "tmp/docker-pa/%s")
-LOCAL_RESOURCES_DIR = prestoadmin.main_dir + "/tests/product/resources/"
+LOCAL_TMP_DIR = os.path.join(prestoadmin.main_dir, "tmp")
+LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir, "tests/product/resources/")
 DOCKER_MOUNT_POINT = "/mnt/presto-admin"
 
 
