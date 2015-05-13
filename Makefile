@@ -50,7 +50,7 @@ coverage:
 	coverage run --source prestoadmin setup.py test
 	coverage report -m
 	coverage html
-	open htmlcov/index.html
+	ls htmlcov
 
 docs:
 	rm -f docs/prestoadmin.rst
