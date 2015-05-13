@@ -15,11 +15,8 @@
 """
 Product tests for presto-admin commands
 """
-import os
-import urllib
-
-from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_TMP_DIR, DOCKER_MOUNT_POINT
+import re
+from tests.product.base_product_case import BaseProductTestCase
 
 
 class TestCommands(BaseProductTestCase):
@@ -50,19 +47,7 @@ class TestCommands(BaseProductTestCase):
         self.install_presto_admin()
         self.upload_topology()
 
-        rpm_name = 'presto-0.101-1.0.x86_64.rpm'
-        if not os.path.exists(os.path.join(LOCAL_TMP_DIR, rpm_name)):
-            if not os.path.exists(LOCAL_TMP_DIR):
-                os.mkdir(LOCAL_TMP_DIR)
-            urllib.urlretrieve(
-                'https://jenkins-master.td.teradata.com/view/Presto/job/'
-                'presto-td/lastSuccessfulBuild/artifact/presto-server/target'
-                '/rpm/presto/RPMS/x86_64/presto-0.101-1.0.x86_64.rpm',
-                os.path.join(LOCAL_TMP_DIR, rpm_name))
-
-        self.copy_to_master(os.path.join(LOCAL_TMP_DIR, rpm_name))
-        cmd_output = self.run_prestoadmin(
-            'server install ' + os.path.join(DOCKER_MOUNT_POINT, rpm_name))
+        cmd_output = self.server_install()
         expected = ['Deploying rpm...',
                     'Package deployed successfully on: slave3',
                     'Package installed successfully on: slave3',
@@ -96,6 +81,39 @@ class TestCommands(BaseProductTestCase):
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
+
+    def test_server_start(self):
+        self.install_presto_admin()
+        self.upload_topology()
+        self.server_install()
+        cmd_output = self.run_prestoadmin('server start')
+        expected = [r'Server started successfully on: master',
+                    r'Server started successfully on: slave1',
+                    r'Server started successfully on: slave2',
+                    r'Server started successfully on: slave3',
+                    r'\[master\] out:',
+                    r'\[(?P<host>master)\] out: Started as (?P<pid>.*)',
+                    r'\[master\] out: Starting presto',
+                    r'\[slave1\] out: ',
+                    r'\[(?P<host>slave1)\] out: Started as (?P<pid>.*)',
+                    r'\[slave1\] out: Starting presto',
+                    r'\[slave2\] out: ',
+                    r'\[(?P<host>slave2)\] out: Started as (?P<pid>.*)',
+                    r'\[slave2\] out: Starting presto',
+                    r'\[slave3\] out: ',
+                    r'\[(?P<host>slave3)\] out: Started as (?P<pid>.*)',
+                    r'\[slave3\] out: Starting presto']
+        actual = cmd_output.splitlines()
+        actual.sort()
+
+        for expected_regexp, actual_line in zip(expected, actual):
+            self.assertRegexpMatches(actual_line, expected_regexp)
+            match = re.search(expected_regexp, actual_line)
+            try:
+                self.exec_create_start(match.group('host'), 'kill -0 %s' %
+                                       match.group('pid'))
+            except IndexError:
+                pass
 
     def assert_file_content(self, host, filepath, expected):
         config = self.exec_create_start(host, 'cat %s' % filepath)

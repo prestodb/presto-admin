@@ -57,6 +57,10 @@ class BaseTestCase(unittest.TestCase):
 
     # equivalent to python 2.7's unittest.assertRegexpMatches()
     def assertRegexpMatches(self, text, expected_regexp, msg=None):
+        if not(re.search(expected_regexp, text)):
+            if not msg:
+                msg = "Regexp didn't match"
+            self.fail("%s: %s not found in %s" % (msg, expected_regexp, text))
         self.assertTrue(re.search(expected_regexp, text), msg)
 
     def remove_runs_once_flag(self, callable_obj):

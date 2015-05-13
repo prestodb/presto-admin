@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import sys
 import errno
+import urllib
 
 from docker.errors import APIError
 from docker import Client
@@ -37,6 +38,7 @@ LOCAL_TMP_DIR = os.path.join(prestoadmin.main_dir, "tmp")
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
                                    "tests/product/resources/")
 DOCKER_MOUNT_POINT = "/mnt/presto-admin"
+PRESTO_RPM = 'presto-0.101-1.0.x86_64.rpm'
 
 
 class BaseProductTestCase(utils.BaseTestCase):
@@ -180,6 +182,18 @@ class BaseProductTestCase(utils.BaseTestCase):
 
         self.exec_create_start(self.master, "cp %s /etc/opt/presto-admin/" %
                                os.path.join(DOCKER_MOUNT_POINT, "config.json"))
+
+    def server_install(self):
+        if not os.path.exists(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM)):
+            urllib.urlretrieve(
+                'https://jenkins-master.td.teradata.com/view/Presto/job/'
+                'presto-td/lastSuccessfulBuild/artifact/presto-server/target'
+                '/rpm/presto/RPMS/x86_64/%s' % PRESTO_RPM,
+                os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
+        self.copy_to_master(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
+        cmd_output = self.run_prestoadmin(
+            'server install ' + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
+        return cmd_output
 
     def run_prestoadmin(self, command):
         return self.exec_create_start(self.master,
