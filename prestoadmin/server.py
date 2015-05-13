@@ -37,7 +37,7 @@ import package
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 
-INIT_SCRIPTS = '/etc/init.d/presto'
+INIT_SCRIPTS = '/etc/rc.d/init.d/presto'
 RETRY_TIMEOUT = 60
 SLEEP_INTERVAL = 5
 SERVER_CHECK_SQL = "select * from system.runtime.nodes"
