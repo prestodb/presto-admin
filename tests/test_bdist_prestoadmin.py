@@ -30,7 +30,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
     def setUp(self):
         super(TestBDistPrestoAdmin, self).setUp()
         self.attrs = {
-            'name': 'presto-admin',
+            'name': 'prestoadmin',
             'cmdclass': {'bdist_prestoadmin': bdist_prestoadmin},
             'version': '0.1.0',
             'packages': ['prestoadmin'],
@@ -57,7 +57,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
 
     def test_finalize(self):
         self.assertEquals(self.bdist.bdist_dir,
-                          'build/bdist.linux-x86_64/presto-admin')
+                          'build/bdist.linux-x86_64/prestoadmin')
         self.assertEquals(self.bdist.dist_dir, 'dist')
         self.assertEquals(self.bdist.default_virtualenv_version, '12.0.7')
         self.assertEquals(self.bdist.keep_temp, False)
@@ -89,16 +89,16 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
 
     @patch('pip.main')
     def test_package_dependencies(self, pip_mock):
-        build_path = os.path.join('build', 'presto-admin')
+        build_path = os.path.join('build', 'prestoadmin')
         self.bdist.package_dependencies(build_path)
 
         calls = [call(['wheel',
-                       '--wheel-dir=build/presto-admin/third-party',
+                       '--wheel-dir=build/prestoadmin/third-party',
                        '--no-cache',
                        'fabric']),
                  call(['install',
                        '-d',
-                       'build/presto-admin/third-party',
+                       'build/prestoadmin/third-party',
                        '--no-cache',
                        '--no-use-wheel',
                        'virtualenv==12.0.7'])]
@@ -125,7 +125,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
 
     def test_archive_dist(self):
 
-        build_path = os.path.join('build', 'presto-admin')
+        build_path = os.path.join('build', 'prestoadmin')
         try:
             mkpath(build_path)
             self.bdist.archive_dist(build_path, 'dist')
@@ -155,7 +155,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
                  mkpath_mock):
         self.bdist.run()
 
-        build_path = 'build/bdist.linux-x86_64/presto-admin'
+        build_path = 'build/bdist.linux-x86_64/prestoadmin'
         build_wheel_mock.assert_called_once_with(build_path)
         install_script_mock.assert_called_once_with('wheel_name', build_path)
         package_dependencies_mock.assert_called_once_with(build_path)

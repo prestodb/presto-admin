@@ -28,7 +28,7 @@ PRESTOADMIN_LOG_DIR = "/var/log/presto-admin"
 # Logging Config File Locations
 LOGGING_CONFIG_FILE_NAME = 'presto-admin-logging.ini'
 LOGGING_CONFIG_FILE_DIRECTORIES = [
-    os.path.join(prestoadmin.main_dir, 'presto-admin')
+    os.path.join(prestoadmin.main_dir, 'prestoadmin')
 ]
 
 # local configuration

@@ -20,11 +20,12 @@ using presto-admin
 
 import logging
 import json
+import platform
 import shutil
 import tarfile
 
 import requests
-from fabric.contrib.files import exists, append
+from fabric.contrib.files import exists
 from fabric.context_managers import settings, hide
 from fabric.operations import os, get, run
 from fabric.tasks import execute
@@ -32,15 +33,14 @@ from fabric.api import env, runs_once, task
 from fabric.utils import abort, warn
 
 from prestoadmin.topology import requires_topology
-from prestoadmin.server import get_presto_version, get_connector_info_from
+from prestoadmin.server import get_presto_version
 import prestoadmin.util.fabricapi as fabricapi
 import prestoadmin
 from util.constants import REMOTE_PRESTO_LOG_DIR, PRESTOADMIN_LOG_DIR
 
 
 TMP_PRESTO_DEBUG = '/tmp/presto-debug/'
-OUTPUT_FILENAME_FOR_LOGS = '/tmp/presto-debug-logs.tar.bz2'
-OUTPUT_FILENAME_FOR_SYS_INFO = '/tmp/presto-debug-sysinfo.tar.bz2'
+OUTPUT_FILENAME = '/tmp/presto-debug-logs.tar.bz2'
 PRESTOADMIN_LOG_NAME = 'presto-admin.log'
 _LOGGER = logging.getLogger(__name__)
 QUERY_REQUEST_URL = "http://localhost:8080/v1/query/"
@@ -56,33 +56,27 @@ def logs():
     Gather all the server logs and presto-admin log and create a tar file.
     """
 
-    _LOGGER.debug('LOG directory to be archived: ' + REMOTE_PRESTO_LOG_DIR)
+    _LOGGER.debug("LOG directory to be archived: " + REMOTE_PRESTO_LOG_DIR)
 
     if not os.path.exists(TMP_PRESTO_DEBUG):
         os.mkdir(TMP_PRESTO_DEBUG)
 
-    downloaded_logs_location = os.path.join(TMP_PRESTO_DEBUG, "logs")
-
-    if not os.path.exists(downloaded_logs_location):
-        os.mkdir(downloaded_logs_location)
-
     print 'Downloading logs from all the nodes...'
-    execute(file_get, REMOTE_PRESTO_LOG_DIR,
-            downloaded_logs_location, roles=env.roles)
+    execute(file_get, REMOTE_PRESTO_LOG_DIR, TMP_PRESTO_DEBUG, roles=env.roles)
 
-    copy_admin_log(downloaded_logs_location)
+    copy_admin_log()
 
-    make_tarfile(OUTPUT_FILENAME_FOR_LOGS, downloaded_logs_location)
-    print 'logs archive created: ' + OUTPUT_FILENAME_FOR_LOGS
+    make_tarfile(OUTPUT_FILENAME, TMP_PRESTO_DEBUG)
+    print 'logs archive created: ' + OUTPUT_FILENAME
 
 
-def copy_admin_log(log_folder):
+def copy_admin_log():
     shutil.copy(os.path.join(PRESTOADMIN_LOG_DIR, PRESTOADMIN_LOG_NAME),
-                log_folder)
+                TMP_PRESTO_DEBUG)
 
 
 def make_tarfile(output_filename, source_dir):
-    tar = tarfile.open(output_filename, 'w:bz2')
+    tar = tarfile.open(output_filename, "w:bz2")
 
     try:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
@@ -91,17 +85,10 @@ def make_tarfile(output_filename, source_dir):
 
 
 def file_get(remote_path, local_path):
-    path_with_host_name = os.path.join(local_path, env.host)
-
-    if not os.path.exists(path_with_host_name):
-        os.makedirs(path_with_host_name)
-
-    _LOGGER.debug('local path used ' + path_with_host_name)
-
     if exists(remote_path, True):
-        get(remote_path, path_with_host_name, True)
+        get(remote_path, local_path + '%(host)s', True)
     else:
-        warn('remote path ' + remote_path + ' not found on ' + env.host)
+        warn("remote path " + remote_path + " not found on " + env.host)
 
 
 @task
@@ -119,102 +106,69 @@ def query_info(query_id=None):
         return
 
     if query_id is None:
-        abort('Missing argument query_id')
+        abort("Missing argument query_id")
 
     req = requests.get(QUERY_REQUEST_URL + query_id)
 
     if not req.status_code == requests.codes.ok:
-        abort('Unable to retrieve information. '
-              'Please check that the query_id is correct, or check that '
-              'server is up with command: server status')
+        abort("Unable to retrieve information. "
+              "Please check that the query_id is correct, or check that "
+              "server is up with command: server status")
 
     query_info_file_name = os.path.join(TMP_PRESTO_DEBUG,
-                                        'query_info_' + query_id + '.json')
+                                        "query_info_" + query_id + ".json")
 
     if not os.path.exists(TMP_PRESTO_DEBUG):
         os.mkdir(TMP_PRESTO_DEBUG)
 
-    with open(query_info_file_name, 'w') as out_file:
+    with open(query_info_file_name, "w") as out_file:
         out_file.write(json.dumps(req.json(), indent=4))
 
-    print('Gathered query information in file: ' + query_info_file_name)
+    print("Gathered query information in file: " + query_info_file_name)
 
 
 @task
-@runs_once
+@requires_topology
 def system_info():
     """
     Gather system information like nodes in the system, presto
     version, presto-admin version, os version etc.
     """
+
+    if env.host not in fabricapi.get_coordinator_role():
+        return
+
     req = requests.get(NODES_REQUEST_URL)
 
     if not req.status_code == requests.codes.ok:
-        abort('Unable to access node information. '
-              'Please check that server is up with command: server status')
+        abort("Unable to access node information. "
+              "Please check that server is up with command: server status")
+
+    node_info_file_name = os.path.join(TMP_PRESTO_DEBUG, "node_info.json")
 
     if not os.path.exists(TMP_PRESTO_DEBUG):
         os.mkdir(TMP_PRESTO_DEBUG)
 
-    downloaded_sys_info_loc = os.path.join(TMP_PRESTO_DEBUG, "sysinfo")
-    node_info_file_name = os.path.join(downloaded_sys_info_loc,
-                                       'node_info.json')
-
-    if not os.path.exists(downloaded_sys_info_loc):
-        os.mkdir(downloaded_sys_info_loc)
-
-    with open(node_info_file_name, 'w') as out_file:
+    with open(node_info_file_name, "w") as out_file:
         out_file.write(json.dumps(req.json(), indent=4))
 
-    _LOGGER.debug('Gathered node information in file: ' + node_info_file_name)
+    print("Gathered node information in file: " + node_info_file_name)
 
-    conn_file_name = os.path.join(downloaded_sys_info_loc,
-                                  'connector_info.txt')
-    conn_info = get_connector_info_from(env.host)
+    version_file_name = os.path.join(TMP_PRESTO_DEBUG, "version_info.txt")
 
-    with open(conn_file_name, 'w') as out_file:
-        out_file.write(conn_info + '\n')
+    with open(version_file_name, "w") as out_file:
+        out_file.write("platform information: " + platform.platform() + "\n")
+        out_file.write("Java version: " + get_java_version() + "\n")
+        out_file.write("presto admin version: "
+                       + prestoadmin.__version__ + "\n")
+        out_file.write("presto server version: "
+                       + get_presto_version() + "\n")
 
-    _LOGGER.debug('Gathered connector information in file: ' + conn_file_name)
-
-    execute(get_system_info, downloaded_sys_info_loc, roles=env.roles)
-
-    make_tarfile(OUTPUT_FILENAME_FOR_SYS_INFO, downloaded_sys_info_loc)
-    print 'System info archive created: ' + OUTPUT_FILENAME_FOR_SYS_INFO
-
-
-def get_system_info(download_location):
-
-    if not exists(TMP_PRESTO_DEBUG):
-        run("mkdir " + TMP_PRESTO_DEBUG)
-
-    version_file_name = os.path.join(TMP_PRESTO_DEBUG, 'version_info.txt')
-
-    if exists(version_file_name):
-        run('rm -f ' + version_file_name)
-
-    append(version_file_name, "platform information : " +
-           get_platform_information() + '\n')
-    append(version_file_name, 'Java version: ' + get_java_version() + '\n')
-    append(version_file_name, 'Presto-admin version: '
-           + prestoadmin.__version__ + '\n')
-    append(version_file_name, 'Presto server version: '
-           + get_presto_version() + '\n')
-
-    _LOGGER.debug('Gathered version information in file: ' + version_file_name)
-
-    file_get(version_file_name, download_location)
-
-
-def get_platform_information():
-    with settings(hide('warnings', 'stdout'), warn_only=True):
-        platform_info = run('uname -a')
-        _LOGGER.debug('platform info: ' + platform_info)
-        return platform_info
+    print("Gathered version information in file: " + version_file_name)
 
 
 def get_java_version():
     with settings(hide('warnings', 'stdout'), warn_only=True):
-        version = run('java -version')
-        _LOGGER.debug('java version: ' + version)
+        version = run("java -version")
+        _LOGGER.debug("java version: " + version)
         return version
