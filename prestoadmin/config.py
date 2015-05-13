@@ -17,6 +17,7 @@ Module for accessing presto configuration
 import json
 import os
 import logging
+import errno
 
 REQUIRED_FILES = ["node.properties", "jvm.config", "config.properties"]
 PRESTO_FILES = ["node.properties", "jvm.config", "config.properties",
@@ -95,8 +96,11 @@ def json_to_string(conf):
 
 def write(output, path):
     conf_directory = os.path.dirname(path)
-    if not os.path.exists(conf_directory):
+    try:
         os.makedirs(conf_directory)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            pass
 
     with open(path, 'w') as f:
         f.write(output)

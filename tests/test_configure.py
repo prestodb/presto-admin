@@ -68,13 +68,11 @@ class TestConfigure(utils.BaseTestCase):
         assert configure_mock.called
 
     @patch('prestoadmin.configure.sudo')
-    @patch('prestoadmin.configure.put')
-    def test_deploy(self, put_mock, sudo_mock):
-        filenames = ["jvm.config"]
-        configure.deploy(filenames, "/my/local/dir", "/my/remote/dir")
-        sudo_mock.assert_called_with("mkdir -p /my/remote/dir")
-        put_mock.assert_called_with("/my/local/dir/jvm.config",
-                                    "/my/remote/dir/jvm.config", True)
+    def test_deploy(self, sudo_mock):
+        files = {"jvm.config": "a=b"}
+        configure.deploy(files, "/my/remote/dir")
+        sudo_mock.assert_any_call("mkdir -p /my/remote/dir")
+        sudo_mock.assert_any_call("echo 'a=b' > /my/remote/dir/jvm.config")
 
     @patch('__builtin__.open')
     @patch('prestoadmin.configure.files.append')
@@ -89,26 +87,25 @@ class TestConfigure(utils.BaseTestCase):
             "echo node.id=$uuid >> /my/remote/dir/node.properties;"
             "fi; "
             "sed -i '/node.id/!d' /my/remote/dir/node.properties; ")
-        configure.deploy_node_properties("/my/local/dir", "/my/remote/dir")
+        configure.deploy_node_properties("key=value", "/my/remote/dir")
         sudo_mock.assert_called_with(command)
         append_mock.assert_called_with("/my/remote/dir/node.properties",
                                        "key=value", True)
 
-    @patch('prestoadmin.configure.config.write')
-    def test_write_to_tmp(self, write_mock):
-        conf = {"file1": {"k1": "v1", "k2": "v2"},
-                "file2": ["i1", "i2", "i3"]}
-        conf_dir = "/conf"
-        configure.write_conf_to_tmp(conf, conf_dir)
-        write_mock.assert_any_call("k1=v1\nk2=v2", "/conf/file1")
-        write_mock.assert_any_call("i1\ni2\ni3", "/conf/file2")
-
-    @patch('prestoadmin.configure.write_conf_to_tmp')
     @patch('prestoadmin.configure.deploy')
     @patch('prestoadmin.configure.deploy_node_properties')
-    def test_configure_presto(self, deploy_node_mock, deploy_mock, write_mock):
+    def test_configure_presto(self, deploy_node_mock, deploy_mock):
         conf = {"node.properties": {"key": "value"}, "jvm.config": ["list"]}
         local_dir = "/my/local/dir"
-        remote_dir = "/my/remote/der"
+        remote_dir = "/my/remote/dir"
         configure.configure_presto(conf, local_dir, remote_dir)
-        deploy_mock.assert_called_with(["jvm.config"], local_dir, remote_dir)
+        deploy_mock.assert_called_with({"jvm.config": "list"}, remote_dir)
+
+    def test_escape_quotes_do_nothing(self):
+        text = 'basic_text'
+        self.assertEqual('basic_text', configure.escape_single_quotes(text))
+
+    def test_escape_quotes_has_quote(self):
+        text = "A quote! ' A quote!"
+        self.assertEqual("A quote! '\\'' A quote!",
+                         configure.escape_single_quotes(text))

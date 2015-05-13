@@ -135,7 +135,7 @@ class TestCommands(BaseProductTestCase):
 -XX:+AggressiveOpts
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:OnOutOfMemoryError=kill -9 %p
--XX:ReservedCodeCacheSize=150M""")
+-XX:ReservedCodeCacheSize=150M\n""")
 
         node_properties = self.exec_create_start(
             container, 'cat /etc/presto/node.properties')
@@ -153,7 +153,7 @@ plugin.dir=/usr/lib/presto/lib/plugin\n""")
                                      """coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
-task.max-memory=1GB""")
+task.max-memory=1GB\n""")
 
         else:
             self.assert_file_content(container,
@@ -162,7 +162,7 @@ task.max-memory=1GB""")
 discovery-server.enabled=true
 discovery.uri=http://master:8080
 http-server.http.port=8080
-task.max-memory=1GB""")
+task.max-memory=1GB\n""")
 
     def assert_has_default_connector(self, container):
         self.assert_file_content(container,

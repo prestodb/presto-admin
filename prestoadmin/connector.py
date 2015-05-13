@@ -16,17 +16,23 @@
 Module for presto connector configurations
 """
 from fabric.api import task, env
-from fabric.operations import sudo, os
+from fabric.operations import sudo, os, put
 
 from prestoadmin.util import constants
 import config
-import configure
 import logging
 import fabric.utils
 
 _LOGGER = logging.getLogger(__name__)
 
 __all__ = ['add', 'remove']
+
+
+def deploy_files(filenames, local_dir, remote_dir):
+    _LOGGER.info("Deploying configurations for " + str(filenames))
+    sudo("mkdir -p " + remote_dir)
+    for name in filenames:
+        put(os.path.join(local_dir, name), remote_dir, use_sudo=True)
 
 
 @task
@@ -66,8 +72,8 @@ def add(name=None):
     print("Deploying %s connector configurations on: %s " %
           (', '.join(filenames), env.host))
 
-    configure.deploy(filenames, constants.CONNECTORS_DIR,
-                     constants.REMOTE_CATALOG_DIR)
+    deploy_files(filenames, constants.CONNECTORS_DIR,
+                 constants.REMOTE_CATALOG_DIR)
 
 
 @task

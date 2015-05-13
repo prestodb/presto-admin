@@ -21,11 +21,10 @@ import logging
 import os
 
 from fabric.contrib import files
-from fabric.operations import put, sudo
+from fabric.operations import sudo
 from fabric.api import env
 from prestoadmin.util import constants
 
-import config
 import coordinator as coord
 import prestoadmin.util.fabricapi as util
 import workers as w
@@ -56,17 +55,9 @@ def workers():
 
 
 def configure_presto(conf, local_dir, remote_dir):
-    write_conf_to_tmp(conf, local_dir)
-    deploy([name for name in conf.keys() if name != "node.properties"],
-           local_dir, remote_dir)
-    deploy_node_properties(local_dir, remote_dir)
-
-
-def write_conf_to_tmp(conf, conf_dir):
-    _LOGGER.info("Writing configuration to temporary files.")
-    for key, value in conf.iteritems():
-        path = conf_dir + "/" + key
-        config.write(output_format(value), path)
+    deploy(dict((name, output_format(content)) for (name, content)
+                in conf.iteritems() if name != "node.properties"), remote_dir)
+    deploy_node_properties(output_format(conf['node.properties']), remote_dir)
 
 
 def output_format(conf):
@@ -97,15 +88,14 @@ def list_to_line_separated(conf):
     return "\n".join(conf)
 
 
-def deploy(filenames, local_dir, remote_dir):
-    _LOGGER.info("Deploying configurations for " + str(filenames))
+def deploy(confs, remote_dir):
+    _LOGGER.info("Deploying configurations for " + str(confs.keys()))
     sudo("mkdir -p " + remote_dir)
-    for name in filenames:
-        put(os.path.join(local_dir, name),
-            os.path.join(remote_dir, name), True)
+    for name, content in confs.iteritems():
+        write_to_remote_file(content, os.path.join(remote_dir, name))
 
 
-def deploy_node_properties(local_dir, remote_dir):
+def deploy_node_properties(content, remote_dir):
     _LOGGER.info("Deploying node.properties configuration")
     name = "node.properties"
     node_file_path = (os.path.join(remote_dir, name))
@@ -117,6 +107,14 @@ def deploy_node_properties(local_dir, remote_dir):
         "sed -i '/node.id/!d' " + node_file_path + "; "
         )
     sudo(node_id_command)
-    with open(os.path.join(local_dir, name), 'r') as f:
-        properties = f.read()
-    files.append(os.path.join(remote_dir, name), properties, True)
+    files.append(os.path.join(remote_dir, name), content, True)
+
+
+def write_to_remote_file(text, filename):
+    sudo("echo '%s' > %s" % (escape_single_quotes(text), filename))
+
+
+def escape_single_quotes(text):
+    # replace a single quote with a (closing) single quote followed by
+    # an escaped quote followed by an (opening) single quote
+    return text.replace(r"'", r"'\''")

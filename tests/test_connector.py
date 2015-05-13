@@ -31,7 +31,7 @@ class TestConnector(utils.BaseTestCase):
                                 'Configuration for connector dummy not found',
                                 connector.add, 'dummy')
 
-    @patch('prestoadmin.connector.configure.deploy')
+    @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.path.isfile')
     def test_add_exists(self, isfile_mock, deploy_mock):
         isfile_mock.return_value = True
@@ -40,7 +40,7 @@ class TestConnector(utils.BaseTestCase):
                                        constants.CONNECTORS_DIR,
                                        constants.REMOTE_CATALOG_DIR)
 
-    @patch('prestoadmin.connector.configure.deploy')
+    @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.path.isdir')
     @patch('prestoadmin.connector.os.listdir')
     def test_add_all(self, listdir_mock, isdir_mock, deploy_mock):
@@ -51,7 +51,7 @@ class TestConnector(utils.BaseTestCase):
                                        constants.CONNECTORS_DIR,
                                        constants.REMOTE_CATALOG_DIR)
 
-    @patch('prestoadmin.connector.configure.deploy')
+    @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.path.isdir')
     def test_add_all_fails_if_dir_not_there(self, isdir_mock, deploy_mock):
         isdir_mock.return_value = False
@@ -85,7 +85,7 @@ class TestConnector(utils.BaseTestCase):
         self.assertEqual('Failed to remove connector tpch.\n',
                          self.test_stdout.getvalue())
 
-    @patch('prestoadmin.connector.configure.deploy')
+    @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.listdir')
     @patch('prestoadmin.connector.os.path.isdir')
     def test_warning_if_connector_dir_empty(self, isdir_mock, listdir_mock,
