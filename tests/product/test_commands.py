@@ -19,7 +19,7 @@ import os
 import urllib
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, DOCKER_MOUNT_POINT
+    LOCAL_TMP_DIR, DOCKER_MOUNT_POINT
 
 
 class TestCommands(BaseProductTestCase):
@@ -51,14 +51,16 @@ class TestCommands(BaseProductTestCase):
         self.upload_topology()
 
         rpm_name = 'presto-0.101-1.0.x86_64.rpm'
-        if not os.path.exists(os.path.join(LOCAL_RESOURCES_DIR, rpm_name)):
+        if not os.path.exists(os.path.join(LOCAL_TMP_DIR, rpm_name)):
+            if not os.path.exists(LOCAL_TMP_DIR):
+                os.mkdir(LOCAL_TMP_DIR)
             urllib.urlretrieve(
                 'https://jenkins-master.td.teradata.com/view/Presto/job/'
                 'presto-td/lastSuccessfulBuild/artifact/presto-server/target'
                 '/rpm/presto/RPMS/x86_64/presto-0.101-1.0.x86_64.rpm',
-                os.path.join(LOCAL_RESOURCES_DIR, rpm_name))
+                os.path.join(LOCAL_TMP_DIR, rpm_name))
 
-        self.copy_to_master(os.path.join(LOCAL_RESOURCES_DIR, rpm_name))
+        self.copy_to_master(os.path.join(LOCAL_TMP_DIR, rpm_name))
         cmd_output = self.run_prestoadmin(
             'server install ' + os.path.join(DOCKER_MOUNT_POINT, rpm_name))
         expected = ['Deploying rpm...',
@@ -73,7 +75,7 @@ class TestCommands(BaseProductTestCase):
                     'Deploying configuration on: slave3',
                     'Deploying tpch.properties connector configurations '
                     'on: '
-                    'slave3',
+                    'slave3 ',
                     'Deploying configuration on: slave1',
                     'Deploying tpch.properties connector configurations '
                     'on: '
@@ -82,9 +84,13 @@ class TestCommands(BaseProductTestCase):
                     'Deploying tpch.properties connector configurations on: '
                     'slave2 ',
                     'Deploying configuration on: master',
-                    'Deploying tpch.properties connector configurations on:'
-                    ' master ']
-        self.assertEqual(expected.sort(), cmd_output.splitlines().sort())
+                    'Deploying tpch.properties connector configurations on: '
+                    'master ']
+
+        actual = cmd_output.splitlines()
+        expected.sort()
+        actual.sort()
+        self.assertEqual(expected, actual)
 
         for container in self.all_hosts():
             self.assert_installed(container)
