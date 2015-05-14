@@ -82,7 +82,7 @@ class TestCommands(BaseProductTestCase):
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
-    def test_server_start(self):
+    def test_server_start_stop(self):
         self.install_presto_admin()
         self.upload_topology()
         self.server_install()
@@ -106,14 +106,44 @@ class TestCommands(BaseProductTestCase):
         actual = cmd_output.splitlines()
         actual.sort()
 
+        process_per_host = []
         for expected_regexp, actual_line in zip(expected, actual):
             self.assertRegexpMatches(actual_line, expected_regexp)
             match = re.search(expected_regexp, actual_line)
             try:
-                self.exec_create_start(match.group('host'), 'kill -0 %s' %
-                                       match.group('pid'))
+                host = match.group('host')
+                pid = match.group('pid')
+                process_per_host.append((host, pid))
             except IndexError:
                 pass
+
+        for host, pid in process_per_host:
+            self.exec_create_start(host, 'kill -0 %s' %
+                                   pid)
+
+        cmd_output = self.run_prestoadmin('server stop')
+        expected = [r'\[master\] out: ',
+                    r'\[master\] out: Stopped .*',
+                    r'\[master\] out: Stopping presto',
+                    r'\[slave1\] out: ',
+                    r'\[slave1\] out: Stopped .*',
+                    r'\[slave1\] out: Stopping presto',
+                    r'\[slave2\] out: ',
+                    r'\[slave2\] out: Stopped .*',
+                    r'\[slave2\] out: Stopping presto',
+                    r'\[slave3\] out: ',
+                    r'\[slave3\] out: Stopped .*',
+                    r'\[slave3\] out: Stopping presto']
+        actual = cmd_output.splitlines()
+        actual.sort()
+        for expected_regexp, actual_line in zip(expected, actual):
+            self.assertRegexpMatches(actual_line, expected_regexp)
+
+        for host, pid in process_per_host:
+            self.assertRaisesRegexp(OSError,
+                                    'No such process',
+                                    self.exec_create_start,
+                                    host, 'kill -0 %s' % pid)
 
     def assert_file_content(self, host, filepath, expected):
         config = self.exec_create_start(host, 'cat %s' % filepath)
