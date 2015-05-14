@@ -16,7 +16,7 @@
 Product tests for presto-admin commands
 """
 import re
-from tests.product.base_product_case import BaseProductTestCase
+from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM
 
 
 class TestCommands(BaseProductTestCase):
@@ -79,6 +79,32 @@ class TestCommands(BaseProductTestCase):
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
+
+    def test_uninstall_presto(self):
+        self.install_presto_admin()
+        self.upload_topology()
+        self.server_install()
+        start_output = self.run_prestoadmin('server start')
+        process_per_host = self.get_process_per_host(start_output.splitlines())
+        cmd_output = self.run_prestoadmin('server uninstall').splitlines()
+        self.assert_stopped(process_per_host)
+        expected = ['Package uninstalled successfully on: slave1',
+                    'Package uninstalled successfully on: slave2',
+                    'Package uninstalled successfully on: slave3',
+                    'Package uninstalled successfully on: master']
+        expected += self.expected_stop()[:]
+        expected.sort()
+        cmd_output.sort()
+        for actual, expected_regexp in zip(cmd_output, expected):
+            self.assertRegexpMatches(actual, expected_regexp)
+
+        for container in self.all_hosts():
+            self.assert_uninstalled(container)
+            self.assert_path_removed(container, '/etc/presto')
+            self.assert_path_removed(container, '/usr/lib/presto')
+            self.assert_path_removed(container, '/var/lib/presto')
+            self.assert_path_removed(container, '/usr/shared/doc/presto')
+            self.assert_path_removed(container, '/etc/rc.d/init.d/presto')
 
     def test_server_start_stop(self):
         self.install_presto_admin()
@@ -180,8 +206,13 @@ class TestCommands(BaseProductTestCase):
 
     def assert_installed(self, container):
         check_rpm = self.exec_create_start(container,
-                                           'rpm -q presto-0.101-1.0')
-        self.assertEqual('presto-0.101-1.0.x86_64\n', check_rpm)
+                                           'rpm -q presto')
+        self.assertEqual(PRESTO_RPM[:-4], check_rpm)
+
+    def assert_uninstalled(self, container):
+        self.assertRaisesRegexp(OSError, 'package presto is not installed',
+                                self.exec_create_start,
+                                container, 'rpm -q presto')
 
     def assert_has_default_config(self, container):
         self.assert_file_content(container,
@@ -227,3 +258,6 @@ task.max-memory=1GB\n""")
         self.assert_file_content(container,
                                  '/etc/presto/catalog/tpch.properties',
                                  'connector.name=tpch')
+
+    def assert_path_removed(self, container, directory):
+        self.exec_create_start(container, ' [ ! -e %s ]' % directory)
