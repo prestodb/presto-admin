@@ -23,7 +23,7 @@ class TestPackage(utils.BaseTestCase):
         env.host = "any_host"
         package.rpm_install("test.rpm")
         mock_sudo.assert_called_with("rpm -i "
-                                     "/opt/presto-admin/packages/test.rpm")
+                                     "/opt/prestoadmin/packages/test.rpm")
 
     @patch('prestoadmin.package.rpm_install')
     @patch('prestoadmin.package.deploy')

@@ -182,7 +182,7 @@ class BaseProductTestCase(utils.BaseTestCase):
                                "config.json"), "w") as conf_file:
             json.dump(topology, conf_file)
 
-        self.exec_create_start(self.master, "cp %s /etc/opt/presto-admin/" %
+        self.exec_create_start(self.master, "cp %s /etc/opt/prestoadmin/" %
                                os.path.join(DOCKER_MOUNT_POINT, "config.json"))
 
     def server_install(self):

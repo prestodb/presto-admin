@@ -38,7 +38,7 @@ class TestCommands(BaseProductTestCase):
         self.assertRaisesRegexp(OSError,
                                 'An unexpected error occurred.  '
                                 'More detailed information can be found in'
-                                ' /var/log/presto-admin/presto-admin.log',
+                                ' /var/log/prestoadmin/presto-admin.log',
                                 self.run_prestoadmin,
                                 'topology show'
                                 )

@@ -19,8 +19,8 @@ exec presto-admin \$@
 EOT
 chmod 755 `pwd`/presto-admin
 
-LOG_DIR=/var/log/presto-admin
+LOG_DIR=/var/log/prestoadmin
 mkdir -p $LOG_DIR
 
-CONF_DIR=/etc/opt/presto-admin
+CONF_DIR=/etc/opt/prestoadmin
 mkdir -p $CONF_DIR

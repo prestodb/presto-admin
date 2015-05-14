@@ -22,7 +22,7 @@ import tempfile
 
 import prestoadmin
 
-PRESTOADMIN_LOG_DIR = "/var/log/presto-admin"
+PRESTOADMIN_LOG_DIR = "/var/log/prestoadmin"
 
 
 # Logging Config File Locations
@@ -32,17 +32,17 @@ LOGGING_CONFIG_FILE_DIRECTORIES = [
 ]
 
 # local configuration
-LOCAL_CONF_DIR = "/etc/opt/presto-admin"
+LOCAL_CONF_DIR = "/etc/opt/prestoadmin"
 CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, "config.json")
 COORDINATOR_DIR = os.path.join(LOCAL_CONF_DIR, "coordinator")
 WORKERS_DIR = os.path.join(LOCAL_CONF_DIR, "workers")
 CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, "connectors")
-TMP_CONF_DIR = os.path.join(tempfile.gettempdir(), "presto-admin")
+TMP_CONF_DIR = os.path.join(tempfile.gettempdir(), "prestoadmin")
 TMP_WORKERS_DIR = os.path.join(TMP_CONF_DIR, "workers")
 TMP_COORDINATOR_DIR = os.path.join(TMP_CONF_DIR, "coordinator")
 
 # remote configuration
 REMOTE_CONF_DIR = "/etc/presto"
 REMOTE_CATALOG_DIR = os.path.join(REMOTE_CONF_DIR, "catalog")
-REMOTE_PACKAGES_PATH = "/opt/presto-admin/packages"
+REMOTE_PACKAGES_PATH = "/opt/prestoadmin/packages"
 REMOTE_PRESTO_LOG_DIR = "/var/log/presto"
