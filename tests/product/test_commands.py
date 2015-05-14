@@ -102,7 +102,6 @@ class TestCommands(BaseProductTestCase):
             self.assert_uninstalled(container)
             self.assert_path_removed(container, '/etc/presto')
             self.assert_path_removed(container, '/usr/lib/presto')
-            self.assert_path_removed(container, '/var/lib/presto')
             self.assert_path_removed(container, '/usr/shared/doc/presto')
             self.assert_path_removed(container, '/etc/rc.d/init.d/presto')
 
@@ -207,7 +206,7 @@ class TestCommands(BaseProductTestCase):
     def assert_installed(self, container):
         check_rpm = self.exec_create_start(container,
                                            'rpm -q presto')
-        self.assertEqual(PRESTO_RPM[:-4], check_rpm)
+        self.assertEqual(PRESTO_RPM[:-4] + '\n', check_rpm)
 
     def assert_uninstalled(self, container):
         self.assertRaisesRegexp(OSError, 'package presto is not installed',
