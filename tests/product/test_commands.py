@@ -73,9 +73,7 @@ class TestCommands(BaseProductTestCase):
                     'master ']
 
         actual = cmd_output.splitlines()
-        expected.sort()
-        actual.sort()
-        self.assertEqual(expected, actual)
+        self.assertEqual(sorted(expected), sorted(actual))
 
         for container in self.all_hosts():
             self.assert_installed(container)

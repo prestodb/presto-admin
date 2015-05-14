@@ -18,7 +18,7 @@ using presto-admin
 """
 import logging
 
-from fabric.api import task, sudo, env
+from fabric.api import task, sudo, env, serial
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
 from fabric.operations import run, os
@@ -28,7 +28,7 @@ from prestoadmin.util import constants
 from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import topology
-from prestoadmin.config import ConfigFileNotFoundError
+from prestoadmin.config import ConfigFileNotFoundError, ConfigurationError
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
 from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
@@ -124,7 +124,8 @@ def service(control=None):
 
 def check_status_for_control_commands():
     check_presto_version()
-    if check_server_status():
+    client = PrestoClient(env.host, env.port)
+    if check_server_status(client):
         print("Server started successfully on: " + env.host)
     else:
         warn("Server failed to start on: " + env.host)
@@ -176,9 +177,11 @@ def check_presto_version():
         if int(version_number[1]) < PRESTO_RPM_VERSION:
             warn("%s: Status check requires Presto version >= 0.%d"
                  % (env.host, PRESTO_RPM_VERSION))
+            return False
+        return True
     except ValueError:
         warn("%s: No suitable presto version found" % env.host)
-        pass
+        return False
 
 
 def get_presto_version():
@@ -188,10 +191,13 @@ def get_presto_version():
         return version
 
 
-def check_server_status():
+def check_server_status(client):
     """
     Checks if server is running for env.host. Retries connecting to server
     until server is up or till RETRY_TIMEOUT is reached
+
+    Parameters:
+        client - client that executes the query
 
     Returns:
         True or False
@@ -199,7 +205,6 @@ def check_server_status():
     result = True
     time = 0
     while time < RETRY_TIMEOUT:
-        client = PrestoClient(env.host, env.user)
         result = client.execute_query(SERVER_CHECK_SQL)
         if not result:
             run('sleep %d' % SLEEP_INTERVAL)
@@ -211,9 +216,8 @@ def check_server_status():
     return result
 
 
-def run_sql(host, sql):
-    client = PrestoClient(host, env.user)
-    status = client.execute_query(sql, host, env.user)
+def run_sql(client, sql):
+    status = client.execute_query(sql)
     if status:
         return client.get_rows()
     else:
@@ -223,26 +227,26 @@ def run_sql(host, sql):
         return []
 
 
-def execute_connector_info_sql(host):
+def execute_connector_info_sql(client):
     """
     Returns [[catalog_name], [catalog_2]..] from catalogs system table
 
     Parameters:
-        host - host on which the client executes the query
+        client - client that executes the query
     """
-    return run_sql(host, CONNECTOR_INFO_SQL)
+    return run_sql(client, CONNECTOR_INFO_SQL)
 
 
-def execute_external_ip_sql(host, uuid):
+def execute_external_ip_sql(client, uuid):
     """
     Returns external ip of the host with uuid after parsing the http_uri column
     from nodes system table
 
     Parameters:
-        host - host on which the client executes the query
+        client - client that executes the query
         uuid - node_id of the node
     """
-    return run_sql(host, EXTERNAL_IP_SQL % uuid)
+    return run_sql(client, EXTERNAL_IP_SQL % uuid)
 
 
 def get_sysnode_info_from(node_info_row):
@@ -265,31 +269,34 @@ def get_sysnode_info_from(node_info_row):
     return output
 
 
-def get_connector_info_from(host):
+def get_connector_info_from(client):
     """
     Returns installed connectors
-    :param host:
-    :return: : comma delimited connectors eg: tpch, hive, system
+
+    Parameters:
+        client - client that executes the query
+
+    Returns:
+        comma delimited connectors eg: tpch, hive, system
     """
     syscatalog = []
-    connector_info = execute_connector_info_sql(host)
+    connector_info = execute_connector_info_sql(client)
     for conn_info in connector_info:
         if conn_info:
             syscatalog.append(conn_info[0])
     return ', '.join(syscatalog)
 
 
-def get_server_status(host):
+def get_server_status(client):
     """
     Check if the server is running for host.
 
     Parameters:
-        host -
+        client - client that executes the query
 
     Returns:
         True or False
     """
-    client = PrestoClient(host, env.user)
     result = client.execute_query(SERVER_CHECK_SQL)
     return result
 
@@ -318,12 +325,12 @@ def print_node_info(node_status, connector_status):
             print('\tConnectors:     ' + connector_status)
 
 
-def get_ext_ip_of_node():
+def get_ext_ip_of_node(client):
     node_properties_file = os.path.join(constants.REMOTE_CONF_DIR,
                                         'node.properties')
     with settings(hide('stdout')):
         node_uuid = run("sed -n s/^node.id=//p " + node_properties_file)
-    external_ip_row = execute_external_ip_sql(env.host, node_uuid)
+    external_ip_row = execute_external_ip_sql(client, node_uuid)
     external_ip = ''
     if len(external_ip_row) > 1:
         warn_more_than_one_ip = "More than one external ip found for " \
@@ -341,19 +348,20 @@ def get_ext_ip_of_node():
 
 
 def get_status():
-    external_ip = get_ext_ip_of_node()
+    client = PrestoClient(env.host, env.user)
+    external_ip = get_ext_ip_of_node(client)
 
-    server_status = get_server_status(env.host)
+    server_status = get_server_status(client)
     print('Server Status:')
     print('\t%s(IP: %s roles: %s): %s' % (env.host, external_ip,
                                           ', '.join(get_roles_for(env.host)),
                                           is_server_up(server_status)))
     if server_status:
         # just get the node_info row for the host if server is up
-        node_info_row = run_sql(env.host, NODE_INFO_PER_URI_SQL % external_ip)
+        node_info_row = run_sql(client, NODE_INFO_PER_URI_SQL % external_ip)
         node_status = get_sysnode_info_from(node_info_row)
         if node_status:
-            connector_status = get_connector_info_from(env.host)
+            connector_status = get_connector_info_from(client)
             print_node_info(node_status, connector_status)
         else:
             print("\tNo information available")
@@ -362,11 +370,17 @@ def get_status():
 
 
 @task
+@serial
 @requires_topology
 def status():
     """
     Print the status of presto in the cluster
     """
-    check_presto_version()
-    with settings(parallel=False):
-        get_status()
+    if check_presto_version():
+        try:
+            get_status()
+        except ConfigurationError as e:
+            print('Server Status:\n' + e.message)
+    else:
+        print('Server Status:\n\t%s does not have a suitable version of'
+              ' Presto installed.' % env.host)

@@ -39,6 +39,7 @@ LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
                                    "tests/product/resources/")
 DOCKER_MOUNT_POINT = "/mnt/presto-admin"
 PRESTO_RPM = 'presto-0.101-1.0.x86_64.rpm'
+PRESTO_VERSION = 'presto-main:0.101-SNAPSHOT'
 
 
 class BaseProductTestCase(utils.BaseTestCase):
@@ -47,9 +48,9 @@ class BaseProductTestCase(utils.BaseTestCase):
     master = "master"
 
     def setUp(self):
-        self.capture_stdout_stderr()
         self.check_if_docker_exists()
         self.create_docker_cluster()
+        self.capture_stdout_stderr()
 
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()
@@ -77,6 +78,7 @@ class BaseProductTestCase(utils.BaseTestCase):
 
         if not self.client.images("jdeathe/centos-ssh"):
             self._execute_and_wait(self.client.pull, "jdeathe/centos-ssh")
+
         self._execute_and_wait(self.client.build,
                                path=os.path.join(prestoadmin.main_dir,
                                                  "tests/product/resources/"
@@ -202,3 +204,10 @@ class BaseProductTestCase(utils.BaseTestCase):
 
     def all_hosts(self):
         return self.slaves[:] + [self.master]
+
+    def get_ip_address_dict(self):
+        ip_addresses = {}
+        for host in self.all_hosts():
+            inspect = self.client.inspect_container(host)
+            ip_addresses[host] = inspect['NetworkSettings']['IPAddress']
+        return ip_addresses

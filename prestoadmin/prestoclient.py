@@ -15,13 +15,16 @@
 """
 Simple client to communicate with a Presto server.
 """
+from fabric.api import run, settings, hide
 from httplib import HTTPConnection, HTTPException
 import logging
-import socket
 import json
+import socket
 from urllib2 import HTTPError, urlopen, URLError
 from prestoadmin.util.exception import InvalidArgumentError
-
+from prestoadmin.config import ConfigurationError
+import prestoadmin.util.constants as constants
+import prestoadmin.topology as topology
 
 _LOGGER = logging.getLogger(__name__)
 URL_TIMEOUT_MS = 5000
@@ -36,10 +39,48 @@ class PrestoClient:
     rows = []
     next_uri = ""
 
-    def __init__(self, server, user, port=8080):
+    def __init__(self, server, user, port=None):
         self.server = server
         self.user = user
-        self.port = port
+        self.port = port if port else None
+
+    def lookup_port(self, host):
+        config_file = constants.REMOTE_CONF_DIR + '/config.properties'
+        with settings(hide('stdout'), host=host):
+            port = run("grep http-server.http.port= " + config_file)
+        if port.failed:
+            raise ConfigurationError('Configuration file %s does not exist on '
+                                     'host %s' % (config_file, host))
+        else:
+            if str(port) is '':
+                _LOGGER.info('Could not find property http-server.http.port.'
+                             'Defaulting to 8080.')
+                return 8080
+            try:
+                port = port.split('=', 1)[1]
+                port = int(port)
+                topology.validate_port(str(port))
+                _LOGGER.info('Looked up port ' + str(port) + ' on host '
+                             + host)
+                return port
+            except ValueError:
+                raise ConfigurationError('Unable to coerce http-server.http'
+                                         '.port \'%s\' to an int. Failed to '
+                                         'connect to %s.' % (port, host))
+            except ConfigurationError as e:
+                raise ConfigurationError(e.message + ' for property '
+                                         'http-server.http.port on host '
+                                         + host + '.')
+
+    def clear_old_results(self):
+        if self.rows:
+            self.rows = []
+
+        if self.next_uri:
+            self.next_uri = ''
+
+        if self.response_from_server:
+            self.response_from_server = {}
 
     def execute_query(self, sql, schema="default", catalog="hive"):
         """
@@ -66,6 +107,11 @@ class PrestoClient:
 
         if not self.user:
             raise InvalidArgumentError("Username missing")
+
+        if not self.port:
+            self.port = self.lookup_port(self.server)
+
+        self.clear_old_results()
 
         headers = {"X-Presto-Catalog": catalog,
                    "X-Presto-Schema": schema,
@@ -142,6 +188,9 @@ class PrestoClient:
         from the previous response until the servers response does not
         contain anymore 'nextUri's.  When there is no 'nextUri' the query is
         finished
+
+        Note that this can only be called once and does not page through
+        the results.
 
         Parameters:
             num_of_rows: to be retrieved. 1000 by default

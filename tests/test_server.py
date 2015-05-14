@@ -19,7 +19,7 @@ Tests the presto install
 import os
 from fabric.api import env
 
-from mock import patch
+from mock import patch, MagicMock
 from prestoadmin.util import constants
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
@@ -60,13 +60,15 @@ class TestInstall(utils.BaseTestCase):
         server.uninstall()
         mock_sudo.assert_called_with('rpm -e presto')
 
+    @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.sudo')
-    @patch('prestoadmin.server.check_server_status')
+    @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.warn')
     @patch('prestoadmin.server.check_presto_version')
     def test_server_start_fail(self, mock_version_check, mock_warn,
-                               mock_status, mock_sudo):
-        mock_status.return_value = False
+                               mock_execute, mock_sudo, mock_run):
+        server.RETRY_TIMEOUT = 1
+        mock_execute.return_value = False
         env.host = "failed_node1"
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
@@ -74,11 +76,11 @@ class TestInstall(utils.BaseTestCase):
         mock_warn.assert_called_with("Server failed to start on: failed_node1")
 
     @patch('prestoadmin.server.sudo')
-    @patch('prestoadmin.server.check_server_status')
+    @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.check_presto_version')
-    def test_server_start(self, mock_version_check, mock_status,
+    def test_server_start(self, mock_version_check, mock_execute,
                           mock_sudo):
-        mock_status.return_value = True
+        mock_execute.return_value = True
         env.host = "good_node"
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
@@ -104,10 +106,12 @@ class TestInstall(utils.BaseTestCase):
         mock_version_check.assert_called_with()
         mock_warn.assert_called_with("Server failed to start on: failed_node1")
 
+    @patch.object(PrestoClient, 'lookup_port')
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.check_presto_version')
-    def test_server_restart(self, mock_version_check, mock_status, mock_sudo):
+    def test_server_restart(self, mock_version_check, mock_status, mock_sudo,
+                            lookup_host_mock):
         mock_status.return_value = True
         env.host = "good_node"
         server.restart()
@@ -136,26 +140,27 @@ class TestInstall(utils.BaseTestCase):
         file_manager = mock_open.return_value.__enter__.return_value
         file_manager.write.assert_called_with("connector.name=tpch")
 
-    @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.run')
-    def test_check_success_status(self, mock_sleep, mock_execute_query):
-        mock_execute_query.side_effect = [False, True]
-        self.assertEqual(server.check_server_status(), True)
+    def test_check_success_status(self, mock_sleep):
+        client_mock = MagicMock(PrestoClient)
+        client_mock.execute_query.side_effect = [False, True]
+        self.assertEqual(server.check_server_status(client_mock), True)
 
-    @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.run')
-    def test_check_success_fail(self,  mock_sleep,
-                                mock_execute_query):
+    def test_check_success_fail(self,  mock_sleep):
         server.RETRY_TIMEOUT = SLEEP_INTERVAL + 1
-        mock_execute_query.side_effect = [False, False]
-        self.assertEqual(server.check_server_status(), False)
+        client_mock = MagicMock(PrestoClient)
+        client_mock.execute_query.side_effect = [False, False]
+        self.assertEqual(server.check_server_status(client_mock), False)
 
+    @patch('prestoadmin.server.get_presto_version')
     @patch("prestoadmin.server.execute_connector_info_sql")
     @patch("prestoadmin.server.get_server_status")
     @patch("prestoadmin.server.get_ext_ip_of_node")
     @patch("prestoadmin.server.run_sql")
     def test_status_from_each_node(self, mock_nodeinfo, mock_ext_ip,
-                                   mock_server_up, mock_conninfo):
+                                   mock_server_up, mock_conninfo,
+                                   mock_version):
         env.roledefs = {
             'coordinator': ["Node1"],
             'worker': ["Node1", "Node2", "Node3", "Node4"],
@@ -174,31 +179,35 @@ class TestInstall(utils.BaseTestCase):
                                      [['any']],
                                      [['any']]]
 
+        mock_version.return_value = '0.101'
+
         env.host = "Node1"
-        server.get_status()
+        server.status()
         env.host = "Node2"
-        server.get_status()
+        server.status()
         env.host = "Node3"
-        server.get_status()
+        server.status()
         env.host = "Node4"
-        server.get_status()
+        server.status()
 
         expected = self.read_file_output('/files/server_status_out.txt')
         self.assertEqual(sorted(expected), sorted(self.test_stdout.getvalue()))
 
     @patch('prestoadmin.server.run')
-    @patch('prestoadmin.server.execute_external_ip_sql')
-    def test_get_external_ip(self, mock_ip_row, mock_nodeuuid):
-        mock_ip_row.return_value = [['IP']]
-        self.assertEqual(server.get_ext_ip_of_node(), 'IP')
+    def test_get_external_ip(self, mock_nodeuuid):
+        client_mock = MagicMock(PrestoClient)
+        client_mock.execute_query.return_value = True
+        client_mock.get_rows = lambda: [['IP']]
+        self.assertEqual(server.get_ext_ip_of_node(client_mock), 'IP')
 
     @patch('prestoadmin.server.run')
-    @patch('prestoadmin.server.execute_external_ip_sql')
     @patch('prestoadmin.server.warn')
-    def test_warn_external_ip(self, mock_warn, mock_ip_row, mock_nodeuuid):
+    def test_warn_external_ip(self, mock_warn, mock_nodeuuid):
         env.host = 'node'
-        mock_ip_row.return_value = [['IP1'], ['IP2']]
-        server.get_ext_ip_of_node()
+        client_mock = MagicMock(PrestoClient)
+        client_mock.execute_query.return_value = True
+        client_mock.get_rows = lambda: [['IP1'], ['IP2']]
+        server.get_ext_ip_of_node(client_mock)
         mock_warn.assert_called_with("More than one external ip found for "
                                      "node. There could be multiple nodes "
                                      "associated with the same node.id")
@@ -215,12 +224,17 @@ class TestInstall(utils.BaseTestCase):
     def test_warning_presto_version(self, mock_warn, mock_run):
         mock_run.return_value = '0.97'
         env.host = 'node1'
-        server.check_presto_version()
+        server.status()
         mock_warn.assert_called_with("node1: Status check requires "
                                      "Presto version >= 0.%d"
                                      % PRESTO_RPM_VERSION)
 
         mock_run.return_value = 'No presto installed'
         env.host = 'node1'
-        server.check_presto_version()
+        server.status()
         mock_warn.assert_called_with("node1: No suitable presto version found")
+
+        self.assertEqual('Server Status:\n\tnode1 does not have a suitable '
+                         'version of Presto installed.\nServer Status:\n\t'
+                         'node1 does not have a suitable version of Presto '
+                         'installed.\n', self.test_stdout.getvalue())
