@@ -28,7 +28,7 @@ import os
 from fabric.state import env
 import prestoadmin
 import unittest
-import utils
+from tests import utils
 
 from prestoadmin import main
 from prestoadmin.config import ConfigFileNotFoundError

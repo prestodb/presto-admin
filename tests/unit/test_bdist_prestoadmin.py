@@ -19,7 +19,7 @@ from distutils.dir_util import mkpath
 from mock import patch
 from mock import call
 
-import utils
+from tests import utils
 from packaging.bdist_prestoadmin import bdist_prestoadmin
 from packaging import package_dir as packaging_dir
 

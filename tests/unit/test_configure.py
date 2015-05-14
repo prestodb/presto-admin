@@ -19,7 +19,7 @@ from mock import patch
 
 from fabric.api import env
 from prestoadmin import configure
-import utils
+from tests import utils
 
 
 class TestConfigure(utils.BaseTestCase):

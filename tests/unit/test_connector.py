@@ -19,7 +19,7 @@ import fabric.api
 from fabric.operations import _AttributeString
 from mock import patch
 from prestoadmin.util import constants
-import utils
+from tests import utils
 from prestoadmin import config, connector
 
 

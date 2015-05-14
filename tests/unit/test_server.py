@@ -27,7 +27,7 @@ from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
 
 from prestoadmin import server
 from prestoadmin.config import ConfigFileNotFoundError
-import utils
+import tests.utils as utils
 
 
 class TestInstall(utils.BaseTestCase):

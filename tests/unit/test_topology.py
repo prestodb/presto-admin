@@ -18,7 +18,7 @@ Tests the presto topology config
 
 from mock import patch
 import os
-import utils
+from tests import utils
 import unittest
 
 from prestoadmin import topology

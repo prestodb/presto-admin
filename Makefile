@@ -40,8 +40,12 @@ clean-test:
 lint:
 	flake8 prestoadmin packaging tests
 
+system-test:
+	python setup.py test -s tests.product
+
 test:
-	python setup.py test
+	python setup.py test -s tests.unit
+	python setup.py test -s tests.integration
 
 test-all:
 	tox
@@ -50,7 +54,7 @@ coverage:
 	coverage run --source prestoadmin setup.py test
 	coverage report -m
 	coverage html
-	ls htmlcov
+	echo `pwd`/htmlcov/index.html
 
 docs:
 	rm -f docs/prestoadmin.rst

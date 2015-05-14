@@ -29,7 +29,7 @@ from prestoadmin.collect import TMP_PRESTO_DEBUG, \
     REMOTE_PRESTO_LOG_DIR, OUTPUT_FILENAME_FOR_LOGS, \
     OUTPUT_FILENAME_FOR_SYS_INFO
 import prestoadmin
-import utils
+from tests import utils
 
 
 class TestCollect(utils.BaseTestCase):
