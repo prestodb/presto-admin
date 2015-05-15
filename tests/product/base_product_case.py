@@ -185,7 +185,7 @@ class BaseProductTestCase(utils.BaseTestCase):
         self.exec_create_start(self.master, "cp %s /etc/opt/prestoadmin/" %
                                os.path.join(DOCKER_MOUNT_POINT, "config.json"))
 
-    def server_install(self):
+    def copy_presto_rpm_to_master(self):
         if not os.path.exists(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM)):
             urllib.urlretrieve(
                 'https://jenkins-master.td.teradata.com/view/Presto/job/'
@@ -193,6 +193,9 @@ class BaseProductTestCase(utils.BaseTestCase):
                 '/rpm/presto/RPMS/x86_64/%s' % PRESTO_RPM,
                 os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
         self.copy_to_master(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
+
+    def server_install(self):
+        self.copy_presto_rpm_to_master()
         cmd_output = self.run_prestoadmin(
             'server install ' + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
         return cmd_output
