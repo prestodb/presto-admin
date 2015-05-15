@@ -48,7 +48,9 @@ test:
 	python setup.py test -s tests.integration
 
 test-all:
-	tox
+	tox -- -s tests.unit
+	tox -- -s tests.integration
+	tox -e py26 -- -s tests.product
 
 coverage:
 	coverage run --source prestoadmin setup.py test -s tests.unit
