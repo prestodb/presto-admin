@@ -19,18 +19,14 @@ import os
 import logging
 import errno
 
+from prestoadmin.util.exception import ConfigurationError,\
+    ConfigFileNotFoundError
+
+
 REQUIRED_FILES = ["node.properties", "jvm.config", "config.properties"]
 PRESTO_FILES = ["node.properties", "jvm.config", "config.properties",
                 "log.properties"]
 _LOGGER = logging.getLogger(__name__)
-
-
-class ConfigurationError(Exception):
-    pass
-
-
-class ConfigFileNotFoundError(ConfigurationError):
-    pass
 
 
 def get_conf_from_json_file(path):

@@ -53,15 +53,6 @@ import sys
 import textwrap
 import types
 
-from config import ConfigFileNotFoundError, ConfigurationError
-from prestoadmin import __version__
-from prestoadmin.util.application import entry_point
-from prestoadmin.util.fabric_application import FabricApplication
-from prestoadmin.util.hiddenoptgroup import HiddenOptionGroup
-from prestoadmin.util.parser import LoggingOptionParser
-import topology
-
-
 # For checking callables against the API, & easy mocking
 from fabric import api, state
 from fabric.contrib import console, files, project
@@ -71,6 +62,14 @@ from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
+import prestoadmin.topology as topology
+from prestoadmin.util.exception import ConfigurationError,\
+    ConfigFileNotFoundError
+from prestoadmin import __version__
+from prestoadmin.util.application import entry_point
+from prestoadmin.util.fabric_application import FabricApplication
+from prestoadmin.util.hiddenoptgroup import HiddenOptionGroup
+from prestoadmin.util.parser import LoggingOptionParser
 
 # One-time calculation of "all internal callables" to avoid doing this on every
 # check of a given fabfile callable (in is_classic_task()).

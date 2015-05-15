@@ -18,16 +18,19 @@ tests for connector module
 import fabric.api
 from fabric.operations import _AttributeString
 from mock import patch
+
+from prestoadmin import connector
 from prestoadmin.util import constants
+from prestoadmin.util.exception import ConfigurationError,\
+    ConfigFileNotFoundError
 from tests import utils
-from prestoadmin import config, connector
 
 
 class TestConnector(utils.BaseTestCase):
     @patch('prestoadmin.connector.os.path.isfile')
     def test_add_not_exist(self, isfile_mock):
         isfile_mock.return_value = False
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 'Configuration for connector dummy not found',
                                 connector.add, 'dummy')
 
@@ -55,7 +58,7 @@ class TestConnector(utils.BaseTestCase):
     @patch('prestoadmin.connector.os.path.isdir')
     def test_add_all_fails_if_dir_not_there(self, isdir_mock, deploy_mock):
         isdir_mock.return_value = False
-        self.assertRaisesRegexp(config.ConfigFileNotFoundError,
+        self.assertRaisesRegexp(ConfigFileNotFoundError,
                                 r'Cannot add connectors because directory .+'
                                 r' does not exist',
                                 connector.add)

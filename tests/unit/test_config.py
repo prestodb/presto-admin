@@ -17,6 +17,8 @@ import re
 from mock import patch
 
 from prestoadmin import config
+from prestoadmin.util.exception import ConfigurationError,\
+    ConfigFileNotFoundError
 from tests import utils
 
 
@@ -26,7 +28,7 @@ DIR = os.path.abspath(os.path.dirname(__file__))
 class TestConfiguration(utils.BaseTestCase):
 
     def test_file_does_not_exist_json(self):
-        self.assertRaisesRegexp(config.ConfigFileNotFoundError,
+        self.assertRaisesRegexp(ConfigFileNotFoundError,
                                 'Missing configuration file at',
                                 config.get_conf_from_json_file,
                                 'does/not/exist/conf.json')
@@ -47,7 +49,7 @@ class TestConfiguration(utils.BaseTestCase):
         self.assertEqual(conf, emptyconf)
 
     def test_invalid_json(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 'Expecting , delimiter: line 3 column 3 '
                                 '\(char 19\)',
                                 config.get_conf_from_json_file,
@@ -72,7 +74,7 @@ class TestConfiguration(utils.BaseTestCase):
 
     def test_get_properties_invalid(self):
         config_file = os.path.join(DIR, 'files', 'invalid.properties')
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 'abcd is not in the expected format: '
                                 '<property>=<value>',
                                 config.get_conf_from_properties_file,
@@ -128,7 +130,7 @@ class TestConfiguration(utils.BaseTestCase):
     def test_invalid_conf(self):
         conf = {'jvm.config': [],
                 'config.properties': {}}
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 'Missing configuration for required file:',
                                 config.validate_presto_conf,
                                 conf)
@@ -136,7 +138,7 @@ class TestConfiguration(utils.BaseTestCase):
     def test_invalid_node_type(self):
         conf = {'node.properties': '', 'jvm.config': [],
                 'config.properties': {}}
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 'node.properties must be an object with key-'
                                 'value property pairs',
                                 config.validate_presto_conf,
@@ -145,7 +147,7 @@ class TestConfiguration(utils.BaseTestCase):
     def test_invalid_jvm_type(self):
         conf = {'node.properties': {}, 'jvm.config': {},
                 'config.properties': {}}
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 re.escape('jvm.config must contain a json '
                                           'array of jvm arguments ([arg1, '
                                           'arg2, arg3])'),
@@ -155,7 +157,7 @@ class TestConfiguration(utils.BaseTestCase):
     def test_invalid_config_type(self):
         conf = {'node.properties': {}, 'jvm.config': [],
                 'config.properties': []}
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 'config.properties must be an object with key-'
                                 'value property pairs',
                                 config.validate_presto_conf,

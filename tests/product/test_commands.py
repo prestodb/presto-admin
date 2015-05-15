@@ -36,7 +36,8 @@ class TestCommands(BaseProductTestCase):
     def test_topology_show_not_exists(self):
         self.install_presto_admin()
         self.assertRaisesRegexp(OSError,
-                                'An unexpected error occurred.  '
+                                'Missing topology configuration in '
+                                '/etc/opt/prestoadmin/config.json.  '
                                 'More detailed information can be found in'
                                 ' /var/log/prestoadmin/presto-admin.log',
                                 self.run_prestoadmin,

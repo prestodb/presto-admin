@@ -24,16 +24,16 @@ from fabric.decorators import runs_once
 from fabric.operations import run, os
 from fabric.utils import abort, warn
 
-from prestoadmin.util import constants
 from prestoadmin import configure_cmds
 from prestoadmin import connector
+from prestoadmin import package
 from prestoadmin import topology
-from prestoadmin.config import ConfigFileNotFoundError, ConfigurationError
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
+from prestoadmin.util import constants
+from prestoadmin.util.exception import ConfigFileNotFoundError,\
+    ConfigurationError
 from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
-import package
-
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 

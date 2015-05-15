@@ -17,16 +17,16 @@
 Tests the presto install
 """
 import os
-from fabric.api import env
 
+from fabric.api import env
 from mock import patch, MagicMock
-from prestoadmin.util import constants
+
 from prestoadmin.prestoclient import PrestoClient
+from prestoadmin import server
 from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
     PRESTO_RPM_VERSION
-
-from prestoadmin import server
-from prestoadmin.config import ConfigFileNotFoundError
+from prestoadmin.util import constants
+from prestoadmin.util.exception import ConfigFileNotFoundError
 import tests.utils as utils
 
 

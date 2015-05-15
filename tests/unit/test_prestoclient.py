@@ -17,12 +17,11 @@ import json
 import os
 import socket
 
+from fabric.operations import _AttributeString
 from mock import patch
 
-from fabric.operations import _AttributeString
 from prestoadmin.prestoclient import URL_TIMEOUT_MS, PrestoClient
-from prestoadmin.util.exception import InvalidArgumentError
-from prestoadmin.config import ConfigurationError
+from prestoadmin.util.exception import InvalidArgumentError, ConfigurationError
 from tests import utils
 
 

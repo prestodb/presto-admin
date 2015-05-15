@@ -16,12 +16,12 @@
 """
 Tests the coordinator module
 """
-
-import tests.utils as utils
-
 from fabric.api import env
-from prestoadmin import coordinator, config
 from mock import patch
+
+from prestoadmin import coordinator
+from prestoadmin.util.exception import ConfigurationError
+import tests.utils as utils
 
 
 class TestCoordinator(utils.BaseTestCase):
@@ -95,7 +95,7 @@ class TestCoordinator(utils.BaseTestCase):
 
     def test_invalid_conf(self):
         conf = {"node.propoerties": {}}
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Missing configuration for required file: ",
                                 coordinator.validate, conf)
 
@@ -105,7 +105,7 @@ class TestCoordinator(utils.BaseTestCase):
                 "config.properties": {"coordinator": "false"}
                 }
 
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Coordinator cannot be false in the "
                                 "coordinator's config.properties",
                                 coordinator.validate, conf)

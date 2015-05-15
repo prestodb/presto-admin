@@ -15,13 +15,14 @@
 """
 Module for presto connector configurations
 """
+import logging
+
 from fabric.api import task, env
 from fabric.operations import sudo, os, put
+import fabric.utils
 
 from prestoadmin.util import constants
-import config
-import logging
-import fabric.utils
+from prestoadmin.util.exception import ConfigFileNotFoundError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,13 +55,13 @@ def add(name=None):
         filename = name + ".properties"
         if not os.path.isfile(
                 os.path.join(constants.CONNECTORS_DIR, filename)):
-            raise config.ConfigFileNotFoundError(
+            raise ConfigFileNotFoundError(
                 "Configuration for connector " + name + " not found")
         filenames = [filename]
     elif not os.path.isdir(constants.CONNECTORS_DIR):
         message = ("Cannot add connectors because directory %s does not exist"
                    % constants.CONNECTORS_DIR)
-        raise config.ConfigFileNotFoundError(message)
+        raise ConfigFileNotFoundError(message)
     else:
         filenames = os.listdir(constants.CONNECTORS_DIR)
         if not filenames:

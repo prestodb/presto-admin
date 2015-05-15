@@ -22,11 +22,12 @@ import copy
 import logging
 import urlparse
 
-import config
-from prestoadmin.util import constants
-import prestoadmin.util.fabricapi as util
 from fabric.api import env
 
+from prestoadmin import config
+from prestoadmin.util import constants
+from prestoadmin.util.exception import ConfigurationError
+import prestoadmin.util.fabricapi as util
 
 DEFAULT_PROPERTIES = {"node.properties":
                       {"node.environment": "presto",
@@ -81,11 +82,11 @@ def islocalhost(hostname):
 def validate(conf):
     config.validate_presto_conf(conf)
     if conf["config.properties"]["coordinator"] != "false":
-        raise config.ConfigurationError("Coordinator must be false in the "
-                                        "worker's config.properties")
+        raise ConfigurationError("Coordinator must be false in the "
+                                 "worker's config.properties")
     uri = urlparse.urlparse(conf["config.properties"]["discovery.uri"])
     if islocalhost(uri.hostname) and len(env.roledefs['all']) > 1:
-            raise config.ConfigurationError(
+            raise ConfigurationError(
                 "discovery.uri should not be localhost in a "
                 "multi-node cluster, but found " + urlparse.urlunparse(uri) +
                 ".  You may have encountered this error by "

@@ -23,17 +23,17 @@ test_prestoadmin
 Tests for `prestoadmin` module.
 """
 from optparse import Values
-
 import os
-from fabric.state import env
-import prestoadmin
 import unittest
-from tests import utils
 
-from prestoadmin import main
-from prestoadmin.config import ConfigFileNotFoundError
-from prestoadmin.config import ConfigurationError
+from fabric.state import env
 from mock import patch
+
+import prestoadmin
+from prestoadmin import main
+from prestoadmin.util.exception import ConfigurationError,\
+    ConfigFileNotFoundError
+from tests import utils
 
 
 class TestMain(utils.BaseTestCase):

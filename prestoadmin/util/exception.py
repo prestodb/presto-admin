@@ -23,7 +23,7 @@ import traceback
 
 class ExceptionWithCause(Exception):
 
-    def __init__(self, message):
+    def __init__(self, message=''):
         self.inner_exception = None
 
         causing_exception = sys.exc_info()[1]
@@ -54,4 +54,12 @@ class UserVisibleError(ExceptionWithCause):
 
 
 class InvalidArgumentError(ExceptionWithCause):
+    pass
+
+
+class ConfigurationError(UserVisibleError):
+    pass
+
+
+class ConfigFileNotFoundError(ConfigurationError):
     pass

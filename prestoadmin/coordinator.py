@@ -17,12 +17,14 @@ Module for the presto coordinator's configuration.
 Loads and validates the coordinator.json file and creates the files needed
 to deploy on the presto cluster
 """
+import copy
 import logging
 
-import config
-import copy
 from fabric.api import env
+
+import config
 from prestoadmin.util import constants
+from prestoadmin.util.exception import ConfigurationError
 
 DEFAULT_PROPERTIES = {"node.properties":
                       {"node.environment": "presto",
@@ -80,6 +82,6 @@ def build_defaults():
 def validate(conf):
     config.validate_presto_conf(conf)
     if conf["config.properties"]["coordinator"] != "true":
-        raise config.ConfigurationError("Coordinator cannot be false in the "
-                                        "coordinator's config.properties")
+        raise ConfigurationError("Coordinator cannot be false in the "
+                                 "coordinator's config.properties.")
     return conf

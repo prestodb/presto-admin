@@ -15,15 +15,17 @@
 """
 Tests the presto topology config
 """
-
-from mock import patch
 import os
-from tests import utils
 import unittest
 
-from prestoadmin import topology
+from mock import patch
+from fabric.state import env
+
 from prestoadmin import config
-from prestoadmin.topology import env
+from prestoadmin import topology
+from prestoadmin.util.exception import ConfigurationError,\
+    ConfigFileNotFoundError
+from tests import utils
 
 
 class TestTopologyConfig(utils.BaseTestCase):
@@ -40,7 +42,7 @@ class TestTopologyConfig(utils.BaseTestCase):
     def test_invalid_property(self):
         conf = config.get_conf_from_json_file(os.path.dirname(__file__) +
                                               "/files/invalid_conf.json")
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Invalid property: invalid property",
                                 topology.validate, conf)
 
@@ -62,7 +64,7 @@ class TestTopologyConfig(utils.BaseTestCase):
         self.assertEqual(topology.validate_host(ipv6), ipv6)
 
     def test_empty_host(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "'' is not a valid ip address or host name",
                                 topology.validate_coordinator, (""))
 
@@ -71,13 +73,13 @@ class TestTopologyConfig(utils.BaseTestCase):
         self.assertEqual(topology.validate_host(host), host)
 
     def test_invalid_host(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "'.1234' is not a valid ip address "
                                 "or host name",
                                 topology.validate_host, (".1234"))
 
     def test_invalid_host_type(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Host must be of type string.  "
                                 "Found <type 'list'>",
                                 topology.validate_host, (["my", "list"]))
@@ -87,13 +89,13 @@ class TestTopologyConfig(utils.BaseTestCase):
         self.assertEqual(topology.validate_port(port), port)
 
     def test_invalid_port(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Invalid port number 99999999: port must be "
                                 "between 1 and 65535",
                                 topology.validate_port, ("99999999"))
 
     def test_invalid_port_type(self):
-        self.assertRaises(config.ConfigurationError,
+        self.assertRaises(ConfigurationError,
                           topology.validate_port, (["123"]))
 
     def test_valid_workers(self):
@@ -101,18 +103,18 @@ class TestTopologyConfig(utils.BaseTestCase):
         self.assertEqual(topology.validate_workers(workers), workers)
 
     def test_no_workers(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Must specify at least one worker",
                                 topology.validate_workers, ([]))
 
     def test_invalid_workers_type(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Workers must be of type list.  "
                                 "Found <type 'str'>",
                                 topology.validate_workers, ("not a list"))
 
     def test_invalid_coordinator_type(self):
-        self.assertRaisesRegexp(config.ConfigurationError,
+        self.assertRaisesRegexp(ConfigurationError,
                                 "Host must be of type string.  "
                                 "Found <type 'list'>",
                                 topology.validate_coordinator,
@@ -152,7 +154,7 @@ class TestTopologyConfig(utils.BaseTestCase):
         @topology.requires_topology
         def func():
             pass
-        self.assertRaisesRegexp(config.ConfigFileNotFoundError,
+        self.assertRaisesRegexp(ConfigFileNotFoundError,
                                 "Missing topology configuration",
                                 func)
 
@@ -186,7 +188,7 @@ class TestTopologyConfig(utils.BaseTestCase):
     @patch('prestoadmin.topology.get_conf')
     def test_interactive_install(self,  get_conf_mock,
                                  mock_set_interactive):
-        env.topology_config_not_found = config.ConfigurationError()
+        env.topology_config_not_found = ConfigurationError()
         get_conf_mock.return_value = {'username': 'bob', 'port': '225',
                                       'coordinator': 'master',
                                       'workers': ['slave1', 'slave2']}
