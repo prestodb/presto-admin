@@ -102,6 +102,7 @@ class TestCommands(BaseProductTestCase):
             self.assert_uninstalled(container)
             self.assert_path_removed(container, '/etc/presto')
             self.assert_path_removed(container, '/usr/lib/presto')
+            self.assert_path_removed(container, '/var/lib/presto')
             self.assert_path_removed(container, '/usr/shared/doc/presto')
             self.assert_path_removed(container, '/etc/rc.d/init.d/presto')
 
