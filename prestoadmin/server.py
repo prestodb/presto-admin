@@ -41,13 +41,13 @@ __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 INIT_SCRIPTS = '/etc/rc.d/init.d/presto'
 RETRY_TIMEOUT = 60
 SLEEP_INTERVAL = 5
-SERVER_CHECK_SQL = "select * from system.runtime.nodes"
-NODE_INFO_PER_URI_SQL = "select http_uri, node_version, active from " \
-                        "system.runtime.nodes where " \
-                        "url_extract_host(http_uri) = '%s'"
-EXTERNAL_IP_SQL = "select url_extract_host(http_uri) from system.runtime.nodes" \
-                  " WHERE node_id = '%s'"
-CONNECTOR_INFO_SQL = "select catalog_name from system.metadata.catalogs"
+SERVER_CHECK_SQL = 'select * from system.runtime.nodes'
+NODE_INFO_PER_URI_SQL = 'select http_uri, node_version, active from ' \
+                        'system.runtime.nodes where ' \
+                        'url_extract_host(http_uri) = \'%s\''
+EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from system.runtime.nodes' \
+                  ' WHERE node_id = \'%s\''
+CONNECTOR_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
 PRESTO_RPM_VERSION = 100
 _LOGGER = logging.getLogger(__name__)
 
@@ -72,8 +72,8 @@ def install(local_path=None):
         local_path - Absolute path to the presto rpm to be installed
     """
     if local_path is None:
-        abort("Missing argument local_path: Absolute path to "
-              "the presto rpm to be installed")
+        abort('Missing argument local_path: Absolute path to '
+              'the presto rpm to be installed')
 
     topology.set_topology_if_missing()
     deploy_install_configure(local_path)
@@ -87,7 +87,7 @@ def deploy_install_configure(local_path):
 def add_tpch_connector():
     tpch_connector_config = os.path.join(constants.CONNECTORS_DIR,
                                          'tpch.properties')
-    util.filesystem.write_to_file_if_not_exists("connector.name=tpch",
+    util.filesystem.write_to_file_if_not_exists('connector.name=tpch',
                                                 tpch_connector_config)
 
 
@@ -98,7 +98,7 @@ def update_configs():
     try:
         connector.add()
     except ConfigFileNotFoundError:
-        _LOGGER.info("No connector directory found, not adding connectors.")
+        _LOGGER.info('No connector directory found, not adding connectors.')
 
 
 @task
@@ -111,12 +111,12 @@ def uninstall():
     stop()
     ret = sudo('rpm -e presto')
     if ret.succeeded:
-        print("Package uninstalled successfully on: " + env.host)
+        print('Package uninstalled successfully on: ' + env.host)
 
 
 def service(control=None):
-    _LOGGER.info("Executing %s on presto server" % control)
-    ret = sudo("set -m; " + INIT_SCRIPTS + control)
+    _LOGGER.info('Executing %s on presto server' % control)
+    ret = sudo('set -m; ' + INIT_SCRIPTS + control)
     return ret.succeeded
 
 
@@ -124,9 +124,9 @@ def check_status_for_control_commands():
     check_presto_version()
     client = PrestoClient(env.host, env.port)
     if check_server_status(client):
-        print("Server started successfully on: " + env.host)
+        print('Server started successfully on: ' + env.host)
     else:
-        warn("Server failed to start on: " + env.host)
+        warn('Server failed to start on: ' + env.host)
 
 
 @task
@@ -168,24 +168,32 @@ def restart():
 
 
 def check_presto_version():
+    """
+    Checks that the Presto version is suitable.
+
+    Returns:
+        Error string if applicable
+    """
     version = get_presto_version()
     try:
         float(version)
         version_number = version.strip().split('.')
         if int(version_number[1]) < PRESTO_RPM_VERSION:
-            warn("%s: Status check requires Presto version >= 0.%d"
-                 % (env.host, PRESTO_RPM_VERSION))
-            return False
-        return True
+            incorrect_version_str = 'Presto version is %s, version >= 0.%d ' \
+                                    'required.' % (version, PRESTO_RPM_VERSION)
+            warn(incorrect_version_str)
+            return incorrect_version_str
+        return ''
     except ValueError:
-        warn("%s: No suitable presto version found" % env.host)
-        return False
+        not_installed_str = 'Presto is not installed.'
+        warn(not_installed_str)
+        return not_installed_str
 
 
 def get_presto_version():
     with settings(hide('warnings', 'stdout'), warn_only=True):
-        version = run("rpm -q --qf \"%{VERSION}\\n\" presto")
-        _LOGGER.debug("Presto rpm version: " + version)
+        version = run('rpm -q --qf \"%{VERSION}\\n\" presto')
+        _LOGGER.debug('Presto rpm version: ' + version)
         return version
 
 
@@ -206,8 +214,8 @@ def check_server_status(client):
         result = client.execute_query(SERVER_CHECK_SQL)
         if not result:
             run('sleep %d' % SLEEP_INTERVAL)
-            _LOGGER.debug("Status retrieval for the server failed after "
-                          "waiting for %d seconds. Retrying..." % time)
+            _LOGGER.debug('Status retrieval for the server failed after '
+                          'waiting for %d seconds. Retrying...' % time)
             time += SLEEP_INTERVAL
         else:
             break
@@ -221,7 +229,7 @@ def run_sql(client, sql):
     else:
         # TODO: Check if we can get some error cause from server response and
         # log that to the user
-        _LOGGER.error("Querying server failed")
+        _LOGGER.error('Querying server failed')
         return []
 
 
@@ -256,14 +264,14 @@ def get_sysnode_info_from(node_info_row):
 
     Returns:
         Node info dict in format:
-        {"http://node1/statement": [presto-main:0.97-SNAPSHOT, True]}
+        {'http://node1/statement': [presto-main:0.97-SNAPSHOT, True]}
     """
     output = {}
     for row in node_info_row:
         if row:
             output[row[0]] = [row[1], row[2]]
 
-    _LOGGER.info("Node info: %s ", output)
+    _LOGGER.info('Node info: %s ', output)
     return output
 
 
@@ -301,9 +309,9 @@ def get_server_status(client):
 
 def is_server_up(status):
     if status:
-        return "Running"
+        return 'Running'
     else:
-        return "Not Running"
+        return 'Not Running'
 
 
 def get_roles_for(host):
@@ -327,13 +335,13 @@ def get_ext_ip_of_node(client):
     node_properties_file = os.path.join(constants.REMOTE_CONF_DIR,
                                         'node.properties')
     with settings(hide('stdout')):
-        node_uuid = run("sed -n s/^node.id=//p " + node_properties_file)
+        node_uuid = run('sed -n s/^node.id=//p ' + node_properties_file)
     external_ip_row = execute_external_ip_sql(client, node_uuid)
     external_ip = ''
     if len(external_ip_row) > 1:
-        warn_more_than_one_ip = "More than one external ip found for " \
-                                + env.host + ". There could be multiple nodes " \
-                                             "associated with the same node.id"
+        warn_more_than_one_ip = 'More than one external ip found for ' \
+                                + env.host + '. There could be multiple nodes ' \
+                                             'associated with the same node.id'
         _LOGGER.debug(warn_more_than_one_ip)
         warn(warn_more_than_one_ip)
         return external_ip
@@ -341,8 +349,16 @@ def get_ext_ip_of_node(client):
         if row:
             external_ip = row[0]
     if not external_ip:
-        _LOGGER.debug("Cannot get external IP for " + env.host)
+        _LOGGER.debug('Cannot get external IP for ' + env.host)
+        external_ip = 'Unknown'
     return external_ip
+
+
+def print_status_header(external_ip, server_status):
+    print('Server Status:')
+    print('\t%s(IP: %s roles: %s): %s' % (env.host, external_ip,
+                                          ', '.join(get_roles_for(env.host)),
+                                          is_server_up(server_status)))
 
 
 def get_status():
@@ -350,10 +366,7 @@ def get_status():
     external_ip = get_ext_ip_of_node(client)
 
     server_status = get_server_status(client)
-    print('Server Status:')
-    print('\t%s(IP: %s roles: %s): %s' % (env.host, external_ip,
-                                          ', '.join(get_roles_for(env.host)),
-                                          is_server_up(server_status)))
+    print_status_header(external_ip, server_status)
     if server_status:
         # just get the node_info row for the host if server is up
         node_info_row = run_sql(client, NODE_INFO_PER_URI_SQL % external_ip)
@@ -362,9 +375,9 @@ def get_status():
             connector_status = get_connector_info_from(client)
             print_node_info(node_status, connector_status)
         else:
-            print("\tNo information available")
+            print('\tNo information available')
     else:
-        print("\tNo information available")
+        print('\tNo information available')
 
 
 @task
@@ -374,11 +387,15 @@ def status():
     """
     Print the status of presto in the cluster
     """
-    if check_presto_version():
+    with settings(hide('warnings')):
+        presto_version_warning = check_presto_version()
+
+    if not presto_version_warning:
         try:
             get_status()
         except ConfigurationError as e:
-            print('Server Status:\n' + e.message)
+            print_status_header(external_ip='Unknown', server_status=None)
+            print('\t' + e.message)
     else:
-        print('Server Status:\n\t%s does not have a suitable version of'
-              ' Presto installed.' % env.host)
+        print_status_header(external_ip='Unknown', server_status=None)
+        print('\t' + presto_version_warning)

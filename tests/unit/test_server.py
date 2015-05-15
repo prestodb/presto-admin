@@ -224,19 +224,27 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.warn')
     def test_warning_presto_version(self, mock_warn, mock_run):
-        mock_run.return_value = '0.97'
         env.host = 'node1'
+        env.roledefs['coordinator'] = ['node1']
+        env.roledefs['worker'] = ['node1']
+
+        old_version = '0.97'
+        mock_run.return_value = old_version
         server.status()
-        mock_warn.assert_called_with("node1: Status check requires "
-                                     "Presto version >= 0.%d"
-                                     % PRESTO_RPM_VERSION)
+        version_warning = 'Presto version is %s, version >= 0.%d required.'\
+                          % (old_version, PRESTO_RPM_VERSION)
+        mock_warn.assert_called_with(version_warning)
 
         mock_run.return_value = 'No presto installed'
         env.host = 'node1'
         server.status()
-        mock_warn.assert_called_with("node1: No suitable presto version found")
+        installation_warning = 'Presto is not installed.'
+        mock_warn.assert_called_with(installation_warning)
 
-        self.assertEqual('Server Status:\n\tnode1 does not have a suitable '
-                         'version of Presto installed.\nServer Status:\n\t'
-                         'node1 does not have a suitable version of Presto '
-                         'installed.\n', self.test_stdout.getvalue())
+        self.assertEqual(
+            'Server Status:\n\tnode1(IP: Unknown roles: coordinator, worker):'
+            ' Not Running\n\t' + version_warning + '\nServer Status:\n\t'
+            'node1(IP: Unknown roles: coordinator, worker): Not Running\n\t'
+            + installation_warning + '\n',
+            self.test_stdout.getvalue()
+        )

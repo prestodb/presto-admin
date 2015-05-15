@@ -23,6 +23,20 @@ from prestoadmin.util.constants import COORDINATOR_DIR, WORKERS_DIR
 
 
 class TestStatus(BaseProductTestCase):
+
+    def test_status_happy_path(self):
+        ips = self.get_ip_address_dict()
+        self.install_presto_admin()
+        self.upload_topology()
+        status_output = self.run_prestoadmin('server status')
+        self.check_status_not_installed(status_output, ips)
+        self.server_install()
+        status_output = self.run_prestoadmin('server status')
+        self.check_status_not_started(status_output, ips)
+        self.run_prestoadmin('server start')
+        status_output = self.run_prestoadmin('server status')
+        self.check_status_normal(status_output, ips)
+
     def test_status_port_not_8080(self):
         self.install_presto_admin()
         self.upload_topology()
@@ -57,40 +71,57 @@ http-server.http.port=8090"""
         cmd_output = self.run_prestoadmin('server status')
 
         ips = self.get_ip_address_dict()
-        expected_output = ['Server Status:',
-                           '\tmaster(IP: ' + ips[self.master] +
-                           ' roles: coordinator): Running',
-                           '\tNode URI(http): http://' + ips[self.master] +
-                           ':8090',
-                           '\tPresto Version: ' + PRESTO_VERSION,
-                           '\tNode is active: True',
-                           '\tConnectors:     system, tpch',
-                           'Server Status:',
-                           '\tslave1(IP: ' + ips[self.slaves[0]] +
-                           ' roles: worker): Running',
-                           '\tNode URI(http): http://' + ips[self.slaves[0]] +
-                           ':8090',
-                           '\tPresto Version: ' + PRESTO_VERSION,
-                           '\tNode is active: True',
-                           '\tConnectors:     system, tpch',
-                           'Server Status:',
-                           '\tslave2(IP: ' + ips[self.slaves[1]] +
-                           ' roles: worker): Running',
-                           '\tNode URI(http): http://' + ips[self.slaves[1]] +
-                           ':8090',
-                           '\tPresto Version: ' + PRESTO_VERSION,
-                           '\tNode is active: True',
-                           '\tConnectors:     system, tpch',
-                           'Server Status:',
-                           '\tslave3(IP: ' + ips[self.slaves[2]] +
-                           ' roles: worker): Running',
-                           '\tNode URI(http): http://' + ips[self.slaves[2]] +
-                           ':8090',
-                           '\tPresto Version: ' + PRESTO_VERSION,
-                           '\tNode is active: True',
-                           '\tConnectors:     system, tpch'
-                           ]
+        self.check_status_normal(cmd_output, ips, 8090)
 
-        # remove the last 4 lines: "Disconnecting from slave 3... Done"
+    def base_status(self, ips):
+        statuses = []
+        hosts_in_status = [self.master] + self.slaves[:]
+        for host in hosts_in_status:
+            role = 'coordinator' if host is self.master else 'worker'
+            status = {'host': host, 'role': role, 'ip': ips[host],
+                      'is_running': 'Running'}
+            statuses += [status]
+        return statuses
+
+    def check_status(self, cmd_output, statuses, port=8080):
+        expected_output = []
+        for status in statuses:
+            expected_output += \
+                ['Server Status:',
+                 '\t%s(IP: %s roles: %s): %s' %
+                 (status['host'], status['ip'], status['role'],
+                  status['is_running'])]
+            if status['is_running'] is 'Running':
+                expected_output += \
+                    ['\tNode URI(http): http://%s:%s' % (status['ip'],
+                                                         str(port)),
+                     '\tPresto Version: ' + PRESTO_VERSION,
+                     '\tNode is active: True',
+                     '\tConnectors:     system, tpch']
+            else:
+                expected_output += [status['error_message']]
+
+        # remove the last 4 lines: "Disconnecting from slave3... Done"
         actual = cmd_output.splitlines()[:-4]
         self.assertEqual(expected_output, actual)
+
+    def check_status_normal(self, cmd_output, ips, port=8080):
+        self.check_status(cmd_output, self.base_status(ips), port)
+
+    def check_status_not_started(self, cmd_output, ips, port=8080):
+        statuses = self.base_status(ips)
+        for status in statuses:
+            status['ip'] = 'Unknown'
+            status['is_running'] = 'Not Running'
+            status['error_message'] = '\tNo information available'
+
+        self.check_status(cmd_output, statuses, port)
+
+    def check_status_not_installed(self, cmd_output, ips, port=8080):
+        statuses = self.base_status(ips)
+        for status in statuses:
+            status['ip'] = 'Unknown'
+            status['is_running'] = 'Not Running'
+            status['error_message'] = '\tPresto is not installed.'
+
+        self.check_status(cmd_output, statuses, port)

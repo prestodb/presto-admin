@@ -48,6 +48,7 @@ class BaseProductTestCase(utils.BaseTestCase):
     master = "master"
 
     def setUp(self):
+        self.maxDiff = None
         self.check_if_docker_exists()
         self.create_docker_cluster()
         self.capture_stdout_stderr()
