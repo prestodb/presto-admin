@@ -6,7 +6,6 @@ tar xvzf third-party/virtualenv-%VIRTUALENV_VERSION%.tar.gz -C third-party || tr
 python third-party/virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
 
 source presto-admin-install/bin/activate
-
 cert_file=$1
 # trust pypi.python.org by default, otherwise use cert_file provided
 cert_options='--trusted-host pypi.python.org'
@@ -18,7 +17,7 @@ if [ -n "$1" ]; then
     fi
 fi
 
-pip install $cert_options %WHEEL_NAME%.whl
+pip install $cert_options %WHEEL_NAME%.whl --no-index --find-links third-party
 deactivate
 
 cat > `pwd`/presto-admin << EOT

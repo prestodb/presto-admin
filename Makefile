@@ -74,8 +74,8 @@ open-docs:
 	xdg-open docs/_build/html/index.html
 
 release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	python setup.py sdist upload -r pypi_internal
+	python setup.py bdist_wheel upload -r pypi_internal
 
 dist: clean
 	python setup.py bdist_prestoadmin

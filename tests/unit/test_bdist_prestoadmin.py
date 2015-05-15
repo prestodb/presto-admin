@@ -87,15 +87,18 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
         self.assertEquals('prestoadmin-0.1.0-py2-none-any',
                           self.bdist.build_wheel('build'))
 
-    @patch('pip.main')
-    def test_package_dependencies(self, pip_mock):
+    @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
+    @patch('packaging.bdist_prestoadmin.pip.main')
+    def test_package_dependencies(self, pip_mock, urlretrieve_mock):
         build_path = os.path.join('build', 'prestoadmin')
         self.bdist.package_dependencies(build_path)
 
         calls = [call(['wheel',
                        '--wheel-dir=build/prestoadmin/third-party',
                        '--no-cache',
-                       'fabric']),
+                       'fabric',
+                       '--extra-index-url', 'http://bdch-ftp.td.teradata.com:8082',
+                       '--trusted-host', 'bdch-ftp.td.teradata.com']),
                  call(['install',
                        '-d',
                        'build/prestoadmin/third-party',
@@ -103,6 +106,31 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
                        '--no-use-wheel',
                        'virtualenv==12.0.7'])]
         pip_mock.assert_has_calls(calls, any_order=False)
+
+    @patch('packaging.bdist_prestoadmin.sys')
+    @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
+    @patch('packaging.bdist_prestoadmin.pip.main')
+    def test_correct_use_of_precompiled_pycrypto(self, pip_mock, urllib_mock,
+                                                 sys_mock):
+        build_path = os.path.join('build', 'prestoadmin')
+        thirdparty_dir = os.path.join(build_path, 'third-party')
+        pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
+        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' +\
+                            pycrypto_whl
+
+        sys_mock.version = '2.7'
+        self.bdist.package_dependencies(build_path)
+        urllib_mock.assert_called_with(
+            pypi_pycrypto_url.format('cp26'),
+            os.path.join(thirdparty_dir, pycrypto_whl.format('cp26'))
+        )
+
+        sys_mock.version = '2.6'
+        self.bdist.package_dependencies(build_path)
+        urllib_mock.assert_called_with(
+            pypi_pycrypto_url.format('cp27'),
+            os.path.join(thirdparty_dir, pycrypto_whl.format('cp27'))
+        )
 
     def test_generate_install_script(self):
         try:

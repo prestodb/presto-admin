@@ -29,16 +29,19 @@ with open('README.md') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
+# Requirements for both development and testing are duplicated here
+# and in the requirements.txt. Unfortunately this is required by
+# tox which relies on the existence of both.
 requirements = [
-    'fabric',
-    'requests'
+    'fabric==1.10.1',
+    'requests>=2.6.0'
 ]
 
 test_requirements = [
-    'tox',
-    'mock',
-    'wheel',
-    'docker-py'
+    'tox>=1.9.0',
+    'mock>=1.0.1',
+    'wheel>=0.23.0',
+    'docker-py>=1.2.2'
 ]
 
 # =====================================================

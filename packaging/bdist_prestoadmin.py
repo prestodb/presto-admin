@@ -18,6 +18,8 @@
 import os
 import re
 import pip
+import sys
+import urllib
 
 from distutils.dir_util import remove_tree
 from distutils import log as logger
@@ -78,7 +80,27 @@ class bdist_prestoadmin(Command):
             pip.main(['wheel',
                       '--wheel-dir={0}'.format(thirdparty_dir),
                       '--no-cache',
-                      requirement])
+                      requirement,
+                      '--extra-index-url', 'http://bdch-ftp.td.teradata.com:8082',
+                      '--trusted-host', 'bdch-ftp.td.teradata.com'])
+
+        # Welcome to HackLand! For our offline installer we need to include
+        # the pycrypto wheel compiled both against the Python 2.6 and 2.7
+        # interpreters. We found no way to do that at build time (either
+        # compile against both interpreters simultaneously or somehow compile
+        # first against 2.6 and then against 2.7 serially). To solve this we
+        # pre-compiled both and uploaded to the internal PyPI. During the build
+        # we still compile pycrypto against whatever interpreter is there and
+        # we fetch the other pre-compiled wheel from PyPI.
+        pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
+        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' + pycrypto_whl
+        if sys.version.startswith('2.6'):
+            alternate_interpreter_version = 'cp27'  # compile against 2.6 now and fetch 2.7 from PyPI
+        else:
+            alternate_interpreter_version = 'cp26'
+        urllib.urlretrieve(pypi_pycrypto_url.format(alternate_interpreter_version),
+                           os.path.join(thirdparty_dir, pycrypto_whl.format(alternate_interpreter_version)))
+        # Thank you for visiting HackLand!
 
         pip.main(['install',
                   '-d',
