@@ -124,9 +124,10 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.configure_cmds.deploy')
     @patch('prestoadmin.server.os.path.exists')
     @patch('prestoadmin.server.os.makedirs')
-    @patch('__builtin__.open')
-    def test_update_config(self, mock_open, mock_makedir, mock_path_exists,
-                           mock_config, mock_connector):
+    @patch('prestoadmin.server.util.filesystem.os.fdopen')
+    @patch('prestoadmin.server.util.filesystem.os.open')
+    def test_update_config(self, mock_open, mock_fdopen, mock_makedir,
+                           mock_path_exists, mock_config, mock_connector):
         e = ConfigFileNotFoundError
         mock_connector.add = e
         mock_path_exists.side_effect = [False, False]
@@ -136,8 +137,9 @@ class TestInstall(utils.BaseTestCase):
         mock_config.assert_called_with()
         mock_makedir.assert_called_with(constants.CONNECTORS_DIR)
         mock_open.assert_called_with(os.path.join(constants.CONNECTORS_DIR,
-                                                  'tpch.properties'), 'w')
-        file_manager = mock_open.return_value.__enter__.return_value
+                                                  'tpch.properties'),
+                                     os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        file_manager = mock_fdopen.return_value.__enter__.return_value
         file_manager.write.assert_called_with("connector.name=tpch")
 
     @patch('prestoadmin.server.run')

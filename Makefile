@@ -51,7 +51,7 @@ test-all:
 	tox
 
 coverage:
-	coverage run --source prestoadmin setup.py test
+	coverage run --source prestoadmin setup.py test -s tests.unit
 	coverage report -m
 	coverage html
 	echo `pwd`/htmlcov/index.html

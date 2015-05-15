@@ -28,3 +28,26 @@ def ensure_parent_directories_exist(path):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
+
+
+def write_to_file_if_not_exists(content, path):
+    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+
+    try:
+        os.makedirs(os.path.dirname(path))
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            raise
+
+    try:
+        file_handle = os.open(path, flags)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            raise
+    else:
+        with os.fdopen(file_handle, 'w') as f:
+            f.write(content)

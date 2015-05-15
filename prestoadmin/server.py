@@ -34,6 +34,7 @@ from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError,\
     ConfigurationError
 from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
+import util.filesystem
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 
@@ -84,13 +85,10 @@ def deploy_install_configure(local_path):
 
 
 def add_tpch_connector():
-    if not os.path.exists(constants.CONNECTORS_DIR):
-        os.makedirs(constants.CONNECTORS_DIR)
     tpch_connector_config = os.path.join(constants.CONNECTORS_DIR,
                                          'tpch.properties')
-    if not os.path.exists(tpch_connector_config):
-        with open(tpch_connector_config, 'w') as conf:
-            conf.write("connector.name=tpch")
+    util.filesystem.write_to_file_if_not_exists("connector.name=tpch",
+                                                tpch_connector_config)
 
 
 def update_configs():

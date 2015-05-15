@@ -97,6 +97,8 @@ def write(output, path):
     except OSError as e:
         if e.errno == errno.EEXIST:
             pass
+        else:
+            raise
 
     with open(path, 'w') as f:
         f.write(output)
