@@ -27,12 +27,25 @@ class TestPackage(utils.BaseTestCase):
 
     @patch('prestoadmin.package.rpm_install')
     @patch('prestoadmin.package.deploy')
-    def test_install(self, mock_deploy, mock_install):
+    @patch('prestoadmin.package.check_rpm_checksum')
+    def test_install(self, mock_chksum, mock_deploy, mock_install):
         env.host = "any_host"
         self.remove_runs_once_flag(package.install)
         package.install("/any/path/rpm")
+        mock_chksum.assert_called_with("/any/path/rpm")
         mock_deploy.assert_called_with("/any/path/rpm")
         mock_install.assert_called_with("rpm")
+
+    @patch('prestoadmin.package.local')
+    @patch('prestoadmin.package.abort')
+    def test_check_rpm_checksum(self, mock_abort, mock_local):
+        mock_local.return_value = lambda: None
+        setattr(mock_local.return_value, 'return_code', 1)
+        package.check_rpm_checksum("/any/path/rpm")
+
+        mock_local.assert_called_with("rpm -K --nosignature /any/path/rpm")
+        mock_abort.assert_called_with("Corrupted RPM. "
+                                      "Try downloading the RPM again.")
 
     @patch('prestoadmin.package.sudo')
     @patch('prestoadmin.package.put')

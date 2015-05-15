@@ -16,12 +16,17 @@
 Module for rpm package deploy and install using presto-admin
 """
 import logging
+
+from fabric.context_managers import settings, hide
 from fabric.decorators import task, runs_once
-from fabric.operations import sudo, put, os
+from fabric.operations import sudo, put, os, local
 from fabric.state import env
+from fabric.utils import abort
+
 from prestoadmin import topology
 from prestoadmin.util import constants
 from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
+
 
 _LOGGER = logging.getLogger(__name__)
 __all__ = ['install']
@@ -37,9 +42,18 @@ def install(local_path):
         local_path - Absolute path to the rpm to be installed
     """
     topology.set_topology_if_missing()
+    check_rpm_checksum(local_path)
     print("Deploying rpm...")
     execute_fail_on_error(deploy_install, local_path,
                           hosts=get_host_list())
+
+
+def check_rpm_checksum(local_path):
+    _LOGGER.info("Checking rpm checksum to see if it is corrupted")
+    with settings(hide('warnings', 'stdout'), warn_only=True):
+        result = local('rpm -K --nosignature ' + local_path)
+    if result.return_code:
+        abort("Corrupted RPM. Try downloading the RPM again.")
 
 
 def deploy_install(local_path):

@@ -185,6 +185,10 @@ class BaseProductTestCase(utils.BaseTestCase):
         self.exec_create_start(self.master, "cp %s /etc/opt/prestoadmin/" %
                                os.path.join(DOCKER_MOUNT_POINT, "config.json"))
 
+    def check_if_corrupted_rpm(self):
+        self.exec_create_start(self.master, 'rpm -K --nosignature '
+                               + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
+
     def copy_presto_rpm_to_master(self):
         if not os.path.exists(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM)):
             urllib.urlretrieve(
@@ -193,6 +197,7 @@ class BaseProductTestCase(utils.BaseTestCase):
                 '/rpm/presto/RPMS/x86_64/%s' % PRESTO_RPM,
                 os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
         self.copy_to_master(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
+        self.check_if_corrupted_rpm()
 
     def server_install(self):
         self.copy_presto_rpm_to_master()
