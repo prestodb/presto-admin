@@ -81,7 +81,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
-    commands_to_remove = ['fabfile', 'rcfile', 'parallel', 'warn_only']
+    commands_to_remove = ['fabfile', 'parallel', 'rcfile', 'warn_only']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
     return new_env_options
@@ -344,6 +344,14 @@ def parser_for_options():
         help="print out text processing friendly version of --list"
     )
 
+    parser.add_option(
+        '--nodeps',
+        action='store_true',
+        dest='nodeps',
+        default=False,
+        help=SUPPRESS_HELP
+    )
+
     #
     # Add in options which are also destined to show up as `env` vars.
     #
@@ -576,6 +584,11 @@ def show_commands(docstring, format, code=0):
 def run_tasks(task_list):
     for name, args, kwargs, arg_hosts, arg_roles, arg_excl_hosts in task_list:
         try:
+            if state.env.nodeps and name.strip() != 'package.install':
+                sys.stderr.write('Invalid argument --nodeps to task: %s\n'
+                                 % name)
+                display_command(name, 2)
+
             execute(
                 name,
                 hosts=state.env.hosts,

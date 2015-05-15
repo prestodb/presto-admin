@@ -21,8 +21,17 @@ class TestPackage(utils.BaseTestCase):
     @patch('prestoadmin.package.sudo')
     def test_rpm_install(self, mock_sudo):
         env.host = "any_host"
+        env.nodeps = False
         package.rpm_install("test.rpm")
         mock_sudo.assert_called_with("rpm -i "
+                                     "/opt/prestoadmin/packages/test.rpm")
+
+    @patch('prestoadmin.package.sudo')
+    def test_rpm_install_nodeps(self, mock_sudo):
+        env.host = "any_host"
+        env.nodeps = True
+        package.rpm_install("test.rpm")
+        mock_sudo.assert_called_with("rpm -i --nodeps "
                                      "/opt/prestoadmin/packages/test.rpm")
 
     @patch('prestoadmin.package.rpm_install')

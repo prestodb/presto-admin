@@ -314,5 +314,19 @@ class TestMain(utils.BaseTestCase):
                                           "local_path"])
         self.assertEqual(env.warn_only, True)
 
+    def test_nodeps_check(self):
+        env.nodeps = True
+        try:
+            main.main(['topology', 'show', '--nodeps'])
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
+        self.assertTrue('Invalid argument --nodeps to task: topology.show\n'
+                        in self.test_stderr.getvalue())
+        self.assertTrue('Displaying detailed information for task '
+                        '\'topology show\':\n\n    Shows the current topology '
+                        'configuration for the cluster (including the\n    '
+                        'coordinators, workers, SSH port, and SSH username)'
+                        '\n\n' in self.test_stdout.getvalue())
+
 if __name__ == '__main__':
     unittest.main()

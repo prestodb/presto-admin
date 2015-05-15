@@ -40,6 +40,9 @@ def install(local_path):
 
     Parameters:
         local_path - Absolute path to the rpm to be installed
+        --nodeps   - Optional flag to indicate if rpm install
+                     should ignore checking package dependencies. Equivalent to
+                     adding --nodeps flag to rpm -i.
     """
     topology.set_topology_if_missing()
     check_rpm_checksum(local_path)
@@ -75,6 +78,11 @@ def deploy(local_path=None):
 
 def rpm_install(rpm_name):
     _LOGGER.info("Installing the rpm")
-    ret = sudo('rpm -i ' + constants.REMOTE_PACKAGES_PATH + "/" + rpm_name)
+    nodeps = ''
+    if env.nodeps:
+        nodeps = '--nodeps '
+
+    ret = sudo('rpm -i %s%s' %
+               (nodeps, constants.REMOTE_PACKAGES_PATH + "/" + rpm_name))
     if ret.succeeded:
         print("Package installed successfully on: " + env.host)
