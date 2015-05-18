@@ -34,7 +34,6 @@ import prestoadmin
 from tests import utils
 
 LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, "tmp/docker-pa/%s")
-LOCAL_TMP_DIR = os.path.join(prestoadmin.main_dir, "tmp")
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
                                    "tests/product/resources/")
 DOCKER_MOUNT_POINT = "/mnt/presto-admin"
@@ -191,13 +190,13 @@ class BaseProductTestCase(utils.BaseTestCase):
                                + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
 
     def copy_presto_rpm_to_master(self):
-        if not os.path.exists(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM)):
+        if not os.path.exists(PRESTO_RPM):
             urllib.urlretrieve(
                 'https://jenkins-master.td.teradata.com/view/Presto/job/'
                 'presto-td/lastSuccessfulBuild/artifact/presto-server/target'
                 '/rpm/presto/RPMS/x86_64/%s' % PRESTO_RPM,
-                os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
-        self.copy_to_master(os.path.join(LOCAL_TMP_DIR, PRESTO_RPM))
+                PRESTO_RPM)
+        self.copy_to_master(PRESTO_RPM)
         self.check_if_corrupted_rpm()
 
     def server_install(self):

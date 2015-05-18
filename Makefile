@@ -15,13 +15,14 @@ help:
 	@echo "wheel - build wheel only"
 	@echo "install - install the package to the active Python's site-packages"
 
+clean-all: clean clean-rpm
+
 clean: clean-build clean-pyc clean-test
 
 clean-build:
 	rm -fr build/
 	rm -fr dist/
 	rm -fr .eggs/
-	rm -fr tmp/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -type f -exec rm -rf {} +
 	find . -name '*.egg' -type d -exec rm -rf {} +
@@ -36,6 +37,9 @@ clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+
+clean-rpm:
+	rm -fr presto*.rpm
 
 lint:
 	flake8 prestoadmin packaging tests
