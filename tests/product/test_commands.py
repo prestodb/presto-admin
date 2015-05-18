@@ -18,6 +18,7 @@ Product tests for presto-admin commands
 import os
 import re
 from prestoadmin.util import constants
+from tests.product import base_product_case
 from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM
 
 
@@ -186,14 +187,16 @@ task.max-memory=1GB\n"""
         self.install_presto_admin()
         self.upload_topology()
         output = self.run_prestoadmin('configuration show')
-        with open('resources/configuration_show_none.txt', 'r') as f:
+        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+                               'configuration_show_none.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(expected, output)
         self.run_prestoadmin('configuration deploy')
         for container in self.all_hosts():
             self.assert_has_default_config(container)
         output = self.run_prestoadmin('configuration show')
-        with open('resources/configuration_show_default.txt', 'r') as f:
+        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+                               'configuration_show_default.txt'), 'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
 
