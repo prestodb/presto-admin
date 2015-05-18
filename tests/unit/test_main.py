@@ -328,5 +328,11 @@ class TestMain(utils.BaseTestCase):
                         'coordinators, workers, SSH port, and SSH username)'
                         '\n\n' in self.test_stdout.getvalue())
 
+    def test_skip_bad_hosts(self):
+        main.parse_and_validate_commands(['server', 'install',
+                                          "local_path"])
+        self.assertEqual(env.skip_bad_hosts, True)
+
+
 if __name__ == '__main__':
     unittest.main()

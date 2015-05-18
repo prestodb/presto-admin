@@ -49,7 +49,6 @@ Options:
     -s SHELL, --shell=SHELL
                         specify a new shell, defaults to '/bin/bash -l -c'
     --show=LEVELS       comma-separated list of output levels to show
-    --skip-bad-hosts    skip over hosts that can't be reached
     --skip-unknown-tasks
                         skip over unknown tasks
     --ssh-config-path=PATH

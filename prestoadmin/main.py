@@ -81,7 +81,8 @@ _LOGGER = logging.getLogger(__name__)
 
 def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
-    commands_to_remove = ['fabfile', 'parallel', 'rcfile', 'warn_only']
+    commands_to_remove = ['fabfile', 'parallel', 'rcfile', 'skip_bad_hosts',
+                          'warn_only']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
     return new_env_options
@@ -710,6 +711,7 @@ def _update_env(default_options, non_default_options):
 
     state.output['running'] = False
     update_output_levels(show=state.env.show, hide=state.env.hide)
+    state.env.skip_bad_hosts = True
 
 
 def get_default_options(options, non_default_options):
