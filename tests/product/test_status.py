@@ -28,13 +28,64 @@ class TestStatus(BaseProductTestCase):
         self.install_presto_admin()
         self.upload_topology()
         status_output = self.run_prestoadmin('server status')
-        self.check_status_not_installed(status_output, ips)
+        self.check_status(status_output, self.not_installed_status(ips))
         self.server_install()
         status_output = self.run_prestoadmin('server status')
-        self.check_status_not_started(status_output, ips)
+        self.check_status(status_output, self.not_started_status(ips))
         self.run_prestoadmin('server start')
         status_output = self.run_prestoadmin('server status')
-        self.check_status_normal(status_output, ips)
+        self.check_status(status_output, self.base_status(ips))
+
+        self.run_prestoadmin('server stop')
+
+        # Test with worker not started
+        self.run_prestoadmin('server start -H master')
+        status_output = self.run_prestoadmin('server status')
+        self.check_status(status_output,
+                          self.single_node_up_status(ips, self.master))
+
+        # Test with coordinator not started
+        self.run_prestoadmin('server stop')
+        self.run_prestoadmin('server start -H slave1')
+        status_output = self.run_prestoadmin('server status')
+        self.check_status(status_output,
+                          self.single_node_up_status(ips, self.slaves[0]))
+
+        # Check that the slave sees that it's stopped, even though the
+        # discovery server is not up.
+        self.run_prestoadmin('server stop')
+        status_output = self.run_prestoadmin('server status')
+        self.check_status(status_output, self.not_started_status(ips))
+
+    def test_connection_to_coordinator_lost(self):
+        ips = self.get_ip_address_dict()
+        self.install_presto_admin()
+        topology = {"coordinator": "slave1", "workers":
+                    ["master", "slave2", "slave3"]}
+        self.upload_topology(topology=topology)
+        self.server_install()
+        self.run_prestoadmin('server start')
+
+        self.client.stop(self.slaves[0])
+        status_output = self.run_prestoadmin('server status')
+        statuses = self.node_not_available_status(ips, topology,
+                                                  self.slaves[0])
+        self.check_status(status_output, statuses)
+
+    def test_connection_to_worker_lost(self):
+        ips = self.get_ip_address_dict()
+        self.install_presto_admin()
+        topology = {"coordinator": "slave1", "workers":
+                    ["master", "slave2", "slave3"]}
+        self.upload_topology(topology=topology)
+        self.server_install()
+        self.run_prestoadmin('server start')
+        self.client.stop(self.slaves[1])
+        status_output = self.run_prestoadmin('server status')
+        statuses = self.node_not_available_status(ips, topology,
+                                                  self.slaves[1])
+        self.check_status(status_output,
+                          statuses)
 
     def test_status_port_not_8080(self):
         self.install_presto_admin()
@@ -58,26 +109,81 @@ http-server.http.port=8090"""
         cmd_output = self.run_prestoadmin('server status')
 
         ips = self.get_ip_address_dict()
-        self.check_status_normal(cmd_output, ips, 8090)
+        self.check_status(cmd_output, self.base_status(ips), 8090)
 
-    def base_status(self, ips):
+    def base_status(self, ips, topology=None):
+        if not topology:
+            topology = {'coordinator': self.master, 'workers':
+                        [self.slaves[0], self.slaves[1], self.slaves[2]]}
         statuses = []
-        hosts_in_status = [self.master] + self.slaves[:]
+        hosts_in_status = [topology['coordinator']] + topology['workers'][:]
         for host in hosts_in_status:
-            role = 'coordinator' if host is self.master else 'worker'
+            role = 'coordinator' if host is topology['coordinator']\
+                else 'worker'
             status = {'host': host, 'role': role, 'ip': ips[host],
                       'is_running': 'Running'}
             statuses += [status]
         return statuses
 
+    def not_started_status(self, ips):
+        statuses = self.base_status(ips)
+        for status in statuses:
+            status['ip'] = 'Unknown'
+            status['is_running'] = 'Not Running'
+            status['error_message'] = '\tNo information available'
+        return statuses
+
+    def not_installed_status(self, ips):
+        statuses = self.base_status(ips)
+        for status in statuses:
+            status['ip'] = 'Unknown'
+            status['is_running'] = 'Not Running'
+            status['error_message'] = '\tPresto is not installed.'
+        return statuses
+
+    def single_node_up_status(self, ips, node):
+        statuses = self.not_started_status(ips)
+        for status in statuses:
+            if status['host'] is node:
+                status['ip'] = ips[node]
+                status['is_running'] = 'Running'
+                status['error_message'] = ''
+        return statuses
+
+    def node_not_available_status(self, ips, topology, node):
+        statuses = self.base_status(ips, topology)
+        index = -1
+        i = 0
+        for status in statuses:
+            if status['host'] is node:
+                index = i
+                status['no_status'] = True
+                status['is_running'] = 'Not Running'
+                status['error_message'] = '\n\
+Warning: Timed out trying to connect to %s (tried 1 time)\n\
+\n\
+Underlying exception:\n\
+    timed out\n' % node
+            i += 1
+        if index >= 0:
+            temp = statuses[index]
+            statuses.remove(temp)
+            statuses.insert(0, temp)
+
+        return statuses
+
     def check_status(self, cmd_output, statuses, port=8080):
         expected_output = []
+        num_bad_hosts = 0
         for status in statuses:
-            expected_output += \
-                ['Server Status:',
-                 '\t%s(IP: %s roles: %s): %s' %
-                 (status['host'], status['ip'], status['role'],
-                  status['is_running'])]
+            if 'no_status' not in status:
+                expected_output += \
+                    ['Server Status:',
+                     '\t%s(IP: %s roles: %s): %s' %
+                     (status['host'], status['ip'], status['role'],
+                      status['is_running'])]
+            else:
+                num_bad_hosts += 1
             if status['is_running'] is 'Running':
                 expected_output += \
                     ['\tNode URI(http): http://%s:%s' % (status['ip'],
@@ -89,26 +195,5 @@ http-server.http.port=8090"""
                 expected_output += [status['error_message']]
 
         # remove the last 4 lines: "Disconnecting from slave3... Done"
-        actual = cmd_output.splitlines()[:-4]
-        self.assertEqual(expected_output, actual)
-
-    def check_status_normal(self, cmd_output, ips, port=8080):
-        self.check_status(cmd_output, self.base_status(ips), port)
-
-    def check_status_not_started(self, cmd_output, ips, port=8080):
-        statuses = self.base_status(ips)
-        for status in statuses:
-            status['ip'] = 'Unknown'
-            status['is_running'] = 'Not Running'
-            status['error_message'] = '\tNo information available'
-
-        self.check_status(cmd_output, statuses, port)
-
-    def check_status_not_installed(self, cmd_output, ips, port=8080):
-        statuses = self.base_status(ips)
-        for status in statuses:
-            status['ip'] = 'Unknown'
-            status['is_running'] = 'Not Running'
-            status['error_message'] = '\tPresto is not installed.'
-
-        self.check_status(cmd_output, statuses, port)
+        actual = cmd_output.splitlines()[:(num_bad_hosts - 4)]
+        self.assertEqual('\n'.join(expected_output), '\n'.join(actual))
