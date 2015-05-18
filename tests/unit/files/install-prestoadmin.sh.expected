@@ -6,7 +6,19 @@ tar xvzf third-party/virtualenv-12.0.7.tar.gz -C third-party || true
 python third-party/virtualenv-12.0.7/virtualenv.py presto-admin-install
 
 source presto-admin-install/bin/activate
-pip install wheel_name.whl
+
+cert_file=$1
+# trust pypi.python.org by default, otherwise use cert_file provided
+cert_options='--trusted-host pypi.python.org'
+if [ -n "$1" ]; then
+    if [ ! -f  $cert_file ]; then
+        echo "Adding pypi.python.org as trusted-host. Cannot find certificate file: "$cert_file
+    else
+        cert_options='--cert '$cert_file
+    fi
+fi
+
+pip install $cert_options wheel_name.whl
 deactivate
 
 cat > `pwd`/presto-admin << EOT
