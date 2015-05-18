@@ -15,11 +15,38 @@
 """
 Product tests for presto-admin commands
 """
+import os
 import re
+from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM
 
 
 class TestCommands(BaseProductTestCase):
+    default_workers_config_ = """coordinator=false
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB\n"""
+    default_node_properties_ = """node.data-dir=/var/lib/presto/data
+node.environment=presto
+plugin.config-dir=/etc/presto/catalog
+plugin.dir=/usr/lib/presto/lib/plugin\n"""
+
+    default_jvm_config_ = """-server
+-Xmx1G
+-XX:+UseConcMarkSweepGC
+-XX:+ExplicitGCInvokesConcurrent
+-XX:+CMSClassUnloadingEnabled
+-XX:+AggressiveOpts
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:OnOutOfMemoryError=kill -9 %p
+-XX:ReservedCodeCacheSize=150M\n"""
+
+    default_coordinator_config_ = """coordinator=true
+discovery-server.enabled=true
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB\n"""
+
     def test_topology_show(self):
         self.install_presto_admin()
         self.upload_topology()
@@ -155,6 +182,53 @@ class TestCommands(BaseProductTestCase):
         for container in self.all_hosts():
             self.assert_installed(container)
 
+    def test_configuration_deploy(self):
+        self.install_presto_admin()
+        self.upload_topology()
+        self.run_prestoadmin('configuration deploy')
+        for container in self.all_hosts():
+            self.assert_has_default_config(container)
+
+        filename = 'config.properties'
+        path = os.path.join(constants.COORDINATOR_DIR, filename)
+        dummy_property = 'a.dummy.property=\'single-quoted\''
+        self.write_content_to_master(dummy_property,
+                                     path)
+
+        path = os.path.join(constants.WORKERS_DIR, filename)
+        self.write_content_to_master(dummy_property, path)
+
+        self.run_prestoadmin('configuration deploy coordinator')
+        for container in self.slaves:
+            self.assert_has_default_config(container)
+
+        self.assert_file_content(self.master,
+                                 os.path.join(constants.REMOTE_CONF_DIR,
+                                              'config.properties'),
+                                 dummy_property + '\n' +
+                                 self.default_coordinator_config_)
+
+        filename = 'node.properties'
+        path = os.path.join(constants.WORKERS_DIR, filename)
+        self.write_content_to_master('node.environment=test', path)
+        path = os.path.join(constants.COORDINATOR_DIR, filename)
+        self.write_content_to_master('node.environment=test', path)
+
+        self.run_prestoadmin('configuration deploy workers')
+        for container in self.slaves:
+            self.assert_file_content(container,
+                                     os.path.join(constants.REMOTE_CONF_DIR,
+                                                  'config.properties'),
+                                     dummy_property + '\n' +
+                                     self.default_workers_config_)
+            expected = """node.data-dir=/var/lib/presto/data
+node.environment=test
+plugin.config-dir=/etc/presto/catalog
+plugin.dir=/usr/lib/presto/lib/plugin\n"""
+            self.assert_node_config(container, expected)
+
+        self.assert_node_config(self.master, self.default_node_properties_)
+
     def get_process_per_host(self, output_lines):
         process_per_host = []
         for line in output_lines:
@@ -227,42 +301,26 @@ class TestCommands(BaseProductTestCase):
     def assert_has_default_config(self, container):
         self.assert_file_content(container,
                                  '/etc/presto/jvm.config',
-                                 """-server
--Xmx1G
--XX:+UseConcMarkSweepGC
--XX:+ExplicitGCInvokesConcurrent
--XX:+CMSClassUnloadingEnabled
--XX:+AggressiveOpts
--XX:+HeapDumpOnOutOfMemoryError
--XX:OnOutOfMemoryError=kill -9 %p
--XX:ReservedCodeCacheSize=150M\n""")
+                                 self.default_jvm_config_)
 
-        node_properties = self.exec_create_start(
-            container, 'cat /etc/presto/node.properties')
-        split_properties = node_properties.split('\n', 1)
-        self.assertRegexpMatches(split_properties[0], 'node.id=.*')
-        self.assertEqual(split_properties[1],
-                         """node.data-dir=/var/lib/presto/data
-node.environment=presto
-plugin.config-dir=/etc/presto/catalog
-plugin.dir=/usr/lib/presto/lib/plugin\n""")
+        self.assert_node_config(container, self.default_node_properties_)
 
         if container in self.slaves:
             self.assert_file_content(container,
                                      '/etc/presto/config.properties',
-                                     """coordinator=false
-discovery.uri=http://master:8080
-http-server.http.port=8080
-task.max-memory=1GB\n""")
+                                     self.default_workers_config_)
 
         else:
             self.assert_file_content(container,
                                      '/etc/presto/config.properties',
-                                     """coordinator=true
-discovery-server.enabled=true
-discovery.uri=http://master:8080
-http-server.http.port=8080
-task.max-memory=1GB\n""")
+                                     self.default_coordinator_config_)
+
+    def assert_node_config(self, container, expected):
+        node_properties = self.exec_create_start(
+            container, 'cat /etc/presto/node.properties')
+        split_properties = node_properties.split('\n', 1)
+        self.assertRegexpMatches(split_properties[0], 'node.id=.*')
+        self.assertEqual(expected, split_properties[1])
 
     def assert_has_default_connector(self, container):
         self.assert_file_content(container,

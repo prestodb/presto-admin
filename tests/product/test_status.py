@@ -17,8 +17,7 @@ Product tests for presto-admin status commands
 """
 import os
 
-from tests.product.base_product_case import BaseProductTestCase, \
-    DOCKER_MOUNT_POINT, LOCAL_MOUNT_POINT, PRESTO_VERSION
+from tests.product.base_product_case import BaseProductTestCase, PRESTO_VERSION
 from prestoadmin.util.constants import COORDINATOR_DIR, WORKERS_DIR
 
 
@@ -46,25 +45,13 @@ http-server.http.port=8090"""
 
         # write to master
         config_filename = 'config.properties'
-        config_local_path = os.path.join(LOCAL_MOUNT_POINT % self.master,
-                                         config_filename)
-        with open(config_local_path, 'w') as config_file:
-            config_file.write(port_config)
+        self.write_content_to_master(port_config,
+                                     os.path.join(COORDINATOR_DIR,
+                                                  config_filename))
 
-        # copy new config to correct location
-        self.exec_create_start(self.master, 'mkdir -p ' + COORDINATOR_DIR)
-        self.exec_create_start(
-            self.master,
-            'cp ' + os.path.join(DOCKER_MOUNT_POINT, config_filename) + ' ' +
-            COORDINATOR_DIR
-        )
-
-        self.exec_create_start(self.master, 'mkdir -p ' + WORKERS_DIR)
-        self.exec_create_start(
-            self.master,
-            'cp ' + os.path.join(DOCKER_MOUNT_POINT, config_filename) + ' ' +
-            WORKERS_DIR
-        )
+        self.write_content_to_master(port_config,
+                                     os.path.join(WORKERS_DIR,
+                                                  config_filename))
 
         self.server_install()
         self.run_prestoadmin('server start')

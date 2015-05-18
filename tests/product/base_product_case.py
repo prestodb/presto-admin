@@ -219,3 +219,17 @@ class BaseProductTestCase(utils.BaseTestCase):
             inspect = self.client.inspect_container(host)
             ip_addresses[host] = inspect['NetworkSettings']['IPAddress']
         return ip_addresses
+
+    def write_content_to_master(self, content, path):
+        # write to master
+        filename = os.path.basename(path)
+        dest_dir = os.path.dirname(path)
+        local_path = os.path.join(LOCAL_MOUNT_POINT % self.master,
+                                  filename)
+
+        with open(local_path, 'w') as config_file:
+            config_file.write(content)
+
+        self.exec_create_start(self.master, 'mkdir -p ' + dest_dir)
+        self.exec_create_start(self.master, 'cp %s %s' % (
+            os.path.join(DOCKER_MOUNT_POINT, filename), dest_dir))
