@@ -49,7 +49,7 @@ class TestConfigureCmds(utils.BaseTestCase):
         mock_show.assert_any_call("node.properties")
         mock_show.assert_any_call("jvm.config")
         mock_show.assert_any_call("config.properties")
-        mock_show.assert_any_call("log.properties")
+        mock_show.assert_any_call("log.properties", should_warn=False)
 
     @patch('prestoadmin.configure_cmds.abort')
     @patch('prestoadmin.configure_cmds.warn')
@@ -65,6 +65,14 @@ class TestConfigureCmds(utils.BaseTestCase):
         configure_cmds.show("invalid_config")
         mock_abort.assert_called_with("Invalid Argument. Possible values: "
                                       "node, jvm, config, log")
+
+    @patch('prestoadmin.configure_cmds.warn')
+    @patch('prestoadmin.configure_cmds.files.exists')
+    def test_config_show_fail_no_warn(self, mock_file_exists, mock_warn):
+        mock_file_exists.return_value = False
+        env.host = "any_host"
+        configure_cmds.configuration_show("any_path", should_warn=False)
+        self.assertFalse(mock_warn.called)
 
     @patch('prestoadmin.configure_cmds.abort')
     @patch('prestoadmin.configure.workers')

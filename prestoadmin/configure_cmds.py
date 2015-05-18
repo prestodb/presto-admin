@@ -69,11 +69,12 @@ def deploy(rolename=None):
             abort("Invalid Argument. Possible values: coordinator, workers")
 
 
-def configuration_show(file_name):
+def configuration_show(file_name, should_warn=True):
     file_path = os.path.join(constants.REMOTE_CONF_DIR, file_name)
     if not files.exists(file_path):
-        warn("No configuration file found for %s at %s"
-             % (env.host, file_path))
+        if should_warn:
+            warn("No configuration file found for %s at %s"
+                 % (env.host, file_path))
     else:
         file_content_buffer = StringIO()
         get(file_path, file_content_buffer)
@@ -89,10 +90,9 @@ def show(config_type=None):
     """
     Print to the user the contents of the configuration deployed
 
-    Possible arguments are node,jvm,config or log.
-
     If no config_type is specified, then all four configurations will be
-    printed
+    printed.  No warning will be printed for a missing log.properties since
+    it is not a required configuration file.
 
     Parameters:
         config_type: [node|jvm|config|log]
@@ -102,7 +102,7 @@ def show(config_type=None):
         configuration_show(NODE_PROPERTIES)
         configuration_show(JVM_CONFIG)
         configuration_show(CONFIG_PROPERTIES)
-        configuration_show(LOG_PROPERTIES)
+        configuration_show(LOG_PROPERTIES, should_warn=False)
     else:
         if config_type.lower() == 'node':
             file_name = NODE_PROPERTIES

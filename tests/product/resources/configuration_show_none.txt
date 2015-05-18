@@ -1,0 +1,40 @@
+
+Warning: [master] No configuration file found for master at /etc/presto/node.properties
+
+
+Warning: [master] No configuration file found for master at /etc/presto/jvm.config
+
+
+Warning: [master] No configuration file found for master at /etc/presto/config.properties
+
+
+Warning: [slave1] No configuration file found for slave1 at /etc/presto/node.properties
+
+
+Warning: [slave1] No configuration file found for slave1 at /etc/presto/jvm.config
+
+
+Warning: [slave1] No configuration file found for slave1 at /etc/presto/config.properties
+
+
+Warning: [slave2] No configuration file found for slave2 at /etc/presto/node.properties
+
+
+Warning: [slave2] No configuration file found for slave2 at /etc/presto/jvm.config
+
+
+Warning: [slave2] No configuration file found for slave2 at /etc/presto/config.properties
+
+
+Warning: [slave3] No configuration file found for slave3 at /etc/presto/node.properties
+
+
+Warning: [slave3] No configuration file found for slave3 at /etc/presto/jvm.config
+
+
+Warning: [slave3] No configuration file found for slave3 at /etc/presto/config.properties
+
+Disconnecting from slave3... done.
+Disconnecting from slave1... done.
+Disconnecting from master... done.
+Disconnecting from slave2... done.

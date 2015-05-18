@@ -185,9 +185,17 @@ task.max-memory=1GB\n"""
     def test_configuration_deploy(self):
         self.install_presto_admin()
         self.upload_topology()
+        output = self.run_prestoadmin('configuration show')
+        with open('resources/configuration_show_none.txt', 'r') as f:
+            expected = f.read()
+        self.assertEqual(expected, output)
         self.run_prestoadmin('configuration deploy')
         for container in self.all_hosts():
             self.assert_has_default_config(container)
+        output = self.run_prestoadmin('configuration show')
+        with open('resources/configuration_show_default.txt', 'r') as f:
+            expected = f.read()
+        self.assertRegexpMatches(output, expected)
 
         filename = 'config.properties'
         path = os.path.join(constants.COORDINATOR_DIR, filename)
