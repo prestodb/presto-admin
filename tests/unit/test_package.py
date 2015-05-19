@@ -36,7 +36,7 @@ class TestPackage(utils.BaseTestCase):
 
     @patch('prestoadmin.package.rpm_install')
     @patch('prestoadmin.package.deploy')
-    @patch('prestoadmin.package.check_rpm_checksum')
+    @patch('prestoadmin.package.check_if_valid_rpm')
     def test_install(self, mock_chksum, mock_deploy, mock_install):
         env.host = "any_host"
         self.remove_runs_once_flag(package.install)
@@ -49,12 +49,26 @@ class TestPackage(utils.BaseTestCase):
     @patch('prestoadmin.package.abort')
     def test_check_rpm_checksum(self, mock_abort, mock_local):
         mock_local.return_value = lambda: None
-        setattr(mock_local.return_value, 'return_code', 1)
-        package.check_rpm_checksum("/any/path/rpm")
+        setattr(mock_local.return_value, 'stderr', '')
+        setattr(mock_local.return_value, 'stdout', 'sha1 MD5 NOT OK')
+        package.check_if_valid_rpm("/any/path/rpm")
 
-        mock_local.assert_called_with("rpm -K --nosignature /any/path/rpm")
+        mock_local.assert_called_with("rpm -K --nosignature /any/path/rpm",
+                                      capture=True)
         mock_abort.assert_called_with("Corrupted RPM. "
                                       "Try downloading the RPM again.")
+
+    @patch('prestoadmin.package.local')
+    @patch('prestoadmin.package.abort')
+    def test_check_rpm_checksum_err(self, mock_abort, mock_local):
+        mock_local.return_value = lambda: None
+        setattr(mock_local.return_value, 'stderr', 'Not an rpm package')
+        setattr(mock_local.return_value, 'stdout', '')
+        package.check_if_valid_rpm("/any/path/rpm")
+
+        mock_local.assert_called_with("rpm -K --nosignature /any/path/rpm",
+                                      capture=True)
+        mock_abort.assert_called_with('Not an rpm package')
 
     @patch('prestoadmin.package.sudo')
     @patch('prestoadmin.package.put')

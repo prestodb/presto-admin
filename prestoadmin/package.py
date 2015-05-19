@@ -34,7 +34,7 @@ __all__ = ['install']
 
 @task
 @runs_once
-def install(local_path):
+def install(local_path=None):
     """
     Install the rpm package on the cluster
 
@@ -44,19 +44,25 @@ def install(local_path):
                      should ignore checking package dependencies. Equivalent to
                      adding --nodeps flag to rpm -i.
     """
+    if local_path is None:
+        abort('Missing argument local_path: Absolute path to '
+              'the rpm to be installed')
+
     topology.set_topology_if_missing()
-    check_rpm_checksum(local_path)
+    check_if_valid_rpm(local_path)
     print("Deploying rpm...")
     execute_fail_on_error(deploy_install, local_path,
                           hosts=get_host_list())
 
 
-def check_rpm_checksum(local_path):
+def check_if_valid_rpm(local_path):
     _LOGGER.info("Checking rpm checksum to see if it is corrupted")
     with settings(hide('warnings', 'stdout'), warn_only=True):
-        result = local('rpm -K --nosignature ' + local_path)
-    if result.return_code:
+        result = local('rpm -K --nosignature ' + local_path, capture=True)
+    if 'MD5 NOT OK' in result.stdout:
         abort("Corrupted RPM. Try downloading the RPM again.")
+    elif result.stderr:
+        abort(result.stderr)
 
 
 def deploy_install(local_path):
