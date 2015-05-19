@@ -54,6 +54,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
         self.assertEquals(bdist.dist_dir, None)
         self.assertEquals(bdist.virtualenv_version, None)
         self.assertEquals(bdist.keep_temp, False)
+        self.assertEquals(bdist.online_install, False)
 
     def test_finalize(self):
         self.assertEquals(self.bdist.bdist_dir,
@@ -134,8 +135,16 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
             os.path.join(thirdparty_dir, pycrypto_whl.format('cp27'))
         )
 
-    def test_generate_install_script(self):
+    def test_generate_online_install_script(self):
+        self.generate_script('install-prestoadmin.sh.online.expected', True)
+
+    def test_generate_offline_install_script(self):
+        self.generate_script('install-prestoadmin.sh.offline.expected', False)
+
+    def generate_script(self, expected_file, is_online):
         try:
+            self.bdist.online_install = is_online
+
             os.chdir(packaging_dir)
             os.mkdir('build')
 
@@ -146,7 +155,7 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
             file_dir = os.path.abspath(os.path.dirname(__file__))
             template = os.path.join(file_dir,
                                     'files',
-                                    'install-prestoadmin.sh.expected')
+                                    expected_file)
             expected_install_script = open(template).read()
 
             self.assertEqual(expected_install_script, actual_install_script)
@@ -204,6 +213,11 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
                      'version of virtualenv to download'),
                     ('keep-temp', 'k',
                      'keep the pseudo-installation tree around after ' +
-                     'creating the distribution archive')]
+                     'creating the distribution archive'),
+                    ('online-install', None, 'boolean flag indicating if ' +
+                     'the installation should pull dependencies from the ' +
+                     'Internet or use the ones supplied in the third party ' +
+                     'directory')
+                    ]
 
         self.assertEquals(expected, self.bdist.user_options)

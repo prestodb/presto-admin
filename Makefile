@@ -81,6 +81,10 @@ dist: clean
 	python setup.py bdist_prestoadmin
 	ls -l dist
 
+dist-online: clean
+	python setup.py bdist_prestoadmin --online-install
+	ls -l dist
+
 wheel: clean
 	python setup.py bdist_wheel
 	ls -l dist

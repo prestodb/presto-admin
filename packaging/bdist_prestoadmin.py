@@ -37,14 +37,18 @@ class bdist_prestoadmin(Command):
     description = 'create a distribution for prestoadmin'
 
     user_options = [('bdist-dir=', 'b',
-                     "temporary directory for creating the distribution"),
+                     'temporary directory for creating the distribution'),
                     ('dist-dir=', 'd',
-                     "directory to put final built distributions in"),
+                     'directory to put final built distributions in'),
                     ('virtualenv-version=', None,
-                     "version of virtualenv to download"),
+                     'version of virtualenv to download'),
                     ('keep-temp', 'k',
-                     "keep the pseudo-installation tree around after " +
-                     "creating the distribution archive")
+                     'keep the pseudo-installation tree around after ' +
+                     'creating the distribution archive'),
+                    ('online-install', None, 'boolean flag indicating if ' +
+                     'the installation should pull dependencies from the ' +
+                     'Internet or use the ones supplied in the third party ' +
+                     'directory')
                     ]
 
     default_virtualenv_version = '12.0.7'
@@ -63,7 +67,14 @@ class bdist_prestoadmin(Command):
                                      'install-prestoadmin.template'), 'r')
         install_script = open(os.path.join(build_dir,
                               'install-prestoadmin.sh'), 'w')
+        if self.online_install:
+            extra_install_args = ''
+        else:
+            extra_install_args = '--no-index --find-links third-party'
+
         for line in template.readlines():
+            line = re.sub(r'%ONLINE_OR_OFFLINE_INSTALL%',
+                          extra_install_args, line)
             line = re.sub(r'%WHEEL_NAME%', wheel_name, line)
             line = re.sub(r'%VIRTUALENV_VERSION%', self.virtualenv_version,
                           line)
@@ -92,8 +103,7 @@ class bdist_prestoadmin(Command):
         # compile against both interpreters simultaneously or somehow compile
         # first against 2.6 and then against 2.7 serially). To solve this we
         # pre-compiled both and uploaded to the internal PyPI. During the build
-        # we still compile pycrypto against whatever interpreter is there and
-        # we fetch the other pre-compiled wheel from PyPI.
+        # we download wheels for both interpreters compiled on Centos 6.6.
         pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
         pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' +\
                             pycrypto_whl
@@ -140,6 +150,7 @@ class bdist_prestoadmin(Command):
         self.virtualenv_url_base = None
         self.virtualenv_version = None
         self.keep_temp = False
+        self.online_install = False
 
     def finalize_options(self):
         if self.bdist_dir is None:

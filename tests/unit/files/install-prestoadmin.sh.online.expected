@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-tar xvzf third-party/virtualenv-%VIRTUALENV_VERSION%.tar.gz -C third-party || true
+tar xvzf third-party/virtualenv-12.0.7.tar.gz -C third-party || true
 
-python third-party/virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
+python third-party/virtualenv-12.0.7/virtualenv.py presto-admin-install
 
 source presto-admin-install/bin/activate
 cert_file=$1
@@ -17,7 +17,7 @@ if [ -n "$1" ]; then
     fi
 fi
 
-pip install $cert_options %WHEEL_NAME%.whl %ONLINE_OR_OFFLINE_INSTALL%
+pip install $cert_options wheel_name.whl 
 deactivate
 
 cat > `pwd`/presto-admin << EOT
