@@ -96,9 +96,8 @@ class TestConfigure(utils.BaseTestCase):
     @patch('prestoadmin.configure.deploy_node_properties')
     def test_configure_presto(self, deploy_node_mock, deploy_mock):
         conf = {"node.properties": {"key": "value"}, "jvm.config": ["list"]}
-        local_dir = "/my/local/dir"
         remote_dir = "/my/remote/dir"
-        configure.configure_presto(conf, local_dir, remote_dir)
+        configure.configure_presto(conf, remote_dir)
         deploy_mock.assert_called_with({"jvm.config": "list"}, remote_dir)
 
     def test_escape_quotes_do_nothing(self):

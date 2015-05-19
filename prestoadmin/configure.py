@@ -38,8 +38,7 @@ def coordinator():
     """
     if env.host in util.get_coordinator_role():
         _LOGGER.info("Setting coordinator configuration for " + env.host)
-        configure_presto(coord.get_conf(), constants.TMP_COORDINATOR_DIR,
-                         constants.REMOTE_CONF_DIR)
+        configure_presto(coord.get_conf(), constants.REMOTE_CONF_DIR)
 
 
 def workers():
@@ -50,11 +49,10 @@ def workers():
     if env.host in util.get_worker_role() and env.host \
             not in util.get_coordinator_role():
         _LOGGER.info("Setting worker configuration for " + env.host)
-        configure_presto(w.get_conf(), constants.TMP_WORKERS_DIR,
-                         constants.REMOTE_CONF_DIR)
+        configure_presto(w.get_conf(), constants.REMOTE_CONF_DIR)
 
 
-def configure_presto(conf, local_dir, remote_dir):
+def configure_presto(conf, remote_dir):
     deploy(dict((name, output_format(content)) for (name, content)
                 in conf.iteritems() if name != "node.properties"), remote_dir)
     deploy_node_properties(output_format(conf['node.properties']), remote_dir)

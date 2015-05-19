@@ -18,7 +18,6 @@ the presto admin project.
 """
 
 import os
-import tempfile
 
 import prestoadmin
 
@@ -37,9 +36,6 @@ CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, "config.json")
 COORDINATOR_DIR = os.path.join(LOCAL_CONF_DIR, "coordinator")
 WORKERS_DIR = os.path.join(LOCAL_CONF_DIR, "workers")
 CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, "connectors")
-TMP_CONF_DIR = os.path.join(tempfile.gettempdir(), "prestoadmin")
-TMP_WORKERS_DIR = os.path.join(TMP_CONF_DIR, "workers")
-TMP_COORDINATOR_DIR = os.path.join(TMP_CONF_DIR, "coordinator")
 
 # remote configuration
 REMOTE_CONF_DIR = "/etc/presto"
