@@ -233,3 +233,15 @@ class BaseProductTestCase(utils.BaseTestCase):
         self.exec_create_start(self.master, 'mkdir -p ' + dest_dir)
         self.exec_create_start(self.master, 'cp %s %s' % (
             os.path.join(DOCKER_MOUNT_POINT, filename), dest_dir))
+
+    def assert_file_content(self, host, filepath, expected):
+        config = self.exec_create_start(host, 'cat %s' % filepath)
+        self.assertEqual(config, expected)
+
+    def assert_has_default_connector(self, container):
+        self.assert_file_content(container,
+                                 '/etc/presto/catalog/tpch.properties',
+                                 'connector.name=tpch')
+
+    def assert_path_removed(self, container, directory):
+        self.exec_create_start(container, ' [ ! -e %s ]' % directory)

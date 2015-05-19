@@ -295,10 +295,6 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
                                     self.exec_create_start,
                                     host, 'kill -0 %s' % pid)
 
-    def assert_file_content(self, host, filepath, expected):
-        config = self.exec_create_start(host, 'cat %s' % filepath)
-        self.assertEqual(config, expected)
-
     def assert_installed(self, container):
         check_rpm = self.exec_create_start(container,
                                            'rpm -q presto')
@@ -332,11 +328,3 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         split_properties = node_properties.split('\n', 1)
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
         self.assertEqual(expected, split_properties[1])
-
-    def assert_has_default_connector(self, container):
-        self.assert_file_content(container,
-                                 '/etc/presto/catalog/tpch.properties',
-                                 'connector.name=tpch')
-
-    def assert_path_removed(self, container, directory):
-        self.exec_create_start(container, ' [ ! -e %s ]' % directory)
