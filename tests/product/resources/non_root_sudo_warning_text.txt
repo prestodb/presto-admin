@@ -1,0 +1,40 @@
+[master] out: 
+[master] out: 
+[master] out: 
+[master] out: 
+[master] out:     #1) Respect the privacy of others.
+[master] out:     #2) Think before you type.
+[master] out:     #3) With great power comes great responsibility.
+[master] out: Administrator. It usually boils down to these three things:
+[master] out: We trust you have received the usual lecture from the local System
+[master] out: sudo password:
+[slave1] out: 
+[slave1] out: 
+[slave1] out: 
+[slave1] out: 
+[slave1] out:     #1) Respect the privacy of others.
+[slave1] out:     #2) Think before you type.
+[slave1] out:     #3) With great power comes great responsibility.
+[slave1] out: Administrator. It usually boils down to these three things:
+[slave1] out: We trust you have received the usual lecture from the local System
+[slave1] out: sudo password:
+[slave2] out: 
+[slave2] out: 
+[slave2] out: 
+[slave2] out: 
+[slave2] out:     #1) Respect the privacy of others.
+[slave2] out:     #2) Think before you type.
+[slave2] out:     #3) With great power comes great responsibility.
+[slave2] out: Administrator. It usually boils down to these three things:
+[slave2] out: We trust you have received the usual lecture from the local System
+[slave2] out: sudo password:
+[slave3] out: 
+[slave3] out: 
+[slave3] out: 
+[slave3] out: 
+[slave3] out:     #1) Respect the privacy of others.
+[slave3] out:     #2) Think before you type.
+[slave3] out:     #3) With great power comes great responsibility.
+[slave3] out: Administrator. It usually boils down to these three things:
+[slave3] out: We trust you have received the usual lecture from the local System
+[slave3] out: sudo password:

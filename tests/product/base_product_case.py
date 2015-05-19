@@ -165,11 +165,11 @@ class BaseProductTestCase(utils.BaseTestCase):
         self.exec_create_start(self.master,
                                DOCKER_MOUNT_POINT + "/install-admin.sh")
 
-    def exec_create_start(self, host, command):
+    def exec_create_start(self, host, command, raise_error=True):
         ex = self.client.exec_create(host, command)
         output = self.client.exec_start(ex['Id'])
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
-        if exit_code:
+        if raise_error and exit_code:
             raise OSError(output)
 
         return output
@@ -205,10 +205,17 @@ class BaseProductTestCase(utils.BaseTestCase):
             'server install ' + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
         return cmd_output
 
-    def run_prestoadmin(self, command):
+    def run_prestoadmin(self, command, raise_error=True):
         return self.exec_create_start(self.master,
                                       "/opt/prestoadmin/presto-admin %s"
-                                      % command)
+                                      % command, raise_error=raise_error)
+
+    def run_prestoadmin_script(self, script_contents):
+        temp_script = '/opt/prestoadmin/tmp.sh'
+        self.write_content_to_master('#!/bin/bash\ncd /opt/prestoadmin\n%s'
+                                     % script_contents, temp_script)
+        self.exec_create_start(self.master, 'chmod +x %s' % temp_script)
+        return self.exec_create_start(self.master, temp_script)
 
     def all_hosts(self):
         return self.slaves[:] + [self.master]

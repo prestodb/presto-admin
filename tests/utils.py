@@ -70,6 +70,9 @@ class BaseTestCase(unittest.TestCase):
         if hasattr(callable_obj, 'return_value'):
             delattr(callable_obj.wrapped, 'return_value')
 
+    def assertEqualIgnoringOrder(self, one, two):
+        self.assertEqual(sorted(one.splitlines()), sorted(two.splitlines()))
+
     def tearDown(self):
         self.restore_stdout_stderr()
         env.clear()
