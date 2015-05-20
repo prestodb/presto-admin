@@ -174,15 +174,6 @@ task.max-memory=1GB\n"""
         process_per_host = self.get_process_per_host(restart_output)
         self.assert_started(process_per_host)
 
-    def test_package_install(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.copy_presto_rpm_to_master()
-        self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s' % PRESTO_RPM)
-        for container in self.all_hosts():
-            self.assert_installed(container)
-
     def test_configuration_deploy(self):
         self.install_presto_admin()
         self.upload_topology()
