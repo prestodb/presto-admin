@@ -14,17 +14,17 @@ class TestConnectors(BaseProductTestCase):
         self.upload_topology()
         self.server_install()
         self.run_prestoadmin('server start')
-        connectors = self.get_connector_info()
-        self.assertEqual(connectors, [['system'], ['tpch']])
         for host in self.all_hosts():
             self.assert_has_default_connector(host)
+        connectors = self.get_connector_info()
+        self.assertEqual(connectors, [['system'], ['tpch']])
 
         self.run_prestoadmin('connector remove tpch')
         self.run_prestoadmin('server restart')
-        self.assertEqual(self.get_connector_info(), [['system']])
         self.assert_path_removed(self.master,
                                  os.path.join(constants.CONNECTORS_DIR,
                                               'tpch.properties'))
+        self.assertEqual(self.get_connector_info(), [['system']])
         for host in self.all_hosts():
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
@@ -35,9 +35,9 @@ class TestConnectors(BaseProductTestCase):
                                                   'tpch.properties'))
         self.run_prestoadmin('connector add')
         self.run_prestoadmin('server restart')
-        self.assertEqual([['system'], ['tpch']], self.get_connector_info())
         for host in self.all_hosts():
             self.assert_has_default_connector(host)
+        self.assertEqual([['system'], ['tpch']], self.get_connector_info())
 
     def get_connector_info(self):
         output = self.exec_create_start(
