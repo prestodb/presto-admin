@@ -71,7 +71,8 @@ class BaseTestCase(unittest.TestCase):
             delattr(callable_obj.wrapped, 'return_value')
 
     def assertEqualIgnoringOrder(self, one, two):
-        self.assertEqual(sorted(one.splitlines()), sorted(two.splitlines()))
+        self.assertEqual([line.rstrip() for line in sorted(one.splitlines())],
+                         [line.rstrip() for line in sorted(two.splitlines())])
 
     def tearDown(self):
         self.restore_stdout_stderr()

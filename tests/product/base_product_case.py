@@ -252,3 +252,48 @@ class BaseProductTestCase(utils.BaseTestCase):
 
     def assert_path_removed(self, container, directory):
         self.exec_create_start(container, ' [ ! -e %s ]' % directory)
+
+    def assert_parallel_execution_failure(self, task, underlying_exception,
+                                          cmd_output):
+        expected_parallel_exception = "!!! Parallel execution exception " \
+                                      "under host u'%s'"
+        expected_stacktrace = 'Process %s:'
+
+        for host in self.all_hosts():
+            self.assertTrue(expected_parallel_exception % host in cmd_output,
+                            "expected: %s\n output: %s\n"
+                            % (expected_parallel_exception % host, cmd_output))
+            self.assertTrue(expected_stacktrace % host in cmd_output,
+                            "expected: %s\n output: %s\n"
+                            % (expected_stacktrace % host, cmd_output))
+
+        warning = """Warning: One or more hosts failed while executing task \
+'%(task)s'
+
+Underlying exception:
+    %(exception)s
+
+
+Warning: One or more hosts failed while executing task '%(task)s'
+
+Underlying exception:
+    %(exception)s
+
+
+Warning: One or more hosts failed while executing task '%(task)s'
+
+Underlying exception:
+    %(exception)s
+
+
+Warning: One or more hosts failed while executing task '%(task)s'
+
+Underlying exception:
+    %(exception)s"""
+
+        expected_warning = warning % {'exception': underlying_exception,
+                                      'task': task}
+
+        self.assertTrue(expected_warning in cmd_output,
+                        "expected: %s\n output: %s\n"
+                        % (expected_warning, cmd_output))

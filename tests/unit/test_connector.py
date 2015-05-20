@@ -68,11 +68,14 @@ class TestConnector(utils.BaseTestCase):
     @patch('prestoadmin.connector.os.path.exists')
     @patch('prestoadmin.connector.os.remove')
     def test_remove(self, local_rm_mock, exists_mock, sudo_mock):
+        script = ('if [ -f /etc/presto/catalog/tpch.properties ] ; '
+                  'then rm /etc/presto/catalog/tpch.properties ; '
+                  'else echo "Could not remove connector \'tpch\'. '
+                  'No such file \'/etc/presto/catalog/tpch.properties\'"; fi')
         exists_mock.return_value = True
         fabric.api.env.host = 'localhost'
         connector.remove('tpch')
-        sudo_mock.assert_called_with('rm ' + constants.REMOTE_CATALOG_DIR +
-                                     '/tpch.properties')
+        sudo_mock.assert_called_with(script)
         local_rm_mock.assert_called_with(constants.CONNECTORS_DIR +
                                          '/tpch.properties')
 
@@ -85,18 +88,60 @@ class TestConnector(utils.BaseTestCase):
         out.succeeded = False
         sudo_mock.return_value = out
         connector.remove('tpch')
-        self.assertEqual('Failed to remove connector tpch.\n',
-                         self.test_stdout.getvalue())
+        self.assertEqual('\nWarning: [localhost] Failed to remove connector '
+                         'tpch.\n\t\n\n',
+                         self.test_stderr.getvalue())
 
-    @patch('prestoadmin.connector.deploy_files')
+    @patch('prestoadmin.connector.sudo')
+    @patch('prestoadmin.connector.os.path.exists')
+    def test_remove_no_such_file(self, exists_mock, sudo_mock):
+        exists_mock.return_value = False
+        fabric.api.env.host = 'localhost'
+        error_msg = ('Could not remove connector tpch: No such file '
+                     '/etc/opt/prestoadmin/connectors/tpch.properties')
+        out = _AttributeString(error_msg)
+        out.succeeded = True
+        sudo_mock.return_value = out
+        connector.remove('tpch')
+        self.assertEqual('\nWarning: [localhost] %s\n\n' % error_msg,
+                         self.test_stderr.getvalue())
+
     @patch('prestoadmin.connector.os.listdir')
     @patch('prestoadmin.connector.os.path.isdir')
-    def test_warning_if_connector_dir_empty(self, isdir_mock, listdir_mock,
-                                            deploy_mock):
+    def test_warning_if_connector_dir_empty(self, isdir_mock, listdir_mock):
         isdir_mock.return_value = True
         listdir_mock.return_value = []
         connector.add()
-        self.assertTrue(deploy_mock.called)
         self.assertEqual('\nWarning: Directory %s is empty. No connectors will'
                          ' be deployed\n\n' % constants.CONNECTORS_DIR,
                          self.test_stderr.getvalue())
+
+    @patch('prestoadmin.connector.os.listdir')
+    @patch('prestoadmin.connector.os.path.isdir')
+    def test_add_permission_denied(self, isdir_mock, listdir_mock):
+        isdir_mock.return_value = True
+        error_msg = ('Permission denied')
+        listdir_mock.side_effect = OSError(13, error_msg)
+        fabric.api.env.host = 'localhost'
+        connector.add()
+        self.assertEqual('\nWarning: [localhost] %s\n\n' % error_msg,
+                         self.test_stderr.getvalue())
+
+    @patch('prestoadmin.connector.os.remove')
+    @patch('prestoadmin.connector.remove_file')
+    def test_remove_os_error(self, remove_file_mock, remove_mock):
+        fabric.api.env.host = 'localhost'
+        error = OSError(13, 'Permission denied')
+        remove_mock.side_effect = error
+        self.assertRaisesRegexp(OSError, 'Permission denied',
+                                connector.remove, 'tpch')
+
+    @patch('prestoadmin.connector.sudo')
+    @patch('prestoadmin.connector.put')
+    def test_deploy_files(self, put_mock, sudo_mock):
+        local_dir = '/my/local/dir'
+        remote_dir = '/my/remote/dir'
+        connector.deploy_files(['a', 'b'], local_dir, remote_dir)
+        sudo_mock.assert_called_with('mkdir -p %s' % remote_dir)
+        put_mock.assert_any_call('/my/local/dir/a', remote_dir, use_sudo=True)
+        put_mock.assert_any_call('/my/local/dir/b', remote_dir, use_sudo=True)

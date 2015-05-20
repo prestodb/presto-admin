@@ -16,8 +16,10 @@
 Module for presto connector configurations
 """
 import logging
+import errno
 
 from fabric.api import task, env
+from fabric.context_managers import hide
 from fabric.operations import sudo, os, put
 import fabric.utils
 
@@ -27,11 +29,12 @@ from prestoadmin.util.exception import ConfigFileNotFoundError
 _LOGGER = logging.getLogger(__name__)
 
 __all__ = ['add', 'remove']
+COULD_NOT_REMOVE = 'Could not remove connector'
 
 
 def deploy_files(filenames, local_dir, remote_dir):
-    _LOGGER.info("Deploying configurations for " + str(filenames))
-    sudo("mkdir -p " + remote_dir)
+    _LOGGER.info('Deploying configurations for ' + str(filenames))
+    sudo('mkdir -p ' + remote_dir)
     for name in filenames:
         put(os.path.join(local_dir, name), remote_dir, use_sudo=True)
 
@@ -52,25 +55,30 @@ def add(name=None):
         name - Name of the connector to be added
     """
     if name:
-        filename = name + ".properties"
+        filename = name + '.properties'
         if not os.path.isfile(
                 os.path.join(constants.CONNECTORS_DIR, filename)):
             raise ConfigFileNotFoundError(
-                "Configuration for connector " + name + " not found")
+                'Configuration for connector ' + name + ' not found')
         filenames = [filename]
     elif not os.path.isdir(constants.CONNECTORS_DIR):
-        message = ("Cannot add connectors because directory %s does not exist"
+        message = ('Cannot add connectors because directory %s does not exist'
                    % constants.CONNECTORS_DIR)
         raise ConfigFileNotFoundError(message)
     else:
-        filenames = os.listdir(constants.CONNECTORS_DIR)
+        try:
+            filenames = os.listdir(constants.CONNECTORS_DIR)
+        except OSError as e:
+            fabric.utils.warn(e.strerror)
+            return
         if not filenames:
             fabric.utils.warn(
-                "Directory %s is empty. No connectors will be deployed" %
+                'Directory %s is empty. No connectors will be deployed' %
                 constants.CONNECTORS_DIR)
+            return
 
-    _LOGGER.info("Adding connector configurations: " + str(filenames))
-    print("Deploying %s connector configurations on: %s " %
+    _LOGGER.info('Adding connector configurations: ' + str(filenames))
+    print('Deploying %s connector configurations on: %s ' %
           (', '.join(filenames), env.host))
 
     deploy_files(filenames, constants.CONNECTORS_DIR,
@@ -89,15 +97,34 @@ def remove(name):
     ret = remove_file(os.path.join(constants.REMOTE_CATALOG_DIR,
                                    name + '.properties'))
     if ret.succeeded:
-        print('Connector removed. Restart the server for the change to take '
-              'effect')
+        if COULD_NOT_REMOVE in ret:
+            fabric.utils.warn(ret)
+        else:
+            print('[%s] Connector removed. Restart the server for the change '
+                  'to take effect' % env.host)
     else:
-        print('Failed to remove connector ' + name + '.')
+        fabric.utils.warn('Failed to remove connector ' + name + '.\n\t'
+                          + ret)
 
-    local_path = os.path.join(constants.CONNECTORS_DIR, name + ".properties")
-    if os.path.exists(local_path):
+    local_path = os.path.join(constants.CONNECTORS_DIR, name + '.properties')
+    try:
         os.remove(local_path)
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            pass
+        else:
+            raise
 
 
-def remove_file(name):
-    return sudo("rm " + name)
+def remove_file(path):
+
+    script = ('if [ -f %(path)s ] ; '
+              'then rm %(path)s ; '
+              'else echo "%(could_not_remove)s \'%(name)s\'. '
+              'No such file \'%(path)s\'"; fi')
+
+    with hide('stderr', 'stdout'):
+        return sudo(script %
+                    {'path': path,
+                     'name': os.path.splitext(os.path.basename(path))[0],
+                     'could_not_remove': COULD_NOT_REMOVE})
