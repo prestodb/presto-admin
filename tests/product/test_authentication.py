@@ -17,6 +17,7 @@ Product tests for SSH authentication for presto-admin commands
 """
 
 import os
+import subprocess
 
 from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
@@ -37,6 +38,13 @@ class TestAuthentication(BaseProductTestCase):
         'Initial value for env.password: \n'
         'Warning: Password input may be echoed.\n'
         '  passwd = fallback_getpass(prompt, stream)\n'
+    )
+
+    serial_text = (
+        'Disconnecting from master... done.\n'
+        'Disconnecting from slave1... done.\n'
+        'Disconnecting from slave2... done.\n'
+        'Disconnecting from slave3... done.\n'
     )
 
     sudo_password_prompt = (
@@ -130,13 +138,19 @@ class TestAuthentication(BaseProductTestCase):
         self.assertEqualIgnoringOrder(parallel_password_failure,
                                       command_output)
 
+        # Passwordless SSH as root, in serial mode
+        command_output = self.run_prestoadmin_script(
+            './presto-admin connector add --serial')
+        self.assertEqualIgnoringOrder(
+            self.success_output + self.serial_text, command_output)
+
     def test_no_passwordless_ssh_authentication(self):
         self.install_presto_admin()
         self.upload_topology()
         self.setup_for_connector_add()
 
         for host in self.all_hosts():
-            self.exec_create_start(host, 'rm -rf /root/.ssh')
+            self.exec_create_start(host, 'rm /root/.ssh/id_rsa')
 
         # No passwordless SSH, no -I or -p
         parallel_password_failure = self.parallel_password_failure_message(
@@ -164,6 +178,30 @@ class TestAuthentication(BaseProductTestCase):
                                               '-u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.sudo_password_prompt, command_output)
+
+        # No passwordless SSH, specify keyfile with -i
+        self.exec_create_start(self.master, 'cp /home/app-admin/.ssh/id_rsa '
+                                            '/root/.ssh/id_rsa.bak')
+        self.exec_create_start(self.master, 'chmod 600 /root/.ssh/id_rsa.bak')
+        command_output = self.run_prestoadmin(
+            'connector add -i /root/.ssh/id_rsa.bak')
+        self.assertEqualIgnoringOrder(self.success_output, command_output)
+
+    def test_prestoadmin_no_sudo_popen(self):
+        self.install_presto_admin()
+        self.upload_topology()
+        self.setup_for_connector_add()
+
+        # We use Popen because docker-py loses the first 8 characters of TTY
+        # output.
+        args = ['docker', 'exec', '-t', 'master', 'sudo', '-u', 'app-admin',
+                '/opt/prestoadmin/presto-admin', 'topology show']
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        self.assertEqualIgnoringOrder(
+            'Please run presto-admin with sudo.\n'
+            '[Errno 13] Permission denied: \'/var/log/prestoadmin/'
+            'presto-admin.log\'', proc.stdout.read())
 
     def setup_for_connector_add(self):
         connector_script = 'mkdir -p /etc/opt/prestoadmin/connectors\n' \

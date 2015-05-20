@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from prestoadmin.util.application import Application
-from prestoadmin.util import constants
-
-from unittest import TestCase
-
 import logging
 import os
 import tempfile
+
+from unittest import TestCase
+
+from prestoadmin.util.application import Application
+from prestoadmin.util import constants
 
 EXECUTABLE_NAME = 'foo.py'
 APPLICATION_NAME = 'foo'

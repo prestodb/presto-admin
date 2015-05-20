@@ -816,7 +816,7 @@ def load_topology():
         pass
 
 
-@entry_point('Presto Admin', version=__version__,
+@entry_point('presto-admin', version=__version__,
              log_file_path="presto-admin.log",
              application_class=FabricApplication)
 def main(args=sys.argv[1:]):

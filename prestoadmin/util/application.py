@@ -69,7 +69,6 @@ class Application(object):
         return self
 
     def __configure_logging(self):
-        config_file_path = None
         try:
             for maybe_file_path in self.__logging_configuration_file_paths():
                 if not os.path.exists(maybe_file_path):
@@ -94,13 +93,10 @@ class Application(object):
                 break
         except Exception as e:
             sys.stderr.write(
-                'Unable to configure logging using file {path}, no messages '
-                'will be logged.\nError Message: {msg}'.format(
-                    path=config_file_path,
-                    msg=str(e)
-                )
+                'Please run %s with sudo.\n' % self.name
             )
-            logging.getLogger().addHandler(NullHandler())
+            sys.stderr.flush()
+            sys.exit(str(e))
 
     def __logging_configuration_file_paths(self):
         # Current working directory
@@ -225,18 +221,6 @@ class Application(object):
                 tb=formatted_stack_trace
             )
         )
-
-
-class NullHandler(logging.Handler):
-
-    def handle(self, record):
-        pass
-
-    def emit(self, record):
-        pass
-
-    def createLock(self):
-        self.lock = None
 
 
 def entry_point(name, version=None, log_file_path=None,

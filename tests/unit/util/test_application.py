@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from prestoadmin.util import constants
-from prestoadmin.util.application import Application
-from prestoadmin.util.application import NullHandler
-from prestoadmin.util.exception import UserVisibleError
-
-from tests.utils import BaseTestCase
-
-from mock import patch
-from mock import call
-
 import os
 import sys
 import logging
 
+from mock import patch
+from mock import call
+
+from prestoadmin.util import constants
+from prestoadmin.util.application import Application
+from prestoadmin.util.exception import UserVisibleError
+
+from tests.utils import BaseTestCase
 
 APPLICATION_NAME = 'foo'
 
@@ -128,30 +126,20 @@ class ApplicationTest(BaseTestCase):
     ):
         path_exists_mock.return_value = True
 
-        expected_error = FakeError()
+        expected_error = FakeError('Error')
         logging_mock.fileConfig.side_effect = expected_error
 
-        with Application(APPLICATION_NAME):
-            pass
+        try:
+            with Application(APPLICATION_NAME):
+                pass
+        except SystemExit as e:
+            self.assertEqual('Error', e.message)
 
         stderr_mock.write.assert_has_calls(
             [
-                call(
-                    'Unable to configure logging using file {path}, '
-                    'no messages will be logged.\nError Message: {msg}'.format(
-                        path=constants.LOGGING_CONFIG_FILE_NAME,
-                        msg=str(expected_error)
-                    )
-                )
+                call('Please run %s with sudo.\n' % APPLICATION_NAME),
             ]
         )
-
-        found = False
-        for handler in logging.getLogger().handlers:
-            if isinstance(handler, NullHandler):
-                found = True
-                break
-        self.assertTrue(found)
 
     @patch('prestoadmin.util.application.os.path.exists')
     def test_configures_absolute_path_to_log_file(

@@ -9,8 +9,12 @@ import logging
 import re
 import StringIO
 import sys
+import tempfile
 import unittest
+
 from fabric.state import env
+
+from prestoadmin.util import constants
 
 
 class BaseTestCase(unittest.TestCase):
@@ -24,10 +28,20 @@ class BaseTestCase(unittest.TestCase):
         self.capture_stdout_stderr()
         self.env_vars = copy.deepcopy(env)
         logging.disable(logging.CRITICAL)
+        self.redirect_log_to_tmp()
 
     def capture_stdout_stderr(self):
         sys.stdout = self.test_stdout = StringIO.StringIO()
         sys.stderr = self.test_stderr = StringIO.StringIO()
+
+    def redirect_log_to_tmp(self):
+        # monkey patch the log directory constant so that
+        # we force log files to a temporary dir
+        self.__old_prestoadmin_log = constants.PRESTOADMIN_LOG_DIR
+        self.__temporary_dir_path = tempfile.mkdtemp(
+            prefix='app-int-test-'
+        )
+        constants.PRESTOADMIN_LOG_DIR = self.__temporary_dir_path
 
     def restore_stdout_stderr(self):
         if self.test_stdout:
