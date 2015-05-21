@@ -205,6 +205,7 @@ class TestAuthentication(BaseProductTestCase):
 
     def setup_for_connector_add(self):
         connector_script = 'mkdir -p /etc/opt/prestoadmin/connectors\n' \
-                           'touch /etc/opt/prestoadmin/connectors/' \
+                           'echo \'connector.name=tpch\' ' \
+                           '>> /etc/opt/prestoadmin/connectors/' \
                            'tpch.properties\n'
         self.run_prestoadmin_script(connector_script)

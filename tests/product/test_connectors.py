@@ -154,7 +154,8 @@ No connectors will be deployed
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'connector_lost_host.txt'),
                   'r') as f:
             expected = f.read()
-        for actual, expected in zip(sorted(output.splitlines()), sorted(expected.splitlines())):
+        for actual, expected in zip(
+                sorted(output.splitlines()), sorted(expected.splitlines())):
             self.assertRegexpMatches(actual, expected)
         self.run_prestoadmin('server start')
 
