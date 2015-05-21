@@ -83,8 +83,7 @@ class TestStatus(BaseProductTestCase):
         status_output = self.run_prestoadmin('server status')
         statuses = self.node_not_available_status(ips, topology,
                                                   self.slaves[1])
-        self.check_status(status_output,
-                          statuses)
+        self.check_status(status_output, statuses)
 
     def test_status_port_not_8080(self):
         self.install_presto_admin()

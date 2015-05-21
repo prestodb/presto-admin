@@ -8,7 +8,6 @@ Options:
   -I, --initial-password-prompt
                         Force password prompt up-front
   -l, --list            print list of possible commands and exit
-  --set=KEY=VALUE,...   comma separated KEY=VALUE pairs to set env vars
   --shortlist           print out text processing friendly version of --list
   -H HOSTS, --hosts=HOSTS
                         comma-separated list of hosts to operate on
@@ -37,7 +36,6 @@ Options:
     --linewise          print line-by-line instead of byte-by-byte
     -n M, --connection-attempts=M
                         make M attempts to connect before giving up
-    --no-pty            do not use pseudo-terminal in run/sudo
     --port=PORT         SSH connection port
     -r, --reject-unknown-hosts
                         reject unknown hosts
@@ -61,6 +59,8 @@ Options:
     -z INT, --pool-size=INT
                         number of concurrent processes to use in parallel mode
     --serial            default to serial execution method
+    --set=KEY=VALUE,...
+                        comma separated KEY=VALUE pairs to set env vars
 Commands:
     collect logs
     collect query_info

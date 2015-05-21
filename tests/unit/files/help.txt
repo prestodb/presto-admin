@@ -8,7 +8,6 @@ Options:
   -I, --initial-password-prompt
                         Force password prompt up-front
   -l, --list            print list of possible commands and exit
-  --set=KEY=VALUE,...   comma separated KEY=VALUE pairs to set env vars
   --shortlist           print out text processing friendly version of --list
   -H HOSTS, --hosts=HOSTS
                         comma-separated list of hosts to operate on

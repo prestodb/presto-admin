@@ -16,7 +16,6 @@
 Product tests for presto-admin commands
 """
 import os
-import re
 
 from prestoadmin.util import constants
 from tests.product import base_product_case
@@ -98,10 +97,7 @@ class TestCommands(BaseProductTestCase):
                     'Package uninstalled successfully on: slave3',
                     'Package uninstalled successfully on: master']
         expected += self.expected_stop()[:]
-        expected.sort()
-        cmd_output.sort()
-        for actual, expected_regexp in zip(cmd_output, expected):
-            self.assertRegexpMatches(actual, expected_regexp)
+        self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
         for container in self.all_hosts():
             self.assert_uninstalled(container)
@@ -110,45 +106,6 @@ class TestCommands(BaseProductTestCase):
             self.assert_path_removed(container, '/var/lib/presto')
             self.assert_path_removed(container, '/usr/shared/doc/presto')
             self.assert_path_removed(container, '/etc/rc.d/init.d/presto')
-
-    def test_server_start_stop(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
-        cmd_output = self.run_prestoadmin('server start').splitlines()
-        cmd_output.sort()
-        for expected_regexp, actual_line in zip(self.expected_start(),
-                                                cmd_output):
-            self.assertRegexpMatches(actual_line, expected_regexp)
-
-        process_per_host = self.get_process_per_host(cmd_output)
-        self.assert_started(process_per_host)
-        cmd_output = self.run_prestoadmin('server stop').splitlines()
-        cmd_output.sort()
-        for expected_regexp, actual_line in zip(self.expected_stop(),
-                                                cmd_output):
-            self.assertRegexpMatches(actual_line, expected_regexp)
-
-        self.assert_stopped(process_per_host)
-
-    def test_server_restart(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
-        start_output = self.run_prestoadmin('server start')
-
-        restart_output = self.run_prestoadmin('server restart').splitlines()
-        expected_output = list(
-            set(self.expected_stop()[:] + self.expected_start()[:]))
-        expected_output.sort()
-        restart_output.sort()
-        for actual, expected_regexp in zip(restart_output, expected_output):
-            self.assertRegexpMatches(actual, expected_regexp)
-
-        process_per_host = self.get_process_per_host(start_output)
-        self.assert_stopped(process_per_host)
-        process_per_host = self.get_process_per_host(restart_output)
-        self.assert_started(process_per_host)
 
     def test_configuration_deploy(self):
         self.install_presto_admin()
@@ -206,58 +163,3 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
             self.assert_node_config(container, expected)
 
         self.assert_node_config(self.master, self.default_node_properties_)
-
-    def get_process_per_host(self, output_lines):
-        process_per_host = []
-        for line in output_lines:
-            match = re.search(r'\[(?P<host>.*?)\] out: Started as (?P<pid>.*)',
-                              line)
-            if match:
-                process_per_host.append((match.group('host'),
-                                         match.group('pid')))
-        return process_per_host
-
-    def expected_start(self):
-        return [r'Server started successfully on: master',
-                r'Server started successfully on: slave1',
-                r'Server started successfully on: slave2',
-                r'Server started successfully on: slave3',
-                r'\[master\] out: ',
-                r'\[master\] out: Started as .*',
-                r'\[master\] out: Starting presto',
-                r'\[slave1\] out: ',
-                r'\[slave1\] out: Started as .*',
-                r'\[slave1\] out: Starting presto',
-                r'\[slave2\] out: ',
-                r'\[slave2\] out: Started as .*',
-                r'\[slave2\] out: Starting presto',
-                r'\[slave3\] out: ',
-                r'\[slave3\] out: Started as .*',
-                r'\[slave3\] out: Starting presto']
-
-    def expected_stop(self):
-        return [r'\[master\] out: ',
-                r'\[master\] out: Stopped .*',
-                r'\[master\] out: Stopping presto',
-                r'\[slave1\] out: ',
-                r'\[slave1\] out: Stopped .*',
-                r'\[slave1\] out: Stopping presto',
-                r'\[slave2\] out: ',
-                r'\[slave2\] out: Stopped .*',
-                r'\[slave2\] out: Stopping presto',
-                r'\[slave3\] out: ',
-                r'\[slave3\] out: Stopped .*',
-                r'\[slave3\] out: Stopping presto']
-
-    def assert_started(self, process_per_host):
-        for host, pid in process_per_host:
-            self.exec_create_start(host, 'kill -0 %s' %
-                                   pid)
-        return process_per_host
-
-    def assert_stopped(self, process_per_host):
-        for host, pid in process_per_host:
-            self.assertRaisesRegexp(OSError,
-                                    'No such process',
-                                    self.exec_create_start,
-                                    host, 'kill -0 %s' % pid)

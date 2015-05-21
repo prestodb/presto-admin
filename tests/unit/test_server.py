@@ -54,10 +54,12 @@ class TestInstall(utils.BaseTestCase):
                                 server.install,
                                 local_path)
 
+    @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.sudo')
-    def test_uninstall_is_called(self, mock_sudo):
+    def test_uninstall_is_called(self, mock_sudo, mock_version_check):
         env.host = "any_host"
         server.uninstall()
+        mock_version_check.assert_called_with()
         mock_sudo.assert_called_with('rpm -e presto')
 
     @patch('prestoadmin.server.run')
@@ -70,6 +72,7 @@ class TestInstall(utils.BaseTestCase):
         server.RETRY_TIMEOUT = 1
         mock_execute.return_value = False
         env.host = "failed_node1"
+        mock_version_check.return_value = ''
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
@@ -81,16 +84,31 @@ class TestInstall(utils.BaseTestCase):
     def test_server_start(self, mock_version_check, mock_execute,
                           mock_sudo):
         mock_execute.return_value = True
-        env.host = "good_node"
+        env.host = 'good_node'
+        mock_version_check.return_value = ''
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
-        self.assertEqual("Server started successfully on: good_node\n",
+        self.assertEqual('Checking server status on good_node...\nServer '
+                         'started successfully on: good_node\n',
                          self.test_stdout.getvalue())
 
     @patch('prestoadmin.server.sudo')
-    def test_server_stop(self, mock_sudo):
+    @patch('prestoadmin.server.check_presto_version')
+    def test_server_start_bad_presto_version(self, mock_version_check,
+                                             mock_sudo):
+        env.host = "good_node"
+        mock_version_check.return_value = 'Presto not installed'
+        server.start()
+        mock_version_check.assert_called_with()
+        self.assertEqual(False, mock_sudo.called)
+
+    @patch('prestoadmin.server.check_presto_version')
+    @patch('prestoadmin.server.sudo')
+    def test_server_stop(self, mock_sudo, mock_version_check):
+        mock_version_check.return_value = ''
         server.stop()
+        mock_version_check.assert_called_with()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' stop')
 
     @patch('prestoadmin.server.sudo')
@@ -101,6 +119,7 @@ class TestInstall(utils.BaseTestCase):
                                  mock_status, mock_sudo):
         mock_status.return_value = False
         env.host = "failed_node1"
+        mock_version_check.return_value = ''
         server.restart()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' restart')
         mock_version_check.assert_called_with()
@@ -113,11 +132,13 @@ class TestInstall(utils.BaseTestCase):
     def test_server_restart(self, mock_version_check, mock_status, mock_sudo,
                             lookup_host_mock):
         mock_status.return_value = True
-        env.host = "good_node"
+        env.host = 'good_node'
+        mock_version_check.return_value = ''
         server.restart()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' restart')
         mock_version_check.assert_called_with()
-        self.assertEqual("Server started successfully on: good_node\n",
+        self.assertEqual('Checking server status on good_node...\nServer '
+                         'started successfully on: good_node\n',
                          self.test_stdout.getvalue())
 
     @patch('prestoadmin.server.connector')

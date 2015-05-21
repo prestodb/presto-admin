@@ -20,6 +20,7 @@ other utilities
 import distutils.core
 import fnmatch
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -368,3 +369,33 @@ Underlying exception:
         split_properties = node_properties.split('\n', 1)
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
         self.assertEqual(expected, split_properties[1])
+
+    def expected_stop(self, not_running=None):
+        expected_output = []
+        for host in self.all_hosts():
+            if not_running and host in not_running:
+                expected_output += [r'\[%s\] out: ' % host,
+                                    r'\[%s\] out: Not runnning' % host,
+                                    r'\[%s\] out: Stopping presto' % host]
+            else:
+                expected_output += [r'\[%s\] out: ' % host,
+                                    r'\[%s\] out: Stopped .*' % host,
+                                    r'\[%s\] out: Stopping presto' % host]
+        return expected_output
+
+    def assert_stopped(self, process_per_host):
+        for host, pid in process_per_host:
+            self.assertRaisesRegexp(OSError,
+                                    'No such process',
+                                    self.exec_create_start,
+                                    host, 'kill -0 %s' % pid)
+
+    def get_process_per_host(self, output_lines):
+        process_per_host = []
+        for line in output_lines:
+            match = re.search(r'\[(?P<host>.*?)\] out: Started as (?P<pid>.*)',
+                              line)
+            if match:
+                process_per_host.append((match.group('host'),
+                                         match.group('pid')))
+        return process_per_host

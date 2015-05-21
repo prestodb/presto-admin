@@ -82,7 +82,7 @@ _LOGGER = logging.getLogger(__name__)
 def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
     commands_to_remove = ['fabfile', 'parallel', 'rcfile', 'skip_bad_hosts',
-                          'warn_only']
+                          'warn_only', 'always_use_pty']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
     return new_env_options
@@ -327,15 +327,6 @@ def parser_for_options():
         help="print list of possible commands and exit"
     )
 
-    # Allow setting of arbitrary env vars at runtime.
-    parser.add_option(
-        '--set',
-        metavar="KEY=VALUE,...",
-        dest='env_settings',
-        default="",
-        help="comma separated KEY=VALUE pairs to set env vars"
-    )
-
     # Like --list, but text processing friendly
     parser.add_option(
         '--shortlist',
@@ -366,6 +357,7 @@ def parser_for_options():
         default=False,
         help="abort, instead of warn, if a command fails on any node"
     )
+
     # Hide most of the options from the help text so it's simpler. Need to
     # document the other options, however.
     commands_to_show = ['hosts', 'exclude_hosts', 'password']
@@ -382,6 +374,15 @@ def parser_for_options():
         dest='serial',
         default=False,
         help="default to serial execution method"
+    )
+
+    # Allow setting of arbitrary env vars at runtime.
+    advanced_options.add_option(
+        '--set',
+        metavar="KEY=VALUE,...",
+        dest='env_settings',
+        default="",
+        help="comma separated KEY=VALUE pairs to set env vars"
     )
 
     parser.add_option_group(advanced_options)

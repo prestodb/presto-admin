@@ -77,6 +77,12 @@ class BaseTestCase(unittest.TestCase):
             self.fail("%s: %s not found in %s" % (msg, expected_regexp, text))
         self.assertTrue(re.search(expected_regexp, text), msg)
 
+    def assertRegexpMatchesLineByLine(self, actual_lines,
+                                      expected_regexp_lines, msg=None):
+        for expected_regexp, actual_line in zip(sorted(expected_regexp_lines),
+                                                sorted(actual_lines)):
+            self.assertRegexpMatches(actual_line, expected_regexp, msg=msg)
+
     def remove_runs_once_flag(self, callable_obj):
         # since we annotated show with @runs_once, we need to delete the
         # attribute the Fabric decorator gives it to indicate that it has

@@ -115,14 +115,16 @@ def uninstall():
 
 
 def service(control=None):
+    if check_presto_version() != '':
+        return False
     _LOGGER.info('Executing %s on presto server' % control)
     ret = sudo('set -m; ' + INIT_SCRIPTS + control)
     return ret.succeeded
 
 
 def check_status_for_control_commands():
-    check_presto_version()
     client = PrestoClient(env.host, env.port)
+    print('Checking server status on %s...' % env.host)
     if check_server_status(client):
         print('Server started successfully on: ' + env.host)
     else:
