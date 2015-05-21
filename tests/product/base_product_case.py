@@ -160,8 +160,7 @@ task.max-memory=1GB\n"""
     def tear_down_docker_cluster(self):
         for container in self.all_hosts():
             try:
-                self.client.stop(container)
-                self.client.wait(container)
+                self.stop_and_wait(container)
                 self.client.remove_container(container)
             except APIError as e:
                 # container does not exist
@@ -169,6 +168,10 @@ task.max-memory=1GB\n"""
                     pass
 
         self.remove_host_mount_dirs()
+
+    def stop_and_wait(self, container):
+        self.client.stop(container)
+        self.client.wait(container)
 
     def copy_to_master(self, source):
         shutil.copy(source, LOCAL_MOUNT_POINT % self.master)

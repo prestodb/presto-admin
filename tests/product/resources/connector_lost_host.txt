@@ -1,0 +1,46 @@
+Deploying tpch.properties connector configurations on: slave3
+Deploying tpch.properties connector configurations on: slave2
+Deploying tpch.properties connector configurations on: master
+!!! Parallel execution exception under host u'slave1':
+Process slave1:
+Traceback (most recent call last):
+  File "/usr/lib64/python2.6/multiprocessing/process.py", line 232, in _bootstrap
+    self.run()
+  File "/usr/lib64/python2.6/multiprocessing/process.py", line 88, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/tasks.py", line 239, in inner
+    submit(task.run(*args, **kwargs))
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/tasks.py", line 174, in run
+    return self.wrapped(*args, **kwargs)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/prestoadmin/connector.py", line 85, in add
+    constants.REMOTE_CATALOG_DIR)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/prestoadmin/connector.py", line 37, in deploy_files
+    sudo('mkdir -p ' + remote_dir)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/network.py", line 647, in host_prompting_wrapper
+    return func(*args, **kwargs)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/prestoadmin/fabric_patches.py", line 61, in sudo
+    group=group, timeout=timeout, shell_escape=shell_escape)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/network.py", line 647, in host_prompting_wrapper
+    return func(*args, **kwargs)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/operations.py", line 1107, in sudo
+    stderr=stderr, timeout=timeout, shell_escape=shell_escape,
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/operations.py", line 921, in _run_command
+    channel=default_channel(), command=wrapped_command, pty=pty,
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/state.py", line 397, in default_channel
+    chan = _open_session()
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/state.py", line 389, in _open_session
+    return connections[env.host_string].get_transport().open_session()
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/network.py", line 159, in __getitem__
+    self.connect(key)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/network.py", line 151, in connect
+    user, host, port, cache=self, seek_gateway=seek_gateway)
+  File "/opt/prestoadmin/presto-admin-install/lib/python2.6/site-packages/fabric/network.py", line 573, in connect
+    raise NetworkError(msg, e)
+NetworkError: Low level socket error connecting to host slave1 on port 22: No route to host (tried 1 time)
+Deploying tpch.properties connector configurations on: slave1
+
+Warning: One or more hosts failed while executing task 'connector.add'
+
+Underlying exception:
+    Low level socket error connecting to host slave1 on port 22: No route to host (tried 1 time)
+

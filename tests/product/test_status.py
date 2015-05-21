@@ -65,8 +65,7 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-
-        self.client.stop(self.slaves[0])
+        self.stop_and_wait(self.slaves[0])
         status_output = self.run_prestoadmin('server status')
         statuses = self.node_not_available_status(ips, topology,
                                                   self.slaves[0])
@@ -80,7 +79,7 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-        self.client.stop(self.slaves[1])
+        self.stop_and_wait(self.slaves[1])
         status_output = self.run_prestoadmin('server status')
         statuses = self.node_not_available_status(ips, topology,
                                                   self.slaves[1])
@@ -159,12 +158,17 @@ http-server.http.port=8090"""
                 index = i
                 status['no_status'] = True
                 status['is_running'] = 'Not Running'
-                status['error_message'] = '\n\
-Warning: Timed out trying to connect to %s (tried 1 time)\n\
-\n\
-Underlying exception:\n\
-    timed out\n' % node
-            i += 1
+                error1 = r'\nWarning: Low level socket error connecting to ' \
+                         r'host %s on port 22: No route to host ' \
+                         r'\(tried 1 time\)\n\nUnderlying exception:\n    ' \
+                         r'No route to host\n' % node
+                error2 = r'\nWarning: Timed out trying to connect to %s ' \
+                         r'\(tried 1 time\)\n\nUnderlying exception:\n    ' \
+                         r'timed out\n' % node
+
+                status['error_message'] = '(%s|%s)' % (error1, error2)
+                status['unavailable_message'] = '(%s|%s)' % (error1, error2)
+                i += 1
         if index >= 0:
             temp = statuses[index]
             statuses.remove(temp)
@@ -176,24 +180,25 @@ Underlying exception:\n\
         expected_output = []
         num_bad_hosts = 0
         for status in statuses:
-            if 'no_status' not in status:
+            if 'no_status' in status:
+                num_bad_hosts += 1
+                expected_output = [status['error_message']] + expected_output
+            else:
                 expected_output += \
                     ['Server Status:',
-                     '\t%s(IP: %s roles: %s): %s' %
+                     '\t%s\(IP: %s roles: %s\): %s' %
                      (status['host'], status['ip'], status['role'],
                       status['is_running'])]
-            else:
-                num_bad_hosts += 1
-            if status['is_running'] is 'Running':
-                expected_output += \
-                    ['\tNode URI(http): http://%s:%s' % (status['ip'],
-                                                         str(port)),
-                     '\tPresto Version: ' + PRESTO_VERSION,
-                     '\tNode is active: True',
-                     '\tConnectors:     system, tpch']
-            else:
-                expected_output += [status['error_message']]
+                if status['is_running'] is 'Running':
+                    expected_output += \
+                        ['\tNode URI\(http\): http://%s:%s' % (status['ip'],
+                                                               str(port)),
+                         '\tPresto Version: ' + PRESTO_VERSION,
+                         '\tNode is active: True',
+                         '\tConnectors:     system, tpch']
+                else:
+                    expected_output += [status['error_message']]
 
         # remove the last 4 lines: "Disconnecting from slave3... Done"
-        actual = cmd_output.splitlines()[:(num_bad_hosts - 4)]
-        self.assertEqual('\n'.join(expected_output), '\n'.join(actual))
+        actual = cmd_output.splitlines()[: (num_bad_hosts - 4)]
+        self.assertRegexpMatches('\n'.join(actual), '\n'.join(expected_output))

@@ -19,6 +19,8 @@
 import fabric.utils
 import fabric.api
 import fabric.operations
+import fabric.tasks
+
 from fabric.network import needs_host
 import logging
 from traceback import format_exc
@@ -66,6 +68,10 @@ def log_output(out):
                  out.real_command + '\nSTDOUT: ' + out + '\nSTDERR: '
                  + out.stderr)
 
+
+def _is_network_error_ignored():
+    return False
+
 # Need to monkey patch Fabric's warn method in order to print out
 # all exceptions seen to the logs.
 fabric.utils.warn = warn
@@ -77,3 +83,4 @@ fabric.operations.run = run
 fabric.api.run = run
 fabric.operations.sudo = sudo
 fabric.api.sudo = sudo
+fabric.tasks._is_network_error_ignored = _is_network_error_ignored

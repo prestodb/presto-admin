@@ -140,6 +140,27 @@ No connectors will be deployed
         self.assertEqual([['system'], ['jmx'], ['tpch']],
                          self.get_connector_info())
 
+    def test_connector_add_lost_host(self):
+        self.install_presto_admin()
+        self.upload_topology()
+        self.server_install()
+        self.run_prestoadmin('connector remove tpch')
+
+        self.stop_and_wait(self.slaves[0])
+        self.write_content_to_master('connector.name=tpch',
+                                     os.path.join(constants.CONNECTORS_DIR,
+                                                  'tpch.properties'))
+        output = self.run_prestoadmin('connector add tpch')
+        with open(os.path.join(LOCAL_RESOURCES_DIR, 'connector_lost_host.txt'),
+                  'r') as f:
+            expected = f.read()
+        self.assertEqualIgnoringOrder(output, expected)
+        self.run_prestoadmin('server start')
+
+        for host in [self.master, self.slaves[1], self.slaves[2]]:
+            self.assert_has_default_connector(host)
+        self.assertEqual([['system'], ['tpch']], self.get_connector_info())
+
     def test_connector_remove(self):
         self.install_presto_admin()
         self.upload_topology()
