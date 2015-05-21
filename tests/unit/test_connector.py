@@ -46,7 +46,9 @@ class TestConnector(utils.BaseTestCase):
     @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.path.isdir')
     @patch('prestoadmin.connector.os.listdir')
-    def test_add_all(self, listdir_mock, isdir_mock, deploy_mock):
+    @patch('prestoadmin.connector.validate')
+    def test_add_all(self, mock_validate, listdir_mock, isdir_mock,
+                     deploy_mock):
         catalogs = ['tpch.properties', 'another.properties']
         listdir_mock.return_value = catalogs
         connector.add()

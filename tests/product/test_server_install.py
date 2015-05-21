@@ -337,3 +337,53 @@ task.max-memory=1GB\n"""
             self.assertRegexpMatches(actual_line, expected_regexp)
 
         self.assert_installed_with_configs(self.master, [self.slaves[0]])
+
+    def test_install_with_wrong_topology(self):
+        self.install_presto_admin()
+        self.copy_presto_rpm_to_master()
+        topology = {"coordinator": "dummy_master", "workers": ["slave1"]}
+        self.upload_topology(topology)
+        expected = 'u\'dummy_master\' is not a valid ip address or host name.' \
+                   '  More detailed information can be found in ' \
+                   '/var/log/prestoadmin/presto-admin.log\n'
+        self.assertRaisesRegexp(OSError,
+                                expected,
+                                self.run_prestoadmin,
+                                "server install /mnt/presto-admin/%s "
+                                % PRESTO_RPM)
+
+    def test_install_with_malformed_topology(self):
+        self.install_presto_admin()
+        self.copy_presto_rpm_to_master()
+        topology = {"coordinator": "master",
+                    "workers": "slave1" "slave2"}
+        self.upload_topology(topology)
+        expected = 'Workers must be of type list.  Found <type \'unicode\'>.' \
+                   '  More detailed information can be found in ' \
+                   '/var/log/prestoadmin/presto-admin.log'
+
+        self.assertRaisesRegexp(OSError,
+                                expected,
+                                self.run_prestoadmin,
+                                "server install /mnt/presto-admin/%s "
+                                % PRESTO_RPM)
+
+    def test_install_with_malformed_connector(self):
+        self.install_presto_admin()
+        self.copy_presto_rpm_to_master()
+        self.upload_topology()
+        self.write_content_to_master('connectr.typo:invalid',
+                                     os.path.join(constants.CONNECTORS_DIR,
+                                                  'jmx.properties'))
+
+        expected = 'Underlying exception:\n    Catalog configuration ' \
+                   'jmx.properties does not contain connector.name'
+        self.assertRaisesRegexp(OSError,
+                                expected,
+                                self.run_prestoadmin,
+                                "server install /mnt/presto-admin/%s "
+                                % PRESTO_RPM)
+
+        for container in self.all_hosts():
+            self.assert_installed(container)
+            self.assert_has_default_config(container)

@@ -24,7 +24,8 @@ from fabric.operations import sudo, os, put
 import fabric.utils
 
 from prestoadmin.util import constants
-from prestoadmin.util.exception import ConfigFileNotFoundError
+from prestoadmin.util.exception import ConfigFileNotFoundError, \
+    ConfigurationError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,6 +38,18 @@ def deploy_files(filenames, local_dir, remote_dir):
     sudo('mkdir -p ' + remote_dir)
     for name in filenames:
         put(os.path.join(local_dir, name), remote_dir, use_sudo=True)
+
+
+def validate(filenames):
+    for name in filenames:
+        file_path = os.path.join(constants.CONNECTORS_DIR, name)
+        _LOGGER.info('Validating connector configuration: ' + str(name))
+        with open(file_path) as f:
+            file_content = f.read()
+            if 'connector.name' not in file_content:
+                message = ('Catalog configuration %s does not contain '
+                           'connector.name' % name)
+                raise ConfigurationError(message)
 
 
 @task
@@ -68,6 +81,7 @@ def add(name=None):
     else:
         try:
             filenames = os.listdir(constants.CONNECTORS_DIR)
+            validate(filenames)
         except OSError as e:
             fabric.utils.warn(e.strerror)
             return
