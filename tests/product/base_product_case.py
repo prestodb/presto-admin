@@ -67,7 +67,7 @@ discovery.uri=http://master:8080
 http-server.http.port=8080
 task.max-memory=1GB\n"""
 
-    client = Client()
+    client = Client(timeout=180)
     slaves = ["slave1", "slave2", "slave3"]
     master = "master"
 
