@@ -42,6 +42,31 @@ PRESTO_VERSION = 'presto-main:0.101-SNAPSHOT'
 
 
 class BaseProductTestCase(utils.BaseTestCase):
+    default_workers_config_ = """coordinator=false
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB\n"""
+    default_node_properties_ = """node.data-dir=/var/lib/presto/data
+node.environment=presto
+plugin.config-dir=/etc/presto/catalog
+plugin.dir=/usr/lib/presto/lib/plugin\n"""
+
+    default_jvm_config_ = """-server
+-Xmx1G
+-XX:+UseConcMarkSweepGC
+-XX:+ExplicitGCInvokesConcurrent
+-XX:+CMSClassUnloadingEnabled
+-XX:+AggressiveOpts
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:OnOutOfMemoryError=kill -9 %p
+-XX:ReservedCodeCacheSize=150M\n"""
+
+    default_coordinator_config_ = """coordinator=true
+discovery-server.enabled=true
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB\n"""
+
     client = Client()
     slaves = ["slave1", "slave2", "slave3"]
     master = "master"
@@ -245,10 +270,19 @@ class BaseProductTestCase(utils.BaseTestCase):
         config = self.exec_create_start(host, 'cat %s' % filepath)
         self.assertEqual(config, expected)
 
+    def assert_file_content_regex(self, host, filepath, expected):
+        config = self.exec_create_start(host, 'cat %s' % filepath)
+        self.assertRegexpMatches(config, expected)
+
     def assert_has_default_connector(self, container):
         self.assert_file_content(container,
                                  '/etc/presto/catalog/tpch.properties',
                                  'connector.name=tpch')
+
+    def assert_has_jmx_connector(self, container):
+        self.assert_file_content(container,
+                                 '/etc/presto/catalog/jmx.properties',
+                                 'connector.name=jmx')
 
     def assert_path_removed(self, container, directory):
         self.exec_create_start(container, ' [ ! -e %s ]' % directory)
@@ -297,3 +331,37 @@ Underlying exception:
         self.assertTrue(expected_warning in cmd_output,
                         "expected: %s\n output: %s\n"
                         % (expected_warning, cmd_output))
+
+    def assert_installed(self, container):
+        check_rpm = self.exec_create_start(container,
+                                           'rpm -q presto')
+        self.assertEqual(PRESTO_RPM[:-4] + '\n', check_rpm)
+
+    def assert_uninstalled(self, container):
+        self.assertRaisesRegexp(OSError, 'package presto is not installed',
+                                self.exec_create_start,
+                                container, 'rpm -q presto')
+
+    def assert_has_default_config(self, container):
+        self.assert_file_content(container,
+                                 '/etc/presto/jvm.config',
+                                 self.default_jvm_config_)
+
+        self.assert_node_config(container, self.default_node_properties_)
+
+        if container in self.slaves:
+            self.assert_file_content(container,
+                                     '/etc/presto/config.properties',
+                                     self.default_workers_config_)
+
+        else:
+            self.assert_file_content(container,
+                                     '/etc/presto/config.properties',
+                                     self.default_coordinator_config_)
+
+    def assert_node_config(self, container, expected):
+        node_properties = self.exec_create_start(
+            container, 'cat /etc/presto/node.properties')
+        split_properties = node_properties.split('\n', 1)
+        self.assertRegexpMatches(split_properties[0], 'node.id=.*')
+        self.assertEqual(expected, split_properties[1])
