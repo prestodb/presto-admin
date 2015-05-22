@@ -1,0 +1,33 @@
+Deploying rpm...
+
+Warning: [master] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/presto-0.101-1.0.x86_64.rpm'!
+
+Package deployed successfully on: master
+[master] out: 	package presto-0.101-1.0.x86_64 is already installed
+[master] out:
+
+Warning: [slave1] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/presto-0.101-1.0.x86_64.rpm'!
+
+Package deployed successfully on: slave1
+[slave1] out: 	package presto-0.101-1.0.x86_64 is already installed
+[slave1] out:
+
+Warning: [slave3] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/presto-0.101-1.0.x86_64.rpm'!
+
+Package deployed successfully on: slave3
+[slave3] out: 	package presto-0.101-1.0.x86_64 is already installed
+[slave3] out:
+
+Warning: [slave2] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/presto-0.101-1.0.x86_64.rpm'!
+
+Package deployed successfully on: slave2
+[slave2] out: 	package presto-0.101-1.0.x86_64 is already installed
+[slave2] out:
+Deploying configuration on: slave1
+Deploying tpch.properties connector configurations on: slave1
+Deploying configuration on: slave2
+Deploying tpch.properties connector configurations on: slave2
+Deploying configuration on: slave3
+Deploying tpch.properties connector configurations on: slave3
+Deploying configuration on: master
+Deploying tpch.properties connector configurations on: master

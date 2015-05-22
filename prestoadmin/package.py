@@ -21,11 +21,12 @@ from fabric.context_managers import settings, hide
 from fabric.decorators import task, runs_once
 from fabric.operations import sudo, put, os, local
 from fabric.state import env
+from fabric.tasks import execute
 from fabric.utils import abort
 
 from prestoadmin import topology
 from prestoadmin.util import constants
-from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
+from prestoadmin.util.fabricapi import get_host_list
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,8 +52,8 @@ def install(local_path=None):
     topology.set_topology_if_missing()
     check_if_valid_rpm(local_path)
     print("Deploying rpm...")
-    execute_fail_on_error(deploy_install, local_path,
-                          hosts=get_host_list())
+    execute(deploy_install, local_path,
+            hosts=get_host_list())
 
 
 def check_if_valid_rpm(local_path):

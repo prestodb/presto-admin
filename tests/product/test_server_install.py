@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import re
 
 from prestoadmin.util import constants
-from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM
+from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM, \
+    LOCAL_RESOURCES_DIR
 
 install_interactive_out = ['Enter user name for SSH connection to all '
                            'nodes: [root] Enter port number for SSH '
@@ -135,6 +137,35 @@ discovery.uri=http:.*:8080
 http-server.http.port=8080
 task.max-memory=1GB\n"""
 
+    def assert_common_configs(self, container):
+        self.assert_installed(container)
+        self.assert_file_content(container, '/etc/presto/jvm.config',
+                                 self.default_jvm_config_)
+        self.assert_node_config(container, self.default_node_properties_)
+        self.assert_has_default_connector(container)
+
+    def assert_installed_with_configs(self, master, slaves):
+        self.assert_common_configs(master)
+        self.assert_file_content(master,
+                                 '/etc/presto/config.properties',
+                                 self.default_coord_config_with_slave1_)
+        for container in slaves:
+            self.assert_common_configs(container)
+            self.assert_file_content(container,
+                                     '/etc/presto/config.properties',
+                                     self.default_workers_config_with_slave1_)
+
+    def assert_installed_with_regex_configs(self, master, slaves):
+        self.assert_common_configs(master)
+        self.assert_file_content_regex(master,
+                                       '/etc/presto/config.properties',
+                                       self.default_coord_config_regex_)
+        for container in slaves:
+            self.assert_common_configs(container)
+            self.assert_file_content_regex(container,
+                                           '/etc/presto/config.properties',
+                                           self.default_workers_config_regex_)
+
     def test_install(self):
         self.install_presto_admin()
         self.upload_topology()
@@ -149,13 +180,6 @@ task.max-memory=1GB\n"""
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
-
-    def assert_common_configs(self, container):
-        self.assert_installed(container)
-        self.assert_file_content(container, '/etc/presto/jvm.config',
-                                 self.default_jvm_config_)
-        self.assert_node_config(container, self.default_node_properties_)
-        self.assert_has_default_connector(container)
 
     def test_install_worker_is_pa_master(self):
         self.install_presto_admin()
@@ -173,27 +197,6 @@ task.max-memory=1GB\n"""
         self.assert_installed_with_configs(self.slaves[0],
                                            [self.slaves[1], self.slaves[2],
                                             self.master])
-
-    def assert_installed_with_configs(self, master, slaves):
-        self.assert_common_configs(master)
-        self.assert_file_content_regex(master,
-                                       '/etc/presto/config.properties',
-                                       self.default_coord_config_regex_)
-        for container in slaves:
-            self.assert_common_configs(container)
-            self.assert_file_content_regex(container,
-                                           '/etc/presto/config.properties',
-                                           self.default_workers_config_regex_)
-
-    def assert_coord_config(self, container):
-        self.assert_file_content(container,
-                                 '/etc/presto/config.properties',
-                                 self.default_coord_config_with_slave1_)
-
-    def assert_worker_config(self, container):
-        self.assert_file_content(container,
-                                 '/etc/presto/config.properties',
-                                 self.default_workers_config_with_slave1_)
 
     def test_install_ext_host_is_pa_master(self):
         self.install_presto_admin()
@@ -236,17 +239,14 @@ task.max-memory=1GB\n"""
 
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
-        for container in [self.master, self.slaves[0]]:
-            self.assert_common_configs(container)
-            self.assert_has_jmx_connector(container)
-        self.assert_file_content(self.slaves[0],
-                                 '/etc/presto/config.properties',
-                                 self.default_workers_config_)
-        self.assert_file_content(self.master,
-                                 '/etc/presto/config.properties',
-                                 self.default_coordinator_config_)
 
-    def test_install_when_topolog_has_ips(self):
+        for container in [self.master, self.slaves[0]]:
+            self.assert_installed(container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
+            self.assert_has_jmx_connector(container)
+
+    def test_install_when_topology_has_ips(self):
         self.install_presto_admin()
         ips = self.get_ip_address_dict()
         topology = {"coordinator": ips[self.master],
@@ -277,7 +277,7 @@ task.max-memory=1GB\n"""
         for expected_regexp, actual_line in zip(expected, cmd_output):
             self.assertRegexpMatches(actual_line, expected_regexp)
 
-        self.assert_installed_with_configs(self.master, [self.slaves[0]])
+        self.assert_installed_with_regex_configs(self.master, [self.slaves[0]])
         for container in [self.master, self.slaves[0]]:
             self.assert_has_jmx_connector(container)
 
@@ -295,8 +295,10 @@ task.max-memory=1GB\n"""
 
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
-        self.assert_installed_with_configs(self.master, [self.slaves[0]])
         for container in [self.master, self.slaves[0]]:
+            self.assert_installed(container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
             self.assert_has_jmx_connector(container)
 
     def test_install_interactive_with_ips(self):
@@ -336,7 +338,7 @@ task.max-memory=1GB\n"""
         for expected_regexp, actual_line in zip(expected, cmd_output):
             self.assertRegexpMatches(actual_line, expected_regexp)
 
-        self.assert_installed_with_configs(self.master, [self.slaves[0]])
+        self.assert_installed_with_regex_configs(self.master, [self.slaves[0]])
 
     def test_install_with_wrong_topology(self):
         self.install_presto_admin()
@@ -375,15 +377,66 @@ task.max-memory=1GB\n"""
         self.write_content_to_master('connectr.typo:invalid',
                                      os.path.join(constants.CONNECTORS_DIR,
                                                   'jmx.properties'))
-
+        actual_out = self.server_install()
         expected = 'Underlying exception:\n    Catalog configuration ' \
                    'jmx.properties does not contain connector.name'
-        self.assertRaisesRegexp(OSError,
-                                expected,
-                                self.run_prestoadmin,
-                                "server install /mnt/presto-admin/%s "
-                                % PRESTO_RPM)
+        self.assertRegexpMatches(actual_out, expected)
 
         for container in self.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)
+
+    def test_connection_to_coord_lost(self):
+        self.install_presto_admin()
+        self.copy_presto_rpm_to_master()
+        topology = {"coordinator": "slave1",
+                    "workers": ["master", "slave2", "slave3"]}
+        self.upload_topology(topology=topology)
+        self.client.stop(self.slaves[0])
+
+        actual_out = self.server_install()
+        expected = re.compile(r'Process slave1:.*?\nNetworkError: '
+                              r'(Low level socket error connecting to'
+                              r' host slave1 on port 22: No route to'
+                              r' host \(tried 1 time\)|Timed out '
+                              r'trying to connect to slave1 '
+                              r'\(tried 1 time\))',
+                              flags=re.DOTALL)
+        self.assertRegexpMatches(actual_out, expected)
+
+        for container in [self.master, self.slaves[1], self.slaves[2]]:
+            self.assert_common_configs(container)
+            self.assert_file_content(container,
+                                     '/etc/presto/config.properties',
+                                     self.default_workers_config_with_slave1_)
+
+    def test_install_with_no_perm_to_local_path(self):
+        self.install_presto_admin()
+        self.copy_presto_rpm_to_master()
+        self.upload_topology()
+        self.run_prestoadmin("configuration deploy")
+
+        script = 'chmod 600 /mnt/presto-admin/%s; su app-admin -c ' \
+                 '"./presto-admin server install /mnt/presto-admin/%s "' \
+                 % (PRESTO_RPM, PRESTO_RPM)
+        expected = 'Fatal error: error: ' \
+                   '/mnt/presto-admin/presto-0.101-1.0.x86_64.rpm: ' \
+                   'open failed: Permission denied\n\nAborting.\n'
+        self.assertRaisesRegexp(OSError,
+                                expected,
+                                self.run_prestoadmin_script,
+                                script)
+
+    def test_install_twice(self):
+        self.test_install()
+        output = self.server_install()
+
+        with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
+                as f:
+            expected = f.read()
+
+        self.assertEqualIgnoringOrder(expected, output)
+        for container in self.all_hosts():
+            self.assert_installed(container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)

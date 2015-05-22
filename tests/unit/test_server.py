@@ -38,7 +38,7 @@ class TestInstall(utils.BaseTestCase):
         mock_install.assert_called_with(local_path)
 
     @patch('prestoadmin.server.package.install')
-    @patch('prestoadmin.server.execute_fail_on_error')
+    @patch('prestoadmin.server.execute')
     def test_deploy_install(self, mock_execute, mock_install):
         local_path = "/any/path/rpm"
         env.hosts = []

@@ -22,6 +22,7 @@ from fabric.api import task, sudo, env, serial
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
 from fabric.operations import run, os
+from fabric.tasks import execute
 from fabric.utils import abort, warn
 
 from prestoadmin import configure_cmds
@@ -33,7 +34,7 @@ from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError,\
     ConfigurationError
-from prestoadmin.util.fabricapi import execute_fail_on_error, get_host_list
+from prestoadmin.util.fabricapi import get_host_list
 import util.filesystem
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
@@ -81,7 +82,7 @@ def install(local_path=None):
 
 def deploy_install_configure(local_path):
     package.install(local_path)
-    execute_fail_on_error(update_configs, hosts=get_host_list())
+    execute(update_configs, hosts=get_host_list())
 
 
 def add_tpch_connector():

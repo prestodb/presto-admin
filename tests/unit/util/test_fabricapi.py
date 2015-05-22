@@ -17,28 +17,12 @@
 Tests the utility
 """
 from fabric.api import env
-from mock import patch
 from prestoadmin.util import fabricapi
 
-from prestoadmin.util.fabricapi import execute_fail_on_error
 import tests.utils as utils
 
 
 class TestFabricapi(utils.BaseTestCase):
-    @patch('prestoadmin.util.fabricapi.execute')
-    def test_execute_fail(self, mock_execute):
-        def dummyfunc():
-            pass
-
-        result = {}
-        result['some_host'] = Exception()
-        mock_execute.return_value = result
-
-        self.assertRaisesRegexp(Exception,
-                                "command failed for some nodes; "
-                                "result={'some_host': Exception\(\)}",
-                                execute_fail_on_error, dummyfunc)
-
     def test_get_host_with_exclude(self):
         env.hosts = ['a', 'b', 'bad']
         env.exclude_hosts = ['bad']
