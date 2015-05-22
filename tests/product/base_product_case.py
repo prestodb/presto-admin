@@ -25,6 +25,7 @@ import os
 import shutil
 import subprocess
 import sys
+from time import sleep
 import errno
 import urllib
 
@@ -33,6 +34,9 @@ from docker import Client
 
 import prestoadmin
 from tests import utils
+
+INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
+INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
 
 LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, "tmp/docker-pa/%s")
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
@@ -103,6 +107,37 @@ task.max-memory=1GB\n"""
                 if e.errno == errno.EEXIST:
                     pass
 
+    def create_and_start_containers(self, master_image=None, slave_image=None):
+        if not master_image:
+            master_image = 'teradatalabs/centos6-ssh-test'
+
+        if not slave_image:
+            slave_image = 'teradatalabs/centos6-ssh-test'
+
+        for container_name in self.slaves:
+            self._execute_and_wait(self.client.create_container,
+                                   slave_image,
+                                   detach=True,
+                                   name=container_name,
+                                   volumes=LOCAL_MOUNT_POINT %
+                                   container_name)
+
+            self.client.start(container_name,
+                              binds={LOCAL_MOUNT_POINT % container_name:
+                                     {"bind": DOCKER_MOUNT_POINT,
+                                      "ro": False}})
+        self._execute_and_wait(self.client.create_container,
+                               master_image,
+                               detach=True,
+                               name=self.master,
+                               hostname=self.master,
+                               volumes=LOCAL_MOUNT_POINT % self.master)
+        self.client.start(self.master,
+                          binds={LOCAL_MOUNT_POINT % self.master:
+                                 {"bind": DOCKER_MOUNT_POINT,
+                                  "ro": False}},
+                          links=zip(self.slaves, self.slaves))
+
     def create_docker_cluster(self):
         self.tear_down_docker_cluster()
         self.create_host_mount_dirs()
@@ -116,31 +151,8 @@ task.max-memory=1GB\n"""
                                                  "centos6-ssh-test"),
                                tag="teradatalabs/centos6-ssh-test", rm=True)
 
-        for container_name in self.slaves:
-            self._execute_and_wait(self.client.create_container,
-                                   "teradatalabs/centos6-ssh-test",
-                                   detach=True,
-                                   name=container_name,
-                                   volumes=LOCAL_MOUNT_POINT %
-                                   container_name)
-
-            self.client.start(container_name,
-                              binds={LOCAL_MOUNT_POINT % container_name:
-                                     {"bind": DOCKER_MOUNT_POINT,
-                                      "ro": False}})
-
-        self._execute_and_wait(self.client.create_container,
-                               "teradatalabs/centos6-ssh-test",
-                               detach=True,
-                               name=self.master,
-                               hostname=self.master,
-                               volumes=LOCAL_MOUNT_POINT % self.master)
-
-        self.client.start(self.master,
-                          binds={LOCAL_MOUNT_POINT % self.master:
-                                 {"bind": DOCKER_MOUNT_POINT,
-                                  "ro": False}},
-                          links=zip(self.slaves, self.slaves))
+        self.create_and_start_containers()
+        self.ensure_docker_containers_started()
 
     def _execute_and_wait(self, func, *args, **kwargs):
         ret = func(*args, **kwargs)
@@ -182,10 +194,18 @@ task.max-memory=1GB\n"""
     def copy_to_master(self, source):
         shutil.copy(source, LOCAL_MOUNT_POINT % self.master)
 
+    def clean_up_presto_test_images(self):
+        try:
+            self.client.remove_image(INSTALLED_PRESTO_TEST_MASTER_IMAGE)
+            self.client.remove_image(INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
+        except:
+            pass
+
     def install_presto_admin(self):
         dist_dir = os.path.join(prestoadmin.main_dir, "dist")
         if not os.path.exists(dist_dir) or not fnmatch.filter(
                 os.listdir(dist_dir), "prestoadmin-*.tar.bz2"):
+            self.clean_up_presto_test_images()
             # setup.py expects you to be in the main directory
             saved_path = os.getcwd()
             os.chdir(prestoadmin.main_dir)
@@ -387,3 +407,59 @@ Underlying exception:
                 process_per_host.append((match.group('host'),
                                          match.group('pid')))
         return process_per_host
+
+    def ensure_docker_containers_started(self):
+        timeout = 0
+        ps_output = ''
+        while timeout < 10:
+            started = True
+            for host in self.all_hosts():
+                ps_output = self.exec_create_start(host, 'ps')
+                if 'sshd_bootstrap' in ps_output or 'sshd\n' not in ps_output:
+                    timeout += 1
+                    started = False
+            if not started:
+                timeout += 1
+                sleep(1)
+            else:
+                break
+        if timeout is 10:
+            log = self.client.logs(self.all_hosts()[-1])
+            self.fail('Docker container with presto timed out on start; '
+                      'ps output: %s\n log output: %s\n' % (ps_output, log))
+
+    def install_default_presto(self):
+        """
+        Installs default Presto on the docker cluster. If there is already
+        a Docker image with Presto installed, use those Docker images. Else,
+        perform the installation and then take a snapshot.
+
+        This method must only be called on clean containers, else you'll
+        get extra state for subsequent tests if it's the first time that
+        install_default_presto has been called.
+        """
+        images = self.client.images()
+        has_master = False
+        has_slave = False
+        for image in images:
+            if INSTALLED_PRESTO_TEST_MASTER_IMAGE in image['RepoTags'][0]:
+                has_master = True
+            if INSTALLED_PRESTO_TEST_SLAVE_IMAGE in image['RepoTags'][0]:
+                has_slave = True
+
+        if has_master and has_slave:
+            self.tear_down_docker_cluster()
+            self.create_host_mount_dirs()
+            self.create_and_start_containers(
+                INSTALLED_PRESTO_TEST_MASTER_IMAGE,
+                INSTALLED_PRESTO_TEST_SLAVE_IMAGE
+            )
+
+            self.ensure_docker_containers_started()
+            return
+
+        self.install_presto_admin()
+        self.upload_topology()
+        self.server_install()
+        self.client.commit(self.master, INSTALLED_PRESTO_TEST_MASTER_IMAGE)
+        self.client.commit(self.slaves[0], INSTALLED_PRESTO_TEST_SLAVE_IMAGE)

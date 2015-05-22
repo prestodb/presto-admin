@@ -34,9 +34,7 @@ class PrestoError(Exception):
 
 class TestConnectors(BaseProductTestCase):
     def test_basic_connector_add_remove(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
         self.run_prestoadmin('server start')
         for host in self.all_hosts():
             self.assert_has_default_connector(host)
@@ -64,9 +62,7 @@ class TestConnectors(BaseProductTestCase):
         self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_add(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
 
         # test add connector without read permissions on file
         script = 'chmod 600 /etc/opt/prestoadmin/connectors/tpch.properties;' \
@@ -192,9 +188,7 @@ No connectors will be deployed
         self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_remove(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
         for host in self.all_hosts():
             self.assert_has_default_connector(host)
 

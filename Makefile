@@ -38,6 +38,7 @@ clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+	docker rmi -f teradatalabs/centos-presto-test-master teradatalabs/centos-presto-test-slave || true
 
 clean-rpm:
 	rm -fr presto*.rpm

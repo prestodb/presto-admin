@@ -82,9 +82,7 @@ class TestCommands(BaseProductTestCase):
             self.assert_has_default_connector(container)
 
     def test_uninstall_presto(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         cmd_output = self.run_prestoadmin('server uninstall').splitlines()

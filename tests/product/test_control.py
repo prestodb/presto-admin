@@ -22,16 +22,12 @@ from tests.product.base_product_case import BaseProductTestCase
 class TestControl(BaseProductTestCase):
 
     def test_server_start_stop_simple(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
         self.assert_simple_start_stop(self.expected_start(),
                                       self.expected_stop())
 
     def test_server_restart_simple(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
         expected_output = list(
             set(self.expected_stop()[:] + self.expected_start()[:]))
         self.assert_simple_server_restart(expected_output)
@@ -75,9 +71,7 @@ class TestControl(BaseProductTestCase):
                                       '\n'.join(start_output))
 
     def test_server_start_various_states(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
 
         # Coordinator started, workers not; then server start
         process_per_host = \
@@ -98,9 +92,7 @@ class TestControl(BaseProductTestCase):
         self.assert_started(process_per_host)
 
     def test_server_stop_various_states(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
 
         # Stop with servers not started
         stop_output = self.run_prestoadmin('server stop').splitlines()
@@ -117,9 +109,7 @@ class TestControl(BaseProductTestCase):
         self.assert_one_host_stopped(self.slaves[0])
 
     def test_server_restart_various_states(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
 
         # Restart when the servers aren't started
         expected_output = list(
@@ -146,9 +136,7 @@ class TestControl(BaseProductTestCase):
                                           running_host=self.slaves[0])
 
     def test_start_restart_config_file_error(self):
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
+        self.install_default_presto()
 
         # Remove a required config file so that the server can't start
         self.exec_create_start(self.master, 'mv /etc/presto/config.properties '
