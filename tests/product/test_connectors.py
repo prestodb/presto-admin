@@ -74,7 +74,7 @@ class TestConnectors(BaseProductTestCase):
                  ' su app-admin -c "./presto-admin connector add tpch"'
         output = self.run_prestoadmin_script(script)
         with open(os.path.join(LOCAL_RESOURCES_DIR,
-                  'connector_permissions_warning.txt'), 'r') as f:
+                               'connector_permissions_warning.txt'), 'r') as f:
             expected = f.read()
 
         self.assertEqualIgnoringOrder(expected, output)
@@ -174,15 +174,26 @@ No connectors will be deployed
                                      os.path.join(constants.CONNECTORS_DIR,
                                                   'tpch.properties'))
         output = self.run_prestoadmin('connector add tpch')
-        with open(os.path.join(LOCAL_RESOURCES_DIR, 'connector_lost_host.txt'),
-                  'r') as f:
-            expected = f.read()
-
-        output = re.sub(r'Traceback.*raise NetworkError\(msg, e\)\n', '',
-                        output, flags=re.DOTALL)
-        for actual, expected in zip(
-                sorted(output.splitlines()), sorted(expected.splitlines())):
-            self.assertRegexpMatches(actual, expected)
+        for host in self.all_hosts():
+            deploying_message = 'Deploying tpch.properties connector ' \
+                                'configurations on: %s'
+            self.assertTrue(deploying_message % host in output,
+                            'expected %s \n actual %s'
+                            % (deploying_message % host, output))
+        error_regex = re.compile(r'Process slave1:.*?\nNetworkError: '
+                                 '(Low level socket error connecting to'
+                                 ' host slave1 on port 22: No route to'
+                                 ' host \(tried 1 time\)|Timed out '
+                                 'trying to connect to slave1 '
+                                 '\(tried 1 time\))',
+                                 flags=re.DOTALL)
+        self.assertRegexpMatches(output, error_regex)
+        warning = r'\nWarning: One or more hosts failed while executing ' \
+                  r'task \'connector.add\'\n\nUnderlying exception:\n    ' \
+                  r'(Low level socket error connecting to host slave1 on ' \
+                  r'port 22: No route to host \(tried 1 time\)|Timed out ' \
+                  r'trying to connect to slave1 \(tried 1 time\))'
+        self.assertRegexpMatches(output, warning)
         self.run_prestoadmin('server start')
 
         for host in [self.master, self.slaves[1], self.slaves[2]]:
