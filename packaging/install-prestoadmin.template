@@ -1,9 +1,14 @@
 #!/bin/bash
 set -e
 
-tar xvzf third-party/virtualenv-%VIRTUALENV_VERSION%.tar.gz -C third-party || true
-
-python third-party/virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
+if [ -d "third-party"]; then
+    tar xvzf third-party/virtualenv-%VIRTUALENV_VERSION%.tar.gz -C third-party || true
+    python third-party/virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
+else
+    wget https://pypi.python.org/packages/source/v/virtualenv/virtualenv-%VIRTUALENV_VERSION%.tar.gz
+    tar xvzf virtualenv-%VIRTUALENV_VERSION%.tar.gz || true
+    python virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
+fi
 
 source presto-admin-install/bin/activate
 cert_file=$1

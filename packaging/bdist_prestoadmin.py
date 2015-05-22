@@ -97,15 +97,16 @@ class bdist_prestoadmin(Command):
                       '--trusted-host',
                       'bdch-ftp.td.teradata.com'])
 
-        # Welcome to HackLand! For our offline installer we need to include
-        # the pycrypto wheel compiled both against the Python 2.6 and 2.7
-        # interpreters. We found no way to do that at build time (either
-        # compile against both interpreters simultaneously or somehow compile
-        # first against 2.6 and then against 2.7 serially). To solve this we
-        # pre-compiled both and uploaded to the internal PyPI. During the build
-        # we download wheels for both interpreters compiled on Centos 6.6.
+        # Welcome to HackLand! For our offline installer we need to
+        # include the pycrypto wheel compiled both against the Python
+        # 2.6 and 2.7 interpreters. We found no way to do that at build
+        # time (either compile against both interpreters simultaneously
+        # or somehow compile first against 2.6 and then against 2.7
+        # serially). To solve this we pre-compiled both and uploaded to
+        # the internal PyPI. During the build we download wheels for both
+        # interpreters compiled on Centos 6.6.
         pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
-        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' +\
+        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' + \
                             pycrypto_whl
         if sys.version.startswith('2.6'):
             alternate_interpreter_version = 'cp27'  # fetch 2.7 from PyPI
@@ -114,7 +115,8 @@ class bdist_prestoadmin(Command):
         urllib.urlretrieve(
             pypi_pycrypto_url.format(alternate_interpreter_version),
             os.path.join(thirdparty_dir,
-                         pycrypto_whl.format(alternate_interpreter_version)))
+                         pycrypto_whl.format(alternate_interpreter_version))
+            )
         # Thank you for visiting HackLand!
 
         pip.main(['install',
@@ -138,7 +140,9 @@ class bdist_prestoadmin(Command):
 
         wheel_name = self.build_wheel(build_dir)
         self.generate_install_script(wheel_name, build_dir)
-        self.package_dependencies(build_dir)
+        if not self.online_install:
+            self.package_dependencies(build_dir)
+
         self.archive_dist(build_dir, self.dist_dir)
 
         if not self.keep_temp:

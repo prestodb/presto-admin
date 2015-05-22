@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import errno
 
 from distutils.dir_util import remove_tree
 from distutils.dir_util import mkpath
@@ -90,7 +91,8 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
 
     @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
     @patch('packaging.bdist_prestoadmin.pip.main')
-    def test_package_dependencies(self, pip_mock, urlretrieve_mock):
+    def test_package_dependencies_for_offline_installer(self, pip_mock,
+                                                        urlretrieve_mock):
         build_path = os.path.join('build', 'prestoadmin')
         self.bdist.package_dependencies(build_path)
 
@@ -109,6 +111,21 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
                        '--no-use-wheel',
                        'virtualenv==12.0.7'])]
         pip_mock.assert_has_calls(calls, any_order=False)
+
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.'
+           'generate_install_script')
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.build_wheel')
+    @patch('packaging.bdist_prestoadmin.bdist_prestoadmin.'
+           'package_dependencies')
+    def test_package_dependencies_for_online_installer(
+            self, package_dependencies_mock, build_wheel_mock,
+            generate_install_script_mock):
+        self.bdist.online_install = True
+
+        self.bdist.run()
+
+        assert not package_dependencies_mock.called,\
+            'method should not have been called'
 
     @patch('packaging.bdist_prestoadmin.sys')
     @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
@@ -146,7 +163,11 @@ class TestBDistPrestoAdmin(utils.BaseTestCase):
             self.bdist.online_install = is_online
 
             os.chdir(packaging_dir)
-            os.mkdir('build')
+            try:
+                os.mkdir('build')
+            except OSError as exception:
+                if exception.errno != errno.EEXIST:
+                    raise
 
             self.bdist.generate_install_script('wheel_name', 'build')
 
