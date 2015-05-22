@@ -1,9 +1,32 @@
+# -*- coding: utf-8 -*-
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Product tests for presto-admin connector support.
+"""
+from time import sleep
 import json
 import os
 import re
+
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
+
+
+CONNECTOR_CHECK_TIMEOUT = 120
+CONNECTOR_CHECK_INTERVAL = 5
 
 
 class PrestoError(Exception):
@@ -18,15 +41,15 @@ class TestConnectors(BaseProductTestCase):
         self.run_prestoadmin('server start')
         for host in self.all_hosts():
             self.assert_has_default_connector(host)
-        connectors = self.get_connector_info()
-        self.assertEqual(connectors, [['system'], ['tpch']])
+
+        self._assert_connectors_loaded([['system'], ['tpch']])
 
         self.run_prestoadmin('connector remove tpch')
         self.run_prestoadmin('server restart')
         self.assert_path_removed(self.master,
                                  os.path.join(constants.CONNECTORS_DIR,
                                               'tpch.properties'))
-        self.assertEqual(self.get_connector_info(), [['system']])
+        self._assert_connectors_loaded([['system']])
         for host in self.all_hosts():
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
@@ -39,7 +62,7 @@ class TestConnectors(BaseProductTestCase):
         self.run_prestoadmin('server restart')
         for host in self.all_hosts():
             self.assert_has_default_connector(host)
-        self.assertEqual([['system'], ['tpch']], self.get_connector_info())
+        self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_add(self):
         self.install_presto_admin()
@@ -98,7 +121,7 @@ class TestConnectors(BaseProductTestCase):
         self.run_prestoadmin('server start')
         for host in self.all_hosts():
             self.assert_has_default_connector(host)
-        self.assertEqual([['system'], ['tpch']], self.get_connector_info())
+        self._assert_connectors_loaded([['system'], ['tpch']])
 
         self.run_prestoadmin('connector remove tpch')
         self.run_prestoadmin('server restart')
@@ -138,8 +161,7 @@ No connectors will be deployed
             self.assert_file_content(host,
                                      '/etc/presto/catalog/jmx.properties',
                                      'connector.name=jmx')
-        self.assertEqual([['system'], ['jmx'], ['tpch']],
-                         self.get_connector_info())
+        self._assert_connectors_loaded([['system'], ['jmx'], ['tpch']])
 
     def test_connector_add_lost_host(self):
         self.install_presto_admin()
@@ -165,7 +187,7 @@ No connectors will be deployed
 
         for host in [self.master, self.slaves[1], self.slaves[2]]:
             self.assert_has_default_connector(host)
-        self.assertEqual([['system'], ['tpch']], self.get_connector_info())
+        self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_remove(self):
         self.install_presto_admin()
@@ -250,3 +272,23 @@ for the change to take effect
             return ''
         except ValueError as e:
             raise ValueError(e.message + '\n' + text)
+
+    # Presto will be 'query-able' before it has loaded all of its
+    # connectors. When presto-admin restarts presto it returns when it
+    # can query the server but that doesn't mean that all connectors
+    # have been loaded. Thus in order to verify that connectors get
+    # correctly added we check continuously within a timeout.
+    def _assert_connectors_loaded(self, expected_connectors):
+        time_spent_waiting = 0
+        while time_spent_waiting <= CONNECTOR_CHECK_TIMEOUT:
+            try:
+                self.assertEqual(self.get_connector_info(),
+                                 expected_connectors)
+                # no exception thrown, the correct connectors were
+                # were loaded
+                return
+            except AssertionError:
+                pass  # not all connectors loaded
+            sleep(CONNECTOR_CHECK_INTERVAL)
+            time_spent_waiting += CONNECTOR_CHECK_INTERVAL
+        self.assertEqual(self.get_connector_info(), expected_connectors)
