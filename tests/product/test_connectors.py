@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
@@ -154,6 +155,9 @@ No connectors will be deployed
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'connector_lost_host.txt'),
                   'r') as f:
             expected = f.read()
+
+        output = re.sub(r'Traceback.*raise NetworkError\(msg, e\)\n', '',
+                        output, flags=re.DOTALL)
         for actual, expected in zip(
                 sorted(output.splitlines()), sorted(expected.splitlines())):
             self.assertRegexpMatches(actual, expected)
