@@ -162,7 +162,7 @@ task.max-memory=1GB\n"""
         for container in self.all_hosts():
             try:
                 self.stop_and_wait(container)
-                self.client.remove_container(container)
+                self.client.remove_container(container, v=True)
             except APIError as e:
                 # container does not exist
                 if e.response.status_code == 404:
