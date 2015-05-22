@@ -18,7 +18,6 @@ Product tests for presto-admin connector support.
 from time import sleep
 import json
 import os
-import re
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
@@ -93,7 +92,8 @@ class TestConnectors(BaseProductTestCase):
         script = 'chmod 600 /etc/opt/prestoadmin/connectors; ' \
                  'su app-admin -c "./presto-admin connector add tpch"'
         output = self.run_prestoadmin_script(script)
-        self.assert_parallel_execution_failure('connector.add',
+        self.assert_parallel_execution_failure(self.all_hosts(),
+                                               'connector.add',
                                                'Configuration for connector'
                                                ' tpch not found', output)
 
@@ -101,17 +101,17 @@ class TestConnectors(BaseProductTestCase):
         self.run_prestoadmin('connector remove tpch')
         output = self.run_prestoadmin('connector add tpch')
         self.assert_parallel_execution_failure(
-            'connector.add', 'Configuration for connector tpch not found',
-            output)
+            self.all_hosts(), 'connector.add',
+            'Configuration for connector tpch not found', output)
 
         # test add all connectors when the directory does not exist
         self.exec_create_start(self.master,
                                'rmdir /etc/opt/prestoadmin/connectors')
         output = self.run_prestoadmin('connector add')
         self.assert_parallel_execution_failure(
-            'connector.add', 'Cannot add connectors because directory '
-                             '/etc/opt/prestoadmin/connectors does not exist',
-            output)
+            self.all_hosts(), 'connector.add',
+            'Cannot add connectors because directory '
+            '/etc/opt/prestoadmin/connectors does not exist', output)
 
         # test add connector by name when it exists
         self.write_content_to_master('connector.name=tpch',
@@ -180,20 +180,11 @@ No connectors will be deployed
             self.assertTrue(deploying_message % host in output,
                             'expected %s \n actual %s'
                             % (deploying_message % host, output))
-        error_regex = re.compile(r'Process slave1:.*?\nNetworkError: '
-                                 '(Low level socket error connecting to'
-                                 ' host slave1 on port 22: No route to'
-                                 ' host \(tried 1 time\)|Timed out '
-                                 'trying to connect to slave1 '
-                                 '\(tried 1 time\))',
-                                 flags=re.DOTALL)
-        self.assertRegexpMatches(output, error_regex)
-        warning = r'\nWarning: One or more hosts failed while executing ' \
-                  r'task \'connector.add\'\n\nUnderlying exception:\n    ' \
-                  r'(Low level socket error connecting to host slave1 on ' \
-                  r'port 22: No route to host \(tried 1 time\)|Timed out ' \
-                  r'trying to connect to slave1 \(tried 1 time\))'
-        self.assertRegexpMatches(output, warning)
+        self.assert_parallel_execution_failure([self.slaves[0]],
+                                               'connector.add',
+                                               self.down_node_connection_error
+                                               % {'host': self.slaves[0]},
+                                               output)
         self.run_prestoadmin('server start')
 
         for host in [self.master, self.slaves[1], self.slaves[2]]:

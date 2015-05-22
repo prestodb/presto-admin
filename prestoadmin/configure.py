@@ -53,6 +53,7 @@ def workers():
 
 
 def configure_presto(conf, remote_dir):
+    print("Deploying configuration on: " + env.host)
     deploy(dict((name, output_format(content)) for (name, content)
                 in conf.iteritems() if name != "node.properties"), remote_dir)
     deploy_node_properties(output_format(conf['node.properties']), remote_dir)
@@ -98,7 +99,7 @@ def deploy_node_properties(content, remote_dir):
     name = "node.properties"
     node_file_path = (os.path.join(remote_dir, name))
     node_id_command = (
-        "if ! ( grep -q 'node.id' " + node_file_path + " ); then "
+        "if ! ( grep -q -s 'node.id' " + node_file_path + " ); then "
         "uuid=$(uuidgen); "
         "echo node.id=$uuid >> " + node_file_path + ";"
         "fi; "

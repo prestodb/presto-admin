@@ -81,7 +81,7 @@ class TestConfigure(utils.BaseTestCase):
         file_manager = open_mock.return_value.__enter__.return_value
         file_manager.read.return_value = ("key=value")
         command = (
-            "if ! ( grep -q 'node.id' /my/remote/dir/node.properties ); "
+            "if ! ( grep -q -s 'node.id' /my/remote/dir/node.properties ); "
             "then "
             "uuid=$(uuidgen); "
             "echo node.id=$uuid >> /my/remote/dir/node.properties;"
@@ -95,6 +95,7 @@ class TestConfigure(utils.BaseTestCase):
     @patch('prestoadmin.configure.deploy')
     @patch('prestoadmin.configure.deploy_node_properties')
     def test_configure_presto(self, deploy_node_mock, deploy_mock):
+        env.host = 'localhost'
         conf = {"node.properties": {"key": "value"}, "jvm.config": ["list"]}
         remote_dir = "/my/remote/dir"
         configure.configure_presto(conf, remote_dir)

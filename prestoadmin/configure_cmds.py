@@ -55,7 +55,6 @@ def deploy(rolename=None):
     Parameters:
         rolename - [coordinator|workers]
     """
-    print("Deploying configuration on: " + env.host)
     if rolename is None:
         _LOGGER.info("Running configuration deploy")
         configure.coordinator()

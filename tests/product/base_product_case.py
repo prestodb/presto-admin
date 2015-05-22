@@ -72,6 +72,11 @@ task.max-memory=1GB\n"""
     slaves = ["slave1", "slave2", "slave3"]
     master = "master"
 
+    down_node_connection_error = r'(Low level socket error connecting to ' \
+                                 r'host %(host)s on port 22: No route to ' \
+                                 r'host \(tried 1 time\)|Timed out trying ' \
+                                 r'to connect to %(host)s \(tried 1 time\))'
+
     def setUp(self):
         self.maxDiff = None
         self.check_if_docker_exists()
@@ -291,13 +296,13 @@ task.max-memory=1GB\n"""
     def assert_path_removed(self, container, directory):
         self.exec_create_start(container, ' [ ! -e %s ]' % directory)
 
-    def assert_parallel_execution_failure(self, task, underlying_exception,
-                                          cmd_output):
+    def assert_parallel_execution_failure(self, hosts, task,
+                                          underlying_exception, cmd_output):
         expected_parallel_exception = "!!! Parallel execution exception " \
                                       "under host u'%s'"
         expected_stacktrace = 'Process %s:'
 
-        for host in self.all_hosts():
+        for host in hosts:
             self.assertTrue(expected_parallel_exception % host in cmd_output,
                             "expected: %s\n output: %s\n"
                             % (expected_parallel_exception % host, cmd_output))
@@ -305,36 +310,19 @@ task.max-memory=1GB\n"""
                             "expected: %s\n output: %s\n"
                             % (expected_stacktrace % host, cmd_output))
 
-        warning = """Warning: One or more hosts failed while executing task \
+        warning = """\nWarning: One or more hosts failed while executing task \
 '%(task)s'
 
 Underlying exception:
-    %(exception)s
+    %(exception)s\n
+"""
+        warning = warning % {'exception': underlying_exception,
+                             'task': task}
+        expected_warning = ''
+        for i in range(len(hosts)):
+            expected_warning += warning
 
-
-Warning: One or more hosts failed while executing task '%(task)s'
-
-Underlying exception:
-    %(exception)s
-
-
-Warning: One or more hosts failed while executing task '%(task)s'
-
-Underlying exception:
-    %(exception)s
-
-
-Warning: One or more hosts failed while executing task '%(task)s'
-
-Underlying exception:
-    %(exception)s"""
-
-        expected_warning = warning % {'exception': underlying_exception,
-                                      'task': task}
-
-        self.assertTrue(expected_warning in cmd_output,
-                        "expected: %s\n output: %s\n"
-                        % (expected_warning, cmd_output))
+        self.assertRegexpMatches(cmd_output, expected_warning)
 
     def assert_installed(self, container):
         check_rpm = self.exec_create_start(container,
