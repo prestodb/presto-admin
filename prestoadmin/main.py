@@ -83,8 +83,12 @@ def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
     commands_to_remove = ['fabfile', 'parallel', 'rcfile', 'skip_bad_hosts',
                           'warn_only', 'always_use_pty']
+    commands_to_hide = ['--hosts', '--exclude-hosts']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
+    for env_option in new_env_options:
+        if env_option.get_opt_string() in commands_to_hide:
+            env_option.help = SUPPRESS_HELP
     return new_env_options
 
 
