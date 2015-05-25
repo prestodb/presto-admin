@@ -35,6 +35,8 @@ from docker import Client
 import prestoadmin
 from tests import utils
 
+DOCKER_START_TIMEOUT = 20
+
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
 
@@ -411,7 +413,7 @@ Underlying exception:
     def ensure_docker_containers_started(self):
         timeout = 0
         ps_output = ''
-        while timeout < 10:
+        while timeout < DOCKER_START_TIMEOUT:
             started = True
             for host in self.all_hosts():
                 ps_output = self.exec_create_start(host, 'ps')
@@ -423,7 +425,7 @@ Underlying exception:
                 sleep(1)
             else:
                 break
-        if timeout is 10:
+        if timeout is DOCKER_START_TIMEOUT:
             log = self.client.logs(self.all_hosts()[-1])
             self.fail('Docker container with presto timed out on start; '
                       'ps output: %s\n log output: %s\n' % (ps_output, log))
