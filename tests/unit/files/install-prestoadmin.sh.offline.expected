@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ -d "third-party"]; then
+if [ -d "third-party" ]; then
     tar xvzf third-party/virtualenv-12.0.7.tar.gz -C third-party || true
     python third-party/virtualenv-12.0.7/virtualenv.py presto-admin-install
 else
