@@ -15,9 +15,10 @@ To setup a configuration, create a file ``/etc/opt/presto-admin/config.json`` th
     "workers": ["<host_name_1>", "<host_name_2>", ... "<host_name_n>"]
  }
 
-E.g. For a 6 node cluster with default username and port, the config.json would be
+ E.g. For a 6 node cluster with default username and port, the config.json would be
 
  {
     "coordinator": "master",
     "workers": ["slave1","slave2","slave3","slave4","slave5"]
  }
+

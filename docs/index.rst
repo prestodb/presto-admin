@@ -30,10 +30,6 @@ something about cluster configuration (e.g. need passwordless ssh between nodes,
 in presto-admin installation
 
 
-
-
-
-
 Indices and tables
 ------------------
 

@@ -39,11 +39,11 @@ def install(local_path=None):
     """
     Install the rpm package on the cluster
 
-    Parameters:
-        local_path - Absolute path to the rpm to be installed
-        --nodeps   - Optional flag to indicate if rpm install
-                     should ignore checking package dependencies. Equivalent to
-                     adding --nodeps flag to rpm -i.
+    Args:
+        local_path: Absolute path to the rpm to be installed
+        --nodeps (optional): Flag to indicate if rpm install
+            should ignore checking package dependencies. Equivalent
+            to adding --nodeps flag to rpm -i.
     """
     if local_path is None:
         abort('Missing argument local_path: Absolute path to '

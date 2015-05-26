@@ -535,11 +535,11 @@ def parse_arguments(arguments, commands):
 
     Thus, since our arguments are separated by spaces, and is of the form
     ['install', 'server'], we iterate through the commands, progressively
-     going deeper into the dict.  If we run out of elements in the dict,
-     the rest of the tokens are arguments to the function. If we don't
-     get down to the bottom-most level, the command is not valid. If
-     at any point the next token is not in the possible_cmd map, the
-     command is invalid.
+    going deeper into the dict.  If we run out of elements in the dict,
+    the rest of the tokens are arguments to the function. If we don't
+    get down to the bottom-most level, the command is not valid. If
+    at any point the next token is not in the possible_cmd map, the
+    command is invalid.
     """
 
     possible_cmds = commands.copy()
@@ -650,8 +650,8 @@ def _to_boolean(string):
     True, and only the string "False" returns the boolean False.  All other
     values throw a ValueError.
 
-    Parameters:
-        string - the string to parse
+    Args:
+        string: the string to parse
     """
     if string is True or string == 'True':
         return True

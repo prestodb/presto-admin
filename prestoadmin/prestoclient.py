@@ -90,11 +90,11 @@ class PrestoClient:
         "/v1/statement". Header information should
         include: X-Presto-Catalog, X-Presto-Schema,  X-Presto-User
 
-        Parameters:
-            sql - sql query to be executed
-            schema - Presto schema to be used while executing query
-                    (default=default)
-            catalog - Catalog to be used by the server
+        Args:
+            sql: SQL query to be executed
+            schema: Presto schema to be used while executing query
+                (default=default)
+            catalog: Catalog to be used by the server
 
         Returns:
             True or False exit status
