@@ -1,0 +1,80 @@
+
+Warning: [slave3] sudo() received nonzero return code 1 while executing 'set -m; /etc/rc.d/init.d/presto stop'!
+
+
+Warning: [slave3] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+
+[slave3] out:
+[slave3] out: We trust you have received the usual lecture from the local System
+[slave3] out: Administrator. It usually boils down to these three things:
+[slave3] out:
+[slave3] out:     #1) Respect the privacy of others.
+[slave3] out:     #2) Think before you type.
+[slave3] out:     #3) With great power comes great responsibility.
+[slave3] out:
+[slave3] out: sudo password:
+[slave3] out: testuser is not in the sudoers file.  This incident will be reported.
+[slave3] out:
+[slave3] out: sudo password:
+[slave3] out: testuser is not in the sudoers file.  This incident will be reported.
+[slave3] out:
+
+Warning: [slave1] sudo() received nonzero return code 1 while executing 'set -m; /etc/rc.d/init.d/presto stop'!
+
+
+Warning: [slave1] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+
+[slave1] out:
+[slave1] out: We trust you have received the usual lecture from the local System
+[slave1] out: Administrator. It usually boils down to these three things:
+[slave1] out:
+[slave1] out:     #1) Respect the privacy of others.
+[slave1] out:     #2) Think before you type.
+[slave1] out:     #3) With great power comes great responsibility.
+[slave1] out:
+[slave1] out: sudo password:
+[slave1] out: testuser is not in the sudoers file.  This incident will be reported.
+[slave1] out:
+[slave1] out: sudo password:
+[slave1] out: testuser is not in the sudoers file.  This incident will be reported.
+[slave1] out:
+
+Warning: [slave2] sudo() received nonzero return code 1 while executing 'set -m; /etc/rc.d/init.d/presto stop'!
+
+
+Warning: [slave2] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+
+[slave2] out:
+[slave2] out: We trust you have received the usual lecture from the local System
+[slave2] out: Administrator. It usually boils down to these three things:
+[slave2] out:
+[slave2] out:     #1) Respect the privacy of others.
+[slave2] out:     #2) Think before you type.
+[slave2] out:     #3) With great power comes great responsibility.
+[slave2] out:
+[slave2] out: sudo password:
+[slave2] out: testuser is not in the sudoers file.  This incident will be reported.
+[slave2] out:
+[slave2] out: sudo password:
+[slave2] out: testuser is not in the sudoers file.  This incident will be reported.
+[slave2] out:
+
+Warning: [master] sudo() received nonzero return code 1 while executing 'set -m; /etc/rc.d/init.d/presto stop'!
+
+
+Warning: [master] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+
+[master] out:
+[master] out: We trust you have received the usual lecture from the local System
+[master] out: Administrator. It usually boils down to these three things:
+[master] out:
+[master] out:     #1) Respect the privacy of others.
+[master] out:     #2) Think before you type.
+[master] out:     #3) With great power comes great responsibility.
+[master] out:
+[master] out: sudo password:
+[master] out: testuser is not in the sudoers file.  This incident will be reported.
+[master] out:
+[master] out: sudo password:
+[master] out: testuser is not in the sudoers file.  This incident will be reported.
+[master] out:

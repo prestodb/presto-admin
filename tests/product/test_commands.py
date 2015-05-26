@@ -80,27 +80,3 @@ class TestCommands(BaseProductTestCase):
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
-
-    def test_uninstall_presto(self):
-        self.install_default_presto()
-        start_output = self.run_prestoadmin('server start')
-        process_per_host = self.get_process_per_host(start_output.splitlines())
-        cmd_output = self.run_prestoadmin('server uninstall').splitlines()
-        self.assert_stopped(process_per_host)
-        expected = ['Package uninstalled successfully on: slave1',
-                    'Package uninstalled successfully on: slave2',
-                    'Package uninstalled successfully on: slave3',
-                    'Package uninstalled successfully on: master']
-        expected += self.expected_stop()[:]
-        self.assertRegexpMatchesLineByLine(cmd_output, expected)
-
-        for container in self.all_hosts():
-            self.assert_uninstalled(container)
-            self.assert_path_removed(container, '/etc/presto')
-            self.assert_path_removed(container, '/usr/lib/presto')
-            self.assert_path_removed(container, '/var/lib/presto')
-            self.assert_path_removed(container, '/usr/shared/doc/presto')
-            self.assert_path_removed(container, '/etc/rc.d/init.d/presto')
-
-        self.install_presto_admin()
-        self.upload_topology()

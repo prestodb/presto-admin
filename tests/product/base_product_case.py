@@ -493,3 +493,9 @@ Underlying exception:
         self.server_install()
         self.client.commit(self.master, INSTALLED_PRESTO_TEST_MASTER_IMAGE)
         self.client.commit(self.slaves[0], INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
+
+    def assert_started(self, process_per_host):
+        for host, pid in process_per_host:
+            self.exec_create_start(host, 'kill -0 %s' %
+                                   pid)
+        return process_per_host

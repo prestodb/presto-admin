@@ -320,12 +320,6 @@ class TestControl(BaseProductTestCase):
                                r'\[%s\] out: Starting presto' % host]
         return return_str
 
-    def assert_started(self, process_per_host):
-        for host, pid in process_per_host:
-            self.exec_create_start(host, 'kill -0 %s' %
-                                   pid)
-        return process_per_host
-
     def presto_not_installed_message(self):
         return ('Warning: [slave2] Presto is not installed.\n\n\n'
                 'Warning: [slave3] Presto is not installed.\n\n\n'

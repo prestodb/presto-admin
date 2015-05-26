@@ -27,6 +27,7 @@ RUN printf " if [[ -e /etc/services-config/ssh/id_rsa ]]; then \n \
 	    cp -r \${OPTS_SSH_USER_HOME_DIR}/.ssh /root/.ssh\n \
 	  fi\n\
 	  " > /etc/bootstrap-extra
+RUN printf "\nuseradd -ms /bin/bash testuser\necho "testuser:testpass" | chpasswd" >> /etc/bootstrap-extra
 
 RUN awk -v file="/etc/bootstrap-extra" -v lineno=$(($(wc -l < /etc/ssh-bootstrap) - 3)) ' \
     NR==lineno {system("echo ""; cat " file); print; next} \
