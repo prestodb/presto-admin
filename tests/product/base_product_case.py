@@ -246,16 +246,18 @@ task.max-memory=1GB\n"""
 
         return output
 
+    def dump_and_cp_topology(self, topology):
+        with open(os.path.join(LOCAL_MOUNT_POINT % self.master,
+                               "config.json"), "w") as conf_file:
+            json.dump(topology, conf_file)
+        self.exec_create_start(self.master, "cp %s /etc/opt/prestoadmin/" %
+                               os.path.join(DOCKER_MOUNT_POINT, "config.json"))
+
     def upload_topology(self, topology=None):
         if not topology:
             topology = {"coordinator": "master",
                         "workers": ["slave1", "slave2", "slave3"]}
-        with open(os.path.join(LOCAL_MOUNT_POINT % self.master,
-                               "config.json"), "w") as conf_file:
-            json.dump(topology, conf_file)
-
-        self.exec_create_start(self.master, "cp %s /etc/opt/prestoadmin/" %
-                               os.path.join(DOCKER_MOUNT_POINT, "config.json"))
+        self.dump_and_cp_topology(topology)
 
     def check_if_corrupted_rpm(self):
         self.exec_create_start(self.master, 'rpm -K --nosignature '
