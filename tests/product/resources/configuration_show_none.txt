@@ -33,8 +33,3 @@ Warning: [slave3] No configuration file found for slave3 at /etc/presto/jvm.conf
 
 
 Warning: [slave3] No configuration file found for slave3 at /etc/presto/config.properties
-
-Disconnecting from slave3... done.
-Disconnecting from slave1... done.
-Disconnecting from master... done.
-Disconnecting from slave2... done.

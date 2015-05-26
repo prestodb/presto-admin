@@ -1,0 +1,28 @@
+
+master: Configuration file at /etc/presto/config.properties:
+coordinator=true
+discovery-server.enabled=true
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB
+
+
+slave1: Configuration file at /etc/presto/config.properties:
+coordinator=false
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB
+
+
+slave2: Configuration file at /etc/presto/config.properties:
+coordinator=false
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB
+
+
+slave3: Configuration file at /etc/presto/config.properties:
+coordinator=false
+discovery.uri=http://master:8080
+http-server.http.port=8080
+task.max-memory=1GB

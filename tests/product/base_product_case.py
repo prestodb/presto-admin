@@ -82,6 +82,15 @@ task.max-memory=1GB\n"""
                                  r'host %(host)s on port 22: No route to ' \
                                  r'host \(tried 1 time\)|Timed out trying ' \
                                  r'to connect to %(host)s \(tried 1 time\))'
+    serial_down_node_connection_error = r'(\nWarning: Low level socket error ' \
+                                        r'connecting to host %(host)s on ' \
+                                        r'port 22: No route to host ' \
+                                        r'\(tried 1 time\)\n\nUnderlying ' \
+                                        r'exception:\n    No route to host\n' \
+                                        r'|\nWarning: Timed out trying to ' \
+                                        r'connect to %(host)s \(tried 1 ' \
+                                        r'time\)\n\nUnderlying exception:' \
+                                        r'\n    timed out\n)'
 
     def setUp(self):
         self.maxDiff = None

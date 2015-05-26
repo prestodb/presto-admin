@@ -1,0 +1,11 @@
+
+Warning: [master] No configuration file found for master at /etc/presto/log.properties
+
+
+Warning: [slave1] No configuration file found for slave1 at /etc/presto/log.properties
+
+
+Warning: [slave2] No configuration file found for slave2 at /etc/presto/log.properties
+
+
+Warning: [slave3] No configuration file found for slave3 at /etc/presto/log.properties

@@ -157,16 +157,8 @@ http-server.http.port=8090"""
                 index = i
                 status['no_status'] = True
                 status['is_running'] = 'Not Running'
-                error1 = r'\nWarning: Low level socket error connecting to ' \
-                         r'host %s on port 22: No route to host ' \
-                         r'\(tried 1 time\)\n\nUnderlying exception:\n    ' \
-                         r'No route to host\n' % node
-                error2 = r'\nWarning: Timed out trying to connect to %s ' \
-                         r'\(tried 1 time\)\n\nUnderlying exception:\n    ' \
-                         r'timed out\n' % node
-
-                status['error_message'] = '(%s|%s)' % (error1, error2)
-                status['unavailable_message'] = '(%s|%s)' % (error1, error2)
+                status['error_message'] = \
+                    self.serial_down_node_connection_error % {'host': node}
                 i += 1
         if index >= 0:
             temp = statuses[index]
