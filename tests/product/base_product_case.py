@@ -144,14 +144,14 @@ task.max-memory=1GB\n"""
         self.tear_down_docker_cluster()
         self.create_host_mount_dirs()
 
-        if not self.client.images("jdeathe/centos-ssh"):
-            self._execute_and_wait(self.client.pull, "jdeathe/centos-ssh")
+        if not self.client.images('jdeathe/centos-ssh'):
+            self._execute_and_wait(self.client.pull, 'jdeathe/centos-ssh')
 
         self._execute_and_wait(self.client.build,
                                path=os.path.join(prestoadmin.main_dir,
-                                                 "tests/product/resources/"
-                                                 "centos6-ssh-test"),
-                               tag="teradatalabs/centos6-ssh-test", rm=True)
+                                                 'tests/product/resources/'
+                                                 'centos6-ssh-test'),
+                               tag='teradatalabs/centos6-ssh-test', rm=True)
 
         self.create_and_start_containers()
         self.ensure_docker_containers_started()
@@ -203,7 +203,7 @@ task.max-memory=1GB\n"""
         except:
             pass
 
-    def install_presto_admin(self):
+    def build_dist_if_necessary(self):
         dist_dir = os.path.join(prestoadmin.main_dir, "dist")
         if not os.path.exists(dist_dir) or not fnmatch.filter(
                 os.listdir(dist_dir), "prestoadmin-*.tar.bz2"):
@@ -214,16 +214,23 @@ task.max-memory=1GB\n"""
             distutils.core.run_setup("setup.py",
                                      ["bdist_prestoadmin"]).run_commands()
             os.chdir(saved_path)
+        return dist_dir
+
+    def copy_dist_to_master(self, dist_dir):
         for dist_file in os.listdir(dist_dir):
             if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
                 self.copy_to_master(os.path.join(dist_dir, dist_file))
+
+    def install_presto_admin(self):
+        dist_dir = self.build_dist_if_necessary()
+        self.copy_dist_to_master(dist_dir)
         self.copy_to_master(LOCAL_RESOURCES_DIR + "/install-admin.sh")
         self.exec_create_start(self.master,
                                DOCKER_MOUNT_POINT + "/install-admin.sh")
 
-    def exec_create_start(self, host, command, raise_error=True):
-        ex = self.client.exec_create(host, command)
-        output = self.client.exec_start(ex['Id'])
+    def exec_create_start(self, host, command, raise_error=True, tty=False):
+        ex = self.client.exec_create(host, command, tty=tty)
+        output = self.client.exec_start(ex['Id'], tty=tty)
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
         if raise_error and exit_code:
             raise OSError(output)
@@ -272,6 +279,13 @@ task.max-memory=1GB\n"""
                                      % script_contents, temp_script)
         self.exec_create_start(self.master, 'chmod +x %s' % temp_script)
         return self.exec_create_start(self.master, temp_script)
+
+    def run_script(self, script_contents):
+        temp_script = '/tmp/tmp.sh'
+        self.write_content_to_master('#!/bin/bash\n%s' % script_contents,
+                                     temp_script)
+        self.exec_create_start(self.master, 'chmod +x %s' % temp_script)
+        return self.exec_create_start(self.master, temp_script, tty=True)
 
     def all_hosts(self):
         return self.slaves[:] + [self.master]
@@ -424,7 +438,14 @@ Underlying exception:
             started = True
             for host in self.all_hosts():
                 ps_output = self.exec_create_start(host, 'ps')
-                if 'sshd_bootstrap' in ps_output or 'sshd\n' not in ps_output:
+                # also ensure that the app-admin user exists
+                try:
+                    user_output = self.exec_create_start(
+                        host, 'grep app-admin /etc/passwd')
+                except OSError:
+                    user_output = ''
+                if 'sshd_bootstrap' in ps_output or 'sshd\n' not in ps_output \
+                        or not user_output:
                     timeout += 1
                     started = False
             if not started:

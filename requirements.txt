@@ -8,3 +8,4 @@ wheel>=0.23.0
 fabric==1.10.1
 requests>=2.6.0
 docker-py>=1.2.2
+certifi==2015.4.28
