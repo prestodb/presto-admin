@@ -4,7 +4,7 @@ presto-admin installs, configures, and manages Presto installations.
 
 ## Requirements
 
-1. Python >= 2.6
+1. Python 2.6 or 2.7
 2. [Docker](https://www.docker.com/). (Only required for development, if you want to run the system tests)
     * If you DO NOT have Docker already installed, you can run the `install-docker.sh`
       script in the `bin` directory of this project. That script has only been tested on
