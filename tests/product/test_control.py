@@ -135,6 +135,67 @@ class TestControl(BaseProductTestCase):
         self.assert_simple_server_restart(expected_output,
                                           running_host=self.slaves[0])
 
+    def test_start_stop_restart_coordinator_down(self):
+        self.install_presto_admin()
+        topology = {"coordinator": "slave1", "workers":
+                    ["master", "slave2", "slave3"]}
+        self.upload_topology(topology=topology)
+        self.server_install()
+        self.assert_start_stop_restart_down_node(self.slaves[0])
+
+    def test_start_stop_restart_worker_down(self):
+        self.install_presto_admin()
+        self.upload_topology()
+        self.server_install()
+        self.assert_start_stop_restart_down_node(self.slaves[0])
+
+    def assert_start_stop_restart_down_node(self, down_node):
+        self.stop_and_wait(down_node)
+        alive_hosts = self.all_hosts()[:]
+        alive_hosts.remove(down_node)
+
+        start_output = self.run_prestoadmin('server start')
+        self.assert_parallel_execution_failure([down_node],
+                                               'server.start',
+                                               self.down_node_connection_error
+                                               % {'host': down_node},
+                                               start_output)
+
+        expected_start = self.expected_start(start_success=alive_hosts)
+        for message in expected_start:
+            self.assertRegexpMatches(start_output, message, 'expected %s \n '
+                                     'actual %s' % (message, start_output))
+
+        process_per_host = self.get_process_per_host(start_output)
+        self.assert_started(process_per_host)
+
+        stop_output = self.run_prestoadmin('server stop')
+        self.assert_parallel_execution_failure([down_node],
+                                               'server.stop',
+                                               self.down_node_connection_error
+                                               % {'host': down_node},
+                                               stop_output)
+        expected_stop = self.expected_stop(running=alive_hosts)
+        for message in expected_stop:
+            self.assertRegexpMatches(stop_output, message, 'expected %s \n '
+                                     'actual %s' % (message, stop_output))
+        self.assert_stopped(process_per_host)
+        expected_stop = self.expected_stop(running=[],
+                                           not_running=alive_hosts)
+        restart_output = self.run_prestoadmin('server restart')
+        self.assert_parallel_execution_failure([down_node],
+                                               'server.restart',
+                                               self.down_node_connection_error
+                                               % {'host': down_node},
+                                               restart_output)
+        expected_restart = list(
+            set(expected_stop[:] + expected_start[:])) + [r'']
+        for message in expected_restart:
+            self.assertRegexpMatches(restart_output, message, 'expected %s \n'
+                                     ' actual %s' % (message, restart_output))
+        process_per_host = self.get_process_per_host(restart_output)
+        self.assert_started(process_per_host)
+
     def test_start_restart_config_file_error(self):
         self.install_default_presto()
 

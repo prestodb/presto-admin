@@ -380,17 +380,24 @@ Underlying exception:
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
         self.assertEqual(expected, split_properties[1])
 
-    def expected_stop(self, not_running=None):
+    def expected_stop(self, running=None, not_running=None):
+        if running is None:
+            running = self.all_hosts()
+            if not_running:
+                for host in not_running:
+                    running.remove(host)
+
         expected_output = []
-        for host in self.all_hosts():
-            if not_running and host in not_running:
+        for host in running:
+            expected_output += [r'\[%s\] out: ' % host,
+                                r'\[%s\] out: Stopped .*' % host,
+                                r'\[%s\] out: Stopping presto' % host]
+        if not_running:
+            for host in not_running:
                 expected_output += [r'\[%s\] out: ' % host,
                                     r'\[%s\] out: Not runnning' % host,
                                     r'\[%s\] out: Stopping presto' % host]
-            else:
-                expected_output += [r'\[%s\] out: ' % host,
-                                    r'\[%s\] out: Stopped .*' % host,
-                                    r'\[%s\] out: Stopping presto' % host]
+
         return expected_output
 
     def assert_stopped(self, process_per_host):

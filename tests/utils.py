@@ -81,7 +81,11 @@ class BaseTestCase(unittest.TestCase):
                                       expected_regexp_lines, msg=None):
         for expected_regexp, actual_line in zip(sorted(expected_regexp_lines),
                                                 sorted(actual_lines)):
-            self.assertRegexpMatches(actual_line, expected_regexp, msg=msg)
+            try:
+                self.assertRegexpMatches(actual_line, expected_regexp, msg=msg)
+            except AssertionError:
+                self.assertEqualIgnoringOrder('\n'.join(actual_lines),
+                                              '\n'.join(expected_regexp_lines))
 
     def remove_runs_once_flag(self, callable_obj):
         # since we annotated show with @runs_once, we need to delete the
