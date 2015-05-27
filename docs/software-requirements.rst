@@ -4,29 +4,33 @@ Software Requirements
 
 **Operating System**
 
-* RedHat Linux version 6.2 or later
-* CentOS (equivalent to the above)
+* RedHat Linux version 6.5 or later OR
+* CentOS (equivalent to above)
 
 **Hadoop distributions**
 
-* HDP 2.x
+* HDP 2.x OR
 * CDH 5.x
 
 **Java**
 
-* Java 8 (for Presto. See :ref:`java-installation-label`)
+* Java 8 (Required for Presto. See :ref:`java-installation-label`)
 
 **Python**
 
-* Python 2.6.x
+* Python 2.6.x OR
 * Python 2.7.x
 
-**Other Software**
+**SSH Configuration**
 
-* Passwordless SSH between the machine running ``presto-admin`` and the nodes where Presto will be installed
-* python-devel (``yum install python-devel``)
-* gcc (``yum install gcc``)
+* Passwordless SSH between the node running ``presto-admin`` and the nodes where Presto will be installed OR
+* Ability to SSH with a password between the node running ``presto-admin`` and the nodes where Presto will be installed
 
+For more on SSH configuration, see :ref:`ssh-configuration-label`.
+
+**Other Configuration**
+
+* Sudo privileges on both the node running ``presto-admin`` and the nodes where Presto will be installed
 
 **Teradata**
 

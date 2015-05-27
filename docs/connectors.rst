@@ -1,3 +1,5 @@
+.. _connectors-label:
+
 *****************
 Presto Connectors
 *****************

@@ -1,4 +1,4 @@
-presto-admin
+Presto-Admin
 ============
 
 `Mailing list <http://groups.google.com/group/presto-users>`_ |
@@ -7,7 +7,7 @@ presto-admin
 
 Introduction
 ------------
-``presto-admin`` is software to install and manage the Presto query engine on a single node or multiple node cluster.
+Presto-Admin is software to install and manage the Presto query engine on a single node or multiple node cluster.
 
 Content
 -------
@@ -16,19 +16,14 @@ Content
    :maxdepth: 2
 
    software-requirements
-   multinode-installation
-   connectors
+   quick-start-guide
+   comprehensive-guide
    userguide
    reference
    contributing
    modules
    release
    readme
-
-
-something about cluster configuration (e.g. need passwordless ssh between nodes, or else need to pass password)
-in presto-admin installation
-
 
 Indices and tables
 ------------------
