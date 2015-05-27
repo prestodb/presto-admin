@@ -1,17 +1,20 @@
 .PHONY: clean-pyc clean-build docs clean
 
 help:
-	@echo "clean - remove all build, test, coverage and Python artifacts"
+	@echo "clean-all - clean everything; effectively resets repo as if it was just checked out"
+	@echo "clean - remove build, test, coverage and Python artifacts except for the cache Presto RPM"
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
+	@echo "clean-rpm - delete the cached Presto RPM"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
-	@echo "dist - package"
+	@echo "dist - package and build installer that can be used offline"
+	@echo "dist-online - package and build installer that requires an Internet connection"
 	@echo "wheel - build wheel only"
 	@echo "install - install the package to the active Python's site-packages"
 
