@@ -1,6 +1,10 @@
-==========================
-Presto Server Installation
-==========================
+=====================
+Presto Admin Commands
+=====================
+
+**************
+server install
+**************
 
 Command
 -------
@@ -32,9 +36,9 @@ If you want to do a single node installation where coordinator and worker are co
 
 This will deploy the necessary configurations for the presto-server to operate in single-node mode.
 
-========================
-RPM Package Installation
-========================
+***************
+package install
+***************
 
 Command
 -------
@@ -55,3 +59,46 @@ Example
 ::
 
  sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
+
+*************
+topology show
+*************
+
+Command
+-------
+::
+
+ presto-admin topology show
+
+Description
+-----------
+This command shows the current topology configuration for the cluster (including the coordinators, workers, SSH port, and SSH username).
+
+Example
+-------
+::
+
+ sudo ./presto-admin topology show
+
+******************
+configuration show
+******************
+
+Command
+-------
+::
+
+ presto-admin configuration show [node|jvm|config|log]
+
+Description
+-----------
+
+This command prints the contents of the Presto configuration files deployed in the cluster. It takes an optional configuration name argument for the configuration files node.properties, jvm.config, config.properties and log.properties. For missing configuration files a warning will be printed except for log.properties file, since it is an optional configuration file in your Presto cluster.
+
+If no argument is specified, then all four configurations will be printed.
+
+Example
+-------
+::
+
+ sudo ./presto-admin configuration show node

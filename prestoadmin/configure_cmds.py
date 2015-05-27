@@ -87,7 +87,7 @@ def configuration_show(file_name, should_warn=True):
 @serial
 def show(config_type=None):
     """
-    Print to the user the contents of the configuration deployed
+    Print to the user the contents of the configuration files deployed
 
     If no config_type is specified, then all four configurations will be
     printed.  No warning will be printed for a missing log.properties since
