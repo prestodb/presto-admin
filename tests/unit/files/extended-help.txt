@@ -38,13 +38,7 @@ Options:
     --system-known-hosts=SYSTEM_KNOWN_HOSTS
                         load system known_hosts file before reading user
                         known_hosts
-    -R ROLES, --roles=ROLES
-                        comma-separated list of roles to operate on
-    -s SHELL, --shell=SHELL
-                        specify a new shell, defaults to '/bin/bash -l -c'
     --show=LEVELS       comma-separated list of output levels to show
-    --skip-unknown-tasks
-                        skip over unknown tasks
     --ssh-config-path=PATH
                         Path to SSH config file
     -t N, --timeout=N   set connection timeout to N seconds
