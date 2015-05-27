@@ -36,3 +36,17 @@ The above configuration is for a single-node installation on the same node as ``
  "workers": ["slave1","slave2","slave3","slave4","slave5"]
  }
 
+Sudo password specification
+---------------------------
+Please note that if the username you specify is not root, and that user needs to specify a sudo password, you can specify the password in one of two ways. You can specify it on the command line:
+::
+
+ sudo ./presto-admin <command> -p <password>
+
+Alternatively, you can opt to use an interactive password prompt, which prompts you for the initial value of your password before running any commands:
+::
+
+ sudo ./presto-admin <command> -I
+ Initial value for env.password: <type your password here>
+
+The sudo password for the user must be the same as the SSH password.
