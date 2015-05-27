@@ -64,10 +64,6 @@ Example
 topology show
 *************
 
-Command
--------
-::
-
  presto-admin topology show
 
 Description
@@ -83,11 +79,6 @@ Example
 ******************
 configuration show
 ******************
-
-Command
--------
-::
-
  presto-admin configuration show [node|jvm|config|log]
 
 Description
@@ -102,3 +93,83 @@ Example
 ::
 
  sudo ./presto-admin configuration show node
+
+.. _connectors-label:
+
+*************
+Connector Add
+*************
+
+Command
+-------
+::
+presto-admin connector add [<name>]
+
+Description
+-----------
+This command is used to deploy connector configurations to the Presto cluster.
+[TODO: link to Presto connector configuration.]  Connector configurations are
+kept in the configuration directory ``/etc/opt/prestoadmin/connectors``
+
+To add a connector using presto-admin, first create a configuration file in
+``/etc/opt/prestoadmin/connectors``. The file should be named
+``<name>.properties`` and contain the configuration for that connector.
+
+Use the optional ``name`` argument to add a particular connector to your
+cluster. To deploy all connectors in the connectors configuration directory,
+leave the name argument out.
+
+In order to query using the newly added connector, you need to restart [TODO: link to server restart] the
+Presto server: ::
+
+    presto-admin server restart
+
+Example
+-------
+To add the jmx connector, create a file
+``/etc/opt/prestoadmin/connectors/jmx.properties`` with the content
+``connector.name=jmx``.
+Then run: ::
+
+    presto-admin connector add jmx
+    presto-admin server restart
+
+If you have two connectors in the configuration directory, for example
+``jmx.properties`` and ``dummy.properties``, and would like to deploy both at
+once, you could run ::
+
+    presto-admin connector add
+    presto-admin server restart
+
+****************
+Connector Remove
+****************
+
+Command
+-------
+::
+
+    presto-admin connector remove <name>
+
+Description
+-----------
+The connector remove command is used to remove a connector from your presto
+cluster configuration. Running the command will remove the connector from all
+nodes in the Presto cluster. Additionally, it will remove the local
+configuration file for the connector.
+
+To remove a connector, run: ::
+
+    presto-admin connector remove <connector>
+
+In order for the change to take effect, you will need to restart services. ::
+
+    presto-admin server restart
+
+
+Example
+-------
+For example: To remove the jmx connector, run ::
+
+    presto-admin connector remove jmx
+    presto-admin server restart

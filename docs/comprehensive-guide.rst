@@ -11,6 +11,5 @@ A full explanation of the commands and features of ``presto-admin``.
 
     installation/advanced-installation-options
     ssh-configuration
-    connectors
     presto-admin-commands
 
