@@ -7,9 +7,10 @@ Comprehensive Guide for Presto Admin
 A full explanation of the commands and features of ``presto-admin``.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     installation/advanced-installation-options
     ssh-configuration
     connectors
+    presto-admin-commands
 
