@@ -66,6 +66,115 @@ Example
 
     sudo ./presto-admin topology show
 
+
+********************
+configuration deploy
+********************
+::
+
+    presto-admin configuration deploy [coordinator|workers]
+
+This command deploys Presto configuration files onto the cluster. Presto-Admin
+uses different configuration directories for worker and coordinator
+configurations so that you can easily create different configurations for
+your coordinator and worker nodes. The coordinator configurations should go in
+``/etc/opt/prestoadmin/coordinator`` and the workers configuration should go in
+``/etc/opt/prestoadmin/workers``. The optional ``coordinator`` or ``workers``
+argument tells presto-admin to only deploy the coordinator or workers
+configurations.  To deploy both configurations at once, don't specify either
+option.
+
+When you run configuration deploy, the following files will be deployed to
+the ``/etc/presto`` directory on your Presto cluster:
+
+* node.properties
+* config.properties
+* jvm.config
+* log.properties (if it exists)
+
+If the coordinator is also a worker, it will get the coordinator configuration.
+The deployed configuration files will overwrite the existing configurations on
+the cluster. However, the node.id from the
+node.properties file will be preserved. If no node.id exists, a new id will be
+generated. If any required files are absent when you run configuration deploy,
+a default configuration will be deployed. If any required properties from those
+files are missing, they will be filled in with defaults. Below are the default
+configurations:
+
+*node.properties* ::
+
+    node.environment=presto
+    node.data-dir=/var/lib/presto/data
+    plugin.config-dir=/etc/presto/catalog
+    plugin.dir=/urs/lib/presto/lib/plugin
+
+Do not change the value of plugin.config-dir=/etc/presto/catalog as it is
+necessary for presto to be able to find the catalog directory when Presto has
+been installed by RPM.
+
+*jvm.config* ::
+
+    -server
+    -Xmx16G
+    -XX:+UseConcMarkSweepGC
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+AggressiveOpts
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:OnOutOfMemoryError=kill -9 %p
+    -XX:ReservedCodeCacheSize=150M"
+
+*config.properties*
+
+For workers: ::
+
+    coordinator=false
+    http-server.http.port=8080
+    task.max-memory=1GB
+    discovery.uri=http://<coordinator>:8080
+
+For coordinator: ::
+
+    coordinator=true
+    http-server.http.port=8080
+    task.max-memory=1GB
+    discovery-server.enabled=true
+    discovery.uri=http://<coordinator>:8080
+
+    # if the coordinator is also a worker, it will have the following property too
+    node-scheduler.include-coordinator=true
+
+Example
+-------
+If you want to change the jvm configuration on the coordinator and the
+``node.environment`` property from ``node.properties`` on all nodes, add the
+following ``jvm.config`` to ``/etc/opt/prestoadmin/coordinator``
+
+.. code-block:: none
+
+    -server
+    -Xmx16G
+    -XX:+UseConcMarkSweepGC
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+AggressiveOpts
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:OnOutOfMemoryError=kill -9 %p
+    -XX:ReservedCodeCacheSize=50M"
+
+Further, add the following ``node.properties`` to
+``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers``: ::
+
+    node.environment=test
+
+Then run: ::
+
+    sudo ./presto-admin configuration deploy
+
+This will distribute to the coordinator a default ``config.properties``, the new
+``jvm.config``, and a ``node.properties`` with all of the default properties,
+except ``node.environment``, which will be set to ``test``.  The workers will
+receive the default ``config.properties`` and ``jvm.config``, and the same
+``node.properties`` as the coordinator.
+
 ******************
 configuration show
 ******************
