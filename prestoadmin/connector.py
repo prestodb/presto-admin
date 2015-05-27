@@ -59,10 +59,10 @@ def add(name=None):
 
     E.g.: 'presto-admin connector add tpch'
     deploys a configuration file for the tpch connector.  The configuration is
-    defined by tpch.properties in connectors.json.
+    defined by tpch.properties in /etc/opt/prestoadmin/connectors directory.
 
     If no connector name is specified, then  configurations for all connectors
-    in the connector directory will be deployed
+    in the connectors directory will be deployed
 
     Parameters:
         name - Name of the connector to be added

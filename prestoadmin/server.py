@@ -58,16 +58,19 @@ _LOGGER = logging.getLogger(__name__)
 def install(local_path=None):
     """
     Copy and install the presto-server rpm to all the nodes in the cluster and
-    configure the nodes. Executed on all nodes unless some are excluded using
-    -x/--exclude-hosts.
+    configure the nodes.
 
     The topology information will be read from the config.json file. If this
-    file is missing, then the co-ordinator and workers will be obtained
-    interactively.
+    file is missing, then the coordinator and workers will be obtained
+    interactively. Install will fail for invalid json configuration.
 
-    The connector configuration will be read from connectors.json. If this
-    file is missing or empty then no connector configuration is deployed.
-    Install will fail for invalid json configuration.
+    The connector configurations will be read from the directory
+    /etc/opt/prestoadmin/connectors. If this directory is missing or empty
+    then no connector configuration is deployed.
+
+    Install will fail for incorrectly formatted configuration files. Expected
+    format is key=value for .properties files and one option per line for
+    jvm.config
 
     Parameters:
         local_path - Absolute path to the presto rpm to be installed
