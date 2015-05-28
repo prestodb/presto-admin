@@ -117,6 +117,8 @@ task.max-memory=1GB\n"""
                 # file exists
                 if e.errno == errno.EEXIST:
                     pass
+                else:
+                    raise
 
     def create_and_start_containers(self, master_image=None, slave_image=None):
         if not master_image:
