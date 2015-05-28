@@ -17,7 +17,6 @@ Content
 
    software-requirements
    user-guide
-   reference
    contributing
    modules
    release
