@@ -336,6 +336,8 @@ For example: To remove the jmx connector, run ::
     sudo ./presto-admin connector remove jmx
     sudo ./presto-admin server restart
 
+.. _collect-logs:
+
 ************
 collect logs
 ************
@@ -353,6 +355,8 @@ Example
 
     sudo ./presto-admin collect logs
 
+.. _collect-query-info:
+
 ******************
 collect query_info
 ******************
@@ -368,6 +372,8 @@ Example
 ::
 
     sudo ./presto-admin collect query_info 20150525_234711_00000_7qwaz
+
+.. _collect-system-info:
 
 *******************
 collect system_info
