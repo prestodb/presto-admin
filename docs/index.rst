@@ -23,7 +23,6 @@ Content
    contributing
    modules
    release
-   readme
 
 Indices and tables
 ------------------
