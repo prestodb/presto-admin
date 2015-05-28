@@ -51,6 +51,76 @@ Example
 
     sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
 
+
+************
+server start
+************
+::
+
+    presto-admin server start
+
+This command starts the Presto servers on the cluster. A status check is performed on the entire cluster and is reported at the end.
+
+Example
+-------
+::
+
+    sudo ./presto-admin server start
+
+***********
+server stop
+***********
+::
+
+    presto-admin server stop
+
+This command stops the Presto servers on the cluster.
+
+Example
+-------
+::
+
+    sudo ./presto-admin server stop
+
+**************
+server restart
+**************
+::
+
+    presto-admin server restart
+
+This command first stops any Presto servers running and then starts them. A status check is performed on the entire cluster and is reported at the end.
+
+Example
+-------
+::
+
+    sudo ./presto-admin server restart
+
+*************
+server status
+*************
+::
+
+    presto-admin server status
+
+This command prints the status information of Presto in the cluster. This command will
+fail to report the correct status if the Presto installed is older than version 0.100. It will not print any status information if a given node is inaccessible.
+
+The status output will have the following information:
+    * server status
+    * node uri
+    * Presto version installed
+    * node is active/inactive
+    * connectors deployed
+
+Example
+-------
+::
+
+    sudo ./presto-admin server status
+
+
 *************
 topology show
 *************
@@ -259,3 +329,18 @@ For example: To remove the jmx connector, run ::
     sudo ./presto-admin connector remove jmx
     sudo ./presto-admin server restart
 
+****************
+server uninstall
+****************
+::
+
+    presto-admin server uninstall
+
+This command stops the Presto server if running on the cluster and uninstalls the Presto rpm. The uninstall command removes any presto
+related files deployed during ``server install`` but retains the Presto logs at ``/var/log/presto``.
+
+Example
+-------
+::
+
+    sudo ./presto-admin server uninstall

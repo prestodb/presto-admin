@@ -109,8 +109,7 @@ def update_configs():
 @requires_topology
 def uninstall():
     """
-    Uninstall Presto after stopping the services on all nodes, unless some are
-    excluded using -x/--exclude-hosts.
+    Uninstall Presto after stopping the services on all nodes
     """
     stop()
     ret = sudo('rpm -e presto')
@@ -139,8 +138,7 @@ def check_status_for_control_commands():
 @requires_topology
 def start():
     """
-    Start the Presto server on all nodes, unless some are excluded using
-    -x/--exclude-hosts.
+    Start the Presto server on all nodes
 
     A status check is performed on the entire cluster and a list of
     servers that did not start, if any, are reported at the end.
@@ -153,8 +151,7 @@ def start():
 @requires_topology
 def stop():
     """
-    Stop the Presto server on all nodes, unless some are excluded using
-    -x/--exclude-hosts.
+    Stop the Presto server on all nodes
     """
     service(' stop')
 
@@ -163,8 +160,7 @@ def stop():
 @requires_topology
 def restart():
     """
-    Restart the Presto server on all nodes, unless some are excluded using
-    -x/--exclude-hosts.
+    Restart the Presto server on all nodes.
 
     A status check is performed on the entire cluster and a list of
     servers that did not start, if any, are reported at the end.
