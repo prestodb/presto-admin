@@ -128,6 +128,10 @@ class bdist_prestoadmin(Command):
 
     def archive_dist(self, build_dir, dist_dir):
         archive_basename = self.distribution.get_fullname()
+        if self.online_install:
+            archive_basename += '-online'
+        else:
+            archive_basename += '-offline'
         archive_file = os.path.join(dist_dir, archive_basename)
         self.mkpath(os.path.dirname(archive_file))
         self.make_archive(archive_file, 'bztar',
