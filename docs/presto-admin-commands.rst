@@ -13,7 +13,7 @@ This command copies the presto-server rpm from ``local_path`` to all the nodes i
 The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
 
 The connectors directory ``/etc/opt/prestoadmin/connectors/`` should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
-The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``install``, then by default tpch connector is configured. See <TODO: Link to connectors> on how to add connector configuration files after installation.
+The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
 
 Example
 -------
@@ -283,8 +283,8 @@ Use the optional ``name`` argument to add a particular connector to your
 cluster. To deploy all connectors in the connectors configuration directory,
 leave the name argument out.
 
-In order to query using the newly added connector, you need to restart [TODO: link to server restart] the
-Presto server: ::
+In order to query using the newly added connector, you need to restart the
+Presto server (see `server restart`_): ::
 
     presto-admin server restart
 
