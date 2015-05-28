@@ -329,6 +329,59 @@ For example: To remove the jmx connector, run ::
     sudo ./presto-admin connector remove jmx
     sudo ./presto-admin server restart
 
+************
+collect logs
+************
+::
+
+    presto-admin collect logs
+
+This command gathers Presto server logs and launcher logs from the ``/var/log/presto/`` directory across the cluster along with the
+``/var/log/prestoadmin/presto-admin.log`` and creates a tar file. The final tar output will be saved at /tmp/presto-debug-logs.tar.bz2.
+
+
+Example
+-------
+::
+
+    sudo ./presto-admin collect logs
+
+******************
+collect query_info
+******************
+::
+
+    presto-admin collect query_info <query_id>
+
+This command gathers information about a Presto query identified by the given ``query_id`` and stores that information in a JSON file.
+The output file will be saved at /tmp/presto-debug/query_info_``query_id``.json
+
+Example
+-------
+::
+
+    sudo ./presto-admin collect query_info 20150525_234711_00000_7qwaz
+
+*******************
+collect system_info
+*******************
+::
+
+    presto-admin collect system_info
+
+This command gathers various system specific information from the cluster. The information is saved in a tar file at /tmp/presto-debug-sysinfo.tar.bz2.
+The gathered information includes:
+
+ * Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.
+ * Connectors configured
+ * Other system specific information like OS information, Java version, presto-admin version and Presto server version
+
+Example
+-------
+::
+
+    sudo ./presto-admin collect system_info
+
 ****************
 server uninstall
 ****************
