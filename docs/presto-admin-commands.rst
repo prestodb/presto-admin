@@ -2,6 +2,8 @@
 Presto-Admin Commands
 =====================
 
+.. _server-install-label:
+
 **************
 server install
 **************
@@ -11,6 +13,8 @@ server install
 
 This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration.
 The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
+
+The general configurations for Presto's coordinator and workers are taken from the directories ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers`` respectively. If these directories or any required configuration files are absent when you run ``server install``, a default configuration will be deployed. See `configuration deploy`_ for details.
 
 The connectors directory ``/etc/opt/prestoadmin/connectors/`` should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
 The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
@@ -136,6 +140,7 @@ Example
 
     sudo ./presto-admin topology show
 
+.. _configuration-deploy-label:
 
 ********************
 configuration deploy
@@ -212,6 +217,8 @@ For coordinator: ::
 
     # if the coordinator is also a worker, it will have the following property too
     node-scheduler.include-coordinator=true
+
+See :ref:`presto-port-configuration-label` for details on http port configuration.
 
 Example
 -------
