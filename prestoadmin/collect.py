@@ -31,6 +31,7 @@ from fabric.tasks import execute
 from fabric.api import env, runs_once, task
 from fabric.utils import abort, warn
 
+from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
 from prestoadmin.server import get_presto_version, get_connector_info_from
 import prestoadmin.util.fabricapi as fabricapi
@@ -170,7 +171,8 @@ def system_info():
 
     conn_file_name = os.path.join(downloaded_sys_info_loc,
                                   'connector_info.txt')
-    conn_info = get_connector_info_from(env.host)
+    client = PrestoClient(env.host, env.user)
+    conn_info = get_connector_info_from(client)
 
     with open(conn_file_name, 'w') as out_file:
         out_file.write(conn_info + '\n')

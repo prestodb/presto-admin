@@ -191,7 +191,7 @@ class TestCollect(utils.BaseTestCase):
 
         open_mock.assert_any_call(conn_info_file_name, "w")
 
-        conn_info_mock.assert_called_with(env.host)
+        assert conn_info_mock.called
 
         file_obj.write.assert_any_call(connector_info + '\n')
 
