@@ -4,7 +4,7 @@ Software Requirements
 
 **Operating System**
 
-* RedHat Linux version 6.5 or later OR
+* RedHat Linux version 6.2 or 6.5 OR
 * CentOS (equivalent to above)
 
 **Hadoop distributions**
@@ -14,7 +14,7 @@ Software Requirements
 
 **Java**
 
-* Java 8 (Required for Presto. See :ref:`java-installation-label`)
+* Oracle Java 1.8 JRE (64-bit) (Required for Presto. See :ref:`java-installation-label`)
 
 **Python**
 
@@ -31,7 +31,3 @@ For more on SSH configuration, see :ref:`ssh-configuration-label`.
 **Other Configuration**
 
 * Sudo privileges on both the node running ``presto-admin`` and the nodes where Presto will be installed
-
-**Teradata**
-
-* Teradata 15.x (for Presto & QueryGrid integration)
