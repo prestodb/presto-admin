@@ -7,7 +7,13 @@ Presto-Admin
 
 Introduction
 ------------
-Presto-Admin is software to install and manage the Presto query engine on a single node or multiple node cluster.
+Presto-Admin is a tool for installing and managing the Presto query engine on a
+cluster. It provides easy-to-use commands to:
+
+    * Install and uninstall Presto across your cluster
+    * Configure your Presto cluster
+    * Start and stop the Presto servers
+    * Gather status and log information from your Presto cluster
 
 Content
 -------
