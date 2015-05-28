@@ -25,13 +25,13 @@ Fix Bugs
 ~~~~~~~~
 
 Look through the GitHub issues for bugs. Anything tagged with "bug"
-is open to whoever wants to implement it.
+is open to whomever wants to implement it.
 
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
 Look through the GitHub issues for features. Anything tagged with "feature"
-is open to whoever wants to implement it.
+is open to whomever wants to implement it.
 
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~

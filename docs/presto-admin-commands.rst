@@ -310,7 +310,7 @@ connector remove
 ****************
 ::
 
-    presto-admin connector remove [<name>]
+    presto-admin connector remove <name>
 
 The connector remove command is used to remove a connector from your presto
 cluster configuration. Running the command will remove the connector from all

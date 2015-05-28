@@ -13,12 +13,10 @@ Content
 -------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    software-requirements
-   quick-start-guide
-   comprehensive-guide
-   userguide
+   user-guide
    reference
    contributing
    modules
