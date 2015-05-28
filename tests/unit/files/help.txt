@@ -7,10 +7,9 @@ Options:
   --extended-help       print out all options, including advanced ones
   -I, --initial-password-prompt
                         Force password prompt up-front
-  -l, --list            print list of possible commands and exit
-  --shortlist           print out text processing friendly version of --list
   -p PASSWORD, --password=PASSWORD
                         password for use with authentication and/or sudo
+
 
 Commands:
     collect logs

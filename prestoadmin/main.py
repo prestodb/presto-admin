@@ -82,8 +82,11 @@ _LOGGER = logging.getLogger(__name__)
 def _get_presto_env_options():
     new_env_options = copy.deepcopy(env_options)
     commands_to_remove = ['fabfile', 'parallel', 'rcfile', 'skip_bad_hosts',
-                          'warn_only', 'always_use_pty', 'skip_unknown_tasks']
-    commands_to_hide = ['--hosts', '--exclude-hosts', '--roles', '--shell']
+                          'warn_only', 'always_use_pty', 'skip_unknown_tasks',
+                          'abort_on_prompts', 'pool_size',
+                          'eagerly_disconnect']
+    commands_to_hide = ['--hosts', '--exclude-hosts', '--roles', '--shell',
+                        '--linewise', '--show', '--hide']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
     for env_option in new_env_options:
@@ -273,9 +276,9 @@ def parser_for_options():
     # Initialize
     #
     parser = LoggingOptionParser(
-        usage="presto-admin [options] <command> [arg]",
-        version="presto-admin %s" % __version__,
-        epilog="\n".join(list_commands(None, 'normal')))
+        usage='presto-admin [options] <command> [arg]',
+        version='presto-admin %s' % __version__,
+        epilog='\n' + '\n'.join(list_commands(None, 'normal')))
 
     #
     # Define options that don't become `env` vars (typically ones which cause
@@ -290,27 +293,15 @@ def parser_for_options():
         dest='display',
         action='store_true',
         default=False,
-        help="print detailed information about command"
+        help='print detailed information about command'
     )
 
-    # Like --list, but text processing friendly
     parser.add_option(
         '--extended-help',
         action='store_true',
         dest='extended_help',
         default=False,
-        help="print out all options, including advanced ones"
-    )
-
-    # Control behavior of --list
-    list_format_options = ('short', 'normal')
-    parser.add_option(
-        '-F',
-        '--list-format',
-        choices=list_format_options,
-        default='normal',
-        metavar='FORMAT',
-        help=SUPPRESS_HELP
+        help='print out all options, including advanced ones'
     )
 
     parser.add_option(
@@ -319,25 +310,6 @@ def parser_for_options():
         action='store_true',
         default=False,
         help="Force password prompt up-front"
-    )
-
-    # List Fab commands found in loaded fabfiles/source files
-    parser.add_option(
-        '-l',
-        '--list',
-        action='store_true',
-        dest='list_commands',
-        default=False,
-        help="print list of possible commands and exit"
-    )
-
-    # Like --list, but text processing friendly
-    parser.add_option(
-        '--shortlist',
-        action='store_true',
-        dest='shortlist',
-        default=False,
-        help="print out text processing friendly version of --list"
     )
 
     parser.add_option(
@@ -386,7 +358,7 @@ def parser_for_options():
         metavar="KEY=VALUE,...",
         dest='env_settings',
         default="",
-        help="comma separated KEY=VALUE pairs to set env vars"
+        help=SUPPRESS_HELP
     )
 
     parser.add_option_group(advanced_options)
@@ -755,19 +727,9 @@ def parse_and_validate_commands(args=sys.argv[1:]):
 
     _update_env(default_options, non_default_options)
 
-    # Shortlist is now just an alias for the "short" list format;
-    # it overrides use of --list-format if somebody were to specify both
-    if options.shortlist:
-        options.list_format = 'short'
-        options.list_commands = True
-
     if len(parser.rargs) > 0:
         warn("Arbitrary remote shell commands not supported.")
-        show_commands(None, options.list_format, 2)
-
-    # List available commands
-    if options.list_commands:
-        show_commands(docstring, options.list_format)
+        show_commands(None, 'normal', 2)
 
     if options.extended_help:
         parser.print_extended_help()

@@ -74,10 +74,6 @@ class TestMain(utils.BaseTestCase):
     def test_help_displayed_with_no_args(self):
         self._run_command_compare_to_file([], 0, "/files/help.txt")
 
-    def test_list_commands(self):
-        # Note: this will have to be updated whenever we add a new command
-        self._run_command_compare_to_file(["-l"], 0, "/files/list.txt")
-
     def test_version(self):
         # Note: this will have to be updated whenever we have a new version.
         self._run_command_compare_to_string(["--version"], 0,
@@ -188,10 +184,6 @@ class TestMain(utils.BaseTestCase):
             "(including the\n    coordinators, workers, SSH port, and SSH "
             "username)\n\n"
         )
-
-    def test_shortlist(self):
-        self._run_command_compare_to_file(["--shortlist"], 0,
-                                          "/files/shortlist.txt")
 
     @patch('prestoadmin.main.getpass.getpass')
     def test_initial_password(self, pass_mock):

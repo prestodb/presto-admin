@@ -7,8 +7,6 @@ Options:
   --extended-help       print out all options, including advanced ones
   -I, --initial-password-prompt
                         Force password prompt up-front
-  -l, --list            print list of possible commands and exit
-  --shortlist           print out text processing friendly version of --list
   -p PASSWORD, --password=PASSWORD
                         password for use with authentication and/or sudo
 
@@ -17,19 +15,14 @@ Options:
     -a, --no_agent      don't use the running SSH agent
     -A, --forward-agent
                         forward local agent to remote end
-    --abort-on-prompts  abort instead of prompting (for password, host, etc)
     --colorize-errors   Color error output
     -D, --disable-known-hosts
                         do not load user known_hosts file
-    -e, --eagerly-disconnect
-                        disconnect from hosts as soon as possible
     -g HOST, --gateway=HOST
                         gateway host to connect through
-    --hide=LEVELS       comma-separated list of output levels to hide
     -i PATH             path to SSH private key file. May be repeated.
     -k, --no-keys       don't load private key files from ~/.ssh/
     --keepalive=N       enables a keepalive every N seconds
-    --linewise          print line-by-line instead of byte-by-byte
     -n M, --connection-attempts=M
                         make M attempts to connect before giving up
     --port=PORT         SSH connection port
@@ -38,7 +31,6 @@ Options:
     --system-known-hosts=SYSTEM_KNOWN_HOSTS
                         load system known_hosts file before reading user
                         known_hosts
-    --show=LEVELS       comma-separated list of output levels to show
     --ssh-config-path=PATH
                         Path to SSH config file
     -t N, --timeout=N   set connection timeout to N seconds
@@ -46,11 +38,8 @@ Options:
                         set remote command timeout to N seconds
     -u USER, --user=USER
                         username to use when connecting to remote hosts
-    -z INT, --pool-size=INT
-                        number of concurrent processes to use in parallel mode
     --serial            default to serial execution method
-    --set=KEY=VALUE,...
-                        comma separated KEY=VALUE pairs to set env vars
+
 Commands:
     collect logs
     collect query_info
