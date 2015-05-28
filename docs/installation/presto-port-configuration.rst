@@ -1,7 +1,7 @@
 .. _presto-port-configuration-label:
 
 =========================
-Presto port configuration
+Presto Port Configuration
 =========================
 
 By default, Presto configuration uses 8080 for the HTTP port. If the port is already used in your cluster, the server will fail to start.
