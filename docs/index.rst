@@ -25,12 +25,15 @@ Content
    hardware-requirements
    user-guide
    contributing
-   modules
    release
+
+.. toctree::
+   :hidden:
+
+   modules
 
 Indices and tables
 ------------------
 
-* :ref:`modindex`
 * :ref:`search`
 
