@@ -19,3 +19,14 @@ Troubleshooting
 
 3. You can find the ``presto-admin`` logs in the ``/var/log/prestoadmin``
    directory.
+4. If Presto servers start up successfully but crash shortly thereafter, you
+   may have an error in one of your connector configuration files. For example,
+   you may have a syntax error or be missing the connector.name property.
+   To investigate why a server is not started, you can look at the Presto logs
+   in ``/var/log/presto`` on the Presto cluster.  Look at the log with most
+   recent timestamp.  You can collect the log information locally using
+   :ref:`collect-logs`. To fix an issue with the connectors configuration,
+   correct the file and deploy it to the cluster again using
+   :ref:`connectors-label`.
+5. You can check the status of Presto on your cluster by using
+   :ref:`server-status`.

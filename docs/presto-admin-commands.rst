@@ -101,6 +101,10 @@ Example
 
     sudo ./presto-admin server restart
 
+
+
+.. _server-status:
+
 *************
 server status
 *************
