@@ -324,6 +324,9 @@ task.max-memory=1GB\n"""
         self.exec_create_start(self.master, 'cp %s %s' % (
             os.path.join(DOCKER_MOUNT_POINT, filename), dest_dir))
 
+    def assert_path_exists(self, host, file_path):
+        self.exec_create_start(host, ' [ -e %s ] ' % file_path)
+
     def assert_file_content(self, host, filepath, expected):
         config = self.exec_create_start(host, 'cat %s' % filepath)
         self.assertEqual(config, expected)
