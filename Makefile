@@ -42,6 +42,7 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 	docker rmi -f teradatalabs/centos-presto-test-master teradatalabs/centos-presto-test-slave || true
+	echo "Note: The above command is just cleaning up a Docker image that may not exit. If the command fails, it is not a problem."
 
 clean-rpm:
 	rm -fr presto*.rpm
