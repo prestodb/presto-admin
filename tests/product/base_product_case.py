@@ -35,7 +35,7 @@ from docker import Client
 import prestoadmin
 from tests import utils
 
-DOCKER_START_TIMEOUT = 20
+DOCKER_START_TIMEOUT = 30
 
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
