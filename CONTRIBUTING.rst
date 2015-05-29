@@ -57,7 +57,7 @@ Get Started!
 
 Ready to contribute? Here's how to set up `presto-admin` for local development.
 
-1. Fork the `presto-admin` repo on GitHub.
+1. Fork the `presto-admin` repo on GitHub, https://github.com/prestodb/presto-admin.
 2. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/presto-admin.git
@@ -74,13 +74,19 @@ Ready to contribute? Here's how to set up `presto-admin` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
+5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox.
+To run tests, you need docker installed. You may also need to pip install wheel into your virtualenv. To install and start docker use::
 
-    $ flake8 prestoadmin tests
-    $ python setup.py test
-    $ tox
+    $ wget -qO- https://get.docker.com/ | sh
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+    # Add current user to Docker group to run without sudo
+    $ sudo gpasswd -a ${USER} docker
+    $ sudo service docker restart
+
+Now, to run presto-admin tests::
+
+    $ make lint
+    $ make test-all
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -98,4 +104,4 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
+   feature to the presto-admin/docs.
