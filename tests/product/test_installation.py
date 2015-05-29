@@ -72,7 +72,7 @@ class TestInstallation(BaseProductTestCase):
             self._execute_and_wait(self.client.pull, image, '14.04')
 
         self._execute_and_wait(self.client.create_container,
-                               image,
+                               image + ':14.04',
                                command='tail -f /var/log/bootstrap.log',
                                detach=True,
                                name=self.master,
@@ -85,6 +85,7 @@ class TestInstallation(BaseProductTestCase):
 
         self.exec_create_start(self.master, 'sudo apt-get -y install'
                                ' python-minimal')
+        self.exec_create_start(self.master, 'sudo apt-get -y install wget')
         self.install_presto_admin()
 
         self.assertRaisesRegexp(
