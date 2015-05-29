@@ -69,7 +69,7 @@ class TestInstallation(BaseProductTestCase):
         self.create_host_mount_dirs()
         image = 'ubuntu'
         if not self.client.images(image):
-            self._execute_and_wait(self.client.pull, image)
+            self._execute_and_wait(self.client.pull, image, '14.04')
 
         self._execute_and_wait(self.client.create_container,
                                image,
