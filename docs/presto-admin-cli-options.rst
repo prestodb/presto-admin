@@ -62,9 +62,6 @@ be found below.
     EC2, a particular host getting a different key should not mean that you are not
     able to connect via SSH to that host.
 
--e, --eagerly-disconnect
-    Disconnects from hosts as soon as possible.
-
 -g HOST, --gateway=HOST
     Routes SSH connections through the SSH daemon on the
     specified gateway host to their final destination.
@@ -88,10 +85,10 @@ be found below.
     specified on the command line will be used.
 
 -r, --reject-unknown-hosts
-    Aborts when a host is not in the user's SSH known_hosts file.
+    Aborts when a host is not in the user's SSH ``known_hosts`` file.
 
 --system-known-hosts=SYSTEM_KNOWN_HOSTS
-    Loads the given SSH known_hosts file before reading the user's known_hosts
+    Loads the given SSH ``known_hosts`` file before reading the user's ``known_hosts``
     file.
 
 --ssh-config-path=PATH
@@ -113,4 +110,4 @@ be found below.
 --serial
     Switches to run the command in serial. The default is to run in parallel, because
     parallel mode is usually faster. However, if you want a password prompt while the command
-    is running (without specifying -I), the --serial flag is necessary.
+    is running (without specifying ``-I`` or ``--initial-password-prompt``), the ``--serial`` flag is necessary.

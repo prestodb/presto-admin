@@ -11,13 +11,13 @@ server install
 
     presto-admin server install <local_path>
 
-This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration.
+This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The ``local_path`` should be accessible by ``presto-admin``.
 The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
 
 The general configurations for Presto's coordinator and workers are taken from the directories ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers`` respectively. If these directories or any required configuration files are absent when you run ``server install``, a default configuration will be deployed. See `configuration deploy`_ for details.
 
 The connectors directory ``/etc/opt/prestoadmin/connectors/`` should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
-The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
+The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``server install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
 
 Example
 -------
@@ -25,8 +25,7 @@ Example
 
     sudo ./presto-admin server install /tmp/presto-0.101-1.0.x86_64.rpm
 
-Standalone RPM Install
-----------------------
+**Standalone RPM Install**
 
 If you want to do a single node installation where coordinator and worker are co-located, you can just use:
 ::
@@ -187,9 +186,7 @@ configurations:
     plugin.config-dir=/etc/presto/catalog
     plugin.dir=/urs/lib/presto/lib/plugin
 
-Do not change the value of plugin.config-dir=/etc/presto/catalog as it is
-necessary for presto to be able to find the catalog directory when Presto has
-been installed by RPM.
+.. NOTE:: Do not change the value of plugin.config-dir=/etc/presto/catalog as it is necessary for presto to be able to find the catalog directory when Presto has been installed by RPM.
 
 *jvm.config* ::
 
@@ -350,7 +347,7 @@ collect logs
     presto-admin collect logs
 
 This command gathers Presto server logs and launcher logs from the ``/var/log/presto/`` directory across the cluster along with the
-``/var/log/prestoadmin/presto-admin.log`` and creates a tar file. The final tar output will be saved at /tmp/presto-debug-logs.tar.bz2.
+``/var/log/prestoadmin/presto-admin.log`` and creates a tar file. The final tar output will be saved at ``/tmp/presto-debug-logs.tar.bz2``.
 
 
 Example
@@ -369,7 +366,7 @@ collect query_info
     presto-admin collect query_info <query_id>
 
 This command gathers information about a Presto query identified by the given ``query_id`` and stores that information in a JSON file.
-The output file will be saved at /tmp/presto-debug/query_info_``query_id``.json
+The output file will be saved at ``/tmp/presto-debug/query_info_<query_id>.json``.
 
 Example
 -------
@@ -386,12 +383,12 @@ collect system_info
 
     presto-admin collect system_info
 
-This command gathers various system specific information from the cluster. The information is saved in a tar file at /tmp/presto-debug-sysinfo.tar.bz2.
+This command gathers various system specific information from the cluster. The information is saved in a tar file at ``/tmp/presto-debug-sysinfo.tar.bz2``.
 The gathered information includes:
 
  * Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.
  * Connectors configured
- * Other system specific information like OS information, Java version, presto-admin version and Presto server version
+ * Other system specific information like OS information, Java version, ``presto-admin`` version and Presto server version
 
 Example
 -------
