@@ -36,7 +36,10 @@ The above configuration is for a single-node installation of Presto on the same 
  "workers": ["slave1","slave2","slave3","slave4","slave5"]
  }
 
-Sudo password specification
+
+.. _sudo-password-spec:
+
+Sudo Password Specification
 ---------------------------
 Please note that if the username you specify is not root, and that user needs to specify a sudo password, you do so in one of two ways. You can specify it on the command line:
 ::

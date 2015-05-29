@@ -33,3 +33,11 @@ Troubleshooting
    :ref:`collect-logs`. To fix an issue with the connectors configuration,
    correct the file and deploy it to the cluster again using
    :ref:`connectors-label`.
+#. The following error can occur if you do not have passwordless ssh enabled
+   and have not provided a password or if the user requires a sudo password: ::
+
+    Fatal error: Needed to prompt for a connection or sudo password (host: master), but input would be ambiguous in parallel mode
+
+   See :ref:`ssh-configuration-label` for information on setting up
+   passwordless ssh and on providing a password, and :ref:`sudo-password-spec`
+   for information on providing a sudo password.
