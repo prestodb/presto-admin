@@ -17,7 +17,6 @@ Base class for product tests.  Handles setting up a docker cluster and has
 other utilities
 """
 
-import distutils.core
 import fnmatch
 import json
 import re
@@ -33,7 +32,7 @@ from docker.errors import APIError
 from docker import Client
 
 import prestoadmin
-from tests import utils
+from tests.utils import BaseTestCase, run_make
 
 DOCKER_START_TIMEOUT = 30
 
@@ -48,7 +47,15 @@ PRESTO_RPM = 'presto-0.101-1.0.x86_64.rpm'
 PRESTO_VERSION = 'presto-main:0.101-SNAPSHOT'
 
 
-class BaseProductTestCase(utils.BaseTestCase):
+def check_if_docker_exists():
+    try:
+        subprocess.call(['docker', '--version'])
+    except OSError:
+        sys.exit('Docker is not installed. Try installing it with '
+                 'presto-admin/bin/install-docker.sh.')
+
+
+class BaseProductTestCase(BaseTestCase):
     default_workers_config_ = """coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
@@ -93,21 +100,14 @@ task.max-memory=1GB\n"""
                                         r'\n    timed out\n)'
 
     def setUp(self):
+        super(BaseProductTestCase, self).setUp()
         self.maxDiff = None
-        self.check_if_docker_exists()
+        check_if_docker_exists()
         self.create_docker_cluster()
-        self.capture_stdout_stderr()
 
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()
         self.tear_down_docker_cluster()
-
-    def check_if_docker_exists(self):
-        try:
-            subprocess.call(['docker', '--version'])
-        except OSError:
-            sys.exit('Docker is not installed. Try installing it with '
-                     'presto-admin/bin/install-docker.sh.')
 
     def create_host_mount_dirs(self):
         for container_name in self.all_hosts():
@@ -219,12 +219,7 @@ task.max-memory=1GB\n"""
         if not os.path.exists(dist_dir) or not fnmatch.filter(
                 os.listdir(dist_dir), "prestoadmin-*.tar.bz2"):
             self.clean_up_presto_test_images()
-            # setup.py expects you to be in the main directory
-            saved_path = os.getcwd()
-            os.chdir(prestoadmin.main_dir)
-            distutils.core.run_setup("setup.py",
-                                     ["bdist_prestoadmin"]).run_commands()
-            os.chdir(saved_path)
+            run_make(['dist'])
         return dist_dir
 
     def copy_dist_to_master(self, dist_dir):
@@ -245,7 +240,6 @@ task.max-memory=1GB\n"""
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
         if raise_error and exit_code:
             raise OSError(output)
-
         return output
 
     def dump_and_cp_topology(self, topology):
