@@ -26,6 +26,10 @@ from tests.utils import run_make, BaseTestCase
 
 class TestInstaller(BaseTestCase):
 
+    def tearDown(self):
+        run_make(['clean'])
+        BaseTestCase.tearDown(self)
+
     def test_online_installer(self):
         run_make(['dist-online'])
         self._verify_third_party_dir(False)
