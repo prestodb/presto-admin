@@ -12,3 +12,5 @@ The ``presto-admin`` tool simplifies installing Java 8 on all nodes in the Prest
 
  $ sudo ./presto-admin package install <local_path_to_java_rpm>
 
+.. NOTE:: The ``server-install-label`` will look for your Oracle Java 1.8 installation at locations where Java is installed normally using the binary or the RPM based installer. Otherwise, you need to have your ``JAVA_HOME`` environment variable set for ``presto-admin`` to find it. If ``presto-admin`` fails to find Java at the normal install locations or if ``JAVA_HOME`` is set with an incompatible Java version, then ``server install`` will fail. After successfully running ``server install`` you can find the Java being used by Presto at ``/etc/presto/env.sh``.
+
