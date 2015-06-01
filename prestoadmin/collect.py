@@ -119,15 +119,15 @@ def query_info(query_id=None):
     if env.host not in fabricapi.get_coordinator_role():
         return
 
-    if query_id is None:
-        abort('Missing argument query_id')
+    with settings(hide('aborts'), warn_only=True):
+        if query_id is None:
+            abort('Missing argument query_id')
 
-    req = requests.get(QUERY_REQUEST_URL + query_id)
+        err_msg = 'Unable to retrieve information. Please check that the ' \
+                  'query_id is correct, or check that server is up with ' \
+                  'command: server status'
 
-    if not req.status_code == requests.codes.ok:
-        abort('Unable to retrieve information. '
-              'Please check that the query_id is correct, or check that '
-              'server is up with command: server status')
+        req = get_request(QUERY_REQUEST_URL + query_id, err_msg)
 
     query_info_file_name = os.path.join(TMP_PRESTO_DEBUG,
                                         'query_info_' + query_id + '.json')
@@ -141,6 +141,18 @@ def query_info(query_id=None):
     print('Gathered query information in file: ' + query_info_file_name)
 
 
+def get_request(url, err_msg):
+        try:
+            req = requests.get(url)
+        except requests.ConnectionError:
+            abort(err_msg)
+
+        if not req.status_code == requests.codes.ok:
+            abort(err_msg)
+
+        return req
+
+
 @task
 @runs_once
 def system_info():
@@ -148,11 +160,9 @@ def system_info():
     Gather system information like nodes in the system, presto
     version, presto-admin version, os version etc.
     """
-    req = requests.get(NODES_REQUEST_URL)
-
-    if not req.status_code == requests.codes.ok:
-        abort('Unable to access node information. '
-              'Please check that server is up with command: server status')
+    err_msg = 'Unable to access node information. ' \
+              'Please check that server is up with command: server status'
+    req = get_request(NODES_REQUEST_URL, err_msg)
 
     if not os.path.exists(TMP_PRESTO_DEBUG):
         os.mkdir(TMP_PRESTO_DEBUG)

@@ -26,9 +26,12 @@ from tests.product.base_product_case import BaseProductTestCase
 
 
 class TestCollect(BaseProductTestCase):
-    def test_collect_logs_basic(self):
+    def do_basic_presto_setup(self):
         self.install_default_presto()
         self.run_prestoadmin('server start')
+
+    def test_collect_logs_basic(self):
+        self.do_basic_presto_setup()
         actual = self.run_prestoadmin('collect logs')
         expected = 'Downloading logs from all the nodes...\n' + \
                    'logs archive created: ' + OUTPUT_FILENAME_FOR_LOGS + '\n'
@@ -47,8 +50,7 @@ class TestCollect(BaseProductTestCase):
         self.assert_path_exists(self.master, admin_log)
 
     def test_collect_system_info_basic(self):
-        self.install_default_presto()
-        self.run_prestoadmin('server start')
+        self.do_basic_presto_setup()
         actual = self.run_prestoadmin('collect system_info')
         expected = 'System info archive created: ' + \
                    OUTPUT_FILENAME_FOR_SYS_INFO + '\n' \
@@ -81,8 +83,7 @@ class TestCollect(BaseProductTestCase):
         self.assert_path_exists(self.master, OUTPUT_FILENAME_FOR_SYS_INFO)
 
     def test_collect_query_info(self):
-        self.install_default_presto()
-        self.run_prestoadmin('server start')
+        self.do_basic_presto_setup()
 
         sql_to_run = 'SELECT * FROM system.runtime.nodes WHERE 1234 = 1234'
         query_id = self.get_query_id(sql_to_run)
@@ -107,3 +108,31 @@ class TestCollect(BaseProductTestCase):
                                      'WHERE query = \'' + sql + '\'')
         for row in query_runtime_info:
             return row[0]
+
+    def test_query_info_invalid_id(self):
+        self.do_basic_presto_setup()
+        invalid_id = '1234_invalid'
+        actual = self.run_prestoadmin('collect query_info ' + invalid_id)
+        expected = 'Unable to retrieve information. Please check that the ' \
+                   'query_id is correct, or check that server is up with ' \
+                   'command: server status\n\nWarning: One or more hosts ' \
+                   'failed while executing task \'collect.query_info\'\n\n'
+        self.assertEqual(actual, expected)
+
+    def test_collect_logs_server_stopped(self):
+        self.install_default_presto()
+
+        actual = self.run_prestoadmin('collect logs')
+        expected = 'Downloading logs from all the nodes...\n' + \
+                   'logs archive created: ' + OUTPUT_FILENAME_FOR_LOGS + '\n'
+        self.assertEqual(actual, expected)
+        self.assert_path_exists(self.master, OUTPUT_FILENAME_FOR_LOGS)
+
+    def test_collect_system_info_server_stopped(self):
+        self.install_default_presto()
+
+        actual = self.run_prestoadmin('collect system_info', raise_error=False)
+        expected = '\nFatal error: Unable to access node information. ' \
+                   'Please check that server is up with ' \
+                   'command: server status\n\nAborting.\n'
+        self.assertEqual(actual, expected)
