@@ -152,10 +152,10 @@ configuration deploy
 
     presto-admin configuration deploy [coordinator|workers]
 
-This command deploys Presto configuration files onto the cluster. ``presto-admin``
-uses different configuration directories for worker and coordinator
-configurations so that you can easily create different configurations for
-your coordinator and worker nodes. The coordinator configurations should go in
+This command deploys `Presto configuration files <https://prestodb.io/docs/current/installation/deployment.html>`_
+onto the cluster. ``presto-admin`` uses different configuration directories
+for worker and coordinator configurations so that you can easily create different
+configurations for your coordinator and worker nodes. The coordinator configurations should go in
 ``/etc/opt/prestoadmin/coordinator`` and the workers configuration should go in
 ``/etc/opt/prestoadmin/workers``. The optional ``coordinator`` or ``workers``
 argument tells ``presto-admin`` to only deploy the coordinator or workers
@@ -280,7 +280,7 @@ connector add
     presto-admin connector add [<name>]
 
 This command is used to deploy connector configurations to the Presto cluster.
-[TODO: link to Presto connector configuration.]  Connector configurations are
+`Connector configurations <https://prestodb.io/docs/current/connector.html>`_ are
 kept in the configuration directory ``/etc/opt/prestoadmin/connectors``
 
 To add a connector using ``presto-admin``, first create a configuration file in
