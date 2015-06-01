@@ -257,7 +257,8 @@ for the change to take effect
             next_uri = self.get_key_value(output, 'nextUri')
 
         if not data:
-            raise PrestoError('Could not get catalogs from json output')
+            raise PrestoError('Could not get catalogs from json output. '
+                              'Output was: \n%s' % output)
 
         return data
 
