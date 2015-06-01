@@ -23,7 +23,7 @@ from mock import patch, MagicMock
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin import server
 from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
-    PRESTO_RPM_VERSION
+    PRESTO_RPM_MIN_REQUIRED_VERSION
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError
 import tests.utils as utils
@@ -180,7 +180,8 @@ class TestInstall(utils.BaseTestCase):
     @patch("prestoadmin.server.get_server_status")
     @patch("prestoadmin.server.get_ext_ip_of_node")
     @patch("prestoadmin.server.run_sql")
-    def test_status_from_each_node(self, mock_nodeinfo, mock_ext_ip,
+    @patch('prestoadmin.server.run')
+    def test_status_from_each_node(self, mock_run, mock_nodeinfo, mock_ext_ip,
                                    mock_server_up, mock_conninfo,
                                    mock_version):
         env.roledefs = {
@@ -252,7 +253,7 @@ class TestInstall(utils.BaseTestCase):
         mock_run.return_value = old_version
         server.status()
         version_warning = 'Presto version is %s, version >= 0.%d required.'\
-                          % (old_version, PRESTO_RPM_VERSION)
+                          % (old_version, PRESTO_RPM_MIN_REQUIRED_VERSION)
         mock_warn.assert_called_with(version_warning)
 
         mock_run.return_value = 'No presto installed'
@@ -268,3 +269,10 @@ class TestInstall(utils.BaseTestCase):
             + installation_warning + '\n',
             self.test_stdout.getvalue()
         )
+
+    @patch('prestoadmin.server.run')
+    def test_td_presto_version(self,  mock_run):
+        td_version = '101t'
+        mock_run.return_value = td_version
+        expected = server.check_presto_version()
+        self.assertEqual(expected, '')

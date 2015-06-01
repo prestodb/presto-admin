@@ -49,7 +49,8 @@ NODE_INFO_PER_URI_SQL = 'select http_uri, node_version, active from ' \
 EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from system.runtime.nodes' \
                   ' WHERE node_id = \'%s\''
 CONNECTOR_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
-PRESTO_RPM_VERSION = 100
+PRESTO_RPM_MIN_REQUIRED_VERSION = 100
+PRESTO_TD_RPM = ['101t']
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -177,12 +178,15 @@ def check_presto_version():
         Error string if applicable
     """
     version = get_presto_version()
+    if version in PRESTO_TD_RPM:
+            return ''
     try:
         float(version)
         version_number = version.strip().split('.')
-        if int(version_number[1]) < PRESTO_RPM_VERSION:
+        if int(version_number[1]) < PRESTO_RPM_MIN_REQUIRED_VERSION:
             incorrect_version_str = 'Presto version is %s, version >= 0.%d ' \
-                                    'required.' % (version, PRESTO_RPM_VERSION)
+                                    'required.' % \
+                                    (version, PRESTO_RPM_MIN_REQUIRED_VERSION)
             warn(incorrect_version_str)
             return incorrect_version_str
         return ''

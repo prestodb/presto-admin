@@ -420,8 +420,8 @@ task.max-memory=1GB\n"""
                  '"./presto-admin server install /mnt/presto-admin/%s "' \
                  % (PRESTO_RPM, PRESTO_RPM)
         expected = 'Fatal error: error: ' \
-                   '/mnt/presto-admin/presto-0.101-1.0.x86_64.rpm: ' \
-                   'open failed: Permission denied\n\nAborting.\n'
+                   '/mnt/presto-admin/%s: ' \
+                   'open failed: Permission denied\n\nAborting.\n' % PRESTO_RPM
         self.assertRaisesRegexp(OSError,
                                 expected,
                                 self.run_prestoadmin_script,

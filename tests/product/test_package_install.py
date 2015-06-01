@@ -14,7 +14,7 @@
 import os
 
 from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, PRESTO_RPM_BASENAME
 
 
 class TestPackageInstall(BaseProductTestCase):
@@ -138,10 +138,10 @@ class TestPackageInstall(BaseProductTestCase):
                     'Package deployed successfully on: master',
                     "Warning: [master] sudo() received nonzero return code 1 "
                     "while executing 'rpm -i "
-                    "/opt/prestoadmin/packages/presto-0.101-1.0.x86_64.rpm'!",
+                    "/opt/prestoadmin/packages/%s'!" % PRESTO_RPM,
                     '', '', '[master] out: ',
-                    '[master] out: \tpackage presto-0.101-1.0.x86_64 is '
-                    'already installed']
+                    '[master] out: \tpackage %s is '
+                    'already installed' % PRESTO_RPM_BASENAME]
 
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
@@ -192,12 +192,13 @@ class TestPackageInstall(BaseProductTestCase):
         expected = 'Deploying rpm...\n\nWarning: [master] sudo() received ' \
                    'nonzero return code 1 while executing ' \
                    '\'rpm -i /opt/prestoadmin/packages/' \
-                   'presto-0.101-1.0.x86_64.rpm\'!\n\nPackage deployed ' \
+                   '%s\'!\n\nPackage deployed ' \
                    'successfully on: master\n[master] out: error: ' \
                    'Failed dependencies:\n[master] out: 	python >= 2.6 is ' \
-                   'needed by presto-0.101-1.0.x86_64\n[master] out: 	' \
-                   'python <= 2.7 is needed by presto-0.101-1.0.x86_64\n' \
-                   '[master] out: '
+                   'needed by %s\n[master] out: 	' \
+                   'python <= 2.7 is needed by %s\n' \
+                   '[master] out: ' % (PRESTO_RPM, PRESTO_RPM_BASENAME,
+                                       PRESTO_RPM_BASENAME)
         self.assertEqualIgnoringOrder(expected, cmd_output)
 
     def test_install_rpm_with_nodeps(self):

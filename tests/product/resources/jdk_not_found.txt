@@ -1,6 +1,6 @@
 Deploying rpm...
 
-Warning: [master] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/presto-0.101-1.0.x86_64.rpm'!
+Warning: [master] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/presto-101t-1.0.x86_64.rpm'!
 
 Package deployed successfully on: master
 [master] out: +======================================================================+
@@ -13,6 +13,6 @@ Package deployed successfully on: master
 [master] out: | NOTE: This script will attempt to find Java whether you install      |
 [master] out: |       using the binary or the RPM based installer.                   |
 [master] out: +======================================================================+
-[master] out: error: %pre(presto-0.101-1.0.x86_64) scriptlet failed, exit status 1
-[master] out: error:   install: %pre scriptlet failed (2), skipping presto-0.101-1.0
+[master] out: error: %pre(presto-101t-1.0.x86_64) scriptlet failed, exit status 1
+[master] out: error:   install: %pre scriptlet failed (2), skipping presto-101t-1.0
 [master] out: 
