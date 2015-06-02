@@ -265,7 +265,7 @@ task.max-memory=1GB\n"""
             urllib.urlretrieve(
                 'https://jenkins-master.td.teradata.com/view/'
                 'Presto%20release-101t/job/presto-td-release-101t/'
-                'lastSuccessfulBuild/artifact/presto/presto-server/'
+                'lastSuccessfulBuild/artifact/presto/presto-server-rpm/'
                 'target/rpm/presto/RPMS/x86_64/' + PRESTO_RPM,
                 PRESTO_RPM)
         self.copy_to_master(PRESTO_RPM)
