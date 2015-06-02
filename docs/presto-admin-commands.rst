@@ -277,7 +277,7 @@ Example
 
     sudo ./presto-admin configuration show node
 
-.. _connectors-label:
+.. _connector-add:
 
 *************
 connector add

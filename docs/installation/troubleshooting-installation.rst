@@ -24,15 +24,19 @@ Troubleshooting
 
      $ sudo ./presto-admin server start
 
-#. If Presto servers start up successfully but crash shortly thereafter, you
-   may have an error in one of your connector configuration files. For example,
-   you may have a syntax error or be missing the connector.name property.
-   To investigate why a server is not started, you can look at the Presto logs
-   in ``/var/log/presto`` on the Presto cluster.  Look at the log with most
-   recent timestamp.  You can collect the log information locally using
-   :ref:`collect-logs`. To fix an issue with the connectors configuration,
-   correct the file and deploy it to the cluster again using
-   :ref:`connectors-label`.
+#. If the Presto servers fail to start or crash soon after starting, look at
+   the presto server logs on the Presto cluster ``/var/log/presto`` for an
+   error message.  You can collect the logs locally using :ref:`collect-logs`.
+   The relevant error messages should be at the end of the log with the most
+   recent timestamp.  Below are tips for some common errors:
+
+    * Specifying a port that is already in use: Look at
+      :ref:`presto-port-configuration-label` to learn how to change the port
+      configuration.
+    * An error in a connector configuration file, such as a syntax error or
+      a missing connector.name property: correct the file and deploy it to the
+      cluster again using :ref:`connector-add`
+
 #. The following error can occur if you do not have passwordless ssh enabled
    and have not provided a password or if the user requires a sudo password: ::
 

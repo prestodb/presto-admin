@@ -18,7 +18,7 @@ By default, ``presto-admin`` installs the TPC-H connector for you, which generat
  $ ./presto --catalog tpch --schema tiny
  $ select count(*) from lineitem;
 
-For more on connectors, including how to connect to Hive, see :ref:`connectors-label`.
+For more on connectors, including how to connect to Hive, see :ref:`connector-add`.
 
 The above command assumes that you installed the Presto CLI on the coordinator, and that the Presto server is on port 8080. If either of these are not the case, then specify the server location in the command:
 ::
