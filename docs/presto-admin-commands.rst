@@ -253,6 +253,13 @@ except ``node.environment``, which will be set to ``test``.  The workers will
 receive the default ``config.properties`` and ``jvm.config``, and the same
 ``node.properties`` as the coordinator.
 
+If instead you just want to update the coordinator configuration, run: ::
+
+    sudo ./presto-admin configuration deploy coordinator
+
+This will leave the workers configuration as it was, but update the
+coordinator's configuration
+
 ******************
 configuration show
 ******************
