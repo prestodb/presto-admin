@@ -19,7 +19,4 @@ You can verify ``presto-admin`` was installed by running the ``presto-admin`` he
 
  $ sudo ./presto-admin --help
 
-
-For troubleshooting installation and other advanced installation options, see :ref:`advanced-installation-options-label`.
-
 Please note that you should only run one ``presto-admin`` command on your cluster at a time.
