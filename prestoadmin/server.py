@@ -40,8 +40,8 @@ import util.filesystem
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 
 INIT_SCRIPTS = '/etc/rc.d/init.d/presto'
-RETRY_TIMEOUT = 60
-SLEEP_INTERVAL = 5
+RETRY_TIMEOUT = 600
+SLEEP_INTERVAL = 15
 SERVER_CHECK_SQL = 'select * from system.runtime.nodes'
 NODE_INFO_PER_URI_SQL = 'select http_uri, node_version, active from ' \
                         'system.runtime.nodes where ' \
