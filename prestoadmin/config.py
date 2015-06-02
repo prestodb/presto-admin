@@ -18,6 +18,7 @@ import json
 import os
 import logging
 import errno
+import re
 
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
@@ -26,6 +27,7 @@ from prestoadmin.util.exception import ConfigurationError,\
 REQUIRED_FILES = ["node.properties", "jvm.config", "config.properties"]
 PRESTO_FILES = ["node.properties", "jvm.config", "config.properties",
                 "log.properties"]
+COMMENT_CHARS = ['!', '#']
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -47,17 +49,19 @@ def get_conf_from_properties_file(path):
         props = {}
         for line in conf_file.read().splitlines():
             line = line.strip()
-            if len(line) > 0:
+            if len(line) > 0 and line[0] not in COMMENT_CHARS:
                 pair = split_to_pair(line)
                 props[pair[0]] = pair[1]
         return props
 
 
 def split_to_pair(line):
-    split_line = line.split("=", 1)
+    split_line = re.split(r'\s*(?<!\\):\s*|\s*(?<!\\)=\s*|(?<!\\)\s+', line,
+                          maxsplit=1)
     if len(split_line) != 2:
         raise ConfigurationError(
-            line + " is not in the expected format: <property>=<value>")
+            line + " is not in the expected format: <property>=<value>, "
+                   "<property>:<value> or <property> <value>")
     return tuple(split_line)
 
 

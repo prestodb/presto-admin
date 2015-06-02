@@ -42,12 +42,14 @@ class TestConfiguration(BaseProductTestCase):
 
         filename = 'config.properties'
         path = os.path.join(constants.COORDINATOR_DIR, filename)
-        dummy_property = 'a.dummy.property=\'single-quoted\''
-        self.write_content_to_master(dummy_property,
-                                     path)
+        dummy_prop1 = 'a.dummy.property:\'single-quoted\''
+        conf_dummy_prop1 = 'a.dummy.property=\'single-quoted\''
+        dummy_prop2 = 'another.dummy=value'
+        conf_to_write = '%s\n%s' % (dummy_prop1, dummy_prop2)
+        self.write_content_to_master(conf_to_write, path)
 
         path = os.path.join(constants.WORKERS_DIR, filename)
-        self.write_content_to_master(dummy_property, path)
+        self.write_content_to_master(conf_to_write, path)
 
         # deploy coordinator configuration only.  Has a non-default file
         output = self.run_prestoadmin('configuration deploy coordinator')
@@ -58,14 +60,15 @@ class TestConfiguration(BaseProductTestCase):
         self.assert_file_content(self.master,
                                  os.path.join(constants.REMOTE_CONF_DIR,
                                               'config.properties'),
-                                 dummy_property + '\n' +
+                                 conf_dummy_prop1 + '\n' +
+                                 dummy_prop2 + '\n' +
                                  self.default_coordinator_config_)
 
         filename = 'node.properties'
         path = os.path.join(constants.WORKERS_DIR, filename)
-        self.write_content_to_master('node.environment=test', path)
+        self.write_content_to_master('node.environment test', path)
         path = os.path.join(constants.COORDINATOR_DIR, filename)
-        self.write_content_to_master('node.environment=test', path)
+        self.write_content_to_master('node.environment test', path)
 
         # deploy workers configuration only has non-default file
         output = self.run_prestoadmin('configuration deploy workers')
@@ -78,7 +81,8 @@ class TestConfiguration(BaseProductTestCase):
             self.assert_file_content(container,
                                      os.path.join(constants.REMOTE_CONF_DIR,
                                                   'config.properties'),
-                                     dummy_property + '\n' +
+                                     conf_dummy_prop1 + '\n' +
+                                     dummy_prop2 + '\n' +
                                      self.default_workers_config_)
             expected = """node.data-dir=/var/lib/presto/data
 node.environment=test

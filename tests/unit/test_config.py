@@ -64,12 +64,14 @@ class TestConfiguration(utils.BaseTestCase):
     def test_get_properties(self):
         config_file = os.path.join(DIR, 'files', 'valid.properties')
         conf = config.get_conf_from_properties_file(config_file)
-        self.assertEqual(conf, {'a': '1', 'b': '2', 'c': '3'})
+        self.assertEqual(conf, {'a': '1', 'b': '2', 'c': '3',
+                                'd\\=': '4', 'e\\:': '5', 'f': '==6',
+                                'g': '= 7', 'h': ':8', 'i': '9'})
 
     @patch('__builtin__.open')
     def test_get_properties_ignores_whitespace(self, open_mock):
         file_manager = open_mock.return_value.__enter__.return_value
-        file_manager.read.return_value = 'key1=value1 \n   \n key2=value2'
+        file_manager.read.return_value = ' key1 =value1 \n   \n key2= value2'
         conf = config.get_conf_from_properties_file('/dummy/path')
         self.assertEqual(conf, {'key1': 'value1', 'key2': 'value2'})
 
@@ -77,7 +79,8 @@ class TestConfiguration(utils.BaseTestCase):
         config_file = os.path.join(DIR, 'files', 'invalid.properties')
         self.assertRaisesRegexp(ConfigurationError,
                                 'abcd is not in the expected format: '
-                                '<property>=<value>',
+                                '<property>=<value>, <property>:<value> or '
+                                '<property> <value>',
                                 config.get_conf_from_properties_file,
                                 config_file)
 
