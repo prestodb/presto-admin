@@ -230,13 +230,13 @@ following ``jvm.config`` to ``/etc/opt/prestoadmin/coordinator``
 .. code-block:: none
 
     -server
-    -Xmx16G
-    -XX:+UseConcMarkSweepGC
+    -Xmx1G
+    -XX:-UseBiasedLocking
+    -XX:+UseG1GC
     -XX:+ExplicitGCInvokesConcurrent
-    -XX:+AggressiveOpts
     -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+UseGCOverheadLimit
     -XX:OnOutOfMemoryError=kill -9 %p
-    -XX:ReservedCodeCacheSize=50M"
 
 Further, add the following ``node.properties`` to
 ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers``: ::

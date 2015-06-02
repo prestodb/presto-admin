@@ -68,13 +68,12 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
 
     default_jvm_config_ = """-server
 -Xmx1G
--XX:+UseConcMarkSweepGC
+-XX:-UseBiasedLocking
+-XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent
--XX:+CMSClassUnloadingEnabled
--XX:+AggressiveOpts
 -XX:+HeapDumpOnOutOfMemoryError
--XX:OnOutOfMemoryError=kill -9 %p
--XX:ReservedCodeCacheSize=150M\n"""
+-XX:+UseGCOverheadLimit
+-XX:OnOutOfMemoryError=kill -9 %p\n"""
 
     default_coordinator_config_ = """coordinator=true
 discovery-server.enabled=true
