@@ -27,7 +27,7 @@ from tests.utils import run_make, BaseTestCase
 class TestInstaller(BaseTestCase):
 
     def tearDown(self):
-        run_make(['clean'])
+        run_make(['clean-build'])
         BaseTestCase.tearDown(self)
 
     def test_online_installer(self):
