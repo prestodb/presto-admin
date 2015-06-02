@@ -284,7 +284,7 @@ for the change to take effect
                 # no exception thrown, the correct connectors were
                 # were loaded
                 return
-            except AssertionError:
+            except (AssertionError, PrestoError):
                 pass  # not all connectors loaded
             sleep(CONNECTOR_CHECK_INTERVAL)
             time_spent_waiting += CONNECTOR_CHECK_INTERVAL

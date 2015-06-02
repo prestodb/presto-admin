@@ -1,6 +1,7 @@
 *.pyc
 *.swp
 *.rpm
+*.egg
 prestoadmin.egg-info/
 .tox/
 .coverage
