@@ -153,13 +153,15 @@ configuration deploy
     presto-admin configuration deploy [coordinator|workers]
 
 This command deploys `Presto configuration files <https://prestodb.io/docs/current/installation/deployment.html>`_
-onto the cluster. ``presto-admin`` uses different configuration directories
-for worker and coordinator configurations so that you can easily create different
-configurations for your coordinator and worker nodes. The coordinator configurations should go in
-``/etc/opt/prestoadmin/coordinator`` and the workers configuration should go in
-``/etc/opt/prestoadmin/workers``. The optional ``coordinator`` or ``workers``
+onto the cluster. ``presto-admin`` uses different configuration directories for
+worker and coordinator configurations so that you can easily create different
+configurations for your coordinator and worker nodes. Create a
+``/etc/opt/prestoadmin/coordinator`` directory for your coordinator
+configurations and a ``/etc/opt/prestoadmin/workers`` directory for your
+workers configuration.  Place the configuration files for the coordinator
+and workers in their respective directories. The optional ``coordinator`` or ``workers``
 argument tells ``presto-admin`` to only deploy the coordinator or workers
-configurations.  To deploy both configurations at once, don't specify either
+configurations. To deploy both configurations at once, don't specify either
 option.
 
 When you run configuration deploy, the following files will be deployed to
