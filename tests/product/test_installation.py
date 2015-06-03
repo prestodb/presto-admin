@@ -68,11 +68,12 @@ class TestInstallation(BaseProductTestCase):
         self.tear_down_docker_cluster()
         self.create_host_mount_dirs()
         image = 'ubuntu'
-        if not self.client.images(image):
-            self._execute_and_wait(self.client.pull, image, '14.04')
+        tag = '14.04'
+        if not self.is_image_present_locally(image, tag):
+            self._execute_and_wait(self.client.pull, image, tag)
 
         self._execute_and_wait(self.client.create_container,
-                               image + ':14.04',
+                               image + ':' + tag,
                                command='tail -f /var/log/bootstrap.log',
                                detach=True,
                                name=self.master,
@@ -129,3 +130,12 @@ class TestInstallation(BaseProductTestCase):
         self.assertTrue('Adding pypi.python.org as trusted-host. Cannot find'
                         ' certificate file: %s' % cert_file not in output,
                         'Unable to find cert file; output: %s' % output)
+
+    def is_image_present_locally(self, image_name, tag):
+        image_name_and_tag = image_name + ':' + tag
+        images = self.client.images(image_name)
+        if images:
+            for image in images:
+                if image['RepoTags'] is image_name_and_tag:
+                    return True
+        return False
