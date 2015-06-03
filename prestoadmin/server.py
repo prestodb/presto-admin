@@ -40,8 +40,8 @@ import util.filesystem
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 
 INIT_SCRIPTS = '/etc/rc.d/init.d/presto'
-RETRY_TIMEOUT = 600
-SLEEP_INTERVAL = 15
+RETRY_TIMEOUT = 120
+SLEEP_INTERVAL = 10
 SERVER_CHECK_SQL = 'select * from system.runtime.nodes'
 NODE_INFO_PER_URI_SQL = 'select http_uri, node_version, active from ' \
                         'system.runtime.nodes where ' \
@@ -128,7 +128,10 @@ def service(control=None):
 
 def check_status_for_control_commands():
     client = PrestoClient(env.host, env.port)
-    print('Checking server status on %s...' % env.host)
+    print('Waiting to make sure we can connect to the Presto server on %s, '
+          'please wait. This check will time out after %d minutes if the '
+          'server does not respond.'
+          % (env.host, (RETRY_TIMEOUT/60)))
     if check_server_status(client):
         print('Server started successfully on: ' + env.host)
     else:

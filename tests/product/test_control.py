@@ -16,6 +16,7 @@
 Product tests for start/stop/restart of presto-admin server
 """
 
+from prestoadmin.server import RETRY_TIMEOUT
 from tests.product.base_product_case import BaseProductTestCase
 
 
@@ -302,14 +303,22 @@ class TestControl(BaseProductTestCase):
 
         if start_success:
             for host in start_success:
-                return_str += [r'Checking server status on %s...' % host,
+                return_str += [r'Waiting to make sure we can connect to the '
+                               r'Presto server on %s, please wait. This check'
+                               r' will time out after %d minutes if the server'
+                               r' does not respond.'
+                               % (host, RETRY_TIMEOUT/60),
                                r'Server started successfully on: %s' % host,
                                r'\[%s\] out: ' % host,
                                r'\[%s\] out: Started as .*' % host,
                                r'\[%s\] out: Starting presto' % host]
         if already_started:
             for host in already_started:
-                return_str += [r'Checking server status on %s...' % host,
+                return_str += [r'Waiting to make sure we can connect to the '
+                               r'Presto server on %s, please wait. This check'
+                               r' will time out after %d minutes if the server'
+                               r' does not respond.'
+                               % (host, RETRY_TIMEOUT/60),
                                r'Server started successfully on: %s' % host,
                                r'\[%s\] out: ' % host,
                                r'\[%s\] out: Already running as .*' % host,

@@ -68,6 +68,7 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.check_presto_version')
     def test_server_start_fail(self, mock_version_check, mock_warn,
                                mock_execute, mock_sudo, mock_run):
+        old_retry_timeout = server.RETRY_TIMEOUT
         server.RETRY_TIMEOUT = 1
         mock_execute.return_value = False
         env.host = "failed_node1"
@@ -76,6 +77,7 @@ class TestInstall(utils.BaseTestCase):
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
         mock_warn.assert_called_with("Server failed to start on: failed_node1")
+        server.RETRY_TIMEOUT = old_retry_timeout
 
     @patch('prestoadmin.server.sudo')
     @patch.object(PrestoClient, 'execute_query')
@@ -88,9 +90,11 @@ class TestInstall(utils.BaseTestCase):
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
-        self.assertEqual('Checking server status on good_node...\nServer '
-                         'started successfully on: good_node\n',
-                         self.test_stdout.getvalue())
+        self.assertEqual('Waiting to make sure we can connect to the Presto '
+                         'server on good_node, please wait. This check will '
+                         'time out after 2 minutes if the server does not '
+                         'respond.\nServer started successfully on: '
+                         'good_node\n', self.test_stdout.getvalue())
 
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_presto_version')
@@ -136,9 +140,11 @@ class TestInstall(utils.BaseTestCase):
         server.restart()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' restart')
         mock_version_check.assert_called_with()
-        self.assertEqual('Checking server status on good_node...\nServer '
-                         'started successfully on: good_node\n',
-                         self.test_stdout.getvalue())
+        self.assertEqual('Waiting to make sure we can connect to the Presto '
+                         'server on good_node, please wait. This check will '
+                         'time out after 2 minutes if the server does not '
+                         'respond.\nServer started successfully on: '
+                         'good_node\n', self.test_stdout.getvalue())
 
     @patch('prestoadmin.server.connector')
     @patch('prestoadmin.server.configure_cmds.deploy')
@@ -170,10 +176,12 @@ class TestInstall(utils.BaseTestCase):
 
     @patch('prestoadmin.server.run')
     def test_check_success_fail(self,  mock_sleep):
+        old_retry_timeout = server.RETRY_TIMEOUT
         server.RETRY_TIMEOUT = SLEEP_INTERVAL + 1
         client_mock = MagicMock(PrestoClient)
         client_mock.execute_query.side_effect = [False, False]
         self.assertEqual(server.check_server_status(client_mock), False)
+        server.RETRY_TIMEOUT = old_retry_timeout
 
     @patch('prestoadmin.server.get_presto_version')
     @patch("prestoadmin.server.execute_connector_info_sql")
