@@ -37,6 +37,13 @@ if [ -n "$1" ]; then
 fi
 
 pip install $cert_options wheel_name.whl 
+if ! `python -c "import paramiko" > /dev/null 2>&1` ; then
+    printf "\nERROR\n"
+    echo "Paramiko could not be imported. This usually means that pycrypto (a dependency of paramiko)"
+    echo "has been compiled against a different libc version. Ensure the presto-admin installer is "
+    echo "built on the same OS as the target installation OS."
+    exit 1
+fi
 deactivate
 
 cat > `pwd`/presto-admin << EOT

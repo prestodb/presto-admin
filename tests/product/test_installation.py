@@ -87,15 +87,12 @@ class TestInstallation(BaseProductTestCase):
         self.exec_create_start(self.master, 'sudo apt-get -y install'
                                ' python-minimal')
         self.exec_create_start(self.master, 'sudo apt-get -y install wget')
-        self.install_presto_admin()
 
         self.assertRaisesRegexp(
             OSError,
-            r'There was a problem importing our SSH library \(see traceback '
-            r'above\).\nPlease make sure all dependencies are installed and '
-            r'importable.',
-            self.run_prestoadmin,
-            '--help'
+            r'ERROR\n'
+            r'Paramiko could not be imported. This usually means that',
+            self.install_presto_admin,
         )
 
     def test_cert_arg_to_installation_nonexistent_file(self):
