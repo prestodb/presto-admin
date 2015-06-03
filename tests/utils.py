@@ -20,6 +20,7 @@ unittest.TestCase
 
 import copy
 import logging
+import os
 import re
 import StringIO
 import subprocess
@@ -58,6 +59,13 @@ class BaseTestCase(unittest.TestCase):
             prefix='app-int-test-'
         )
         constants.PRESTOADMIN_LOG_DIR = self.__temporary_dir_path
+
+    def restore_log_and_delete_temp_dir(self):
+        # restore the log constant
+        constants.PRESTOADMIN_LOG_DIR = self.__old_prestoadmin_log
+
+        # clean up the temporary directory
+        os.system('rm -rf ' + self.__temporary_dir_path)
 
     def restore_stdout_stderr(self):
         if self.test_stdout:
@@ -119,6 +127,7 @@ class BaseTestCase(unittest.TestCase):
         env.clear()
         env.update(self.env_vars)
         logging.disable(logging.NOTSET)
+        self.restore_log_and_delete_temp_dir()
 
 
 def run_make(arguments):
