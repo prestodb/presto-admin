@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from httplib import HTTPException
+from httplib import HTTPException, HTTPConnection
 import json
 import os
 import socket
 
 from fabric.operations import _AttributeString
-from mock import patch
+from mock import patch, PropertyMock
 
 from prestoadmin.prestoclient import URL_TIMEOUT_MS, PrestoClient
 from prestoadmin.util.exception import InvalidArgumentError, ConfigurationError
@@ -72,6 +72,25 @@ class TestPrestoClient(utils.BaseTestCase):
 
         mock_conn.side_effect = socket.error("Error")
         self.assertFalse(client.execute_query("any_sql"))
+
+    @patch.object(HTTPConnection, 'request')
+    @patch.object(HTTPConnection, 'getresponse')
+    def test_http_answer_valid(self, mock_response, mock_request):
+        client = PrestoClient('any_host', 'any_user', 8080)
+        mock_response.return_value.read.return_value = '{}'
+        type(mock_response.return_value).status = \
+            PropertyMock(return_value=200)
+        self.assertTrue(client.execute_query('any_sql'))
+
+    @patch.object(HTTPConnection, 'request')
+    @patch.object(HTTPConnection, 'getresponse')
+    def test_http_answer_not_json(self, mock_response, mock_request):
+        client = PrestoClient('any_host', 'any_user', 8080)
+        mock_response.return_value.read.return_value = 'NOT JSON!'
+        type(mock_response.return_value).status =\
+            PropertyMock(return_value=200)
+        self.assertRaisesRegexp(ValueError, 'No JSON object could be decoded',
+                                client.execute_query, 'any_sql')
 
     @patch.object(PrestoClient, 'get_response_from')
     @patch.object(PrestoClient, 'get_next_uri')

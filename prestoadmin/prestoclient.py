@@ -116,7 +116,7 @@ class PrestoClient:
         headers = {"X-Presto-Catalog": catalog,
                    "X-Presto-Schema": schema,
                    "X-Presto-User": self.user}
-
+        answer = ''
         try:
             _LOGGER.info("Connecting to server at: " + self.server +
                          ":" + str(self.port) + " as user " + self.user)
@@ -141,6 +141,10 @@ class PrestoClient:
             _LOGGER.error("Error connecting to presto server at: " +
                           self.server + ":" + str(self.port))
             return False
+        except ValueError as e:
+            _LOGGER.error('Error connecting to Presto server: ' + e.message +
+                          ' error from server: ' + answer)
+            raise e
 
     def get_response_from(self, uri):
         """
