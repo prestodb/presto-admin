@@ -286,6 +286,9 @@ for the change to take effect
                 return
             except (AssertionError, PrestoError):
                 pass  # not all connectors loaded
+            except OSError as e:
+                if not e.errno == 7:
+                    raise
             sleep(CONNECTOR_CHECK_INTERVAL)
             time_spent_waiting += CONNECTOR_CHECK_INTERVAL
         self.assertEqual(self.get_connector_info(), expected_connectors)

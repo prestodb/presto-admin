@@ -24,6 +24,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from time import sleep
 import errno
 import urllib
@@ -32,17 +33,18 @@ from docker.errors import APIError
 from docker import Client
 
 import prestoadmin
-from tests.utils import BaseTestCase, run_make
+from tests.utils import BaseTestCase
 
 DOCKER_START_TIMEOUT = 30
 
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
 
-LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, "tmp/docker-pa/%s")
+LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, 'tmp/docker-pa/%s')
+DIST_DIR = os.path.join(prestoadmin.main_dir, 'tmp/installer')
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
-                                   "tests/product/resources/")
-DOCKER_MOUNT_POINT = "/mnt/presto-admin"
+                                   'tests/product/resources/')
+DOCKER_MOUNT_POINT = '/mnt/presto-admin'
 
 # TODO: make tests not dependent on the particular version of Presto at
 # http://teradata-download.s3.amazonaws.com/aster/presto/lib/presto-0.101-1.0.x86_64.rpm
@@ -123,6 +125,14 @@ task.max-memory=1GB\n"""
                 else:
                     raise
 
+    def create_container(self, image, container_name, mountpoint):
+        self._execute_and_wait(self.client.create_container,
+                               image,
+                               detach=True,
+                               name=container_name,
+                               hostname=container_name,
+                               volumes=mountpoint)
+
     def create_and_start_containers(self, master_image=None, slave_image=None):
         if not master_image:
             master_image = 'teradatalabs/centos6-ssh-test'
@@ -131,23 +141,14 @@ task.max-memory=1GB\n"""
             slave_image = 'teradatalabs/centos6-ssh-test'
 
         for container_name in self.slaves:
-            self._execute_and_wait(self.client.create_container,
-                                   slave_image,
-                                   detach=True,
-                                   name=container_name,
-                                   volumes=LOCAL_MOUNT_POINT %
-                                   container_name)
-
+            self.create_container(slave_image, container_name,
+                                  LOCAL_MOUNT_POINT % container_name)
             self.client.start(container_name,
                               binds={LOCAL_MOUNT_POINT % container_name:
                                      {"bind": DOCKER_MOUNT_POINT,
                                       "ro": False}})
-        self._execute_and_wait(self.client.create_container,
-                               master_image,
-                               detach=True,
-                               name=self.master,
-                               hostname=self.master,
-                               volumes=LOCAL_MOUNT_POINT % self.master)
+        self.create_container(master_image, self.master,
+                              LOCAL_MOUNT_POINT % self.master)
         self.client.start(self.master,
                           binds={LOCAL_MOUNT_POINT % self.master:
                                  {"bind": DOCKER_MOUNT_POINT,
@@ -193,15 +194,17 @@ task.max-memory=1GB\n"""
 
     def tear_down_docker_cluster(self):
         for container in self.all_hosts():
-            try:
-                self.stop_and_wait(container)
-                self.client.remove_container(container, v=True)
-            except APIError as e:
-                # container does not exist
-                if e.response.status_code == 404:
-                    pass
-
+            self.tear_down_container(container)
         self.remove_host_mount_dirs()
+
+    def tear_down_container(self, container):
+        try:
+            self.stop_and_wait(container)
+            self.client.remove_container(container, v=True)
+        except APIError as e:
+            # container does not exist
+            if e.response.status_code != 404:
+                raise
 
     def stop_and_wait(self, container):
         self.client.stop(container)
@@ -218,12 +221,59 @@ task.max-memory=1GB\n"""
             pass
 
     def build_dist_if_necessary(self):
-        dist_dir = os.path.join(prestoadmin.main_dir, "dist")
-        if not os.path.exists(dist_dir) or not fnmatch.filter(
-                os.listdir(dist_dir), "prestoadmin-*.tar.bz2"):
+        if not os.path.exists(DIST_DIR) or not fnmatch.filter(
+                os.listdir(DIST_DIR), 'prestoadmin-*.tar.bz2'):
             self.clean_up_presto_test_images()
-            run_make(['dist'])
-        return dist_dir
+            self.build_installer_in_docker()
+
+        return DIST_DIR
+
+    def build_installer_in_docker(self):
+        container_name = 'installer'
+        self.tear_down_container(container_name)
+        mountpoint = tempfile.mkdtemp()
+
+        self.create_container('teradatalabs/centos6-ssh-test', container_name,
+                              mountpoint)
+        self.client.start(container_name,
+                          binds={mountpoint: {'bind': DOCKER_MOUNT_POINT,
+                                              'ro': False}})
+
+        try:
+            shutil.copytree(prestoadmin.main_dir,
+                            os.path.join(mountpoint, 'presto-admin'))
+            local_path = os.path.join(mountpoint, 'make_installer.sh')
+            with open(local_path, 'w') as f:
+                f.write('#!/bin/bash\n'
+                        '-e\n'
+                        'pip install --upgrade pip\n'
+                        'pip install --upgrade wheel\n'
+                        'pip install --upgrade setuptools\n'
+                        'mv %s/presto-admin ~/\n'
+                        'cd ~/presto-admin\n'
+                        'make dist\n'
+                        'cp dist/prestoadmin-*.tar.bz2 %s'
+                        % (DOCKER_MOUNT_POINT, DOCKER_MOUNT_POINT))
+
+            self.exec_create_start(container_name,
+                                   'chmod +x %s/make_installer.sh'
+                                   % DOCKER_MOUNT_POINT)
+            self.exec_create_start(container_name,
+                                   '%s/make_installer.sh'
+                                   % DOCKER_MOUNT_POINT)
+
+            try:
+                os.makedirs(DIST_DIR)
+            except OSError, e:
+                if e.errno != errno.EEXIST:
+                    raise
+            installer_file = fnmatch.filter(os.listdir(mountpoint),
+                                            'prestoadmin-*.tar.bz2')[0]
+            shutil.copy(os.path.join(mountpoint, installer_file),
+                        DIST_DIR)
+        finally:
+            self.tear_down_container(container_name)
+            shutil.rmtree(mountpoint)
 
     def copy_dist_to_master(self, dist_dir):
         for dist_file in os.listdir(dist_dir):
@@ -242,7 +292,7 @@ task.max-memory=1GB\n"""
         output = self.client.exec_start(ex['Id'], tty=tty)
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
         if raise_error and exit_code:
-            raise OSError(output)
+            raise OSError(exit_code, output)
         return output
 
     def dump_and_cp_topology(self, topology):
@@ -263,11 +313,12 @@ task.max-memory=1GB\n"""
                                + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
 
     def copy_presto_rpm_to_master(self):
-        if not os.path.exists(PRESTO_RPM):
+        rpm_path = os.path.join(prestoadmin.main_dir, PRESTO_RPM)
+        if not os.path.exists(rpm_path):
             urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
                                'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
-                               PRESTO_RPM)
-        self.copy_to_master(PRESTO_RPM)
+                               rpm_path)
+        self.copy_to_master(rpm_path)
         self.check_if_corrupted_rpm()
 
     def server_install(self):
