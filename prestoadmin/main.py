@@ -84,7 +84,7 @@ def _get_presto_env_options():
     commands_to_remove = ['fabfile', 'parallel', 'rcfile', 'skip_bad_hosts',
                           'warn_only', 'always_use_pty', 'skip_unknown_tasks',
                           'abort_on_prompts', 'pool_size',
-                          'eagerly_disconnect']
+                          'eagerly_disconnect', 'ssh_config_path']
     commands_to_hide = ['--hosts', '--exclude-hosts', '--roles', '--shell',
                         '--linewise', '--show', '--hide']
     new_env_options = \

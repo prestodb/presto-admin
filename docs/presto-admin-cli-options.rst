@@ -91,10 +91,6 @@ be found below.
     Loads the given SSH ``known_hosts`` file before reading the user's ``known_hosts``
     file.
 
---ssh-config-path=PATH
-    Sets the path to the SSH config file that ``presto-admin`` will use. The
-    default is ``~/.ssh/config``.
-
 -t N, --timeout=N
     Sets the network connection timeout to N seconds. The default is 10 seconds.
 

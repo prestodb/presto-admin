@@ -31,8 +31,6 @@ Options:
     --system-known-hosts=SYSTEM_KNOWN_HOSTS
                         load system known_hosts file before reading user
                         known_hosts
-    --ssh-config-path=PATH
-                        Path to SSH config file
     -t N, --timeout=N   set connection timeout to N seconds
     -T N, --command-timeout=N
                         set remote command timeout to N seconds
