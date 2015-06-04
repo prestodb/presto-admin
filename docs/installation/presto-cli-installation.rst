@@ -12,6 +12,8 @@ Download `presto-cli-0.101-executable.jar <https://repo1.maven.org/maven2/com/fa
  $ mv presto-cli-0.102-executable.jar presto
  $ chmod +x presto
 
+.. NOTE:: Presto must run with Java 8, so if Java 7 is the default on your cluster, you will need to explicitly specify the Java 8 executable. For example, ``<path_to_java_8_executable> -jar presto``. It may be helpful to add an alias for the Presto CLI: ``alias presto='<path_to_java_8_executable> -jar <path_to_presto>'``.
+
 By default, ``presto-admin`` installs the TPC-H connector for you, which generates TPC-H data on-the-fly.  Using this connector, issue the following commands to run your first Presto query:
 ::
 
