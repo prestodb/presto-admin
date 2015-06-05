@@ -125,7 +125,8 @@ task.max-memory=1GB\n"""
                 else:
                     raise
 
-    def create_container(self, image, container_name, mountpoint, hostname=None):
+    def create_container(self, image, container_name, mountpoint,
+                         hostname=None):
         self._execute_and_wait(self.client.create_container,
                                image,
                                detach=True,
