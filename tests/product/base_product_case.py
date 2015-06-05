@@ -125,12 +125,12 @@ task.max-memory=1GB\n"""
                 else:
                     raise
 
-    def create_container(self, image, container_name, mountpoint):
+    def create_container(self, image, container_name, mountpoint, hostname=None):
         self._execute_and_wait(self.client.create_container,
                                image,
                                detach=True,
                                name=container_name,
-                               hostname=container_name,
+                               hostname=hostname,
                                volumes=mountpoint)
 
     def create_and_start_containers(self, master_image=None, slave_image=None):
@@ -148,7 +148,8 @@ task.max-memory=1GB\n"""
                                      {"bind": DOCKER_MOUNT_POINT,
                                       "ro": False}})
         self.create_container(master_image, self.master,
-                              LOCAL_MOUNT_POINT % self.master)
+                              LOCAL_MOUNT_POINT % self.master,
+                              hostname=self.master)
         self.client.start(self.master,
                           binds={LOCAL_MOUNT_POINT % self.master:
                                  {"bind": DOCKER_MOUNT_POINT,
