@@ -54,7 +54,7 @@ def get_conf():
     conf = _get_conf()
     for name in config.REQUIRED_FILES:
         if name not in conf:
-            _LOGGER.debug("Coordinator configuration for %s not found.  "
+            _LOGGER.debug("Workers configuration for %s not found.  "
                           "Default configuration will be deployed", name)
     defaults = build_defaults()
     config.fill_defaults(conf, defaults)
