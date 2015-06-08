@@ -19,7 +19,6 @@ help:
 	@echo "install - install the package to the active Python's site-packages"
 
 clean-all: clean
-	rm -rf tmp/
 	rm -f presto*.rpm
 
 clean: clean-build clean-pyc clean-test clean-eggs
@@ -44,20 +43,18 @@ clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+	rm -fr tmp
 	docker rmi -f teradatalabs/centos-presto-test-master teradatalabs/centos-presto-test-slave || true
 	echo "Note: The above command is just cleaning up a Docker image that may not exit. If the command fails, it is not a problem."
 
 lint:
 	flake8 prestoadmin packaging tests
 
-system-test:
-	python setup.py test -s tests.product
-
-test:
+test: clean-test
 	python setup.py test -s tests.unit
 	python setup.py test -s tests.integration
 
-test-all:
+test-all: clean-test
 	tox -- -s tests.unit
 	tox -- -s tests.integration
 	tox -e py26 -- -s tests.product
