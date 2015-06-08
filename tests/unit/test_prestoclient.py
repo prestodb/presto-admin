@@ -21,7 +21,7 @@ from fabric.operations import _AttributeString
 from mock import patch, PropertyMock
 
 from prestoadmin.prestoclient import URL_TIMEOUT_MS, PrestoClient
-from prestoadmin.util.exception import InvalidArgumentError, ConfigurationError
+from prestoadmin.util.exception import InvalidArgumentError
 from tests import utils
 
 
@@ -165,7 +165,7 @@ class TestPrestoClient(utils.BaseTestCase):
         self.assertEqual(client.response_from_server, {"message": "ok!"})
 
     @patch('prestoadmin.prestoclient.HTTPConnection')
-    @patch('prestoadmin.prestoclient.run')
+    @patch('prestoadmin.util.service_util.run')
     def test_execute_query_get_port(self, run_mock, conn_mock):
         client = PrestoClient('any_host', 'any_user')
         client.rows = ['hello']
@@ -178,48 +178,3 @@ class TestPrestoClient(utils.BaseTestCase):
         self.assertEqual(client.rows, [])
         self.assertEqual(client.next_uri, '')
         self.assertEqual(client.response_from_server, {})
-
-    @patch('prestoadmin.prestoclient.run')
-    def test_lookup_port_failure(self, run_mock):
-        client = PrestoClient('any_host', 'any_user')
-        run_mock.return_value = _AttributeString('http-server.http.port=8080')
-        run_mock.return_value.failed = True
-
-        self.assertRaisesRegexp(
-            ConfigurationError,
-            'Configuration file /etc/presto/config.properties does not exist '
-            'on host any_host',
-            client.lookup_port, 'any_host'
-        )
-
-    @patch('prestoadmin.prestoclient.run')
-    def test_lookup_port_not_integer_failure(self, run_mock):
-        client = PrestoClient('any_host', 'any_user')
-        run_mock.return_value = _AttributeString('http-server.http.port=hello')
-        run_mock.return_value.failed = False
-        self.assertRaisesRegexp(
-            ConfigurationError,
-            'Unable to coerce http-server.http.port \'hello\' to an int. '
-            'Failed to connect to any_host.',
-            client.lookup_port, 'any_host'
-        )
-
-    @patch('prestoadmin.prestoclient.run')
-    def test_lookup_port_not_in_file(self, run_mock):
-        client = PrestoClient('any_host', 'any_user')
-        run_mock.return_value = _AttributeString('')
-        run_mock.return_value.failed = False
-        port = client.lookup_port('any_host')
-        self.assertEqual(port, 8080)
-
-    @patch('prestoadmin.prestoclient.run')
-    def test_lookup_port_out_of_range(self, run_mock):
-        client = PrestoClient('any_host', 'any_user')
-        run_mock.return_value = _AttributeString('http-server.http.port=99999')
-        run_mock.return_value.failed = False
-        self.assertRaisesRegexp(
-            ConfigurationError,
-            'Invalid port number 99999: port must be between 1 and 65535 '
-            'for property http-server.http.port on host any_host.',
-            client.lookup_port, 'any_host'
-        )

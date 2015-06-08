@@ -29,8 +29,7 @@ class TestControl(BaseProductTestCase):
 
     def test_server_restart_simple(self):
         self.install_default_presto()
-        expected_output = list(
-            set(self.expected_stop()[:] + self.expected_start()[:]))
+        expected_output = self.expected_stop()[:] + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output)
 
     def test_server_start_without_topology(self):
@@ -87,7 +86,7 @@ class TestControl(BaseProductTestCase):
         start_output = self.run_prestoadmin('server start').splitlines()
         self.assertRegexpMatchesLineByLine(
             start_output,
-            self.expected_start(already_started=self.all_hosts())
+            self.expected_port_warn(self.all_hosts())
         )
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
@@ -113,26 +112,23 @@ class TestControl(BaseProductTestCase):
         self.install_default_presto()
 
         # Restart when the servers aren't started
-        expected_output = list(
-            set(self.expected_stop(not_running=self.all_hosts())[:]
-                + self.expected_start()[:]))
+        expected_output = self.expected_stop(
+            not_running=self.all_hosts())[:] + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output, running_host='')
 
         # Restart when a coordinator is started but workers aren't
         not_running_hosts = self.all_hosts()[:]
         not_running_hosts.remove(self.master)
-        expected_output = list(
-            set(self.expected_stop(not_running=not_running_hosts)
-                + self.expected_start()[:]))
+        expected_output = self.expected_stop(
+            not_running=not_running_hosts) + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output,
                                           running_host=self.master)
 
         # Restart when one worker is started, but nothing else
         not_running_hosts = self.all_hosts()[:]
         not_running_hosts.remove(self.slaves[0])
-        expected_output = list(
-            set(self.expected_stop(not_running=not_running_hosts)
-                + self.expected_start()[:]))
+        expected_output = self.expected_stop(
+            not_running=not_running_hosts) + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output,
                                           running_host=self.slaves[0])
 
@@ -149,6 +145,22 @@ class TestControl(BaseProductTestCase):
         self.upload_topology()
         self.server_install()
         self.assert_start_stop_restart_down_node(self.slaves[0])
+
+    def test_server_start_twice(self):
+        self.install_default_presto()
+        start_output = self.run_prestoadmin('server start').splitlines()
+        process_per_host = self.get_process_per_host(start_output)
+        self.assert_started(process_per_host)
+        self.run_prestoadmin('server stop -H ' + self.slaves[0])
+
+        # Start all again
+        start_with_warn = self.run_prestoadmin('server start').splitlines()
+        expected = self.expected_start(start_success=[self.slaves[0]],
+                                       already_started=[], failed_hosts=[])
+        alive_hosts = self.all_hosts()[:]
+        alive_hosts.remove(self.slaves[0])
+        expected.extend(self.expected_port_warn(alive_hosts))
+        self.assertRegexpMatchesLineByLine(start_with_warn, expected)
 
     def assert_start_stop_restart_down_node(self, down_node):
         self.stop_and_wait(down_node)
@@ -215,11 +227,10 @@ class TestControl(BaseProductTestCase):
                            r'/etc/rc.d/init.d/presto start\'!']
         expected_stop = self.expected_stop(not_running=[self.master])
         self.assert_simple_start_stop(expected_start, expected_stop)
-        expected_restart = list(
-            set(expected_stop[:] + expected_start[:-1] +
-                [r'Warning: \[master\] sudo\(\) received nonzero '
-                 r'return code 4 while executing \'set -m; '
-                 r'/etc/rc.d/init.d/presto restart\'!'])) + [r'']
+        warn_start = [r'Warning: \[master\] sudo\(\) received nonzero '
+                      r'return code 4 while executing \'set -m; '
+                      r'/etc/rc.d/init.d/presto start\'!']
+        expected_restart = expected_stop[:] + expected_start[:-1] + warn_start
         self.assert_simple_server_restart(expected_restart,
                                           expected_stop=expected_stop)
 
@@ -269,10 +280,11 @@ class TestControl(BaseProductTestCase):
         start_output = self.run_prestoadmin('server start').splitlines()
         started_hosts = self.all_hosts()
         started_hosts.remove(host)
+        started_expected = self.expected_start(start_success=started_hosts)
+        started_expected.extend(self.expected_port_warn([host]))
         self.assertRegexpMatchesLineByLine(
             start_output,
-            self.expected_start(start_success=started_hosts,
-                                already_started=[host])
+            started_expected
         )
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
@@ -292,6 +304,14 @@ class TestControl(BaseProductTestCase):
         )
         process_per_host = self.get_process_per_host(start_output)
         self.assert_stopped(process_per_host)
+
+    def expected_port_warn(self, hosts=None):
+        return_str = []
+        for host in hosts:
+            return_str += [r'Warning: \[%s\] Server failed to start on %s. '
+                           r'Port 8080 already in use' % (host, host), r'',
+                           r'']
+        return return_str
 
     def expected_start(self, start_success=None, already_started=None,
                        failed_hosts=None):

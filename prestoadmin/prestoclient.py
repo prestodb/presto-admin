@@ -15,16 +15,17 @@
 """
 Simple client to communicate with a Presto server.
 """
-from fabric.api import run, settings, hide
 from httplib import HTTPConnection, HTTPException
 import logging
 import json
 import socket
+
 from urllib2 import HTTPError, urlopen, URLError
+
+from prestoadmin.util.service_util import lookup_port
+
 from prestoadmin.util.exception import InvalidArgumentError
-from prestoadmin.config import ConfigurationError
-import prestoadmin.util.constants as constants
-import prestoadmin.topology as topology
+
 
 _LOGGER = logging.getLogger(__name__)
 URL_TIMEOUT_MS = 5000
@@ -43,34 +44,6 @@ class PrestoClient:
         self.server = server
         self.user = user
         self.port = port if port else None
-
-    def lookup_port(self, host):
-        config_file = constants.REMOTE_CONF_DIR + '/config.properties'
-        with settings(hide('stdout'), host=host):
-            port = run("grep http-server.http.port= " + config_file)
-        if port.failed:
-            raise ConfigurationError('Configuration file %s does not exist on '
-                                     'host %s' % (config_file, host))
-        else:
-            if str(port) is '':
-                _LOGGER.info('Could not find property http-server.http.port.'
-                             'Defaulting to 8080.')
-                return 8080
-            try:
-                port = port.split('=', 1)[1]
-                port = int(port)
-                topology.validate_port(str(port))
-                _LOGGER.info('Looked up port ' + str(port) + ' on host '
-                             + host)
-                return port
-            except ValueError:
-                raise ConfigurationError('Unable to coerce http-server.http'
-                                         '.port \'%s\' to an int. Failed to '
-                                         'connect to %s.' % (port, host))
-            except ConfigurationError as e:
-                raise ConfigurationError(e.message + ' for property '
-                                         'http-server.http.port on host '
-                                         + host + '.')
 
     def clear_old_results(self):
         if self.rows:
@@ -109,7 +82,7 @@ class PrestoClient:
             raise InvalidArgumentError("Username missing")
 
         if not self.port:
-            self.port = self.lookup_port(self.server)
+            self.port = lookup_port(self.server)
 
         self.clear_old_results()
 

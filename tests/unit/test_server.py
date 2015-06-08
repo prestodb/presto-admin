@@ -25,7 +25,8 @@ from prestoadmin import server
 from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
     PRESTO_RPM_MIN_REQUIRED_VERSION
 from prestoadmin.util import constants
-from prestoadmin.util.exception import ConfigFileNotFoundError
+from prestoadmin.util.exception import ConfigFileNotFoundError, \
+    ConfigurationError
 import tests.utils as utils
 
 
@@ -66,13 +67,16 @@ class TestInstall(utils.BaseTestCase):
     @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.warn')
     @patch('prestoadmin.server.check_presto_version')
-    def test_server_start_fail(self, mock_version_check, mock_warn,
+    @patch('prestoadmin.server.is_port_in_use')
+    def test_server_start_fail(self, mock_port_in_use,
+                               mock_version_check, mock_warn,
                                mock_execute, mock_sudo, mock_run):
         old_retry_timeout = server.RETRY_TIMEOUT
         server.RETRY_TIMEOUT = 1
         mock_execute.return_value = False
         env.host = "failed_node1"
         mock_version_check.return_value = ''
+        mock_port_in_use.return_value = 0
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
@@ -82,11 +86,13 @@ class TestInstall(utils.BaseTestCase):
     @patch('prestoadmin.server.sudo')
     @patch.object(PrestoClient, 'execute_query')
     @patch('prestoadmin.server.check_presto_version')
-    def test_server_start(self, mock_version_check, mock_execute,
-                          mock_sudo):
+    @patch('prestoadmin.server.is_port_in_use')
+    def test_server_start(self, mock_port_in_use, mock_version_check,
+                          mock_execute, mock_sudo):
         mock_execute.return_value = True
         env.host = 'good_node'
         mock_version_check.return_value = ''
+        mock_port_in_use.return_value = 0
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
@@ -98,47 +104,85 @@ class TestInstall(utils.BaseTestCase):
 
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_presto_version')
-    def test_server_start_bad_presto_version(self, mock_version_check,
-                                             mock_sudo):
+    @patch('prestoadmin.server.is_port_in_use')
+    def test_server_start_bad_presto_version(self, mock_port_in_use,
+                                             mock_version_check, mock_sudo):
         env.host = "good_node"
         mock_version_check.return_value = 'Presto not installed'
         server.start()
         mock_version_check.assert_called_with()
         self.assertEqual(False, mock_sudo.called)
 
-    @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.sudo')
-    def test_server_stop(self, mock_sudo, mock_version_check):
+    @patch('prestoadmin.server.check_presto_version')
+    @patch('prestoadmin.server.is_port_in_use')
+    def test_server_start_port_in_use(self, mock_port_in_use,
+                                      mock_version_check, mock_sudo):
+        env.host = "good_node"
+        mock_version_check.return_value = ''
+        mock_port_in_use.return_value = 1
+        server.start()
+        mock_version_check.assert_called_with()
+        mock_port_in_use.assert_called_with('good_node')
+        self.assertEqual(False, mock_sudo.called)
+
+    @patch('prestoadmin.server.sudo')
+    @patch('prestoadmin.server.check_status_for_control_commands')
+    @patch('prestoadmin.server.check_presto_version')
+    @patch('prestoadmin.server.is_port_in_use')
+    def test_server_restart_port_in_use(self, mock_port_in_use,
+                                        mock_version_check, mock_check_status,
+                                        mock_sudo):
+        env.host = "good_node"
+        mock_version_check.return_value = ''
+        mock_port_in_use.return_value = 1
+        server.restart()
+        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' stop')
+        mock_version_check.assert_called_with()
+        self.assertEqual(False, mock_check_status.called)
+
+    @patch('prestoadmin.server.check_presto_version')
+    @patch('prestoadmin.server.is_port_in_use')
+    @patch('prestoadmin.server.sudo')
+    def test_server_stop(self, mock_sudo, mock_port_in_use,
+                         mock_version_check):
         mock_version_check.return_value = ''
         server.stop()
         mock_version_check.assert_called_with()
+        self.assertEqual(False, mock_port_in_use.called)
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' stop')
 
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.warn')
     @patch('prestoadmin.server.check_presto_version')
-    def test_server_restart_fail(self, mock_version_check, mock_warn,
-                                 mock_status, mock_sudo):
+    @patch('prestoadmin.server.is_port_in_use')
+    def test_server_restart_fail(self, mock_port_in_use, mock_version_check,
+                                 mock_warn, mock_status, mock_sudo):
         mock_status.return_value = False
         env.host = "failed_node1"
         mock_version_check.return_value = ''
+        mock_port_in_use.return_value = 0
         server.restart()
-        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' restart')
+        mock_sudo.assert_any_call('set -m; ' + INIT_SCRIPTS + ' stop')
+        mock_sudo.assert_any_call('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
         mock_warn.assert_called_with("Server failed to start on: failed_node1")
 
-    @patch.object(PrestoClient, 'lookup_port')
+    @patch('prestoadmin.util.service_util.lookup_port')
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.check_presto_version')
-    def test_server_restart(self, mock_version_check, mock_status, mock_sudo,
-                            lookup_host_mock):
+    @patch('prestoadmin.server.is_port_in_use')
+    def test_server_restart(self, mock_port_in_use, mock_version_check,
+                            mock_status, mock_sudo, mock_lookup_host):
         mock_status.return_value = True
         env.host = 'good_node'
         mock_version_check.return_value = ''
+        mock_port_in_use.return_value = 0
         server.restart()
-        mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' restart')
+        mock_sudo.assert_any_call('set -m; ' + INIT_SCRIPTS + ' stop')
+        mock_sudo.assert_any_call('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
         self.assertEqual('Waiting to make sure we can connect to the Presto '
                          'server on good_node, please wait. This check will '
@@ -284,3 +328,33 @@ class TestInstall(utils.BaseTestCase):
         mock_run.return_value = td_version
         expected = server.check_presto_version()
         self.assertEqual(expected, '')
+
+    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.lookup_port')
+    @patch('prestoadmin.server.warn')
+    def test_warn_if_port_is_in_use(self, mock_warn, mock_port, mock_run):
+        mock_port.return_value = 1010
+        env.host = 'any_host'
+        mock_run.return_value = 'some_string'
+        server.is_port_in_use(env.host)
+        mock_warn.assert_called_with('Server failed to start on any_host. '
+                                     'Port 1010 already in use')
+
+    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.lookup_port')
+    @patch('prestoadmin.server.warn')
+    def test_no_warn_if_port_free(self, mock_warn, mock_port, mock_run):
+        mock_port.return_value = 1010
+        env.host = 'any_host'
+        mock_run.return_value = ''
+        server.is_port_in_use(env.host)
+        self.assertEqual(False, mock_warn.called)
+
+    @patch('prestoadmin.server.lookup_port')
+    @patch('prestoadmin.server.warn')
+    def test_no_warn_if_port_lookup_fail(self, mock_warn, mock_port):
+        e = ConfigurationError()
+        mock_port.side_effect = e
+        env.host = 'any_host'
+        self.assertFalse(server.is_port_in_use(env.host))
+        self.assertEqual(False, mock_warn.called)

@@ -32,9 +32,10 @@ from prestoadmin import topology
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
-from prestoadmin.util.exception import ConfigFileNotFoundError,\
+from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
 from prestoadmin.util.fabricapi import get_host_list
+from prestoadmin.util.service_util import lookup_port
 import util.filesystem
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
@@ -121,6 +122,8 @@ def uninstall():
 def service(control=None):
     if check_presto_version() != '':
         return False
+    if control.strip() == 'start' and is_port_in_use(env.host):
+        return False
     _LOGGER.info('Executing %s on presto server' % control)
     ret = sudo('set -m; ' + INIT_SCRIPTS + control)
     return ret.succeeded
@@ -131,11 +134,29 @@ def check_status_for_control_commands():
     print('Waiting to make sure we can connect to the Presto server on %s, '
           'please wait. This check will time out after %d minutes if the '
           'server does not respond.'
-          % (env.host, (RETRY_TIMEOUT/60)))
+          % (env.host, (RETRY_TIMEOUT / 60)))
     if check_server_status(client):
         print('Server started successfully on: ' + env.host)
     else:
         warn('Server failed to start on: ' + env.host)
+
+
+def is_port_in_use(host):
+    _LOGGER.info("Checking if port used by Prestoserver is already in use..")
+    try:
+        portnum = lookup_port(host)
+    except Exception:
+        _LOGGER.info("Cannot find port from config.properties. "
+                     "Skipping check for port already being used")
+        return 0
+    with settings(hide('warnings', 'stdout'), warn_only=True):
+        output = run('netstat -an |grep %s |grep LISTEN' % str(portnum))
+    if output:
+        _LOGGER.info("Presto server port already in use. Skipping "
+                     "server start...")
+        warn('Server failed to start on %s. Port %s already in use'
+             % (env.host, str(portnum)))
+    return output
 
 
 @task
@@ -160,6 +181,17 @@ def stop():
     service(' stop')
 
 
+def stop_and_start():
+    if check_presto_version() != '':
+        return False
+    sudo('set -m; ' + INIT_SCRIPTS + ' stop')
+    if is_port_in_use(env.host):
+        return False
+    _LOGGER.info('Executing start on presto server')
+    ret = sudo('set -m; ' + INIT_SCRIPTS + ' start')
+    return ret.succeeded
+
+
 @task
 @requires_topology
 def restart():
@@ -169,7 +201,7 @@ def restart():
     A status check is performed on the entire cluster and a list of
     servers that did not start, if any, are reported at the end.
     """
-    if service(' restart'):
+    if stop_and_start():
         check_status_for_control_commands()
 
 
@@ -182,7 +214,7 @@ def check_presto_version():
     """
     version = get_presto_version()
     if version in PRESTO_TD_RPM:
-            return ''
+        return ''
     try:
         float(version)
         version_number = version.strip().split('.')
