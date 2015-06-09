@@ -22,6 +22,16 @@ import os
 from tests.product.base_product_case import BaseProductTestCase, \
     DOCKER_MOUNT_POINT, LOCAL_MOUNT_POINT
 
+install_py26_script = """\
+echo "deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main" \
+    > /etc/apt/sources.list.d/fkrull-deadsnakes-trusty.list
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
+    DB82666C
+sudo apt-get update
+sudo apt-get -y install python2.6
+ln -s /usr/bin/python2.6 /usr/bin/python
+"""
+
 
 class TestInstallation(BaseProductTestCase):
 
@@ -84,8 +94,7 @@ class TestInstallation(BaseProductTestCase):
                                  {"bind": DOCKER_MOUNT_POINT,
                                   "ro": False}})
 
-        self.exec_create_start(self.master, 'sudo apt-get -y install'
-                               ' python-minimal')
+        self.run_script(install_py26_script)
         self.exec_create_start(self.master, 'sudo apt-get -y install wget')
 
         self.assertRaisesRegexp(
