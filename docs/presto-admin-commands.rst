@@ -54,6 +54,7 @@ Example
 
     sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
 
+.. _server-start-label:
 
 ************
 server start
@@ -84,6 +85,8 @@ Example
 ::
 
     sudo ./presto-admin server stop
+
+.. _server-restart-label:
 
 **************
 server restart
