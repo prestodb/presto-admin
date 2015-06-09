@@ -22,10 +22,10 @@ from mock import patch, PropertyMock
 
 from prestoadmin.prestoclient import URL_TIMEOUT_MS, PrestoClient
 from prestoadmin.util.exception import InvalidArgumentError
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestPrestoClient(utils.BaseTestCase):
+class TestPrestoClient(BaseTestCase):
     def test_no_sql(self):
         client = PrestoClient('any_host', 'any_user', 8080)
         self.assertRaisesRegexp(InvalidArgumentError,

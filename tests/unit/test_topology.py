@@ -25,10 +25,10 @@ from prestoadmin import config
 from prestoadmin import topology
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestTopologyConfig(utils.BaseTestCase):
+class TestTopologyConfig(BaseTestCase):
 
     @patch('prestoadmin.topology._get_conf_from_file')
     def test_fill_conf(self, get_conf_from_file_mock):

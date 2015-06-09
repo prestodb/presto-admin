@@ -23,10 +23,10 @@ from prestoadmin import connector
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestConnector(utils.BaseTestCase):
+class TestConnector(BaseTestCase):
     @patch('prestoadmin.connector.os.path.isfile')
     def test_add_not_exist(self, isfile_mock):
         isfile_mock.return_value = False

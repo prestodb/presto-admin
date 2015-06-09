@@ -16,10 +16,10 @@ from fabric.operations import _AttributeString
 from mock import patch
 from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util.service_util import lookup_port
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestServiceUtil(utils.BaseTestCase):
+class TestServiceUtil(BaseTestCase):
     @patch('prestoadmin.util.service_util.run')
     def test_lookup_port_failure(self, run_mock):
         run_mock.return_value = _AttributeString('http-server.http.port=8080')

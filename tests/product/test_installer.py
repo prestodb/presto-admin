@@ -21,7 +21,7 @@ import fnmatch
 import re
 
 from prestoadmin import main_dir
-from tests.utils import run_make, BaseTestCase
+from tests.base_test_case import run_make, BaseTestCase
 
 
 class TestInstaller(BaseTestCase):

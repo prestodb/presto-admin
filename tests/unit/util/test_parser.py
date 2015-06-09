@@ -19,10 +19,10 @@ from StringIO import StringIO
 
 from prestoadmin.util.parser import LoggingOptionParser
 from prestoadmin.util.hiddenoptgroup import HiddenOptionGroup
-import tests.utils as utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestParser(utils.BaseTestCase):
+class TestParser(BaseTestCase):
     def test_print_extended_help(self):
         parser = LoggingOptionParser(usage="Hello World")
         parser.add_option_group("a")

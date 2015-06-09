@@ -20,13 +20,13 @@ from mock import patch
 from prestoadmin import config
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 
-class TestConfiguration(utils.BaseTestCase):
+class TestConfiguration(BaseTestCase):
 
     def test_file_does_not_exist_json(self):
         self.assertRaisesRegexp(ConfigFileNotFoundError,

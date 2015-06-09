@@ -16,10 +16,10 @@ from fabric.state import env
 from mock import patch
 from prestoadmin import package
 from prestoadmin.util import constants
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestPackage(utils.BaseTestCase):
+class TestPackage(BaseTestCase):
 
     @patch('prestoadmin.package.sudo')
     @patch('prestoadmin.package.put')

@@ -31,10 +31,10 @@ import prestoadmin
 from prestoadmin import main
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestMain(utils.BaseTestCase):
+class TestMain(BaseTestCase):
 
     def _run_command_compare_to_file(self, command, exit_status, filename):
         """

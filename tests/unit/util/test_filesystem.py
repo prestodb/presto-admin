@@ -15,7 +15,7 @@
 import errno
 from mock import patch
 from prestoadmin.util import filesystem
-from tests.utils import BaseTestCase
+from tests.base_test_case import BaseTestCase
 
 
 class TestFilesystem(BaseTestCase):

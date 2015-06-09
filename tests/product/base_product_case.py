@@ -33,7 +33,7 @@ from docker.errors import APIError
 from docker import Client
 
 import prestoadmin
-from tests.utils import BaseTestCase
+from tests.base_test_case import BaseTestCase
 
 DOCKER_START_TIMEOUT = 30
 

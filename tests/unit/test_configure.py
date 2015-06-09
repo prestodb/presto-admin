@@ -19,10 +19,10 @@ from mock import patch
 
 from fabric.api import env
 from prestoadmin import configure
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestConfigure(utils.BaseTestCase):
+class TestConfigure(BaseTestCase):
     def test_output_format_dict(self):
         conf = {'a': 'b', 'c': 'd'}
         self.assertEqual(configure.output_format(conf),

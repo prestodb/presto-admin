@@ -20,14 +20,14 @@ from distutils.dir_util import mkpath
 from mock import patch
 from mock import call
 
-from tests import utils
+from tests.base_test_case import BaseTestCase
 from packaging.bdist_prestoadmin import bdist_prestoadmin
 from packaging import package_dir as packaging_dir
 
 from distutils.dist import Distribution
 
 
-class TestBDistPrestoAdmin(utils.BaseTestCase):
+class TestBDistPrestoAdmin(BaseTestCase):
     def setUp(self):
         super(TestBDistPrestoAdmin, self).setUp()
         self.attrs = {

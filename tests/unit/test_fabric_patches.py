@@ -19,7 +19,7 @@ import fabric.utils
 
 from mock import call
 from mock import patch
-from tests.utils import BaseTestCase
+from tests.base_test_case import BaseTestCase
 
 import logging
 

@@ -27,10 +27,10 @@ from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
-import tests.utils as utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestInstall(utils.BaseTestCase):
+class TestInstall(BaseTestCase):
     @patch('prestoadmin.server.deploy_install_configure')
     def test_install_server(self, mock_install):
         local_path = os.path.join("/any/path/rpm")

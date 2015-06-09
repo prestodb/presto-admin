@@ -18,10 +18,10 @@ Tests the utility
 from fabric.api import env
 from prestoadmin.util import fabricapi
 
-import tests.utils as utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestFabricapi(utils.BaseTestCase):
+class TestFabricapi(BaseTestCase):
     def test_get_host_with_exclude(self):
         env.hosts = ['a', 'b', 'bad']
         env.exclude_hosts = ['bad']

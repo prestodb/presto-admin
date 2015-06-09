@@ -17,10 +17,10 @@ from fabric.state import env
 from mock import patch
 from prestoadmin.util import constants
 from prestoadmin import configure_cmds
-from tests import utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestConfigureCmds(utils.BaseTestCase):
+class TestConfigureCmds(BaseTestCase):
     @patch('prestoadmin.configure_cmds.get')
     @patch('prestoadmin.configure_cmds.files.exists')
     def test_config_show(self, mock_file_exists, mock_get):

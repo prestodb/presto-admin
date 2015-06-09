@@ -20,10 +20,10 @@ from mock import patch
 
 from prestoadmin import coordinator
 from prestoadmin.util.exception import ConfigurationError
-import tests.utils as utils
+from tests.base_test_case import BaseTestCase
 
 
-class TestCoordinator(utils.BaseTestCase):
+class TestCoordinator(BaseTestCase):
     def test_build_defaults(self):
         env.roledefs['coordinator'] = 'a'
         env.roledefs['workers'] = ["b", "c"]

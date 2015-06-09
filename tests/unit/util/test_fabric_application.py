@@ -14,7 +14,7 @@
 
 from prestoadmin.util.fabric_application import FabricApplication
 
-from tests.utils import BaseTestCase
+from tests.base_test_case import BaseTestCase
 
 from mock import patch
 

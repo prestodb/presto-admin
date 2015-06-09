@@ -23,7 +23,7 @@ from prestoadmin.util import constants
 from prestoadmin.util.application import Application
 from prestoadmin.util.exception import UserVisibleError
 
-from tests.utils import BaseTestCase
+from tests.base_test_case import BaseTestCase
 
 APPLICATION_NAME = 'foo'
 
