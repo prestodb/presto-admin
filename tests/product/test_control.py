@@ -15,6 +15,7 @@
 """
 Product tests for start/stop/restart of presto-admin server
 """
+from nose.plugins.attrib import attr
 
 from prestoadmin.server import RETRY_TIMEOUT
 from tests.product.base_product_case import BaseProductTestCase
@@ -22,11 +23,13 @@ from tests.product.base_product_case import BaseProductTestCase
 
 class TestControl(BaseProductTestCase):
 
+    @attr('smoketest')
     def test_server_start_stop_simple(self):
         self.install_default_presto()
         self.assert_simple_start_stop(self.expected_start(),
                                       self.expected_stop())
 
+    @attr('smoketest')
     def test_server_restart_simple(self):
         self.install_default_presto()
         expected_output = self.expected_stop()[:] + self.expected_start()[:]

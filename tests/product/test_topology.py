@@ -13,8 +13,12 @@
 # limitations under the License.
 
 import os
+
+from nose.plugins.attrib import attr
+
 from tests.product.base_product_case import BaseProductTestCase, \
     DOCKER_MOUNT_POINT, LOCAL_RESOURCES_DIR
+
 
 topology_with_slave1_coord = """{'coordinator': u'slave1',
  'port': '22',
@@ -40,6 +44,8 @@ local_topology = """{'coordinator': 'localhost',
 
 
 class TestTopologyShow(BaseProductTestCase):
+
+    @attr('smoketest')
     def test_topology_show(self):
         self.install_presto_admin()
         self.upload_topology()

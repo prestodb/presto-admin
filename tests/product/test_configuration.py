@@ -17,6 +17,9 @@ Product tests for presto-admin configuration
 """
 
 import os
+
+from nose.plugins.attrib import attr
+
 from prestoadmin.util import constants
 from tests.product import base_product_case
 from tests.product.base_product_case import BaseProductTestCase
@@ -24,6 +27,7 @@ from tests.product.base_product_case import BaseProductTestCase
 
 class TestConfiguration(BaseProductTestCase):
 
+    @attr('smoketest')
     def test_configuration_deploy_show(self):
         self.install_presto_admin()
         self.upload_topology()

@@ -18,6 +18,8 @@ Product tests for presto-admin collect
 
 from os import path
 
+from nose.plugins.attrib import attr
+
 from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO
 from prestoadmin.prestoclient import PrestoClient
@@ -30,6 +32,7 @@ class TestCollect(BaseProductTestCase):
         self.install_default_presto()
         self.run_prestoadmin('server start')
 
+    @attr('smoketest')
     def test_collect_logs_basic(self):
         self.do_basic_presto_setup()
         actual = self.run_prestoadmin('collect logs')
@@ -49,6 +52,7 @@ class TestCollect(BaseProductTestCase):
         admin_log = path.join(downloaded_logs_location, PRESTOADMIN_LOG_NAME)
         self.assert_path_exists(self.master, admin_log)
 
+    @attr('smoketest')
     def test_collect_system_info_basic(self):
         self.do_basic_presto_setup()
         actual = self.run_prestoadmin('collect system_info')
@@ -82,6 +86,7 @@ class TestCollect(BaseProductTestCase):
 
         self.assert_path_exists(self.master, OUTPUT_FILENAME_FOR_SYS_INFO)
 
+    @attr('smoketest')
     def test_collect_query_info(self):
         self.do_basic_presto_setup()
 

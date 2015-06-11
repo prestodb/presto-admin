@@ -15,9 +15,10 @@
 """
 Product tests for presto-admin installation
 """
-
 import certifi
 import os
+
+from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
     DOCKER_MOUNT_POINT, LOCAL_MOUNT_POINT
@@ -40,6 +41,7 @@ class TestInstallation(BaseProductTestCase):
         dist_dir = self.build_dist_if_necessary()
         self.copy_dist_to_master(dist_dir)
 
+    @attr('smoketest')
     def test_install_non_root(self):
         install_dir = '/home/app-admin'
         script = """
@@ -56,6 +58,7 @@ class TestInstallation(BaseProductTestCase):
                                 '`/var/log/prestoadmin\': Permission denied',
                                 self.run_script, script)
 
+    @attr('smoketest')
     def test_install_from_different_dir(self):
         install_dir = '/opt'
         script = """
@@ -74,6 +77,7 @@ class TestInstallation(BaseProductTestCase):
             script
         )
 
+    @attr('smoketest')
     def test_install_on_wrong_os_offline_installer(self):
         self.tear_down_docker_cluster()
         self.create_host_mount_dirs()
@@ -104,6 +108,7 @@ class TestInstallation(BaseProductTestCase):
             self.install_presto_admin,
         )
 
+    @attr('smoketest')
     def test_cert_arg_to_installation_nonexistent_file(self):
         install_dir = '/opt'
         script = """
@@ -119,6 +124,7 @@ class TestInstallation(BaseProductTestCase):
                                  'trusted\-host. Cannot find certificate '
                                  'file: dummy_cert.cert')
 
+    @attr('smoketest')
     def test_cert_arg_to_installation_real_cert(self):
         self.copy_to_master(certifi.where())
         install_dir = '/opt'

@@ -17,12 +17,15 @@ Product tests for presto-admin status commands
 """
 import os
 
+from nose.plugins.attrib import attr
+
 from tests.product.base_product_case import BaseProductTestCase, PRESTO_VERSION
 from prestoadmin.util.constants import COORDINATOR_DIR, WORKERS_DIR
 
 
 class TestStatus(BaseProductTestCase):
 
+    @attr('smoketest')
     def test_status_happy_path(self):
         ips = self.get_ip_address_dict()
         self.install_presto_admin()

@@ -14,8 +14,12 @@
 
 import os
 import re
+
+from nose.plugins.attrib import attr
+
 from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
+
 
 uninstall_output = ['Package uninstalled successfully on: slave1',
                     'Package uninstalled successfully on: slave2',
@@ -24,6 +28,7 @@ uninstall_output = ['Package uninstalled successfully on: slave1',
 
 
 class TestServerUninstall(BaseProductTestCase):
+    @attr('smoketest')
     def test_uninstall(self):
         self.install_default_presto()
         start_output = self.run_prestoadmin('server start')

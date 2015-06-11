@@ -19,6 +19,8 @@ Product tests for SSH authentication for presto-admin commands
 import os
 import subprocess
 
+from nose.plugins.attrib import attr
+
 from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
 
@@ -58,6 +60,7 @@ class TestAuthentication(BaseProductTestCase):
         '[slave3] out: \n'
     )
 
+    @attr('smoketest')
     def test_incorrect_hostname(self):
         self.install_presto_admin()
         topology = {'coordinator': 'dummy_master', 'workers':
@@ -91,6 +94,7 @@ class TestAuthentication(BaseProductTestCase):
             non_root_sudo_warning = f.read()
         return non_root_sudo_warning
 
+    @attr('smoketest')
     def test_passwordless_ssh_authentication(self):
         self.install_presto_admin()
         self.upload_topology()
@@ -144,6 +148,7 @@ class TestAuthentication(BaseProductTestCase):
         self.assertEqualIgnoringOrder(
             self.success_output + self.serial_text, command_output)
 
+    @attr('smoketest')
     def test_no_passwordless_ssh_authentication(self):
         self.install_presto_admin()
         self.upload_topology()
@@ -187,6 +192,7 @@ class TestAuthentication(BaseProductTestCase):
             'connector add -i /root/.ssh/id_rsa.bak')
         self.assertEqualIgnoringOrder(self.success_output, command_output)
 
+    @attr('smoketest')
     def test_prestoadmin_no_sudo_popen(self):
         self.install_presto_admin()
         self.upload_topology()

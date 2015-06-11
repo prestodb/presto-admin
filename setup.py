@@ -38,6 +38,7 @@ requirements = [
 
 test_requirements = [
     'tox>=1.9.0',
+    'nose>=1.0',
     'mock>=1.0.1',
     'wheel>=0.23.0',
     'docker-py>=1.2.2',

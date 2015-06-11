@@ -19,6 +19,7 @@ import subprocess
 import os
 import fnmatch
 import re
+from nose.plugins.attrib import attr
 
 from prestoadmin import main_dir
 from tests.base_test_case import run_make, BaseTestCase
@@ -30,10 +31,12 @@ class TestInstaller(BaseTestCase):
         run_make(['clean-build'])
         BaseTestCase.tearDown(self)
 
+    @attr('smoketest')
     def test_online_installer(self):
         run_make(['dist-online'])
         self._verify_third_party_dir(False)
 
+    @attr('smoketest')
     def test_offline_installer(self):
         run_make(['dist'])
         self._verify_third_party_dir(True)

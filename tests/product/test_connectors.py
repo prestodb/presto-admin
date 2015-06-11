@@ -18,6 +18,7 @@ Product tests for presto-admin connector support.
 from time import sleep
 import json
 import os
+from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
@@ -33,6 +34,7 @@ class PrestoError(Exception):
 
 
 class TestConnectors(BaseProductTestCase):
+    @attr('smoketest')
     def test_basic_connector_add_remove(self):
         self.install_default_presto()
         self.run_prestoadmin('server start')

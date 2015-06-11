@@ -15,9 +15,12 @@
 import os
 import re
 
+from nose.plugins.attrib import attr
+
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM, \
     LOCAL_RESOURCES_DIR
+
 
 install_interactive_out = ['Enter user name for SSH connection to all '
                            'nodes: [root] Enter port number for SSH '
@@ -166,6 +169,7 @@ task.max-memory=1GB\n"""
                                            '/etc/presto/config.properties',
                                            self.default_workers_config_regex_)
 
+    @attr('smoketest')
     def test_install(self):
         self.install_presto_admin()
         self.upload_topology()

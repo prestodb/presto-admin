@@ -8,6 +8,7 @@ help:
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
 	@echo "lint - check style with flake8"
+	@echo "smoke - run tests annotated with attr smoke using nosetests"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
@@ -49,6 +50,9 @@ clean-test:
 
 lint:
 	flake8 prestoadmin packaging tests
+
+smoke: clean-test
+	tox -e py26 -- -a smoke
 
 test: clean-test
 	python setup.py test -s tests.unit

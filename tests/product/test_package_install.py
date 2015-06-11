@@ -13,11 +13,14 @@
 # limitations under the License.
 import os
 
+from nose.plugins.attrib import attr
+
 from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM, \
     LOCAL_RESOURCES_DIR, PRESTO_RPM_BASENAME
 
 
 class TestPackageInstall(BaseProductTestCase):
+    @attr('smoketest')
     def test_package_install(self):
         self.install_presto_admin()
         self.upload_topology()
