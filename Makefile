@@ -52,7 +52,7 @@ lint:
 	flake8 prestoadmin packaging tests
 
 smoke: clean-test
-	tox -e py26 -- -a smoke
+	tox -e py26 -- -a smoketest
 
 test: clean-test
 	python setup.py test -s tests.unit
