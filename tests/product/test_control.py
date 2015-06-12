@@ -171,11 +171,9 @@ class TestControl(BaseProductTestCase):
         alive_hosts.remove(down_node)
 
         start_output = self.run_prestoadmin('server start')
-        self.assert_parallel_execution_failure([down_node],
-                                               'server.start',
-                                               self.down_node_connection_error
-                                               % {'host': down_node},
-                                               start_output)
+
+        self.assertRegexpMatches(start_output, self.down_node_connection_error
+                                 % {'host': down_node})
 
         expected_start = self.expected_start(start_success=alive_hosts)
         for message in expected_start:
@@ -186,11 +184,8 @@ class TestControl(BaseProductTestCase):
         self.assert_started(process_per_host)
 
         stop_output = self.run_prestoadmin('server stop')
-        self.assert_parallel_execution_failure([down_node],
-                                               'server.stop',
-                                               self.down_node_connection_error
-                                               % {'host': down_node},
-                                               stop_output)
+        self.assertRegexpMatches(stop_output, self.down_node_connection_error
+                                 % {'host': down_node})
         expected_stop = self.expected_stop(running=alive_hosts)
         for message in expected_stop:
             self.assertRegexpMatches(stop_output, message, 'expected %s \n '
@@ -198,19 +193,25 @@ class TestControl(BaseProductTestCase):
         self.assert_stopped(process_per_host)
         expected_stop = self.expected_stop(running=[],
                                            not_running=alive_hosts)
+        self.assertEqual(len(stop_output.splitlines()),
+                         self.expected_down_node_output_size(expected_stop))
         restart_output = self.run_prestoadmin('server restart')
-        self.assert_parallel_execution_failure([down_node],
-                                               'server.restart',
-                                               self.down_node_connection_error
-                                               % {'host': down_node},
-                                               restart_output)
+        self.assertRegexpMatches(restart_output,
+                                 self.down_node_connection_error
+                                 % {'host': down_node})
         expected_restart = list(
             set(expected_stop[:] + expected_start[:])) + [r'']
         for message in expected_restart:
             self.assertRegexpMatches(restart_output, message, 'expected %s \n'
                                      ' actual %s' % (message, restart_output))
+        self.assertEqual(len(restart_output.splitlines()),
+                         self.expected_down_node_output_size(expected_restart))
         process_per_host = self.get_process_per_host(restart_output)
         self.assert_started(process_per_host)
+
+    def expected_down_node_output_size(self, expected_output):
+        return self.len_down_node_error + len(
+            '\n'.join(expected_output).splitlines())
 
     def test_start_restart_config_file_error(self):
         self.install_default_presto()
@@ -330,7 +331,7 @@ class TestControl(BaseProductTestCase):
                                r'Presto server on %s, please wait. This check'
                                r' will time out after %d minutes if the server'
                                r' does not respond.'
-                               % (host, RETRY_TIMEOUT/60),
+                               % (host, RETRY_TIMEOUT / 60),
                                r'Server started successfully on: %s' % host,
                                r'\[%s\] out: ' % host,
                                r'\[%s\] out: Started as .*' % host,
@@ -341,7 +342,7 @@ class TestControl(BaseProductTestCase):
                                r'Presto server on %s, please wait. This check'
                                r' will time out after %d minutes if the server'
                                r' does not respond.'
-                               % (host, RETRY_TIMEOUT/60),
+                               % (host, RETRY_TIMEOUT / 60),
                                r'Server started successfully on: %s' % host,
                                r'\[%s\] out: ' % host,
                                r'\[%s\] out: Already running as .*' % host,

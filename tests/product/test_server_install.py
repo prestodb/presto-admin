@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import re
 
 from nose.plugins.attrib import attr
 
@@ -393,20 +392,14 @@ task.max-memory=1GB\n"""
     def test_connection_to_coord_lost(self):
         self.install_presto_admin()
         self.copy_presto_rpm_to_master()
-        topology = {"coordinator": "slave1",
-                    "workers": ["master", "slave2", "slave3"]}
+        topology = {"coordinator": self.slaves[0],
+                    "workers": [self.master, self.slaves[1], self.slaves[2]]}
         self.upload_topology(topology=topology)
         self.client.stop(self.slaves[0])
 
         actual_out = self.server_install()
-        expected = re.compile(r'Process slave1:.*?\nNetworkError: '
-                              r'(Low level socket error connecting to'
-                              r' host slave1 on port 22: No route to'
-                              r' host \(tried 1 time\)|Timed out '
-                              r'trying to connect to slave1 '
-                              r'\(tried 1 time\))',
-                              flags=re.DOTALL)
-        self.assertRegexpMatches(actual_out, expected)
+        self.assertRegexpMatches(actual_out, self.down_node_connection_error
+                                 % {'host': self.slaves[0]})
 
         for container in [self.master, self.slaves[1], self.slaves[2]]:
             self.assert_common_configs(container)

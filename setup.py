@@ -15,6 +15,9 @@
 
 import os
 
+# This is necessary for nose to handle multiprocessing correctly
+from multiprocessing import util
+
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -42,7 +45,8 @@ test_requirements = [
     'mock>=1.0.1',
     'wheel>=0.23.0',
     'docker-py>=1.2.2',
-    'certifi==2015.4.28'
+    'certifi==2015.4.28',
+    'fudge==1.1.0'
 ]
 
 # =====================================================

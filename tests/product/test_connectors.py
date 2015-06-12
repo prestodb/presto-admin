@@ -90,26 +90,25 @@ class TestConnectors(BaseProductTestCase):
         script = 'chmod 600 /etc/opt/prestoadmin/connectors; ' \
                  'su app-admin -c "./presto-admin connector add tpch"'
         output = self.run_prestoadmin_script(script)
-        self.assert_parallel_execution_failure(self.all_hosts(),
-                                               'connector.add',
-                                               'Configuration for connector'
-                                               ' tpch not found', output)
+        not_found_error = self.warning_message('Configuration for connector '
+                                               'tpch not found')
+
+        self.assertEqualIgnoringOrder(output, not_found_error)
 
         # test add a connector that does not exist
         self.run_prestoadmin('connector remove tpch')
         output = self.run_prestoadmin('connector add tpch')
-        self.assert_parallel_execution_failure(
-            self.all_hosts(), 'connector.add',
-            'Configuration for connector tpch not found', output)
+        self.assertEqualIgnoringOrder(output, not_found_error)
 
         # test add all connectors when the directory does not exist
         self.exec_create_start(self.master,
                                'rmdir /etc/opt/prestoadmin/connectors')
         output = self.run_prestoadmin('connector add')
-        self.assert_parallel_execution_failure(
-            self.all_hosts(), 'connector.add',
-            'Cannot add connectors because directory '
-            '/etc/opt/prestoadmin/connectors does not exist', output)
+        missing_dir_error = self.warning_message('Cannot add connectors '
+                                                 'because directory /etc/'
+                                                 'opt/prestoadmin/connectors '
+                                                 'does not exist')
+        self.assertEqualIgnoringOrder(output, missing_dir_error)
 
         # test add connector by name when it exists
         self.write_content_to_master('connector.name=tpch',
@@ -161,6 +160,34 @@ No connectors will be deployed
                                      'connector.name=jmx')
         self._assert_connectors_loaded([['system'], ['jmx'], ['tpch']])
 
+    def warning_message(self, error):
+        message = """
+Warning: %(error)s
+
+Underlying exception:
+    %(error)s
+
+
+Warning: %(error)s
+
+Underlying exception:
+    %(error)s
+
+
+Warning: %(error)s
+
+Underlying exception:
+    %(error)s
+
+
+Warning: %(error)s
+
+Underlying exception:
+    %(error)s
+
+"""
+        return message % {'error': error}
+
     def test_connector_add_lost_host(self):
         self.install_presto_admin()
         self.upload_topology()
@@ -178,11 +205,10 @@ No connectors will be deployed
             self.assertTrue(deploying_message % host in output,
                             'expected %s \n actual %s'
                             % (deploying_message % host, output))
-        self.assert_parallel_execution_failure([self.slaves[0]],
-                                               'connector.add',
-                                               self.down_node_connection_error
-                                               % {'host': self.slaves[0]},
-                                               output)
+        self.assertRegexpMatches(output, self.down_node_connection_error
+                                 % {'host': self.slaves[0]})
+        self.assertEqual(len(output.splitlines()),
+                         len(self.all_hosts()) + self.len_down_node_error)
         self.run_prestoadmin('server start')
 
         for host in [self.master, self.slaves[1], self.slaves[2]]:

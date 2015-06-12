@@ -105,19 +105,18 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.upload_topology(topology)
         self.stop_and_wait(bad_host)
         output = self.run_prestoadmin('configuration deploy')
-        self.assert_parallel_execution_failure([bad_host],
-                                               'configuration.deploy',
-                                               self.down_node_connection_error
-                                               % {'host': bad_host},
-                                               output)
+        self.assertRegexpMatches(output, self.down_node_connection_error %
+                                 {'host': bad_host})
         for host in self.all_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
+        expected_size = self.len_down_node_error + len(self.all_hosts())
+        self.assertEqual(len(output.splitlines()), expected_size)
 
         output = self.remove_disconnecting_msg(
             self.run_prestoadmin('configuration show config'))
         error = str.join('\n', output.splitlines()[:6])
         self.assertRegexpMatches(error,
-                                 self.serial_down_node_connection_error %
+                                 self.down_node_connection_error %
                                  {'host': bad_host})
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_down_node.txt'), 'r') as f:
@@ -130,13 +129,12 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         bad_host = self.slaves[0]
         self.stop_and_wait(bad_host)
         output = self.run_prestoadmin('configuration deploy')
-        self.assert_parallel_execution_failure([bad_host],
-                                               'configuration.deploy',
-                                               self.down_node_connection_error
-                                               % {'host': bad_host},
-                                               output)
+        self.assertRegexpMatches(output, self.down_node_connection_error %
+                                 {'host': bad_host})
         for host in self.all_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
+        expected_length = len(self.all_hosts()) + self.len_down_node_error
+        self.assertEqual(len(output.splitlines()), expected_length)
 
     def test_configuration_show(self):
         self.install_presto_admin()

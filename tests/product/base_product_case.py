@@ -90,19 +90,16 @@ task.max-memory=1GB\n"""
     slaves = ["slave1", "slave2", "slave3"]
     master = "master"
 
-    down_node_connection_error = r'(Low level socket error connecting to ' \
-                                 r'host %(host)s on port 22: No route to ' \
-                                 r'host \(tried 1 time\)|Timed out trying ' \
-                                 r'to connect to %(host)s \(tried 1 time\))'
-    serial_down_node_connection_error = r'(\nWarning: Low level socket error ' \
-                                        r'connecting to host %(host)s on ' \
-                                        r'port 22: No route to host ' \
-                                        r'\(tried 1 time\)\n\nUnderlying ' \
-                                        r'exception:\n    No route to host\n' \
-                                        r'|\nWarning: Timed out trying to ' \
-                                        r'connect to %(host)s \(tried 1 ' \
-                                        r'time\)\n\nUnderlying exception:' \
-                                        r'\n    timed out\n)'
+    down_node_connection_error = r'(\nWarning: (\[%(host)s\] )?Low level socket ' \
+                                 r'error connecting to host %(host)s on ' \
+                                 r'port 22: No route to host ' \
+                                 r'\(tried 1 time\)\n\nUnderlying ' \
+                                 r'exception:\n    No route to host\n' \
+                                 r'|\nWarning: (\[.*\] )?Timed out trying ' \
+                                 r'to connect to %(host)s \(tried 1 ' \
+                                 r'time\)\n\nUnderlying exception:' \
+                                 r'\n    timed out\n)'
+    len_down_node_error = 6
 
     def setUp(self):
         super(BaseProductTestCase, self).setUp()
@@ -395,34 +392,6 @@ task.max-memory=1GB\n"""
 
     def assert_path_removed(self, container, directory):
         self.exec_create_start(container, ' [ ! -e %s ]' % directory)
-
-    def assert_parallel_execution_failure(self, hosts, task,
-                                          underlying_exception, cmd_output):
-        expected_parallel_exception = "!!! Parallel execution exception " \
-                                      "under host u'%s'"
-        expected_stacktrace = 'Process %s:'
-
-        for host in hosts:
-            self.assertTrue(expected_parallel_exception % host in cmd_output,
-                            "expected: %s\n output: %s\n"
-                            % (expected_parallel_exception % host, cmd_output))
-            self.assertTrue(expected_stacktrace % host in cmd_output,
-                            "expected: %s\n output: %s\n"
-                            % (expected_stacktrace % host, cmd_output))
-
-        warning = """\nWarning: One or more hosts failed while executing task \
-'%(task)s'
-
-Underlying exception:
-    %(exception)s\n
-"""
-        warning = warning % {'exception': underlying_exception,
-                             'task': task}
-        expected_warning = ''
-        for i in range(len(hosts)):
-            expected_warning += warning
-
-        self.assertRegexpMatches(cmd_output, expected_warning)
 
     def assert_installed(self, container):
         check_rpm = self.exec_create_start(container,

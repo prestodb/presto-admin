@@ -161,7 +161,7 @@ http-server.http.port=8090"""
                 status['no_status'] = True
                 status['is_running'] = 'Not Running'
                 status['error_message'] = \
-                    self.serial_down_node_connection_error % {'host': node}
+                    self.down_node_connection_error % {'host': node}
                 i += 1
         if index >= 0:
             temp = statuses[index]

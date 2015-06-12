@@ -119,15 +119,14 @@ def query_info(query_id=None):
     if env.host not in fabricapi.get_coordinator_role():
         return
 
-    with settings(hide('aborts'), warn_only=True):
-        if query_id is None:
-            abort('Missing argument query_id')
+    if query_id is None:
+        abort('Missing argument query_id')
 
-        err_msg = 'Unable to retrieve information. Please check that the ' \
-                  'query_id is correct, or check that server is up with ' \
-                  'command: server status'
+    err_msg = 'Unable to retrieve information. Please check that the ' \
+              'query_id is correct, or check that server is up with ' \
+              'command: server status'
 
-        req = get_request(QUERY_REQUEST_URL + query_id, err_msg)
+    req = get_request(QUERY_REQUEST_URL + query_id, err_msg)
 
     query_info_file_name = os.path.join(TMP_PRESTO_DEBUG,
                                         'query_info_' + query_id + '.json')

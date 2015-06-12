@@ -118,10 +118,11 @@ class TestCollect(BaseProductTestCase):
         self.do_basic_presto_setup()
         invalid_id = '1234_invalid'
         actual = self.run_prestoadmin('collect query_info ' + invalid_id)
-        expected = 'Unable to retrieve information. Please check that the ' \
-                   'query_id is correct, or check that server is up with ' \
-                   'command: server status\n\nWarning: One or more hosts ' \
-                   'failed while executing task \'collect.query_info\'\n\n'
+        expected = '\nFatal error: Unable to retrieve information. Please ' \
+                   'check that the query_id is correct, or check that ' \
+                   'server is up with command: server status\n\nAborting.' \
+                   '\n\nWarning: One or more hosts failed while executing ' \
+                   'task.\n\n'
         self.assertEqual(actual, expected)
 
     def test_collect_logs_server_stopped(self):

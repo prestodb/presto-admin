@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import re
 
 from nose.plugins.attrib import attr
 
@@ -78,8 +77,8 @@ class TestServerUninstall(BaseProductTestCase):
 
     def test_uninstall_lost_host(self):
         self.install_presto_admin()
-        topology = {"coordinator": "slave1",
-                    "workers": ["master", "slave2", "slave3"]}
+        topology = {"coordinator": self.slaves[0],
+                    "workers": [self.master, self.slaves[1], self.slaves[2]]}
         self.upload_topology(topology)
         self.server_install()
         start_output = self.run_prestoadmin('server start')
@@ -87,14 +86,8 @@ class TestServerUninstall(BaseProductTestCase):
         self.assert_started(process_per_host)
         self.stop_and_wait(self.slaves[0])
 
+        expected = self.down_node_connection_error % {'host': self.slaves[0]}
         cmd_output = self.run_prestoadmin('server uninstall')
-        expected = re.compile(r'Process slave1:.*?\nNetworkError: '
-                              r'(Low level socket error connecting to'
-                              r' host slave1 on port 22: No route to'
-                              r' host \(tried 1 time\)|Timed out '
-                              r'trying to connect to slave1 '
-                              r'\(tried 1 time\))',
-                              flags=re.DOTALL)
         self.assertRegexpMatches(cmd_output, expected)
         process_per_active_host = []
         for host, pid in process_per_host:
