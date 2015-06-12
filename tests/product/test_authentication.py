@@ -148,7 +148,6 @@ class TestAuthentication(BaseProductTestCase):
         self.assertEqualIgnoringOrder(
             self.success_output + self.serial_text, command_output)
 
-    @attr('smoketest')
     def test_no_passwordless_ssh_authentication(self):
         self.install_presto_admin()
         self.upload_topology()
