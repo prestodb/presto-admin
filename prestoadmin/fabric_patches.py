@@ -91,7 +91,7 @@ def log_output(out):
 # Monkey patch _execute and execute so that we can handle errors differently
 def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
     """
-    Primary single-host work body of execute()
+    Primary single-host work body of execute().
     """
     # Log to stdout
     if state.output.running and not hasattr(task, 'return_value'):
@@ -150,48 +150,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
 
 def execute(task, *args, **kwargs):
     """
-    Execute ``task`` (callable or name), honoring host/role decorators, etc.
-
-    ``task`` may be an actual callable object, or it may be a registered task
-    name, which is used to look up a callable just as if the name had been
-    given on the command line (including :ref:`namespaced tasks <namespaces>`,
-    e.g. ``"deploy.migrate"``.
-
-    The task will then be executed once per host in its host list, which is
-    (again) assembled in the same manner as CLI-specified tasks: drawing from
-    :option:`-H`, :ref:`env.hosts <hosts>`, the `~fabric.decorators.hosts` or
-    `~fabric.decorators.roles` decorators, and so forth.
-
-    ``host``, ``hosts``, ``role``, ``roles`` and ``exclude_hosts`` kwargs will
-    be stripped out of the final call, and used to set the task's host list, as
-    if they had been specified on the command line like e.g. ``fab
-    taskname:host=hostname``.
-
-    Any other arguments or keyword arguments will be passed verbatim into
-    ``task`` (the function itself -- not the ``@task`` decorator wrapping your
-    function!) when it is called, so ``execute(mytask, 'arg1',
-    kwarg1='value')`` will (once per host) invoke ``mytask('arg1',
-    kwarg1='value')``.
-
-    :returns:
-        a dictionary mapping host strings to the given task's return value for
-        that host's execution run. For example, ``execute(foo, hosts=['a',
-        'b'])`` might return ``{'a': None, 'b': 'bar'}`` if ``foo`` returned
-        nothing on host `a` but returned ``'bar'`` on host `b`.
-
-        In situations where a task execution fails for a given host but overall
-        progress does not abort (such as when :ref:`env.skip_bad_hosts
-        <skip-bad-hosts>` is True) the return value for that host will be the
-        error object or message.
-
-    .. seealso::
-        :ref:`The execute usage docs <execute>`, for an expanded explanation
-        and some examples.
-
-    .. versionadded:: 1.3
-    .. versionchanged:: 1.4
-        Added the return value mapping; previously this function had no defined
-        return value.
+    Patched version of fabric's execute task with alternative error handling
     """
     my_env = {'clean_revert': True}
     results = {}
