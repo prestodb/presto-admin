@@ -358,3 +358,15 @@ class TestInstall(BaseTestCase):
         env.host = 'any_host'
         self.assertFalse(server.is_port_in_use(env.host))
         self.assertEqual(False, mock_warn.called)
+
+    @patch('prestoadmin.server.run')
+    def test_version_with_snapshot(self, mock_run):
+        snapshot_version = '0.107.SNAPSHOT'
+        mock_run.return_value = snapshot_version
+        expected = server.check_presto_version()
+        self.assertEqual(expected, '')
+
+        snapshot_version = '0.107-SNAPSHOT'
+        mock_run.return_value = snapshot_version
+        expected = server.check_presto_version()
+        self.assertEqual(expected, '')

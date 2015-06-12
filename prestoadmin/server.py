@@ -17,6 +17,7 @@ Module for installing, monitoring and controlling presto server
 using presto-admin
 """
 import logging
+import re
 
 from fabric.api import task, sudo, env, serial
 from fabric.context_managers import settings, hide
@@ -216,6 +217,8 @@ def check_presto_version():
     if version in PRESTO_TD_RPM:
         return ''
     try:
+        # remove -SNAPSHOT or .SNAPSHOT from the version string
+        version = re.sub(r'[-\.]SNAPSHOT', '', version)
         float(version)
         version_number = version.strip().split('.')
         if int(version_number[1]) < PRESTO_RPM_MIN_REQUIRED_VERSION:
