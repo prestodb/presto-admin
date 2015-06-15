@@ -52,7 +52,7 @@ lint:
 	flake8 prestoadmin packaging tests
 
 smoke: clean-test
-	tox -e py26 -- -a smoketest
+	tox -e py26 -- -a smoketest,'!quarantine'
 
 test: clean-test
 	python setup.py test -s tests.unit
@@ -61,7 +61,7 @@ test: clean-test
 test-all: clean-test
 	tox -- -s tests.unit
 	tox -- -s tests.integration
-	tox -e py26 -- -s tests.product
+	tox -e py26 -- -s tests.product -a '!quarantine'
 
 coverage:
 	coverage run --source prestoadmin setup.py test -s tests.unit

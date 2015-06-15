@@ -20,7 +20,6 @@ import os
 import subprocess
 
 from nose.plugins.attrib import attr
-from nose.tools import nottest
 
 from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
@@ -149,7 +148,7 @@ class TestAuthentication(BaseProductTestCase):
         self.assertEqualIgnoringOrder(
             self.success_output + self.serial_text, command_output)
 
-    @nottest
+    @attr('quarantine')
     def test_no_passwordless_ssh_authentication(self):
         self.install_presto_admin()
         self.upload_topology()
