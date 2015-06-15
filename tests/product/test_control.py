@@ -200,7 +200,9 @@ class TestControl(BaseProductTestCase):
                                  self.down_node_connection_error
                                  % {'host': down_node})
         expected_restart = list(
-            set(expected_stop[:] + expected_start[:])) + [r'']
+            set(expected_stop[:] + expected_start[:]))
+        for host in alive_hosts:
+            expected_restart += [r'\[%s\] out: ' % host]
         for message in expected_restart:
             self.assertRegexpMatches(restart_output, message, 'expected %s \n'
                                      ' actual %s' % (message, restart_output))
