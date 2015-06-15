@@ -46,14 +46,6 @@ class TestInstall(BaseTestCase):
         mock_install.assert_called_with(local_path)
         mock_execute.assert_called_with(server.update_configs, hosts=[])
 
-    def test_fail_install(self):
-        local_path = None
-        self.assertRaisesRegexp(SystemExit,
-                                "Missing argument local_path: Absolute path "
-                                "to the presto rpm to be installed",
-                                server.install,
-                                local_path)
-
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.sudo')
     def test_uninstall_is_called(self, mock_sudo, mock_version_check):

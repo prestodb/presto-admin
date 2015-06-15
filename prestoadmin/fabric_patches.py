@@ -15,6 +15,10 @@
 
 """Monkey patches needed to change logging and error handling in Fabric"""
 import traceback
+import sys
+import logging
+from traceback import format_exc
+
 from fabric import state
 from fabric.context_managers import settings
 from fabric.exceptions import NetworkError
@@ -26,11 +30,10 @@ import fabric.utils
 import fabric.api
 import fabric.operations
 import fabric.tasks
-import sys
-
 from fabric.network import needs_host, to_dict, disconnect_all
-import logging
-from traceback import format_exc
+
+from prestoadmin.util import exception
+
 
 _LOGGER = logging.getLogger(__name__)
 old_warn = fabric.utils.warn
@@ -242,6 +245,8 @@ def execute(task, *args, **kwargs):
                     if isinstance(d['results'], NetworkError):
                         error(d['results'].message,
                               exception=d['results'].wrapped)
+                    elif exception.is_arguments_error(d['results']):
+                        raise d['results']
                     elif isinstance(d['results'], BaseException):
                         error(d['results'].message, exception=d['results'])
                     else:

@@ -16,6 +16,7 @@
 This module defines error types relevant to the Presto
 administrative suite.
 """
+import re
 
 import sys
 import traceback
@@ -63,3 +64,9 @@ class ConfigurationError(UserVisibleError):
 
 class ConfigFileNotFoundError(ConfigurationError):
     pass
+
+
+def is_arguments_error(exception):
+    return isinstance(exception, TypeError) and \
+        re.match(r'.+\(\) takes (at most \d+|no|exactly \d+|at least \d+) '
+                 r'arguments? \(\d+ given\)', exception.message)

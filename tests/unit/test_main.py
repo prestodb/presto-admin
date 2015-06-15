@@ -23,6 +23,7 @@ Tests for `prestoadmin` module.
 from optparse import Values
 import os
 import unittest
+from fabric import state
 
 from fabric.state import env
 from mock import patch
@@ -233,26 +234,100 @@ class TestMain(BaseTestCase):
         self._run_command_compare_to_file(['--extended-help'], 0,
                                           "/files/extended-help.txt")
 
-    @patch('prestoadmin.main.load_topology')
-    def test_wrong_arguments_expecting_none(self, load_topology_mock):
-        self.remove_runs_once_flag(main.topology.show)
-        try:
-            main.main(['topology', 'show', "extra_arg"])
-        except SystemExit as e:
-            self.assertEqual(e.code, 2)
-        self.assertTrue('Invalid argument(s) to task.\n\nDisplaying '
-                        'detailed information for task \'topology show\''
-                        in self.test_stdout.getvalue())
+    @patch('prestoadmin.main.crawl')
+    @patch('prestoadmin.fabric_patches.crawl')
+    def test_has_args_expecting_none(self, crawl_mock, crawl_mock_main):
+        def task():
+            """This is my task"""
+            pass
 
-    def test_wrong_arguments_expecting_fewer(self):
-        self.remove_runs_once_flag(prestoadmin.server.install)
+        crawl_mock.return_value = task
+        crawl_mock_main.return_value = task
+        state.env.nodeps = False
         try:
-            main.main(['server', 'install', "local_path", "extra_arg"])
+            main.run_tasks([('my task', ['arg1'], {}, [], [], [])])
         except SystemExit as e:
             self.assertEqual(e.code, 2)
-        self.assertTrue('Invalid argument(s) to task.\n\nDisplaying '
-                        'detailed information for task \'server install\''
-                        in self.test_stdout.getvalue())
+        self.assertEqual('Incorrect number of arguments to task.\n\n'
+                         'Displaying detailed information for task '
+                         '\'my task\':\n\n    This is my task\n\n',
+                         self.test_stdout.getvalue())
+
+    @patch('prestoadmin.main.crawl')
+    @patch('prestoadmin.fabric_patches.crawl')
+    def test_too_few_args(self, crawl_mock, crawl_mock_main):
+        def task(arg1):
+            """This is my task"""
+            pass
+
+        crawl_mock.return_value = task
+        crawl_mock_main.return_value = task
+        state.env.nodeps = False
+        try:
+            main.run_tasks([('my task', [], {}, [], [], [])])
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
+        self.assertEqual('Incorrect number of arguments to task.\n\n'
+                         'Displaying detailed information for task '
+                         '\'my task\':\n\n    This is my task\n\n',
+                         self.test_stdout.getvalue())
+
+    @patch('prestoadmin.main.crawl')
+    @patch('prestoadmin.fabric_patches.crawl')
+    def test_too_many_args(self, crawl_mock, crawl_mock_main):
+        def task(arg1):
+            """This is my task"""
+            pass
+
+        crawl_mock.return_value = task
+        crawl_mock_main.return_value = task
+        state.env.nodeps = False
+        try:
+            main.run_tasks([('my task', ['arg1', 'arg2'], {}, [], [], [])])
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
+        self.assertEqual('Incorrect number of arguments to task.\n\n'
+                         'Displaying detailed information for task '
+                         '\'my task\':\n\n    This is my task\n\n',
+                         self.test_stdout.getvalue())
+
+    @patch('prestoadmin.main.crawl')
+    @patch('prestoadmin.fabric_patches.crawl')
+    def test_too_many_args_has_optionals(self, crawl_mock, crawl_mock_main):
+        def task(optional=None):
+            """This is my task"""
+            pass
+
+        crawl_mock.return_value = task
+        crawl_mock_main.return_value = task
+        state.env.nodeps = False
+        try:
+            main.run_tasks([('my task', ['arg1', 'arg2'], {}, [], [], [])])
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
+        self.assertEqual('Incorrect number of arguments to task.\n\n'
+                         'Displaying detailed information for task '
+                         '\'my task\':\n\n    This is my task\n\n',
+                         self.test_stdout.getvalue())
+
+    @patch('prestoadmin.main.crawl')
+    @patch('prestoadmin.fabric_patches.crawl')
+    def test_too_few_args_has_optionals(self, crawl_mock, crawl_mock_main):
+        def task(arg1, optional=None):
+            """This is my task"""
+            pass
+
+        crawl_mock.return_value = task
+        crawl_mock_main.return_value = task
+        state.env.nodeps = False
+        try:
+            main.run_tasks([('my task', [], {}, [], [], [])])
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
+        self.assertEqual('Incorrect number of arguments to task.\n\n'
+                         'Displaying detailed information for task '
+                         '\'my task\':\n\n    This is my task\n\n',
+                         self.test_stdout.getvalue())
 
     @patch('prestoadmin.main.topology.get_conf')
     def test_hosts_no_topology_raises_error(self, conf_mock):

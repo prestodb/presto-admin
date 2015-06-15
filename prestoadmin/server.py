@@ -24,7 +24,7 @@ from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once
 from fabric.operations import run, os
 from fabric.tasks import execute
-from fabric.utils import abort, warn
+from fabric.utils import warn
 
 from prestoadmin import configure_cmds
 from prestoadmin import connector
@@ -58,7 +58,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @task
 @runs_once
-def install(local_path=None):
+def install(local_path):
     """
     Copy and install the presto-server rpm to all the nodes in the cluster and
     configure the nodes.
@@ -78,9 +78,6 @@ def install(local_path=None):
     Parameters:
         local_path - Absolute path to the presto rpm to be installed
     """
-    if local_path is None:
-        abort('Missing argument local_path: Absolute path to '
-              'the presto rpm to be installed')
 
     topology.set_topology_if_missing()
     deploy_install_configure(local_path)

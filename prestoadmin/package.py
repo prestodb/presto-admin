@@ -35,7 +35,7 @@ __all__ = ['install']
 
 @task
 @runs_once
-def install(local_path=None):
+def install(local_path):
     """
     Install the rpm package on the cluster
 
@@ -45,10 +45,6 @@ def install(local_path=None):
             should ignore checking package dependencies. Equivalent
             to adding --nodeps flag to rpm -i.
     """
-    if local_path is None:
-        abort('Missing argument local_path: Absolute path to '
-              'the rpm to be installed')
-
     topology.set_topology_if_missing()
     check_if_valid_rpm(local_path)
     print("Deploying rpm...")

@@ -48,7 +48,6 @@ import logging
 from operator import isMappingType
 from optparse import Values, SUPPRESS_HELP
 import os
-import re
 import sys
 import textwrap
 import types
@@ -64,7 +63,7 @@ from fabric.utils import abort, indent, warn, _pty_size
 
 import prestoadmin.topology as topology
 from prestoadmin.util.exception import ConfigurationError,\
-    ConfigFileNotFoundError
+    ConfigFileNotFoundError, is_arguments_error
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
 from prestoadmin.util.fabric_application import FabricApplication
@@ -575,10 +574,10 @@ def run_tasks(task_list):
                 *args, **kwargs
             )
         except TypeError as e:
-            if re.match(r".+\(\) takes (at most \d+|no) arguments? "
-                        r"\(\d+ given\)", e.message):
-                print("Invalid argument(s) to task.\n")
-                _LOGGER.error("Invalid argument(s) to task", exc_info=True)
+            if is_arguments_error(e):
+                print("Incorrect number of arguments to task.\n")
+                _LOGGER.error('Incorrect number of arguments to task',
+                              exc_info=True)
                 display_command(name, 2)
             else:
                 raise
