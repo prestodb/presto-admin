@@ -148,7 +148,7 @@ class TestAuthentication(BaseProductTestCase):
         self.setup_for_connector_add()
 
         # Passwordless SSH as root, but specify -I
-        command_output = self.run_prestoadmin_script(
+        self.run_prestoadmin_script(
             'echo "password" | ./presto-admin connector add -I')
 
         for host in self.all_hosts():
