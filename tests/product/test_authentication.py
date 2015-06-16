@@ -141,13 +141,15 @@ class TestAuthentication(BaseProductTestCase):
         self.assertEqualIgnoringOrder(
             self.success_output, command_output)
 
-    @attr('quarantine')
+    @attr('smoketest')
     def test_no_passwordless_ssh_authentication(self):
         self.install_presto_admin()
         self.upload_topology()
         self.setup_for_connector_add()
 
-        # Passwordless SSH as root, but specify -I
+        # This is needed because the test for
+        # No passwordless SSH, -I correct -u app-admin,
+        # was giving Device not a stream error in jenkins
         self.run_prestoadmin_script(
             'echo "password" | ./presto-admin connector add -I')
 
