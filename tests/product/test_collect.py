@@ -57,8 +57,7 @@ class TestCollect(BaseProductTestCase):
         self.do_basic_presto_setup()
         actual = self.run_prestoadmin('collect system_info')
         expected = 'System info archive created: ' + \
-                   OUTPUT_FILENAME_FOR_SYS_INFO + '\n' \
-                   + 'Disconnecting from master... done.\n'
+                   OUTPUT_FILENAME_FOR_SYS_INFO + '\n'
 
         self.assertEqual(expected, actual)
         self.assert_path_exists(self.master, OUTPUT_FILENAME_FOR_SYS_INFO)

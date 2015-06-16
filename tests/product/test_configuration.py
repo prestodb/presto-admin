@@ -112,8 +112,7 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         expected_size = self.len_down_node_error + len(self.all_hosts())
         self.assertEqual(len(output.splitlines()), expected_size)
 
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show config'))
+        output = self.run_prestoadmin('configuration show config')
         error = str.join('\n', output.splitlines()[:6])
         self.assertRegexpMatches(error,
                                  self.down_node_connection_error %
@@ -141,8 +140,7 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.upload_topology()
 
         # configuration show no configuration
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show'))
+        output = self.run_prestoadmin('configuration show')
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_none.txt'), 'r') as f:
             expected = f.read()
@@ -151,40 +149,35 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.run_prestoadmin('configuration deploy')
 
         # configuration show default configuration
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show'))
+        output = self.run_prestoadmin('configuration show')
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_default.txt'), 'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
 
         # configuration show node
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show node'))
+        output = self.run_prestoadmin('configuration show node')
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_node.txt'), 'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
 
         # configuration show jvm
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show jvm'))
+        output = self.run_prestoadmin('configuration show jvm')
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_jvm.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(output, expected)
 
         # configuration show config
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show config'))
+        output = self.run_prestoadmin('configuration show config')
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_config.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(output, expected)
 
         # configuration show log no log.properties
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show log'))
+        output = self.run_prestoadmin('configuration show log')
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_log_none.txt'), 'r') as f:
             expected = f.read()
@@ -201,12 +194,8 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
                                                   filename))
         self.run_prestoadmin('configuration deploy')
 
-        output = self.remove_disconnecting_msg(
-            self.run_prestoadmin('configuration show log'))
+        output = self.run_prestoadmin('configuration show log')
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_log.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(output, expected)
-
-    def remove_disconnecting_msg(self, output):
-        return str.join('\n', output.splitlines()[:-4])

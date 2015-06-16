@@ -9,3 +9,4 @@ Warning: [slave2] No configuration file found for slave2 at /etc/presto/log.prop
 
 
 Warning: [slave3] No configuration file found for slave3 at /etc/presto/log.properties
+

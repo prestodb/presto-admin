@@ -26,3 +26,4 @@ coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
 task.max-memory=1GB
+

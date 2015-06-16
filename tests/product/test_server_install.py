@@ -34,10 +34,10 @@ install_interactive_out = ['Enter user name for SSH connection to all '
                            'Package deployed successfully on: master',
                            'Package installed successfully on: master',
                            'Deploying configuration on: master',
-                           'Deploying tpch.properties, jmx.properties '
+                           'Deploying jmx.properties, tpch.properties '
                            'connector configurations on: master ',
                            'Deploying configuration on: slave1',
-                           'Deploying tpch.properties, jmx.properties '
+                           'Deploying jmx.properties, tpch.properties '
                            'connector configurations on: slave1 ']
 
 install_with_ext_host_pa_master_out = ['Deploying rpm...',
@@ -234,10 +234,10 @@ task.max-memory=1GB\n"""
                     'Package deployed successfully on: master',
                     'Package installed successfully on: master',
                     'Deploying configuration on: master',
-                    'Deploying tpch.properties, jmx.properties '
+                    'Deploying jmx.properties, tpch.properties '
                     'connector configurations on: master ',
                     'Deploying configuration on: slave1',
-                    'Deploying tpch.properties, jmx.properties '
+                    'Deploying jmx.properties, tpch.properties '
                     'connector configurations on: slave1 ']
 
         actual = cmd_output.splitlines()
@@ -269,10 +269,10 @@ task.max-memory=1GB\n"""
                     r'Package installed successfully on: ' +
                     ips[self.slaves[0]],
                     r'Deploying configuration on: ' + ips[self.master],
-                    r'Deploying tpch.properties, jmx.properties '
+                    r'Deploying jmx.properties, tpch.properties '
                     r'connector configurations on: ' + ips[self.master],
                     r'Deploying configuration on: ' + ips[self.slaves[0]],
-                    r'Deploying tpch.properties, jmx.properties '
+                    r'Deploying jmx.properties, tpch.properties '
                     r'connector configurations on: ' + ips[self.slaves[0]]]
 
         cmd_output.sort()

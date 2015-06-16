@@ -686,6 +686,7 @@ def _update_env(default_options, non_default_options):
             state.env[key] = state.env[key].split(',')
 
     state.output['running'] = False
+    state.output['status'] = False
     update_output_levels(show=state.env.show, hide=state.env.hide)
     state.env.skip_bad_hosts = True
 

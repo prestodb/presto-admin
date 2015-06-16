@@ -13,3 +13,4 @@ com.facebook.presto=WARN
 
 slave3: Configuration file at /etc/presto/log.properties:
 com.facebook.presto=WARN
+

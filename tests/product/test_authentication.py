@@ -42,13 +42,6 @@ class TestAuthentication(BaseProductTestCase):
         '  passwd = fallback_getpass(prompt, stream)\n'
     )
 
-    serial_text = (
-        'Disconnecting from master... done.\n'
-        'Disconnecting from slave1... done.\n'
-        'Disconnecting from slave2... done.\n'
-        'Disconnecting from slave3... done.\n'
-    )
-
     sudo_password_prompt = (
         '[master] out: sudo password:\n'
         '[master] out: \n'
@@ -146,7 +139,7 @@ class TestAuthentication(BaseProductTestCase):
         command_output = self.run_prestoadmin_script(
             './presto-admin connector add --serial')
         self.assertEqualIgnoringOrder(
-            self.success_output + self.serial_text, command_output)
+            self.success_output, command_output)
 
     @attr('quarantine')
     def test_no_passwordless_ssh_authentication(self):

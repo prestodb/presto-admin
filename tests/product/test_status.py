@@ -193,6 +193,5 @@ http-server.http.port=8090"""
                 else:
                     expected_output += [status['error_message']]
 
-        # remove the last 4 lines: "Disconnecting from slave3... Done"
-        actual = cmd_output.splitlines()[: (num_bad_hosts - 4)]
+        actual = cmd_output.splitlines()
         self.assertRegexpMatches('\n'.join(actual), '\n'.join(expected_output))
