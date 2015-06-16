@@ -123,10 +123,20 @@ class TestPackageInstall(BaseProductTestCase):
         self.install_presto_admin()
         self.upload_topology()
         self.copy_presto_rpm_to_master()
-        self.assertRaisesRegexp(OSError,
-                                'Fatal error: Missing argument local_path: '
-                                'Absolute path to the rpm to be installed',
-                                self.run_prestoadmin, 'package install')
+        output = self.run_prestoadmin('package install', raise_error=False)
+        self.assertEqual(output, "Incorrect number of arguments to task.\n\n"
+                                 "Displaying detailed information for task "
+                                 "'package install':\n\n"
+                                 "    Install the rpm package on the cluster\n"
+                                 "    \n    Args:\n"
+                                 "        local_path: Absolute path to the rpm"
+                                 " to be installed\n        "
+                                 "--nodeps (optional): Flag to indicate if "
+                                 "rpm install\n"
+                                 "            should ignore c"
+                                 "hecking package dependencies. Equivalent\n"
+                                 "            to adding --nodeps flag to rpm "
+                                 "-i.\n\n")
 
     def test_install_already_installed(self):
         self.install_presto_admin()
