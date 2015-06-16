@@ -91,13 +91,6 @@ class TestCollect(BaseTestCase):
         warn_mock.assert_called_with("remote path " + remote_path +
                                      " not found on " + env.host)
 
-    def test_query_info_fail_no_id(self):
-        env.host = "myhost"
-        env.roledefs["coordinator"] = ["myhost"]
-        query_id = None
-        self.assertRaisesRegexp(SystemExit, "Missing argument query_id",
-                                collect.query_info, query_id)
-
     @patch("prestoadmin.collect.requests.get")
     def test_query_info_not_run_on_workers(self, req_get_mock):
         env.host = ["worker1"]

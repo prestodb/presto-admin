@@ -107,7 +107,7 @@ def file_get(remote_path, local_path):
 
 @task
 @requires_topology
-def query_info(query_id=None):
+def query_info(query_id):
     """
     Gather information about the query identified by the given
     query_id and store that in a JSON file.
@@ -118,9 +118,6 @@ def query_info(query_id=None):
 
     if env.host not in fabricapi.get_coordinator_role():
         return
-
-    if query_id is None:
-        abort('Missing argument query_id')
 
     err_msg = 'Unable to retrieve information. Please check that the ' \
               'query_id is correct, or check that server is up with ' \
