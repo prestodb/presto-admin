@@ -186,7 +186,7 @@ class TestAuthentication(BaseProductTestCase):
         self.assertEqualIgnoringOrder(self.success_output, command_output)
 
     @attr('quarantine')
-    def test_no_passwordless_ssh_authentication_correct_pass(self):
+    def test_correct_pass_passwordless_ssh_authentication(self):
         self.install_presto_admin()
         self.upload_topology()
         self.setup_for_connector_add()
@@ -197,17 +197,6 @@ class TestAuthentication(BaseProductTestCase):
             'echo "asdf" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(parallel_password_failure +
                                       self.interactive_text, command_output)
-
-        for host in self.all_hosts():
-            self.exec_create_start(host, 'rm /root/.ssh/id_rsa')
-
-        # No passwordless SSH, -I correct -u app-admin
-        non_root_sudo_warning = self.non_root_sudo_warning_message()
-        command_output = self.run_prestoadmin_script(
-            'echo "password" | ./presto-admin connector add -I -u app-admin')
-        self.assertEqualIgnoringOrder(
-            self.success_output + self.interactive_text +
-            non_root_sudo_warning, command_output)
 
     @attr('smoketest')
     def test_prestoadmin_no_sudo_popen(self):
