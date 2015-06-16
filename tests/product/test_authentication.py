@@ -191,6 +191,15 @@ class TestAuthentication(BaseProductTestCase):
         self.upload_topology()
         self.setup_for_connector_add()
 
+        # Passwordless SSH as app-admin, specify -I
+        non_root_sudo_warning = self.non_root_sudo_warning_message()
+
+        command_output = self.run_prestoadmin_script(
+            'echo "password" | ./presto-admin connector add -I -u app-admin')
+        self.assertEqualIgnoringOrder(
+            self.success_output + self.interactive_text +
+            non_root_sudo_warning, command_output)
+
         # Passwordless SSH as app-admin, but specify wrong password with -I
         parallel_password_failure = self.parallel_password_failure_message()
         command_output = self.run_prestoadmin_script(
