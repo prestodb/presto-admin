@@ -31,6 +31,7 @@ import urllib
 
 from docker.errors import APIError
 from docker import Client
+from nose.tools import nottest
 
 import prestoadmin
 from tests.base_test_case import BaseTestCase
@@ -212,6 +213,7 @@ task.max-memory=1GB\n"""
     def copy_to_master(self, source):
         shutil.copy(source, LOCAL_MOUNT_POINT % self.master)
 
+    @nottest
     def clean_up_presto_test_images(self):
         try:
             self.client.remove_image(INSTALLED_PRESTO_TEST_MASTER_IMAGE)
