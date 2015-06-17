@@ -21,7 +21,6 @@ from mock import call
 
 from prestoadmin.util import constants
 from prestoadmin.util.application import Application
-from prestoadmin.util.exception import UserVisibleError
 
 from tests.base_test_case import BaseTestCase
 
@@ -190,7 +189,7 @@ class ApplicationTest(BaseTestCase):
         )
 
     @patch('prestoadmin.util.application.sys.stderr')
-    def test_handles_unexpected_errors(
+    def test_handles_errors(
         self,
         stderr_mock,
         logging_mock,
@@ -198,27 +197,7 @@ class ApplicationTest(BaseTestCase):
     ):
         def should_fail():
             with Application(APPLICATION_NAME):
-                raise ValueError('Invalid value!')
-
-        self.assertRaises(SystemExit, should_fail)
-
-        stderr_mock.write.assert_has_calls(
-            [
-                call('An unexpected error occurred.'),
-                call('\n')
-            ]
-        )
-
-    @patch('prestoadmin.util.application.sys.stderr')
-    def test_handles_user_visible_errors(
-        self,
-        stderr_mock,
-        logging_mock,
-        filesystem_mock
-    ):
-        def should_fail():
-            with Application(APPLICATION_NAME):
-                raise UserVisibleError('User facing error message')
+                raise Exception('User facing error message')
 
         self.assertRaises(SystemExit, should_fail)
 

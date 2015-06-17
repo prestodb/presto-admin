@@ -18,7 +18,6 @@ Logic for starting and stopping Fabric applications.
 
 from fabric.network import disconnect_all
 from prestoadmin.util.application import Application
-from prestoadmin.util.exception import UserVisibleError
 
 import logging
 import sys
@@ -56,10 +55,8 @@ class FabricApplication(Application):
             Nothing
         """
         self._log_exception()
-        if isinstance(self.exception, UserVisibleError):
-            self._handle_user_visible_error()
-        elif isinstance(self.exception, KeyboardInterrupt):
+        if isinstance(self.exception, KeyboardInterrupt):
             print >> sys.stderr, "Stopped."
             sys.exit(0)
         else:
-            self._handle_unexpected_error()
+            Application._handle_error(self)

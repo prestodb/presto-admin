@@ -18,7 +18,6 @@ from prestoadmin import __version__
 from prestoadmin.util import constants
 from prestoadmin.util import filesystem
 from prestoadmin.util.exception import ExceptionWithCause
-from prestoadmin.util.exception import UserVisibleError
 
 import __main__ as main
 
@@ -180,12 +179,6 @@ class Application(object):
 
     def _handle_error(self):
         self._log_exception()
-        if isinstance(self.exception, UserVisibleError):
-            self._handle_user_visible_error()
-        else:
-            self._handle_unexpected_error()
-
-    def _handle_user_visible_error(self):
         self.__display_error_message(str(self.exception))
 
     def __display_error_message(self, message):
@@ -195,9 +188,6 @@ class Application(object):
             error_message += '  More detailed information can be found in '
             error_message += log_file_path
         print >> sys.stderr, message + error_message
-
-    def _handle_unexpected_error(self):
-        self.__display_error_message('An unexpected error occurred.')
 
     def __get_root_log_file_path(self):
         for handler in logging.root.handlers:

@@ -69,3 +69,11 @@ class FabricApplicationTest(BaseTestCase):
             self.assertEqual("Stopped.\n", self.test_stderr.getvalue())
         else:
             self.fail('Keyboard interrupt did not cause a system exit.')
+
+    def test_handles_errors(self, logging_mock):
+        def should_fail():
+            with FabricApplication(APPLICATION_NAME):
+                raise Exception('error message')
+
+        self.assertRaises(SystemExit, should_fail)
+        self.assertEqual(self.test_stderr.getvalue(), 'error message\n')

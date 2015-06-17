@@ -49,16 +49,11 @@ class ExceptionWithCause(Exception):
             return ''
 
 
-class UserVisibleError(ExceptionWithCause):
-    """The error message for this error will be displayed to the user"""
-    pass
-
-
 class InvalidArgumentError(ExceptionWithCause):
     pass
 
 
-class ConfigurationError(UserVisibleError):
+class ConfigurationError(ExceptionWithCause):
     pass
 
 
