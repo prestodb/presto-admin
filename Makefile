@@ -10,7 +10,7 @@ help:
 	@echo "lint - check style with flake8"
 	@echo "smoke - run tests annotated with attr smoke using nosetests"
 	@echo "test - run tests quickly with the default Python"
-	@echo "test-all - run tests on every Python version with tox"
+	@echo "test-all - run tests on every Python version with tox. Specify TEST_SUITE env variable to run only a given suite."
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
@@ -58,10 +58,12 @@ test: clean-test
 	python setup.py test -s tests.unit
 	python setup.py test -s tests.integration
 
+TEST_SUITE?=tests.product
+
 test-all: clean-test
 	tox -- -s tests.unit
 	tox -- -s tests.integration
-	tox -e py26 -- -s tests.product -a '!quarantine'
+	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
 
 coverage:
 	coverage run --source prestoadmin setup.py test -s tests.unit
