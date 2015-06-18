@@ -115,9 +115,8 @@ class DockerCluster(object):
                 # no such file or directory
                 if e.errno != errno.ENOENT:
                     raise
-
         try:
-            os.removedirs(os.path.dirname(local_mount_dir))
+            shutil.rmtree(local_mount_dir)
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise

@@ -151,7 +151,7 @@ task.max-memory=1GB\n"""
                 'teradatalabs/centos6-ssh-test'
             )
         except DockerClusterException as e:
-            installer_container.tear_down_containers(LOCAL_MOUNT_POINT)
+            installer_container.tear_down_containers(root_local_mount_point)
             self.fail(e.msg)
 
         try:
@@ -187,8 +187,7 @@ task.max-memory=1GB\n"""
             shutil.copy(os.path.join(local_mount_point, installer_file),
                         DIST_DIR)
         finally:
-            installer_container.tear_down_containers(LOCAL_MOUNT_POINT)
-            shutil.rmtree(local_mount_point)
+            installer_container.tear_down_containers(root_local_mount_point)
 
     def copy_dist_to_host(self, local_dist_dir, dest_host):
         for dist_file in os.listdir(local_dist_dir):
