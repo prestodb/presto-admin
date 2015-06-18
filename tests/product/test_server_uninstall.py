@@ -39,7 +39,7 @@ class TestServerUninstall(BaseProductTestCase):
         expected = uninstall_output + self.expected_stop()[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
-        for container in self.all_hosts():
+        for container in self.docker_cluster.all_hosts():
             self.assert_uninstalled_dirs_removed(container)
 
     def assert_uninstalled_dirs_removed(self, container):
@@ -62,7 +62,7 @@ class TestServerUninstall(BaseProductTestCase):
             not_running=[self.slaves[0]])[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
-        for container in self.all_hosts():
+        for container in self.docker_cluster.all_hosts():
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_twice(self):
@@ -84,7 +84,7 @@ class TestServerUninstall(BaseProductTestCase):
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
-        self.stop_and_wait(self.slaves[0])
+        self.docker_cluster.stop_container_and_wait(self.slaves[0])
 
         expected = self.down_node_connection_error % {'host': self.slaves[0]}
         cmd_output = self.run_prestoadmin('server uninstall')
@@ -110,7 +110,7 @@ class TestServerUninstall(BaseProductTestCase):
         expected = uninstall_output + self.expected_stop()[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
-        for container in self.all_hosts():
+        for container in self.docker_cluster.all_hosts():
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_as_non_sudo(self):

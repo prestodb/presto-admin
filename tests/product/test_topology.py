@@ -69,7 +69,7 @@ class TestTopologyShow(BaseProductTestCase):
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        self.client.stop(self.slaves[0])
+        self.docker_cluster.stop_container_and_wait(self.slaves[0])
         actual = self.run_prestoadmin('topology show')
         expected = topology_with_slave1_coord
         self.assertEqual(expected, actual)
@@ -77,7 +77,7 @@ class TestTopologyShow(BaseProductTestCase):
     def test_topology_show_worker_down(self):
         self.install_presto_admin()
         self.upload_topology()
-        self.client.stop(self.slaves[0])
+        self.docker_cluster.stop_container_and_wait(self.slaves[0])
         actual = self.run_prestoadmin('topology show')
         expected = normal_topology
         self.assertEqual(expected, actual)
@@ -90,17 +90,19 @@ class TestTopologyShow(BaseProductTestCase):
 
     def test_topology_show_bad_json(self):
         self.install_presto_admin()
-        self.copy_to_master(os.path.join
-                            (LOCAL_RESOURCES_DIR, 'invalid_json.json'))
-        self.exec_create_start(self.master,
-                               "cp %s /etc/opt/prestoadmin/config.json" %
-                               os.path.join(DOCKER_MOUNT_POINT,
-                                            "invalid_json.json"))
+        self.copy_to_host(
+            os.path.join(LOCAL_RESOURCES_DIR, 'invalid_json.json'),
+            self.master
+        )
+        self.docker_cluster.exec_cmd_on_container(
+            self.master,
+            "cp %s /etc/opt/prestoadmin/config.json" %
+            os.path.join(DOCKER_MOUNT_POINT, "invalid_json.json")
+        )
         self.assertRaisesRegexp(OSError,
                                 'Expecting , delimiter: line 3 column 3 '
                                 '\(char 21\)  More detailed information '
                                 'can be found in '
                                 '/var/log/prestoadmin/presto-admin.log\n',
                                 self.run_prestoadmin,
-                                'topology show'
-                                )
+                                'topology show')

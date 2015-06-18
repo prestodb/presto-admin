@@ -36,10 +36,10 @@ class TestConfiguration(BaseProductTestCase):
         output = self.run_prestoadmin('configuration deploy')
         deploy_template = 'Deploying configuration on: %s\n'
         expected = ''
-        for host in self.all_hosts():
+        for host in self.docker_cluster.all_hosts():
             expected += deploy_template % host
 
-        for host in self.all_hosts():
+        for host in self.docker_cluster.all_hosts():
             self.assert_has_default_config(host)
 
         self.assertEqualIgnoringOrder(output, expected)
@@ -50,10 +50,10 @@ class TestConfiguration(BaseProductTestCase):
         conf_dummy_prop1 = 'a.dummy.property=\'single-quoted\''
         dummy_prop2 = 'another.dummy=value'
         conf_to_write = '%s\n%s' % (dummy_prop1, dummy_prop2)
-        self.write_content_to_master(conf_to_write, path)
+        self.write_content_to_docker_host(conf_to_write, path, self.master)
 
         path = os.path.join(constants.WORKERS_DIR, filename)
-        self.write_content_to_master(conf_to_write, path)
+        self.write_content_to_docker_host(conf_to_write, path, self.master)
 
         # deploy coordinator configuration only.  Has a non-default file
         output = self.run_prestoadmin('configuration deploy coordinator')
@@ -70,9 +70,11 @@ class TestConfiguration(BaseProductTestCase):
 
         filename = 'node.properties'
         path = os.path.join(constants.WORKERS_DIR, filename)
-        self.write_content_to_master('node.environment test', path)
+        self.write_content_to_docker_host(
+            'node.environment test', path, self.master)
         path = os.path.join(constants.COORDINATOR_DIR, filename)
-        self.write_content_to_master('node.environment test', path)
+        self.write_content_to_docker_host(
+            'node.environment test', path, self.master)
 
         # deploy workers configuration only has non-default file
         output = self.run_prestoadmin('configuration deploy workers')
@@ -103,13 +105,14 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         topology = {'coordinator': bad_host,
                     'workers': good_hosts}
         self.upload_topology(topology)
-        self.stop_and_wait(bad_host)
+        self.docker_cluster.stop_container_and_wait(bad_host)
         output = self.run_prestoadmin('configuration deploy')
         self.assertRegexpMatches(output, self.down_node_connection_error %
                                  {'host': bad_host})
-        for host in self.all_hosts():
+        for host in self.docker_cluster.all_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
-        expected_size = self.len_down_node_error + len(self.all_hosts())
+        expected_size = self.len_down_node_error + \
+            len(self.docker_cluster.all_hosts())
         self.assertEqual(len(output.splitlines()), expected_size)
 
         output = self.run_prestoadmin('configuration show config')
@@ -126,13 +129,14 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.install_presto_admin()
         self.upload_topology()
         bad_host = self.slaves[0]
-        self.stop_and_wait(bad_host)
+        self.docker_cluster.stop_container_and_wait(bad_host)
         output = self.run_prestoadmin('configuration deploy')
         self.assertRegexpMatches(output, self.down_node_connection_error %
                                  {'host': bad_host})
-        for host in self.all_hosts():
+        for host in self.docker_cluster.all_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
-        expected_length = len(self.all_hosts()) + self.len_down_node_error
+        expected_length = len(self.docker_cluster.all_hosts()) + \
+            self.len_down_node_error
         self.assertEqual(len(output.splitlines()), expected_length)
 
     def test_configuration_show(self):
@@ -186,12 +190,16 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         # configuration show log has log.properties
         log_properties = 'com.facebook.presto=WARN'
         filename = 'log.properties'
-        self.write_content_to_master(log_properties,
-                                     os.path.join(constants.WORKERS_DIR,
-                                                  filename))
-        self.write_content_to_master(log_properties,
-                                     os.path.join(constants.COORDINATOR_DIR,
-                                                  filename))
+        self.write_content_to_docker_host(
+            log_properties,
+            os.path.join(constants.WORKERS_DIR, filename),
+            self.master
+        )
+        self.write_content_to_docker_host(
+            log_properties,
+            os.path.join(constants.COORDINATOR_DIR, filename),
+            self.master
+        )
         self.run_prestoadmin('configuration deploy')
 
         output = self.run_prestoadmin('configuration show log')

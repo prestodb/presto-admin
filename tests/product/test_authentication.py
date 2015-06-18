@@ -153,8 +153,9 @@ class TestAuthentication(BaseProductTestCase):
         self.run_prestoadmin_script(
             'echo "password" | ./presto-admin connector add -I')
 
-        for host in self.all_hosts():
-            self.exec_create_start(host, 'rm /root/.ssh/id_rsa')
+        for host in self.docker_cluster.all_hosts():
+            self.docker_cluster.exec_cmd_on_container(host,
+                                                      'rm /root/.ssh/id_rsa')
 
         # No passwordless SSH, no -I or -p
         parallel_password_failure = self.parallel_password_failure_message(
@@ -184,9 +185,11 @@ class TestAuthentication(BaseProductTestCase):
             self.success_output + self.sudo_password_prompt, command_output)
 
         # No passwordless SSH, specify keyfile with -i
-        self.exec_create_start(self.master, 'cp /home/app-admin/.ssh/id_rsa '
-                                            '/root/.ssh/id_rsa.bak')
-        self.exec_create_start(self.master, 'chmod 600 /root/.ssh/id_rsa.bak')
+        self.docker_cluster.exec_cmd_on_container(
+            self.master, 'cp /home/app-admin/.ssh/id_rsa '
+                         '/root/.ssh/id_rsa.bak')
+        self.docker_cluster.exec_cmd_on_container(
+            self.master, 'chmod 600 /root/.ssh/id_rsa.bak')
         command_output = self.run_prestoadmin(
             'connector add -i /root/.ssh/id_rsa.bak')
         self.assertEqualIgnoringOrder(self.success_output, command_output)

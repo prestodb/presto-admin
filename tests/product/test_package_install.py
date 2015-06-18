@@ -27,19 +27,20 @@ class TestPackageInstall(BaseProductTestCase):
         self.copy_presto_rpm_to_master()
         self.run_prestoadmin('package install /mnt/presto-admin/%s'
                              % PRESTO_RPM)
-        for container in self.all_hosts():
+        for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
 
     def assert_installed(self, container):
-        check_rpm = self.exec_create_start(container, 'rpm -q presto')
+        check_rpm = self.docker_cluster.exec_cmd_on_container(
+            container, 'rpm -q presto')
         self.assertEqual(PRESTO_RPM[:-4] + '\n', check_rpm)
 
     def assert_uninstalled(self, container):
         self.assertRaisesRegexp(OSError, 'package presto is not installed',
-                                self.exec_create_start,
+                                self.docker_cluster.exec_cmd_on_container,
                                 container, 'rpm -q presto')
 
-    def test_install_coord_using_h(self):
+    def test_install_coord_using_dash_h(self):
         self.install_presto_admin()
         self.upload_topology()
         self.copy_presto_rpm_to_master()
@@ -49,7 +50,7 @@ class TestPackageInstall(BaseProductTestCase):
         for slave in self.slaves:
             self.assert_uninstalled(slave)
 
-    def test_install_worker_using_h(self):
+    def test_install_worker_using_dash_h(self):
         self.install_presto_admin()
         self.upload_topology()
         self.copy_presto_rpm_to_master()
@@ -61,7 +62,7 @@ class TestPackageInstall(BaseProductTestCase):
         self.assert_uninstalled(self.slaves[1])
         self.assert_uninstalled(self.slaves[2])
 
-    def test_install_workers_using_h(self):
+    def test_install_workers_using_dash_h(self):
         self.install_presto_admin()
         self.upload_topology()
         self.copy_presto_rpm_to_master()
@@ -172,11 +173,12 @@ class TestPackageInstall(BaseProductTestCase):
         self.install_presto_admin()
         self.upload_topology()
         self.copy_presto_rpm_to_master()
-        self.exec_create_start(self.master, 'rpm -e jdk1.8.0_40-1.8.0_40-fcs')
+        self.docker_cluster.exec_cmd_on_container(
+            self.master, 'rpm -e jdk1.8.0_40-1.8.0_40-fcs')
         self.assertRaisesRegexp(OSError,
                                 'package jdk1.8.0_40-1.8.0_40-fcs is not '
                                 'installed',
-                                self.exec_create_start,
+                                self.docker_cluster.exec_cmd_on_container,
                                 self.master, 'rpm -q jdk1.8.0_40-1.8.0_40-fcs')
 
         cmd_output = self.run_prestoadmin(
@@ -193,10 +195,11 @@ class TestPackageInstall(BaseProductTestCase):
         self.install_presto_admin()
         self.upload_topology()
         self.copy_presto_rpm_to_master()
-        self.exec_create_start(self.master, 'rpm -e --nodeps python-2.6.6')
+        self.docker_cluster.exec_cmd_on_container(
+            self.master, 'rpm -e --nodeps python-2.6.6')
         self.assertRaisesRegexp(OSError,
                                 'package python-2.6.6 is not installed',
-                                self.exec_create_start,
+                                self.docker_cluster.exec_cmd_on_container,
                                 self.master, 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(
@@ -218,10 +221,11 @@ class TestPackageInstall(BaseProductTestCase):
         self.install_presto_admin()
         self.upload_topology()
         self.copy_presto_rpm_to_master()
-        self.exec_create_start(self.master, 'rpm -e --nodeps python-2.6.6')
+        self.docker_cluster.exec_cmd_on_container(
+            self.master, 'rpm -e --nodeps python-2.6.6')
         self.assertRaisesRegexp(OSError,
                                 'package python-2.6.6 is not installed',
-                                self.exec_create_start,
+                                self.docker_cluster.exec_cmd_on_container,
                                 self.master, 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(

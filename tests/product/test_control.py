@@ -89,7 +89,7 @@ class TestControl(BaseProductTestCase):
         start_output = self.run_prestoadmin('server start').splitlines()
         self.assertRegexpMatchesLineByLine(
             start_output,
-            self.expected_port_warn(self.all_hosts())
+            self.expected_port_warn(self.docker_cluster.all_hosts())
         )
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
@@ -99,7 +99,7 @@ class TestControl(BaseProductTestCase):
 
         # Stop with servers not started
         stop_output = self.run_prestoadmin('server stop').splitlines()
-        not_started_hosts = self.all_hosts()
+        not_started_hosts = self.docker_cluster.all_hosts()
         self.assertRegexpMatchesLineByLine(
             stop_output,
             self.expected_stop(not_running=not_started_hosts)
@@ -116,11 +116,12 @@ class TestControl(BaseProductTestCase):
 
         # Restart when the servers aren't started
         expected_output = self.expected_stop(
-            not_running=self.all_hosts())[:] + self.expected_start()[:]
+            not_running=self.docker_cluster.all_hosts())[:] +\
+            self.expected_start()[:]
         self.assert_simple_server_restart(expected_output, running_host='')
 
         # Restart when a coordinator is started but workers aren't
-        not_running_hosts = self.all_hosts()[:]
+        not_running_hosts = self.docker_cluster.all_hosts()[:]
         not_running_hosts.remove(self.master)
         expected_output = self.expected_stop(
             not_running=not_running_hosts) + self.expected_start()[:]
@@ -128,7 +129,7 @@ class TestControl(BaseProductTestCase):
                                           running_host=self.master)
 
         # Restart when one worker is started, but nothing else
-        not_running_hosts = self.all_hosts()[:]
+        not_running_hosts = self.docker_cluster.all_hosts()[:]
         not_running_hosts.remove(self.slaves[0])
         expected_output = self.expected_stop(
             not_running=not_running_hosts) + self.expected_start()[:]
@@ -160,14 +161,14 @@ class TestControl(BaseProductTestCase):
         start_with_warn = self.run_prestoadmin('server start').splitlines()
         expected = self.expected_start(start_success=[self.slaves[0]],
                                        already_started=[], failed_hosts=[])
-        alive_hosts = self.all_hosts()[:]
+        alive_hosts = self.docker_cluster.all_hosts()[:]
         alive_hosts.remove(self.slaves[0])
         expected.extend(self.expected_port_warn(alive_hosts))
         self.assertRegexpMatchesLineByLine(start_with_warn, expected)
 
     def assert_start_stop_restart_down_node(self, down_node):
-        self.stop_and_wait(down_node)
-        alive_hosts = self.all_hosts()[:]
+        self.docker_cluster.stop_container_and_wait(down_node)
+        alive_hosts = self.docker_cluster.all_hosts()[:]
         alive_hosts.remove(down_node)
 
         start_output = self.run_prestoadmin('server start')
@@ -219,10 +220,12 @@ class TestControl(BaseProductTestCase):
         self.install_default_presto()
 
         # Remove a required config file so that the server can't start
-        self.exec_create_start(self.master, 'mv /etc/presto/config.properties '
-                               '/etc/presto/config.properties.bak')
+        self.docker_cluster.exec_cmd_on_container(
+            self.master,
+            'mv /etc/presto/config.properties '
+            '/etc/presto/config.properties.bak')
 
-        started_hosts = self.all_hosts()
+        started_hosts = self.docker_cluster.all_hosts()
         started_hosts.remove(self.master)
         expected_start = self.expected_start(start_success=started_hosts,
                                              failed_hosts=[self.master])
@@ -284,7 +287,7 @@ class TestControl(BaseProductTestCase):
         self.assert_started(process_per_host)
 
         start_output = self.run_prestoadmin('server start').splitlines()
-        started_hosts = self.all_hosts()
+        started_hosts = self.docker_cluster.all_hosts()
         started_hosts.remove(host)
         started_expected = self.expected_start(start_success=started_hosts)
         started_expected.extend(self.expected_port_warn([host]))
@@ -302,7 +305,7 @@ class TestControl(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
         stop_output = self.run_prestoadmin('server stop').splitlines()
-        not_started_hosts = self.all_hosts()
+        not_started_hosts = self.docker_cluster.all_hosts()
         not_started_hosts.remove(host)
         self.assertRegexpMatchesLineByLine(
             stop_output,
@@ -325,7 +328,7 @@ class TestControl(BaseProductTestCase):
 
         # With no args, return message that all started successfully
         if not already_started and not start_success and not failed_hosts:
-            start_success = self.all_hosts()
+            start_success = self.docker_cluster.all_hosts()
 
         if start_success:
             for host in start_success:

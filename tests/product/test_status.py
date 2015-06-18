@@ -68,7 +68,7 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-        self.stop_and_wait(self.slaves[0])
+        self.docker_cluster.stop_container_and_wait(self.slaves[0])
         status_output = self.run_prestoadmin('server status')
         statuses = self.node_not_available_status(ips, topology,
                                                   self.slaves[0])
@@ -82,7 +82,7 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-        self.stop_and_wait(self.slaves[1])
+        self.docker_cluster.stop_container_and_wait(self.slaves[1])
         status_output = self.run_prestoadmin('server status')
         statuses = self.node_not_available_status(ips, topology,
                                                   self.slaves[1])
@@ -97,13 +97,17 @@ http-server.http.port=8090"""
 
         # write to master
         config_filename = 'config.properties'
-        self.write_content_to_master(port_config,
-                                     os.path.join(COORDINATOR_DIR,
-                                                  config_filename))
+        self.write_content_to_docker_host(
+            port_config,
+            os.path.join(COORDINATOR_DIR, config_filename),
+            self.master
+        )
 
-        self.write_content_to_master(port_config,
-                                     os.path.join(WORKERS_DIR,
-                                                  config_filename))
+        self.write_content_to_docker_host(
+            port_config,
+            os.path.join(WORKERS_DIR, config_filename),
+            self.master
+        )
 
         self.server_install()
         self.run_prestoadmin('server start')

@@ -45,7 +45,7 @@ class TestCollect(BaseProductTestCase):
         downloaded_logs_location = path.join(TMP_PRESTO_DEBUG, "logs")
         self.assert_path_exists(self.master, downloaded_logs_location)
 
-        for host in self.all_hosts():
+        for host in self.docker_cluster.all_hosts():
             host_log_location = path.join(downloaded_logs_location, host)
             self.assert_path_exists(self.master, host_log_location)
 
@@ -76,7 +76,7 @@ class TestCollect(BaseProductTestCase):
 
         version_file_name = path.join(TMP_PRESTO_DEBUG, 'version_info.txt')
 
-        for host in self.all_hosts():
+        for host in self.docker_cluster.all_hosts():
             self.assert_path_exists(host, version_file_name)
 
         slave0_system_info_loc = path.join(downloaded_sys_info_loc,

@@ -22,6 +22,7 @@ from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
     DOCKER_MOUNT_POINT, LOCAL_MOUNT_POINT
+from tests.docker_cluster import DockerCluster
 
 install_py26_script = """\
 echo "deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main" \
@@ -39,7 +40,7 @@ class TestInstallation(BaseProductTestCase):
     def setUp(self):
         BaseProductTestCase.setUp(self)
         dist_dir = self.build_dist_if_necessary()
-        self.copy_dist_to_master(dist_dir)
+        self.copy_dist_to_host(dist_dir, self.master)
 
     @attr('smoketest')
     def test_install_non_root(self):
@@ -56,7 +57,7 @@ class TestInstallation(BaseProductTestCase):
 
         self.assertRaisesRegexp(OSError, 'mkdir: cannot create directory '
                                 '`/var/log/prestoadmin\': Permission denied',
-                                self.run_script, script)
+                                self.run_script, script, self.master)
 
     @attr('smoketest')
     def test_install_from_different_dir(self):
@@ -74,39 +75,35 @@ class TestInstallation(BaseProductTestCase):
             r'IOError: \[Errno 2\] No such file or directory: '
             r'\'/opt/prestoadmin-0.1.0-py2-none-any.whl\'',
             self.run_script,
-            script
+            script,
+            self.master
         )
 
     @attr('smoketest')
     def test_install_on_wrong_os_offline_installer(self):
-        self.tear_down_docker_cluster()
-        self.create_host_mount_dirs()
         image = 'ubuntu'
         tag = '14.04'
-        if not self.is_image_present_locally(image, tag):
-            self._execute_and_wait(self.client.pull, image, tag)
+        host = image + '-' + self.master
+        ubuntu_container = DockerCluster(host, [])
+        try:
+            ubuntu_container.fetch_image_if_not_present(image, tag)
+            ubuntu_container.start_containers(
+                LOCAL_MOUNT_POINT, DOCKER_MOUNT_POINT,
+                image + ':' + tag, cmd='tail -f /var/log/bootstrap.log')
 
-        self._execute_and_wait(self.client.create_container,
-                               image + ':' + tag,
-                               command='tail -f /var/log/bootstrap.log',
-                               detach=True,
-                               name=self.master,
-                               hostname=self.master,
-                               volumes=LOCAL_MOUNT_POINT % self.master)
-        self.client.start(self.master,
-                          binds={LOCAL_MOUNT_POINT % self.master:
-                                 {"bind": DOCKER_MOUNT_POINT,
-                                  "ro": False}})
+            self.run_script(install_py26_script, host)
+            ubuntu_container.exec_cmd_on_container(
+                host, 'sudo apt-get -y install wget')
 
-        self.run_script(install_py26_script)
-        self.exec_create_start(self.master, 'sudo apt-get -y install wget')
-
-        self.assertRaisesRegexp(
-            OSError,
-            r'ERROR\n'
-            r'Paramiko could not be imported. This usually means that',
-            self.install_presto_admin,
-        )
+            self.assertRaisesRegexp(
+                OSError,
+                r'ERROR\n'
+                r'Paramiko could not be imported. This usually means that',
+                self.install_presto_admin,
+                host
+            )
+        finally:
+            ubuntu_container.tear_down_containers(LOCAL_MOUNT_POINT)
 
     @attr('smoketest')
     def test_cert_arg_to_installation_nonexistent_file(self):
@@ -119,14 +116,14 @@ class TestInstallation(BaseProductTestCase):
             cd prestoadmin
              ./install-prestoadmin.sh dummy_cert.cert
         """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir)
-        output = self.run_script(script)
+        output = self.run_script(script, self.master)
         self.assertRegexpMatches(output, r'Adding pypi.python.org as '
                                  'trusted\-host. Cannot find certificate '
                                  'file: dummy_cert.cert')
 
     @attr('smoketest')
     def test_cert_arg_to_installation_real_cert(self):
-        self.copy_to_master(certifi.where())
+        self.copy_to_host(certifi.where(), self.master)
         install_dir = '/opt'
         cert_file = os.path.basename(certifi.where())
         script = """
@@ -138,14 +135,14 @@ class TestInstallation(BaseProductTestCase):
              ./install-prestoadmin.sh {mount_dir}/{cacert}
         """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir,
                    cacert=cert_file)
-        output = self.run_script(script)
+        output = self.run_script(script, self.master)
         self.assertTrue('Adding pypi.python.org as trusted-host. Cannot find'
                         ' certificate file: %s' % cert_file not in output,
                         'Unable to find cert file; output: %s' % output)
 
     def is_image_present_locally(self, image_name, tag):
         image_name_and_tag = image_name + ':' + tag
-        images = self.client.images(image_name)
+        images = self.docker_client.images(image_name)
         if images:
             for image in images:
                 if image['RepoTags'] is image_name_and_tag:

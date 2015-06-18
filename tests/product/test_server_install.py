@@ -179,7 +179,7 @@ task.max-memory=1GB\n"""
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
 
-        for container in self.all_hosts():
+        for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
@@ -222,9 +222,11 @@ task.max-memory=1GB\n"""
         topology = {"coordinator": "master",
                     "workers": ["slave1"]}
         self.upload_topology(topology)
-        self.write_content_to_master('connector.name=jmx',
-                                     os.path.join(constants.CONNECTORS_DIR,
-                                                  'jmx.properties'))
+        self.write_content_to_docker_host(
+            'connector.name=jmx',
+            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            self.master
+        )
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.server_install()
@@ -255,9 +257,11 @@ task.max-memory=1GB\n"""
         topology = {"coordinator": ips[self.master],
                     "workers": [ips[self.slaves[0]]]}
         self.upload_topology(topology)
-        self.write_content_to_master('connector.name=jmx',
-                                     os.path.join(constants.CONNECTORS_DIR,
-                                                  'jmx.properties'))
+        self.write_content_to_docker_host(
+            'connector.name=jmx',
+            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            self.master
+        )
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.server_install().splitlines()
@@ -286,9 +290,11 @@ task.max-memory=1GB\n"""
 
     def test_install_interactive_with_hostnames(self):
         self.install_presto_admin()
-        self.write_content_to_master('connector.name=jmx',
-                                     os.path.join(constants.CONNECTORS_DIR,
-                                                  'jmx.properties'))
+        self.write_content_to_docker_host(
+            'connector.name=jmx',
+            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            self.master
+        )
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.run_prestoadmin_script(
@@ -377,15 +383,17 @@ task.max-memory=1GB\n"""
         self.install_presto_admin()
         self.copy_presto_rpm_to_master()
         self.upload_topology()
-        self.write_content_to_master('connectr.typo:invalid',
-                                     os.path.join(constants.CONNECTORS_DIR,
-                                                  'jmx.properties'))
+        self.write_content_to_docker_host(
+            'connectr.typo:invalid',
+            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            self.master
+        )
         actual_out = self.server_install()
         expected = 'Underlying exception:\n    Catalog configuration ' \
                    'jmx.properties does not contain connector.name'
         self.assertRegexpMatches(actual_out, expected)
 
-        for container in self.all_hosts():
+        for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)
 
@@ -395,7 +403,7 @@ task.max-memory=1GB\n"""
         topology = {"coordinator": self.slaves[0],
                     "workers": [self.master, self.slaves[1], self.slaves[2]]}
         self.upload_topology(topology=topology)
-        self.client.stop(self.slaves[0])
+        self.docker_cluster.stop_container_and_wait(self.slaves[0])
 
         actual_out = self.server_install()
         self.assertRegexpMatches(actual_out, self.down_node_connection_error
@@ -433,7 +441,7 @@ task.max-memory=1GB\n"""
             expected = f.read()
 
         self.assertEqualIgnoringOrder(expected, output)
-        for container in self.all_hosts():
+        for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
