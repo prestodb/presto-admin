@@ -210,11 +210,9 @@ class TestPackageInstall(BaseProductTestCase):
                    '\'rpm -i /opt/prestoadmin/packages/' \
                    '%s\'!\n\nPackage deployed ' \
                    'successfully on: master\n[master] out: error: ' \
-                   'Failed dependencies:\n[master] out: 	python >= 2.6 is ' \
-                   'needed by %s\n[master] out: 	' \
-                   'python <= 2.7 is needed by %s\n' \
-                   '[master] out: ' % (PRESTO_RPM, PRESTO_RPM_BASENAME,
-                                       PRESTO_RPM_BASENAME)
+                   'Failed dependencies:\n[master] out: 	python >= 2.4 ' \
+                   'is needed by %s\n' \
+                   '[master] out: ' % (PRESTO_RPM, PRESTO_RPM_BASENAME)
         self.assertEqualIgnoringOrder(expected, cmd_output)
 
     def test_install_rpm_with_nodeps(self):

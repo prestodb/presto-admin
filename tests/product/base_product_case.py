@@ -44,7 +44,7 @@ DOCKER_MOUNT_POINT = '/mnt/presto-admin'
 # http://teradata-download.s3.amazonaws.com/aster/presto/lib/presto-0.101-1.0.x86_64.rpm
 PRESTO_RPM = 'presto-0.101-1.0.x86_64.rpm'
 PRESTO_RPM_BASENAME = 'presto-0.101-1.0.x86_64'
-PRESTO_VERSION = 'presto-main:0.101-1-g4ff40a7'
+PRESTO_VERSION = 'presto-main:0.101-1-gb07f2e2'
 
 
 class BaseProductTestCase(BaseTestCase):
