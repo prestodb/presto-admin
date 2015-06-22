@@ -1,18 +1,22 @@
-Deploying rpm...
 
-Warning: [master] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/{rpm}'!
+Fatal error: [%(host)s] sudo() received nonzero return code 1 while executing!
 
-Package deployed successfully on: master
-[master] out: +======================================================================+
-[master] out: |      Error: Required Java version could not be found                 |
-[master] out: +----------------------------------------------------------------------+
-[master] out: | Please download the latest Oracle JDK/JRE from the Java web site     |
-[master] out: |       > http://www.oracle.com/technetwork/java/javase/downloads <    |
-[master] out: |                                                                      |
-[master] out: | Presto requires Java 1.8 update 40 (8u40)                            |
-[master] out: | NOTE: This script will attempt to find Java whether you install      |
-[master] out: |       using the binary or the RPM based installer.                   |
-[master] out: +======================================================================+
-[master] out: error: %pre({rpm_basename}) scriptlet failed, exit status 1
-[master] out: error:   install: %pre scriptlet failed (2), skipping {rpm_basename}
-[master] out: 
+Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
+
+Aborting.
+Deploying rpm on master...
+Package deployed successfully on: %(host)s
+[%(host)s] out: +======================================================================+
+[%(host)s] out: |      Error: Required Java version could not be found                 |
+[%(host)s] out: +----------------------------------------------------------------------+
+[%(host)s] out: | Please download the latest Oracle JDK/JRE from the Java web site     |
+[%(host)s] out: |       > http://www.oracle.com/technetwork/java/javase/downloads <    |
+[%(host)s] out: |                                                                      |
+[%(host)s] out: | Presto requires Java 1.8.                                            |
+[%(host)s] out: | NOTE: This script will attempt to find Java whether you install      |
+[%(host)s] out: |       using the binary or the RPM based installer.                   |
+[%(host)s] out: +======================================================================+
+[%(host)s] out: error: %%pre({rpm_basename}) scriptlet failed, exit status 1
+[%(host)s] out: error:   install: %%pre scriptlet failed (2), skipping presto-0.101-1.0
+[%(host)s] out:

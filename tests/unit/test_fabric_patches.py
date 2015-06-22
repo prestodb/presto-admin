@@ -16,7 +16,7 @@ import logging
 
 from fabric import state
 from fabric.context_managers import hide, settings
-from fabric.decorators import hosts, parallel, roles
+from fabric.decorators import hosts, parallel, roles, serial
 from fabric.exceptions import NetworkError
 from fabric.tasks import Task
 from fudge import Fake, patched_context, with_fakes, clear_expectations
@@ -377,6 +377,7 @@ class TestExecute(BaseTestCase):
         ports = [2200, 2201]
         hosts = map(lambda x: '127.0.0.1:%s' % x, ports)
 
+        @serial
         def task():
             return "foo"
         with hide('everything'):
@@ -448,7 +449,7 @@ class TestExecute(BaseTestCase):
         """
 
         network_error = NetworkError('Network message')
-        fabric.state.env.warn_only = True
+        fabric.state.env.warn_only = False
 
         @parallel
         @hosts('127.0.0.1:2200', '127.0.0.1:2201')
@@ -457,7 +458,8 @@ class TestExecute(BaseTestCase):
         with hide('everything'):
             execute(task)
         error_mock.assert_called_with('Network message',
-                                      exception=network_error.wrapped)
+                                      exception=network_error.wrapped,
+                                      func=fabric.utils.abort)
 
     @patch('prestoadmin.fabric_patches.error')
     def test_base_exception_error(self, error_mock):
@@ -480,19 +482,39 @@ class TestExecute(BaseTestCase):
         self.assertEqual(type(args[1]['exception']), type(value_error))
         self.assertEqual(args[1]['exception'].args, value_error.args)
 
-    @patch('prestoadmin.fabric_patches.error')
-    def test_bad_exit_code_should_raise_error(self, error_mock):
+    def test_abort_should_not_raise_error(self):
         """
         base exception should call error
         """
 
-        fabric.state.env.warn_only = True
+        fabric.state.env.warn_only = False
 
         @parallel
         @hosts('127.0.0.1:2200', '127.0.0.1:2201')
         def task():
-            raise sys.exit(2)
+            fabric.utils.abort('aborting')
         with hide('everything'):
             execute(task)
-        error_mock.assert_called_with('One or more hosts failed while '
-                                      'executing task.')
+
+    def test_abort_in_serial_should_not_raise_error(self):
+        """
+        base exception should call error
+        """
+
+        fabric.state.env.warn_only = False
+
+        @serial
+        @hosts('127.0.0.1:2200', '127.0.0.1:2201')
+        def task():
+            fabric.utils.abort('aborting')
+        with hide('everything'):
+            execute(task)
+
+    def test_arg_exception_should_raise_error(self):
+        @hosts('127.0.0.1:2200', '127.0.0.1:2201')
+        def task(arg):
+            pass
+        with hide('everything'):
+            self.assertRaisesRegexp(TypeError,
+                                    'task\(\) takes exactly 1 argument'
+                                    ' \(0 given\)', execute, task)

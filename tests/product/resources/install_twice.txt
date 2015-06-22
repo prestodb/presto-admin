@@ -1,33 +1,44 @@
-Deploying rpm...
 
-Warning: [master] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/{rpm}'!
+Fatal error: [%(slave2)s] sudo() received nonzero return code 1 while executing!
 
-Package deployed successfully on: master
-[master] out: 	package {rpm_basename} is already installed
-[master] out:
+Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
 
-Warning: [slave1] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/{rpm}'!
+Aborting.
+Deploying rpm on %(slave2)s...
+Package deployed successfully on: %(slave2)s
+[%(slave2)s] out: 	package {rpm_basename} is already installed
+[%(slave2)s] out:
 
-Package deployed successfully on: slave1
-[slave1] out: 	package {rpm_basename} is already installed
-[slave1] out:
+Fatal error: [%(master)s] sudo() received nonzero return code 1 while executing!
 
-Warning: [slave3] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/{rpm}'!
+Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
 
-Package deployed successfully on: slave3
-[slave3] out: 	package {rpm_basename} is already installed
-[slave3] out:
+Aborting.
+Deploying rpm on %(master)s...
+Package deployed successfully on: %(master)s
+[%(master)s] out: 	package {rpm_basename} is already installed
+[%(master)s] out:
 
-Warning: [slave2] sudo() received nonzero return code 1 while executing 'rpm -i /opt/prestoadmin/packages/{rpm}'!
+Fatal error: [%(slave3)s] sudo() received nonzero return code 1 while executing!
 
-Package deployed successfully on: slave2
-[slave2] out: 	package {rpm_basename} is already installed
-[slave2] out:
-Deploying configuration on: slave1
-Deploying tpch.properties connector configurations on: slave1
-Deploying configuration on: slave2
-Deploying tpch.properties connector configurations on: slave2
-Deploying configuration on: slave3
-Deploying tpch.properties connector configurations on: slave3
-Deploying configuration on: master
-Deploying tpch.properties connector configurations on: master
+Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
+
+Aborting.
+Deploying rpm on %(slave3)s...
+Package deployed successfully on: %(slave3)s
+[%(slave3)s] out: 	package {rpm_basename} is already installed
+[%(slave3)s] out:
+
+Fatal error: [%(slave1)s] sudo() received nonzero return code 1 while executing!
+
+Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
+
+Aborting.
+Deploying rpm on %(slave1)s...
+Package deployed successfully on: %(slave1)s
+[%(slave1)s] out: 	package {rpm_basename} is already installed
+[%(slave1)s] out:

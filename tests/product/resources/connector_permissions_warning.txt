@@ -1,24 +1,28 @@
 
-Warning: [master] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
+Fatal error: [%(slave3)s] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
 
 Underlying exception:
     Permission denied
 
+Aborting.
 
-Warning: [slave1] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
-
-Underlying exception:
-    Permission denied
-
-
-Warning: [slave2] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
+Fatal error: [%(slave2)s] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
 
 Underlying exception:
     Permission denied
 
+Aborting.
 
-Warning: [slave3] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
+Fatal error: [%(slave1)s] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
 
 Underlying exception:
     Permission denied
 
+Aborting.
+
+Fatal error: [%(master)s] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
+
+Underlying exception:
+    Permission denied
+
+Aborting.

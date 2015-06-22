@@ -74,7 +74,7 @@ task.max-memory=1GB\n"""
                                  r'port 22: No route to host ' \
                                  r'\(tried 1 time\)\n\nUnderlying ' \
                                  r'exception:\n    No route to host\n' \
-                                 r'|\nWarning: (\[.*\] )?Timed out trying ' \
+                                 r'|\nWarning: (\[%(host)s] )?Timed out trying ' \
                                  r'to connect to %(host)s \(tried 1 ' \
                                  r'time\)\n\nUnderlying exception:' \
                                  r'\n    timed out\n)'

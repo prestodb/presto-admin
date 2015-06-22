@@ -130,11 +130,10 @@ class TestCollect(BaseProductTestCase):
         self.run_prestoadmin('server start')
         invalid_id = '1234_invalid'
         actual = self.run_prestoadmin('collect query_info ' + invalid_id)
-        expected = '\nFatal error: Unable to retrieve information. Please ' \
-                   'check that the query_id is correct, or check that ' \
-                   'server is up with command: server status\n\nAborting.' \
-                   '\n\nWarning: One or more hosts failed while executing ' \
-                   'task.\n\n'
+        expected = '\nFatal error: [master] Unable to retrieve information. ' \
+                   'Please check that the query_id is correct, or check ' \
+                   'that server is up with command: server status\n\n' \
+                   'Aborting.\n'
         self.assertEqual(actual, expected)
 
     def test_collect_logs_server_stopped(self):
@@ -147,7 +146,10 @@ class TestCollect(BaseProductTestCase):
 
     def test_collect_system_info_server_stopped(self):
         actual = self.run_prestoadmin('collect system_info', raise_error=False)
-        expected = '\nFatal error: Unable to access node information. ' \
-                   'Please check that server is up with ' \
-                   'command: server status\n\nAborting.\n'
-        self.assertEqual(actual, expected)
+        message = '\nFatal error: [%s] Unable to access node ' \
+            'information. Please check that server is up with ' \
+            'command: server status\n\nAborting.\n'
+        expected = ''
+        for host in self.docker_cluster.all_hosts():
+            expected += message % host
+        self.assertEqualIgnoringOrder(actual, expected)

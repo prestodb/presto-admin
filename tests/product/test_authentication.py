@@ -26,7 +26,6 @@ from tests.product.base_product_case import BaseProductTestCase, \
 
 
 class TestAuthentication(BaseProductTestCase):
-
     def setUp(self):
         super(TestAuthentication, self).setUp()
         self.setup_docker_cluster()
@@ -60,8 +59,8 @@ class TestAuthentication(BaseProductTestCase):
     @attr('smoketest')
     def test_incorrect_hostname(self):
         self.install_presto_admin()
-        topology = {'coordinator': 'dummy_master', 'workers':
-                    ['slave1', 'slave2', 'slave3']}
+        topology = {'coordinator': 'dummy_master',
+                    'workers': ['slave1', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
         command_output = self.run_prestoadmin('--extended-help',
                                               raise_error=False)
@@ -75,14 +74,20 @@ class TestAuthentication(BaseProductTestCase):
                                'parallel_password_failure.txt')) as f:
             parallel_password_failure = f.read()
         if with_sudo_prompt:
-            parallel_password_failure += ('[slave3] out: sudo password:\n'
-                                          '[slave3] out: Sorry, try again.\n'
-                                          '[slave2] out: sudo password:\n'
-                                          '[slave2] out: Sorry, try again.\n'
-                                          '[slave1] out: sudo password:\n'
-                                          '[slave1] out: Sorry, try again.\n'
-                                          '[master] out: sudo password:\n'
-                                          '[master] out: Sorry, try again.\n')
+            parallel_password_failure += (
+                '[%(slave3)s] out: sudo password:\n'
+                '[%(slave3)s] out: Sorry, try again.\n'
+                '[%(slave2)s] out: sudo password:\n'
+                '[%(slave2)s] out: Sorry, try again.\n'
+                '[%(slave1)s] out: sudo password:\n'
+                '[%(slave1)s] out: Sorry, try again.\n'
+                '[%(master)s] out: sudo password:\n'
+                '[%(master)s] out: Sorry, try again.\n')
+        parallel_password_failure = parallel_password_failure % {
+            'master': self.docker_cluster.master,
+            'slave1': self.docker_cluster.slaves[0],
+            'slave2': self.docker_cluster.slaves[1],
+            'slave3': self.docker_cluster.slaves[2]}
         return parallel_password_failure
 
     def non_root_sudo_warning_message(self):

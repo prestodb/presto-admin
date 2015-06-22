@@ -16,7 +16,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM, \
-    LOCAL_RESOURCES_DIR, PRESTO_RPM_BASENAME
+    LOCAL_RESOURCES_DIR
 
 
 class TestPackageInstall(BaseProductTestCase):
@@ -92,13 +92,16 @@ class TestPackageInstall(BaseProductTestCase):
 
     def test_install_invalid_path(self):
         self.copy_presto_rpm_to_master()
-        self.assertRaisesRegexp(OSError,
-                                'Fatal error: error: '
-                                '/mnt/presto-admin/invalid-path/presto.rpm: '
-                                'open failed: No such file or directory',
-                                self.run_prestoadmin,
-                                'package install '
-                                '/mnt/presto-admin/invalid-path/presto.rpm')
+        cmd_output = self.run_prestoadmin('package install /mnt/presto-admin'
+                                          '/invalid-path/presto.rpm')
+        error = '\nFatal error: [%s] error: ' \
+                '/mnt/presto-admin/invalid-path/presto.rpm: open failed: ' \
+                'No such file or directory\n\nAborting.\n'
+        expected = ''
+        for host in self.docker_cluster.all_hosts():
+            expected += error % host
+
+        self.assertEqualIgnoringOrder(cmd_output, expected)
 
     def test_install_no_path_arg(self):
         self.copy_presto_rpm_to_master()
@@ -120,28 +123,43 @@ class TestPackageInstall(BaseProductTestCase):
     def test_install_already_installed(self):
         self.copy_presto_rpm_to_master()
         self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s -H master' % PRESTO_RPM)
+            'package install /mnt/presto-admin/%s -H %s' %
+            (PRESTO_RPM, self.docker_cluster.master))
         self.assert_installed(self.docker_cluster.master)
         cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s -H master' % PRESTO_RPM)
-        expected = [r'Deploying rpm...',
-                    r'Package deployed successfully on: master',
-                    r'Warning: \[master\] sudo\(\) received nonzero return'
-                    r' code 1 while executing \'rpm -i '
-                    r'/opt/prestoadmin/packages/%s\'!' % PRESTO_RPM,
-                    r'', r'', r'\[master\] out: ',
-                    r'\[master\] out: \tpackage %s is '
-                    r'already installed' % PRESTO_RPM_BASENAME]
+            'package install /mnt/presto-admin/%s -H %s' %
+            (PRESTO_RPM, self.docker_cluster.master))
+        expected = """
+Fatal error: [%(host)s] sudo() received nonzero return code 1 while executing!
 
-        actual = cmd_output.splitlines()
-        self.assertRegexpMatchesLineByLine(actual, expected)
+Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i \
+/opt/prestoadmin/packages/{rpm}"
+
+Aborting.
+Deploying rpm on %(host)s...
+Package deployed successfully on: %(host)s
+[%(host)s] out: 	package {rpm_basename} is already installed
+[%(host)s] out: """ % {'host': self.docker_cluster.master}
+
+        self.assertRegexpMatchesLineByLine(
+            cmd_output.splitlines(),
+            self.escape_for_regex(expected).splitlines())
 
     def test_install_not_an_rpm(self):
-        self.assertRaisesRegexp(OSError,
-                                'Fatal error: error: not an rpm package',
-                                self.run_prestoadmin,
-                                'package install '
-                                '/etc/opt/prestoadmin/config.json')
+        cmd_output = self.run_prestoadmin('package install '
+                                          '/etc/opt/prestoadmin/config.json')
+
+        error = """
+Fatal error: [%s] error: not an rpm package
+
+Aborting.
+"""
+        expected = ''
+        for host in self.docker_cluster.all_hosts():
+            expected += error % host
+
+        self.assertEqualIgnoringOrder(cmd_output, expected)
 
     def test_install_rpm_with_missing_jdk(self):
         self.copy_presto_rpm_to_master()
@@ -158,14 +176,15 @@ class TestPackageInstall(BaseProductTestCase):
             'package install /mnt/presto-admin/%s -H master' % PRESTO_RPM)
         self.assertRegexpMatchesLineByLine(
             cmd_output.splitlines(),
-            self.jdk_not_found_error_message()
+            self.jdk_not_found_error_message().splitlines()
         )
 
     def jdk_not_found_error_message(self):
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'jdk_not_found.txt')) as f:
             jdk_not_found_error = f.read()
-        jdk_not_found_error = self.escape_for_regex(jdk_not_found_error)
-        return jdk_not_found_error.splitlines()
+        jdk_not_found_error = jdk_not_found_error % {
+            'host': self.docker_cluster.master}
+        return self.escape_for_regex(jdk_not_found_error)
 
     def test_install_rpm_missing_dependency(self):
         self.copy_presto_rpm_to_master()
@@ -180,17 +199,22 @@ class TestPackageInstall(BaseProductTestCase):
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%s -H master'
             % PRESTO_RPM)
-        expected = [r'Deploying rpm...', '', '',
-                    r'Warning: \[master\] sudo\(\) received nonzero return '
-                    r'code 1 while executing \'rpm -i /opt/prestoadmin/'
-                    r'packages/%s\'!' % PRESTO_RPM,
-                    r'Package deployed successfully on: master',
-                    r'\[master\] out: error: Failed dependencies:',
-                    r'\[master\] out: 	python >= 2.4 is needed by %s'
-                    % PRESTO_RPM_BASENAME, r'\[master\] out: ']
+        expected = """
+Fatal error: [%(host)s] sudo() received nonzero return code 1 while executing!
+
+Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i \
+/opt/prestoadmin/packages/{rpm}"
+
+Aborting.
+Deploying rpm on %(host)s...
+Package deployed successfully on: %(host)s
+[%(host)s] out: error: Failed dependencies:
+[%(host)s] out: 	python >= 2.4 is needed by {rpm_basename}
+[%(host)s] out: """ % {'host': self.docker_cluster.master}
         self.assertRegexpMatchesLineByLine(
-            [line.rstrip() for line in cmd_output.splitlines()],
-            [line.rstrip() for line in expected])
+            cmd_output.splitlines(),
+            self.escape_for_regex(expected).splitlines())
 
     def test_install_rpm_with_nodeps(self):
         self.copy_presto_rpm_to_master()
@@ -205,7 +229,9 @@ class TestPackageInstall(BaseProductTestCase):
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%s -H master --nodeps'
             % PRESTO_RPM)
-        expected = 'Deploying rpm...\nPackage deployed successfully on: master' \
-                   '\nPackage installed successfully on: master'
+        expected = 'Deploying rpm on %(host)s...\n' \
+                   'Package deployed successfully on: %(host)s\n' \
+                   'Package installed successfully on: %(host)s' \
+                   % {'host': self.docker_cluster.master}
 
         self.assertEqualIgnoringOrder(expected, cmd_output)

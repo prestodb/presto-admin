@@ -11,22 +11,38 @@ Warning: [slave1] Presto is not installed.
 Warning: [slave3] Presto is not installed.
 
 
-Warning: [slave2] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+Fatal error: [slave2] sudo() received nonzero return code 1 while executing!
 
+Requested: rpm -e presto
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto"
+
+Aborting.
 [slave2] out: error: package presto is not installed
 [slave2] out:
 
-Warning: [master] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+Fatal error: [master] sudo() received nonzero return code 1 while executing!
 
+Requested: rpm -e presto
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto"
+
+Aborting.
 [master] out: error: package presto is not installed
 [master] out:
 
-Warning: [slave1] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+Fatal error: [slave1] sudo() received nonzero return code 1 while executing!
 
+Requested: rpm -e presto
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto"
+
+Aborting.
 [slave1] out: error: package presto is not installed
 [slave1] out:
 
-Warning: [slave3] sudo() received nonzero return code 1 while executing 'rpm -e presto'!
+Fatal error: [slave3] sudo() received nonzero return code 1 while executing!
 
+Requested: rpm -e presto
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto"
+
+Aborting.
 [slave3] out: error: package presto is not installed
 [slave3] out:

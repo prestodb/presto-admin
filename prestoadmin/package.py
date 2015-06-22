@@ -46,8 +46,6 @@ def install(local_path):
             to adding --nodeps flag to rpm -i.
     """
     topology.set_topology_if_missing()
-    check_if_valid_rpm(local_path)
-    print("Deploying rpm...")
     execute(deploy_install, local_path,
             hosts=get_host_list())
 
@@ -63,12 +61,14 @@ def check_if_valid_rpm(local_path):
 
 
 def deploy_install(local_path):
+    check_if_valid_rpm(local_path)
     deploy(local_path)
     rpm_install(os.path.basename(local_path))
 
 
 def deploy(local_path=None):
-    _LOGGER.info("Deploying rpm to nodes")
+    _LOGGER.info("Deploying rpm on %s..." % env.host)
+    print("Deploying rpm on %s..." % env.host)
     sudo('mkdir -p ' + constants.REMOTE_PACKAGES_PATH)
     ret_list = put(local_path, constants.REMOTE_PACKAGES_PATH, use_sudo=True)
     if not ret_list.succeeded:

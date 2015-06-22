@@ -325,13 +325,6 @@ def parser_for_options():
 
     advanced_options = HiddenOptionGroup(parser, "Advanced Options",
                                          suppress_help=True)
-    advanced_options.add_option(
-        '--abort-on-error',
-        action='store_true',
-        dest='abort_on_error',
-        default=False,
-        help="abort, instead of warn, if a command fails on any node"
-    )
 
     # Hide most of the options from the help text so it's simpler. Need to
     # document the other options, however.
@@ -757,8 +750,7 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     if not options.serial:
         state.env.parallel = True
 
-    if not options.abort_on_error:
-        state.env.warn_only = True
+    state.env.warn_only = False
 
     # Initial password prompt, if requested
     if options.initial_password_prompt:

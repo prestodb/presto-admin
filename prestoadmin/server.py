@@ -81,12 +81,12 @@ def install(local_path):
     """
 
     topology.set_topology_if_missing()
-    deploy_install_configure(local_path)
+    execute(deploy_install_configure, local_path, hosts=get_host_list())
 
 
 def deploy_install_configure(local_path):
-    package.install(local_path)
-    execute(update_configs, hosts=get_host_list())
+    package.deploy_install(local_path)
+    update_configs()
 
 
 def add_tpch_connector():

@@ -28,7 +28,7 @@ install_interactive_out = ['Enter user name for SSH connection to all '
                            'external host name or ip address if this is a '
                            'multi-node cluster: [localhost] Enter host names '
                            'or IP addresses for worker nodes separated by '
-                           'spaces: [localhost] Deploying rpm...',
+                           'spaces: [localhost] ',
                            'Package deployed successfully on: slave1',
                            'Package installed successfully on: slave1',
                            'Package deployed successfully on: master',
@@ -40,7 +40,9 @@ install_interactive_out = ['Enter user name for SSH connection to all '
                            'Deploying jmx.properties, tpch.properties '
                            'connector configurations on: slave1 ']
 
-install_with_ext_host_pa_master_out = ['Deploying rpm...',
+install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
+                                       'Deploying rpm on slave2...',
+                                       'Deploying rpm on slave3...',
                                        'Package deployed successfully on: '
                                        'slave3',
                                        'Package installed successfully on: '
@@ -63,7 +65,10 @@ install_with_ext_host_pa_master_out = ['Deploying rpm...',
                                        'Deploying tpch.properties connector '
                                        'configurations on: slave2 ']
 
-install_with_worker_pa_master_out = ['Deploying rpm...',
+install_with_worker_pa_master_out = ['Deploying rpm on master...',
+                                     'Deploying rpm on slave1...',
+                                     'Deploying rpm on slave2...',
+                                     'Deploying rpm on slave3...',
                                      'Package deployed successfully on: '
                                      'slave3',
                                      'Package installed successfully on: '
@@ -93,7 +98,10 @@ install_with_worker_pa_master_out = ['Deploying rpm...',
                                      'Deploying tpch.properties connector '
                                      'configurations on: master ']
 
-installed_all_hosts_output = ['Deploying rpm...',
+installed_all_hosts_output = ['Deploying rpm on master...',
+                              'Deploying rpm on slave1...',
+                              'Deploying rpm on slave2...',
+                              'Deploying rpm on slave3...',
                               'Package deployed successfully on: slave3',
                               'Package installed successfully on: slave3',
                               'Package deployed successfully on: slave1',
@@ -238,7 +246,8 @@ task.max-memory=1GB\n"""
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.server_install()
-        expected = ['Deploying rpm...',
+        expected = ['Deploying rpm on master...',
+                    'Deploying rpm on slave1...',
                     'Package deployed successfully on: slave1',
                     'Package installed successfully on: slave1',
                     'Package deployed successfully on: master',
@@ -274,30 +283,31 @@ task.max-memory=1GB\n"""
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.server_install().splitlines()
-        expected = [r'Deploying rpm...',
-                    r'Package deployed successfully on: ' +
-                    ips[self.docker_cluster.master],
-                    r'Package installed successfully on: ' +
-                    ips[self.docker_cluster.master],
-                    r'Package deployed successfully on: '
-                    + ips[self.docker_cluster.slaves[0]],
-                    r'Package installed successfully on: ' +
-                    ips[self.docker_cluster.slaves[0]],
-                    r'Deploying configuration on: ' +
-                    ips[self.docker_cluster.master],
-                    r'Deploying jmx.properties, tpch.properties '
-                    r'connector configurations on: ' +
-                    ips[self.docker_cluster.master],
-                    r'Deploying configuration on: ' +
-                    ips[self.docker_cluster.slaves[0]],
-                    r'Deploying jmx.properties, tpch.properties '
-                    r'connector configurations on: ' +
-                    ips[self.docker_cluster.slaves[0]]]
+        expected = [
+            r'Deploying rpm on %s...' % ips[self.docker_cluster.master],
+            r'Deploying rpm on %s...' % ips[self.docker_cluster.slaves[0]],
+            r'Package deployed successfully on: ' + ips[
+                self.docker_cluster.master],
+            r'Package installed successfully on: ' + ips[
+                self.docker_cluster.master],
+            r'Package deployed successfully on: '
+            + ips[self.docker_cluster.slaves[0]],
+            r'Package installed successfully on: ' +
+            ips[self.docker_cluster.slaves[0]],
+            r'Deploying configuration on: ' +
+            ips[self.docker_cluster.master],
+            r'Deploying jmx.properties, tpch.properties '
+            r'connector configurations on: ' +
+            ips[self.docker_cluster.master],
+            r'Deploying configuration on: ' +
+            ips[self.docker_cluster.slaves[0]],
+            r'Deploying jmx.properties, tpch.properties '
+            r'connector configurations on: ' +
+            ips[self.docker_cluster.slaves[0]]]
 
         cmd_output.sort()
         expected.sort()
-        for expected_regexp, actual_line in zip(expected, cmd_output):
-            self.assertRegexpMatches(actual_line, expected_regexp)
+        self.assertRegexpMatchesLineByLine(expected, cmd_output)
 
         self.assert_installed_with_regex_configs(
             self.docker_cluster.master,
@@ -318,10 +328,36 @@ task.max-memory=1GB\n"""
         cmd_output = self.run_prestoadmin_script(
             "echo -e 'root\n22\nmaster\nslave1\n' | "
             "./presto-admin server install /mnt/presto-admin/%s " % PRESTO_RPM)
-        expected = install_interactive_out
-
         actual = cmd_output.splitlines()
-        self.assertEqual(sorted(expected), sorted(actual))
+        expected = [r'Enter user name for SSH connection to all nodes: '
+                    r'\[root\] '
+                    r'Enter port number for SSH connections to all nodes: '
+                    r'\[22\] '
+                    r'Enter host name or IP address for coordinator node.  '
+                    r'Enter an external host name or ip address if this is a '
+                    r'multi-node cluster: \[localhost\] '
+                    r'Enter host names or IP addresses for worker nodes '
+                    r'separated by spaces: '
+                    r'\[localhost\] Deploying rpm on .*\.\.\.',
+                    r'Package deployed successfully on: ' +
+                    self.docker_cluster.master,
+                    r'Package installed successfully on: ' +
+                    self.docker_cluster.master,
+                    r'Package deployed successfully on: ' +
+                    self.docker_cluster.slaves[0],
+                    r'Package installed successfully on: ' +
+                    self.docker_cluster.slaves[0],
+                    r'Deploying configuration on: ' +
+                    self.docker_cluster.master,
+                    r'Deploying jmx.properties, tpch.properties connector '
+                    r'configurations on: ' + self.docker_cluster.master,
+                    r'Deploying configuration on: ' +
+                    self.docker_cluster.slaves[0],
+                    r'Deploying jmx.properties, tpch.properties connector '
+                    r'configurations on: ' + self.docker_cluster.slaves[0],
+                    r'Deploying rpm on .*\.\.\.']
+
+        self.assertRegexpMatchesLineByLine(actual, expected)
         for container in [self.docker_cluster.master,
                           self.docker_cluster.slaves[0]]:
             self.assert_installed(container)
@@ -348,11 +384,11 @@ task.max-memory=1GB\n"""
                     r'multi-node cluster: \[localhost\] '
                     r'Enter host names or IP addresses for worker nodes '
                     r'separated by spaces: '
-                    r'\[localhost\] Deploying rpm...',
-                    r'Package deployed successfully on: ' +
-                    ips[self.docker_cluster.master],
-                    r'Package installed successfully on: ' +
-                    ips[self.docker_cluster.master],
+                    r'\[localhost\] Deploying rpm on .*\.\.\.',
+                    r'Package deployed successfully on: ' + ips[
+                        self.docker_cluster.master],
+                    r'Package installed successfully on: ' + ips[
+                        self.docker_cluster.master],
                     r'Package deployed successfully on: '
                     + ips[self.docker_cluster.slaves[0]],
                     r'Package installed successfully on: '
@@ -365,8 +401,9 @@ task.max-memory=1GB\n"""
                     r'Deploying configuration on: ' +
                     ips[self.docker_cluster.slaves[0]],
                     r'Deploying tpch.properties connector '
-                    r'configurations on: ' +
-                    ips[self.docker_cluster.slaves[0]]]
+                    r'configurations on: ' + ips[
+                        self.docker_cluster.slaves[0]],
+                    r'Deploying rpm on .*\.\.\.']
 
         cmd_output.sort()
         expected.sort()
@@ -382,7 +419,8 @@ task.max-memory=1GB\n"""
         self.copy_presto_rpm_to_master()
         topology = {"coordinator": "dummy_master", "workers": ["slave1"]}
         self.upload_topology(topology)
-        expected = 'u\'dummy_master\' is not a valid ip address or host name.' \
+        expected = 'u\'dummy_master\' is not a valid ip address or' \
+                   ' host name.' \
                    '  More detailed information can be found in ' \
                    '/var/log/prestoadmin/presto-admin.log\n'
         self.assertRaisesRegexp(OSError,
@@ -457,13 +495,16 @@ task.max-memory=1GB\n"""
         script = 'chmod 600 /mnt/presto-admin/%s; su app-admin -c ' \
                  '"./presto-admin server install /mnt/presto-admin/%s "' \
                  % (PRESTO_RPM, PRESTO_RPM)
-        expected = 'Fatal error: error: ' \
-                   '/mnt/presto-admin/%s: ' \
-                   'open failed: Permission denied\n\nAborting.\n' % PRESTO_RPM
-        self.assertRaisesRegexp(OSError,
-                                expected,
-                                self.run_prestoadmin_script,
-                                script)
+        error_msg = '\nFatal error: [%(host)s] error: ' \
+                    '/mnt/presto-admin/{rpm}: ' \
+                    'open failed: Permission denied\n\nAborting.\n'
+        expected = ''
+        for host in self.docker_cluster.all_hosts():
+            expected += error_msg % {'host': host}
+        expected = self.escape_for_regex(expected)
+        actual = self.run_prestoadmin_script(script)
+        self.assertRegexpMatchesLineByLine(actual.splitlines(),
+                                           expected.splitlines())
 
     def test_install_twice(self):
         self.test_install()
@@ -472,10 +513,13 @@ task.max-memory=1GB\n"""
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
                 as f:
             expected = f.read()
-
-        expected = self.escape_for_regex(expected)
+        expected = expected % {'master': self.docker_cluster.master,
+                               'slave1': self.docker_cluster.slaves[0],
+                               'slave2': self.docker_cluster.slaves[1],
+                               'slave3': self.docker_cluster.slaves[2]}
         self.assertRegexpMatchesLineByLine(output.splitlines(),
-                                           expected.splitlines())
+                                           self.escape_for_regex(expected).
+                                           splitlines())
         for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)

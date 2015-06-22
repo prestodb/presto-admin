@@ -34,7 +34,6 @@ class PrestoError(Exception):
 
 
 class TestConnectors(BaseProductTestCase):
-
     @attr('smoketest')
     def test_basic_connector_add_remove(self):
         self.setup_docker_cluster('presto')
@@ -75,7 +74,10 @@ class TestConnectors(BaseProductTestCase):
         output = self.run_prestoadmin_script(script)
         with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'connector_permissions_warning.txt'), 'r') as f:
-            expected = f.read()
+            expected = f.read() % {'master': self.docker_cluster.master,
+                                   'slave1': self.docker_cluster.slaves[0],
+                                   'slave2': self.docker_cluster.slaves[1],
+                                   'slave3': self.docker_cluster.slaves[2]}
 
         self.assertEqualIgnoringOrder(expected, output)
 
@@ -92,27 +94,26 @@ class TestConnectors(BaseProductTestCase):
         # test add connector by file without read permissions on directory
         script = 'chmod 600 /etc/opt/prestoadmin/connectors; ' \
                  'su app-admin -c "./presto-admin connector add tpch"'
-        output = self.run_prestoadmin_script(script)
-        not_found_error = self.warning_message('Configuration for connector '
-                                               'tpch not found')
-
-        self.assertEqualIgnoringOrder(output, not_found_error)
+        not_found_error = self.fatal_error(
+            'Configuration for connector tpch not found')
+        self.assertRaisesRegexp(OSError, not_found_error,
+                                self.run_prestoadmin_script, script)
 
         # test add a connector that does not exist
         self.run_prestoadmin('connector remove tpch')
-        output = self.run_prestoadmin('connector add tpch')
-        self.assertEqualIgnoringOrder(output, not_found_error)
+        self.assertRaisesRegexp(OSError, not_found_error,
+                                self.run_prestoadmin, 'connector add tpch')
 
         # test add all connectors when the directory does not exist
         self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master,
             'rmdir /etc/opt/prestoadmin/connectors')
-        output = self.run_prestoadmin('connector add')
-        missing_dir_error = self.warning_message('Cannot add connectors '
-                                                 'because directory /etc/'
-                                                 'opt/prestoadmin/connectors '
-                                                 'does not exist')
-        self.assertEqualIgnoringOrder(output, missing_dir_error)
+        missing_dir_error = self.fatal_error('Cannot add connectors '
+                                             'because directory /etc/'
+                                             'opt/prestoadmin/connectors '
+                                             'does not exist')
+        self.assertRaisesRegexp(OSError, missing_dir_error,
+                                self.run_prestoadmin, 'connector add')
 
         # test add connector by name when it exists
         self.write_content_to_docker_host(
@@ -170,31 +171,14 @@ No connectors will be deployed
                                      'connector.name=jmx')
         self._assert_connectors_loaded([['system'], ['jmx'], ['tpch']])
 
-    def warning_message(self, error):
+    def fatal_error(self, error):
         message = """
-Warning: %(error)s
+Fatal error: %(error)s
 
 Underlying exception:
     %(error)s
 
-
-Warning: %(error)s
-
-Underlying exception:
-    %(error)s
-
-
-Warning: %(error)s
-
-Underlying exception:
-    %(error)s
-
-
-Warning: %(error)s
-
-Underlying exception:
-    %(error)s
-
+Aborting.
 """
         return message % {'error': error}
 
@@ -299,11 +283,11 @@ for the change to take effect
             self.docker_cluster.master
         )
 
-        output = self.run_prestoadmin('connector add example')
-        expected = self.warning_message('Catalog configuration '
-                                        'example.properties does not '
-                                        'contain connector.name')
-        self.assertEqualIgnoringOrder(expected, output)
+        expected = self.fatal_error('Catalog configuration '
+                                    'example.properties does not '
+                                    'contain connector.name')
+        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
+                                'connector add example')
 
     def get_connector_info(self):
         output = self.docker_cluster.exec_cmd_on_container(

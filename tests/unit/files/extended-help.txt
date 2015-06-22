@@ -11,7 +11,6 @@ Options:
                         password for use with authentication and/or sudo
 
   Advanced Options:
-    --abort-on-error    abort, instead of warn, if a command fails on any node
     -a, --no_agent      don't use the running SSH agent
     -A, --forward-agent
                         forward local agent to remote end

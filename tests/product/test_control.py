@@ -238,25 +238,34 @@ class TestControl(BaseProductTestCase):
         started_hosts = self.docker_cluster.all_hosts()
         started_hosts.remove(self.docker_cluster.master)
         expected_start = self.expected_start(
-            start_success=started_hosts,
-            failed_hosts=[self.docker_cluster.master])
-        expected_start += [r'\[master\] out: ERROR: Config file is missing: '
-                           r'/etc/presto/config.properties', r'', r'',
-                           r'Warning: \[master\] sudo\(\) received nonzero '
-                           r'return code 4 while executing \'set -m; '
-                           r'/etc/rc.d/init.d/presto start\'!']
+            start_success=started_hosts)
+        error_msg = self.escape_for_regex("""
+Fatal error: [%s] run() received nonzero return code 2 while executing!
+
+Requested: grep http-server.http.port= /etc/presto/config.properties
+Executed: /bin/bash -l -c "grep http-server.http.port= /etc/presto/\
+config.properties"
+
+=============================== Standard output ===============================
+
+grep: /etc/presto/config.properties: No such file or directory
+
+============================================================================\
+====
+
+Aborting.
+""" % self.docker_cluster.master).splitlines()
+        expected_start += error_msg
         expected_stop = self.expected_stop(
             not_running=[self.docker_cluster.master])
         self.assert_simple_start_stop(expected_start, expected_stop)
-        warn_start = [r'Warning: \[master\] sudo\(\) received nonzero '
-                      r'return code 4 while executing \'set -m; '
-                      r'/etc/rc.d/init.d/presto start\'!']
-        expected_restart = expected_stop[:] + expected_start[:-1] + warn_start
+        expected_restart = expected_stop[:] + expected_start[:]
         self.assert_simple_server_restart(expected_restart,
                                           expected_stop=expected_stop)
 
     def assert_simple_start_stop(self, expected_start, expected_stop):
-        cmd_output = self.run_prestoadmin('server start').splitlines()
+        cmd_output = self.run_prestoadmin('server start')
+        cmd_output = cmd_output.splitlines()
         self.assertRegexpMatchesLineByLine(cmd_output, expected_start)
         process_per_host = self.get_process_per_host(cmd_output)
         self.assert_started(process_per_host)

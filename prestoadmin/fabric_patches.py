@@ -25,8 +25,7 @@ from fabric.exceptions import NetworkError
 from fabric.job_queue import JobQueue
 from fabric.tasks import _is_task, WrappedCallableTask, requires_parallel
 from fabric.task_utils import crawl, parse_kwargs
-from fabric.utils import abort, error
-import fabric.utils
+from fabric.utils import error
 import fabric.api
 import fabric.operations
 import fabric.tasks
@@ -37,6 +36,7 @@ from prestoadmin.util import exception
 
 _LOGGER = logging.getLogger(__name__)
 old_warn = fabric.utils.warn
+old_abort = fabric.utils.abort
 old_run = fabric.operations.run
 old_sudo = fabric.operations.sudo
 
@@ -53,6 +53,15 @@ fabric.utils.warn = warn
 fabric.api.warn = warn
 
 
+def abort(msg):
+    if fabric.api.env.host:
+        msg = '[' + fabric.api.env.host + '] ' + msg
+    old_abort(msg)
+
+fabric.utils.abort = abort
+fabric.api.abort = abort
+
+
 # Monkey patch run and sudo so that the stdout and stderr
 # also go to the logs.
 @needs_host
@@ -65,6 +74,7 @@ def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
                   timeout=timeout, shell_escape=shell_escape)
     log_output(out)
     return out
+
 
 fabric.operations.run = run
 fabric.api.run = run
@@ -80,6 +90,7 @@ def sudo(command, shell=True, pty=True, combine_stderr=None, user=None,
                    group=group, timeout=timeout, shell_escape=shell_escape)
     log_output(out)
     return out
+
 
 fabric.operations.sudo = sudo
 fabric.api.sudo = sudo
@@ -127,9 +138,7 @@ def _execute(task, host, my_env, args, kwargs, jobs, queue, multiprocessing):
                 submit(task.run(*args, **kwargs))
             except BaseException, e:
                 _LOGGER.error(traceback.format_exc())
-                # SystemExit is an abort. Aborts do their own error printing
-                if e.__class__ is not SystemExit:
-                    submit(e)
+                submit(e)
                 sys.exit(1)
 
         # Stuff into Process wrapper
@@ -225,9 +234,11 @@ def execute(task, *args, **kwargs):
                 results[host] = e
                 # Backwards compat test re: whether to use an exception or
                 # abort
-                func = warn if state.env.skip_bad_hosts or state.env.warn_only\
+                func = warn if state.env.skip_bad_hosts or state.env.warn_only \
                     else abort
                 error(e.message, func=func, exception=e.wrapped)
+            except SystemExit, e:
+                pass
 
             # If requested, clear out connections here and not just at the end.
             if state.env.eagerly_disconnect:
@@ -243,10 +254,15 @@ def execute(task, *args, **kwargs):
             for name, d in ran_jobs.iteritems():
                 if d['exit_code'] != 0:
                     if isinstance(d['results'], NetworkError):
+                        func = warn if state.env.skip_bad_hosts \
+                            or state.env.warn_only else abort
                         error(d['results'].message,
-                              exception=d['results'].wrapped)
+                              exception=d['results'].wrapped, func=func)
                     elif exception.is_arguments_error(d['results']):
                         raise d['results']
+                    elif isinstance(d['results'], SystemExit):
+                        # System exit indicates abort
+                        pass
                     elif isinstance(d['results'], BaseException):
                         error(d['results'].message, exception=d['results'])
                     else:
@@ -260,6 +276,7 @@ def execute(task, *args, **kwargs):
     # Return what we can from the inner task executions
 
     return results
+
 
 fabric.tasks._execute = _execute
 fabric.tasks.execute = execute
