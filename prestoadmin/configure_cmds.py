@@ -23,9 +23,10 @@ from fabric.decorators import task, serial
 from fabric.operations import get
 from fabric.state import env
 from fabric.utils import abort, warn
-from prestoadmin import configure
+import prestoadmin.deploy
 from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
+
 
 CONFIG_PROPERTIES = "config.properties"
 LOG_PROPERTIES = "log.properties"
@@ -57,13 +58,13 @@ def deploy(rolename=None):
     """
     if rolename is None:
         _LOGGER.info("Running configuration deploy")
-        configure.coordinator()
-        configure.workers()
+        prestoadmin.deploy.coordinator()
+        prestoadmin.deploy.workers()
     else:
         if rolename.lower() == 'coordinator':
-            configure.coordinator()
+            prestoadmin.deploy.coordinator()
         elif rolename.lower() == 'workers':
-            configure.workers()
+            prestoadmin.deploy.workers()
         else:
             abort("Invalid Argument. Possible values: coordinator, workers")
 

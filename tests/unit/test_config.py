@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import re
 
 from mock import patch
 
@@ -84,33 +83,6 @@ class TestConfiguration(BaseTestCase):
                                 config.get_conf_from_properties_file,
                                 config_file)
 
-    @patch('prestoadmin.config.os.path.isdir')
-    @patch('prestoadmin.config.os.listdir')
-    @patch('prestoadmin.config.get_conf_from_properties_file')
-    @patch('prestoadmin.config.get_conf_from_config_file')
-    def test_get_presto_conf(self, config_mock, props_mock, listdir_mock,
-                             isdir_mock):
-        isdir_mock.return_value = True
-        listdir_mock.return_value = ['log.properties', 'jvm.config', ]
-        config_mock.return_value = ['prop1', 'prop2']
-        props_mock.return_value = {'a': '1', 'b': '2'}
-        conf = config.get_presto_conf('dummy/dir')
-        config_mock.assert_called_with('dummy/dir/jvm.config')
-        props_mock.assert_called_with('dummy/dir/log.properties')
-        self.assertEqual(conf, {'log.properties': {'a': '1', 'b': '2'},
-                                'jvm.config': ['prop1', 'prop2']})
-
-    @patch('prestoadmin.config.os.listdir')
-    @patch('prestoadmin.config.os.path.isdir')
-    @patch('prestoadmin.config.get_conf_from_properties_file')
-    def test_get_non_presto_file(self, get_mock, isdir_mock, listdir_mock):
-        isdir_mock.return_value = True
-        listdir_mock.return_value = ['test.properties']
-        self.assertFalse(config.get_conf_from_properties_file.called)
-
-    def test_conf_not_exists_is_empty(self):
-        self.assertEqual(config.get_presto_conf('/does/not/exist'), {})
-
     def test_fill_defaults_no_missing(self):
         orig = {'key1': 'val1', 'key2': 'val2', 'key3': 'val3'}
         defaults = {'key1': 'default1', 'key2': 'default2'}
@@ -125,44 +97,3 @@ class TestConfiguration(BaseTestCase):
         config.fill_defaults(filled, defaults)
         self.assertEqual(filled,
                          {'key1': 'val1', 'key2': 'default2', 'key3': 'val3'})
-
-    def test_valid_conf(self):
-        conf = {'node.properties': {}, 'jvm.config': [],
-                'config.properties': {}}
-        self.assertEqual(config.validate_presto_conf(conf), conf)
-
-    def test_invalid_conf(self):
-        conf = {'jvm.config': [],
-                'config.properties': {}}
-        self.assertRaisesRegexp(ConfigurationError,
-                                'Missing configuration for required file:',
-                                config.validate_presto_conf,
-                                conf)
-
-    def test_invalid_node_type(self):
-        conf = {'node.properties': '', 'jvm.config': [],
-                'config.properties': {}}
-        self.assertRaisesRegexp(ConfigurationError,
-                                'node.properties must be an object with key-'
-                                'value property pairs',
-                                config.validate_presto_conf,
-                                conf)
-
-    def test_invalid_jvm_type(self):
-        conf = {'node.properties': {}, 'jvm.config': {},
-                'config.properties': {}}
-        self.assertRaisesRegexp(ConfigurationError,
-                                re.escape('jvm.config must contain a json '
-                                          'array of jvm arguments ([arg1, '
-                                          'arg2, arg3])'),
-                                config.validate_presto_conf,
-                                conf)
-
-    def test_invalid_config_type(self):
-        conf = {'node.properties': {}, 'jvm.config': [],
-                'config.properties': []}
-        self.assertRaisesRegexp(ConfigurationError,
-                                'config.properties must be an object with key-'
-                                'value property pairs',
-                                config.validate_presto_conf,
-                                conf)

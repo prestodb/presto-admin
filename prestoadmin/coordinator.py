@@ -23,6 +23,8 @@ import logging
 from fabric.api import env
 
 import config
+import presto_conf
+from prestoadmin.presto_conf import validate_presto_conf, get_presto_conf
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError
 
@@ -50,7 +52,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_conf():
     conf = _get_conf()
-    for name in config.REQUIRED_FILES:
+    for name in presto_conf.REQUIRED_FILES:
         if name not in conf:
             _LOGGER.debug("Coordinator configuration for %s not found.  "
                           "Default configuration will be deployed", name)
@@ -61,7 +63,7 @@ def get_conf():
 
 
 def _get_conf():
-    return config.get_presto_conf(constants.COORDINATOR_DIR)
+    return get_presto_conf(constants.COORDINATOR_DIR)
 
 
 def build_defaults():
@@ -79,7 +81,7 @@ def build_defaults():
 
 
 def validate(conf):
-    config.validate_presto_conf(conf)
+    validate_presto_conf(conf)
     if conf["config.properties"]["coordinator"] != "true":
         raise ConfigurationError("Coordinator cannot be false in the "
                                  "coordinator's config.properties.")

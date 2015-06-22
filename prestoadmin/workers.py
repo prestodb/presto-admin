@@ -25,6 +25,8 @@ import urlparse
 from fabric.api import env
 
 from prestoadmin import config
+from prestoadmin.presto_conf import validate_presto_conf, get_presto_conf, \
+    REQUIRED_FILES
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError
 import prestoadmin.util.fabricapi as util
@@ -52,7 +54,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_conf():
     conf = _get_conf()
-    for name in config.REQUIRED_FILES:
+    for name in REQUIRED_FILES:
         if name not in conf:
             _LOGGER.debug("Workers configuration for %s not found.  "
                           "Default configuration will be deployed", name)
@@ -63,7 +65,7 @@ def get_conf():
 
 
 def _get_conf():
-    return config.get_presto_conf(constants.WORKERS_DIR)
+    return get_presto_conf(constants.WORKERS_DIR)
 
 
 def build_defaults():
@@ -79,7 +81,7 @@ def islocalhost(hostname):
 
 
 def validate(conf):
-    config.validate_presto_conf(conf)
+    validate_presto_conf(conf)
     if conf["config.properties"]["coordinator"] != "false":
         raise ConfigurationError("Coordinator must be false in the "
                                  "worker's config.properties")

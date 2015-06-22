@@ -114,7 +114,7 @@ class TestCoordinator(BaseTestCase):
         get_conf_from_file_mock.return_value = {}
         self.assertEqual(coordinator.get_conf(), coordinator.build_defaults())
 
-    @patch('prestoadmin.coordinator.config.get_presto_conf')
+    @patch('prestoadmin.coordinator.get_presto_conf')
     def test_get_conf(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = "j"
         env.roledefs['workers'] = ["K", "L"]

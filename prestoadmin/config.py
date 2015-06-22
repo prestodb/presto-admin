@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Module for accessing presto configuration
+Module for reading, writing, and processing configuration files
 """
 import json
 import os
@@ -23,10 +23,6 @@ import re
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
 
-
-REQUIRED_FILES = ["node.properties", "jvm.config", "config.properties"]
-PRESTO_FILES = ["node.properties", "jvm.config", "config.properties",
-                "log.properties"]
 COMMENT_CHARS = ['!', '#']
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,25 +67,6 @@ def get_conf_from_config_file(path):
         return settings
 
 
-def get_presto_conf(conf_dir):
-    if os.path.isdir(conf_dir):
-        file_list = [name for name in os.listdir(conf_dir) if
-                     name in PRESTO_FILES]
-    else:
-        _LOGGER.debug("No directory " + conf_dir)
-        file_list = []
-
-    conf = {}
-    for filename in file_list:
-        ext = os.path.splitext(filename)[1]
-        file_path = os.path.join(conf_dir, filename)
-        if ext == ".properties":
-            conf[filename] = get_conf_from_properties_file(file_path)
-        elif ext == ".config":
-            conf[filename] = get_conf_from_config_file(file_path)
-    return conf
-
-
 def json_to_string(conf):
     return json.dumps(conf, indent=4, separators=(',', ':'))
 
@@ -117,22 +94,3 @@ def fill_defaults(conf, defaults):
     for k, v in default_items:
         conf.setdefault(k, v)
         fill_defaults(conf[k], v)
-
-
-def validate_presto_conf(conf):
-    for required in REQUIRED_FILES:
-        if required not in conf:
-            raise ConfigurationError("Missing configuration for required "
-                                     "file: " + required)
-
-    expect_object_msg = "%s must be an object with key-value property pairs"
-    if not isinstance(conf["node.properties"], dict):
-        raise ConfigurationError(expect_object_msg % "node.properties")
-
-    if not isinstance(conf["jvm.config"], list):
-        raise ConfigurationError("jvm.config must contain a json array of jvm "
-                                 "arguments ([arg1, arg2, arg3])")
-
-    if not isinstance(conf["config.properties"], dict):
-        raise ConfigurationError(expect_object_msg % "config.properties")
-    return conf

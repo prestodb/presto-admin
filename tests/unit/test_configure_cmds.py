@@ -75,8 +75,8 @@ class TestConfigureCmds(BaseTestCase):
         self.assertFalse(mock_warn.called)
 
     @patch('prestoadmin.configure_cmds.abort')
-    @patch('prestoadmin.configure.workers')
-    @patch('prestoadmin.configure.coordinator')
+    @patch('prestoadmin.deploy.workers')
+    @patch('prestoadmin.deploy.coordinator')
     def test_config_deploy(self, mock_coordinator, mock_workers, mock_abort):
         env.host = "any_host"
         configure_cmds.deploy("invalid_config")
@@ -87,16 +87,16 @@ class TestConfigureCmds(BaseTestCase):
         mock_workers.assert_called_with()
         mock_coordinator.assert_called_with()
 
-    @patch('prestoadmin.configure.workers')
-    @patch('prestoadmin.configure.coordinator')
+    @patch('prestoadmin.deploy.workers')
+    @patch('prestoadmin.deploy.coordinator')
     def test_config_deploy_coord(self, mock_coordinator, mock_workers):
         env.host = "any_host"
         configure_cmds.deploy("coordinator")
         mock_coordinator.assert_called_with()
         assert not mock_workers.called
 
-    @patch('prestoadmin.configure.workers')
-    @patch('prestoadmin.configure.coordinator')
+    @patch('prestoadmin.deploy.workers')
+    @patch('prestoadmin.deploy.coordinator')
     def test_config_deploy_workers(self, mock_coordinator, mock_workers):
         env.host = "any_host"
         configure_cmds.deploy("workers")
