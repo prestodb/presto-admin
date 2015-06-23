@@ -27,6 +27,10 @@ from tests.product.base_product_case import BaseProductTestCase
 
 class TestConfiguration(BaseProductTestCase):
 
+    def setUp(self):
+        super(TestConfiguration, self).setUp()
+        self.setup_docker_cluster()
+
     @attr('smoketest')
     def test_configuration_deploy_show(self):
         self.install_presto_admin()
@@ -50,18 +54,21 @@ class TestConfiguration(BaseProductTestCase):
         conf_dummy_prop1 = 'a.dummy.property=\'single-quoted\''
         dummy_prop2 = 'another.dummy=value'
         conf_to_write = '%s\n%s' % (dummy_prop1, dummy_prop2)
-        self.write_content_to_docker_host(conf_to_write, path, self.master)
+        self.write_content_to_docker_host(conf_to_write, path,
+                                          self.docker_cluster.master)
 
         path = os.path.join(constants.WORKERS_DIR, filename)
-        self.write_content_to_docker_host(conf_to_write, path, self.master)
+        self.write_content_to_docker_host(conf_to_write, path,
+                                          self.docker_cluster.master)
 
         # deploy coordinator configuration only.  Has a non-default file
         output = self.run_prestoadmin('configuration deploy coordinator')
-        self.assertEqual(output, deploy_template % self.master)
-        for container in self.slaves:
+        self.assertEqual(output,
+                         deploy_template % self.docker_cluster.master)
+        for container in self.docker_cluster.slaves:
             self.assert_has_default_config(container)
 
-        self.assert_file_content(self.master,
+        self.assert_file_content(self.docker_cluster.master,
                                  os.path.join(constants.REMOTE_CONF_DIR,
                                               'config.properties'),
                                  conf_dummy_prop1 + '\n' +
@@ -71,19 +78,19 @@ class TestConfiguration(BaseProductTestCase):
         filename = 'node.properties'
         path = os.path.join(constants.WORKERS_DIR, filename)
         self.write_content_to_docker_host(
-            'node.environment test', path, self.master)
+            'node.environment test', path, self.docker_cluster.master)
         path = os.path.join(constants.COORDINATOR_DIR, filename)
         self.write_content_to_docker_host(
-            'node.environment test', path, self.master)
+            'node.environment test', path, self.docker_cluster.master)
 
         # deploy workers configuration only has non-default file
         output = self.run_prestoadmin('configuration deploy workers')
         expected = ''
-        for host in self.slaves:
+        for host in self.docker_cluster.slaves:
             expected += deploy_template % host
         self.assertEqualIgnoringOrder(output, expected)
 
-        for container in self.slaves:
+        for container in self.docker_cluster.slaves:
             self.assert_file_content(container,
                                      os.path.join(constants.REMOTE_CONF_DIR,
                                                   'config.properties'),
@@ -96,12 +103,15 @@ plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin\n"""
             self.assert_node_config(container, expected)
 
-        self.assert_node_config(self.master, self.default_node_properties_)
+        self.assert_node_config(self.docker_cluster.master,
+                                self.default_node_properties_)
 
     def test_lost_coordinator_connection(self):
         self.install_presto_admin()
-        bad_host = self.slaves[0]
-        good_hosts = [self.master, self.slaves[1], self.slaves[2]]
+        bad_host = self.docker_cluster.slaves[0]
+        good_hosts = [self.docker_cluster.master,
+                      self.docker_cluster.slaves[1],
+                      self.docker_cluster.slaves[2]]
         topology = {'coordinator': bad_host,
                     'workers': good_hosts}
         self.upload_topology(topology)
@@ -128,7 +138,7 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
     def test_deploy_lost_worker_connection(self):
         self.install_presto_admin()
         self.upload_topology()
-        bad_host = self.slaves[0]
+        bad_host = self.docker_cluster.slaves[0]
         self.docker_cluster.stop_container_and_wait(bad_host)
         output = self.run_prestoadmin('configuration deploy')
         self.assertRegexpMatches(output, self.down_node_connection_error %
@@ -193,12 +203,12 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.write_content_to_docker_host(
             log_properties,
             os.path.join(constants.WORKERS_DIR, filename),
-            self.master
+            self.docker_cluster.master
         )
         self.write_content_to_docker_host(
             log_properties,
             os.path.join(constants.COORDINATOR_DIR, filename),
-            self.master
+            self.docker_cluster.master
         )
         self.run_prestoadmin('configuration deploy')
 

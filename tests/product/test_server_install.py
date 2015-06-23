@@ -139,6 +139,10 @@ discovery.uri=http:.*:8080
 http-server.http.port=8080
 task.max-memory=1GB\n"""
 
+    def setUp(self):
+        super(TestServerInstall, self).setUp()
+        self.setup_docker_cluster()
+
     def assert_common_configs(self, container):
         self.assert_installed(container)
         self.assert_file_content(container, '/etc/presto/jvm.config',
@@ -197,9 +201,11 @@ task.max-memory=1GB\n"""
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
 
-        self.assert_installed_with_configs(self.slaves[0],
-                                           [self.slaves[1], self.slaves[2],
-                                            self.master])
+        self.assert_installed_with_configs(
+            self.docker_cluster.slaves[0],
+            [self.docker_cluster.slaves[1],
+             self.docker_cluster.slaves[2],
+             self.docker_cluster.master])
 
     def test_install_ext_host_is_pa_master(self):
         self.install_presto_admin()
@@ -214,8 +220,10 @@ task.max-memory=1GB\n"""
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
 
-        self.assert_installed_with_configs(self.slaves[0],
-                                           [self.slaves[1], self.slaves[2]])
+        self.assert_installed_with_configs(
+            self.docker_cluster.slaves[0],
+            [self.docker_cluster.slaves[1],
+             self.docker_cluster.slaves[2]])
 
     def test_install_when_connector_json_exists(self):
         self.install_presto_admin()
@@ -225,7 +233,7 @@ task.max-memory=1GB\n"""
         self.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
-            self.master
+            self.docker_cluster.master
         )
         self.copy_presto_rpm_to_master()
 
@@ -245,7 +253,8 @@ task.max-memory=1GB\n"""
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
 
-        for container in [self.master, self.slaves[0]]:
+        for container in [self.docker_cluster.master,
+                          self.docker_cluster.slaves[0]]:
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
@@ -254,38 +263,47 @@ task.max-memory=1GB\n"""
     def test_install_when_topology_has_ips(self):
         self.install_presto_admin()
         ips = self.get_ip_address_dict()
-        topology = {"coordinator": ips[self.master],
-                    "workers": [ips[self.slaves[0]]]}
+        topology = {"coordinator": ips[self.docker_cluster.master],
+                    "workers": [ips[self.docker_cluster.slaves[0]]]}
         self.upload_topology(topology)
         self.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
-            self.master
+            self.docker_cluster.master
         )
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.server_install().splitlines()
         expected = [r'Deploying rpm...',
-                    r'Package deployed successfully on: ' + ips[self.master],
-                    r'Package installed successfully on: ' + ips[self.master],
-                    r'Package deployed successfully on: '
-                    + ips[self.slaves[0]],
+                    r'Package deployed successfully on: ' +
+                    ips[self.docker_cluster.master],
                     r'Package installed successfully on: ' +
-                    ips[self.slaves[0]],
-                    r'Deploying configuration on: ' + ips[self.master],
+                    ips[self.docker_cluster.master],
+                    r'Package deployed successfully on: '
+                    + ips[self.docker_cluster.slaves[0]],
+                    r'Package installed successfully on: ' +
+                    ips[self.docker_cluster.slaves[0]],
+                    r'Deploying configuration on: ' +
+                    ips[self.docker_cluster.master],
                     r'Deploying jmx.properties, tpch.properties '
-                    r'connector configurations on: ' + ips[self.master],
-                    r'Deploying configuration on: ' + ips[self.slaves[0]],
+                    r'connector configurations on: ' +
+                    ips[self.docker_cluster.master],
+                    r'Deploying configuration on: ' +
+                    ips[self.docker_cluster.slaves[0]],
                     r'Deploying jmx.properties, tpch.properties '
-                    r'connector configurations on: ' + ips[self.slaves[0]]]
+                    r'connector configurations on: ' +
+                    ips[self.docker_cluster.slaves[0]]]
 
         cmd_output.sort()
         expected.sort()
         for expected_regexp, actual_line in zip(expected, cmd_output):
             self.assertRegexpMatches(actual_line, expected_regexp)
 
-        self.assert_installed_with_regex_configs(self.master, [self.slaves[0]])
-        for container in [self.master, self.slaves[0]]:
+        self.assert_installed_with_regex_configs(
+            self.docker_cluster.master,
+            [self.docker_cluster.slaves[0]])
+        for container in [self.docker_cluster.master,
+                          self.docker_cluster.slaves[0]]:
             self.assert_has_jmx_connector(container)
 
     def test_install_interactive_with_hostnames(self):
@@ -293,7 +311,7 @@ task.max-memory=1GB\n"""
         self.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
-            self.master
+            self.docker_cluster.master
         )
         self.copy_presto_rpm_to_master()
 
@@ -304,7 +322,8 @@ task.max-memory=1GB\n"""
 
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
-        for container in [self.master, self.slaves[0]]:
+        for container in [self.docker_cluster.master,
+                          self.docker_cluster.slaves[0]]:
             self.assert_installed(container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
@@ -318,7 +337,8 @@ task.max-memory=1GB\n"""
         cmd_output = self.run_prestoadmin_script(
             "echo -e 'root\n22\n%s\n%s\n' | "
             "./presto-admin server install /mnt/presto-admin/%s " %
-            (ips[self.master], ips[self.slaves[0]], PRESTO_RPM)).splitlines()
+            (ips[self.docker_cluster.master],
+             ips[self.docker_cluster.slaves[0]], PRESTO_RPM)).splitlines()
         expected = [r'Enter user name for SSH connection to all nodes: '
                     r'\[root\] '
                     r'Enter port number for SSH connections to all nodes: '
@@ -329,25 +349,33 @@ task.max-memory=1GB\n"""
                     r'Enter host names or IP addresses for worker nodes '
                     r'separated by spaces: '
                     r'\[localhost\] Deploying rpm...',
-                    r'Package deployed successfully on: ' + ips[self.master],
-                    r'Package installed successfully on: ' + ips[self.master],
+                    r'Package deployed successfully on: ' +
+                    ips[self.docker_cluster.master],
+                    r'Package installed successfully on: ' +
+                    ips[self.docker_cluster.master],
                     r'Package deployed successfully on: '
-                    + ips[self.slaves[0]],
+                    + ips[self.docker_cluster.slaves[0]],
                     r'Package installed successfully on: '
-                    + ips[self.slaves[0]],
-                    r'Deploying configuration on: ' + ips[self.master],
+                    + ips[self.docker_cluster.slaves[0]],
+                    r'Deploying configuration on: ' +
+                    ips[self.docker_cluster.master],
                     r'Deploying tpch.properties connector '
-                    r'configurations on: ' + ips[self.master],
-                    r'Deploying configuration on: ' + ips[self.slaves[0]],
+                    r'configurations on: ' +
+                    ips[self.docker_cluster.master],
+                    r'Deploying configuration on: ' +
+                    ips[self.docker_cluster.slaves[0]],
                     r'Deploying tpch.properties connector '
-                    r'configurations on: ' + ips[self.slaves[0]]]
+                    r'configurations on: ' +
+                    ips[self.docker_cluster.slaves[0]]]
 
         cmd_output.sort()
         expected.sort()
         for expected_regexp, actual_line in zip(expected, cmd_output):
             self.assertRegexpMatches(actual_line, expected_regexp)
 
-        self.assert_installed_with_regex_configs(self.master, [self.slaves[0]])
+        self.assert_installed_with_regex_configs(
+            self.docker_cluster.master,
+            [self.docker_cluster.slaves[0]])
 
     def test_install_with_wrong_topology(self):
         self.install_presto_admin()
@@ -386,7 +414,7 @@ task.max-memory=1GB\n"""
         self.write_content_to_docker_host(
             'connectr.typo:invalid',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
-            self.master
+            self.docker_cluster.master
         )
         actual_out = self.server_install()
         expected = 'Underlying exception:\n    Catalog configuration ' \
@@ -400,16 +428,21 @@ task.max-memory=1GB\n"""
     def test_connection_to_coord_lost(self):
         self.install_presto_admin()
         self.copy_presto_rpm_to_master()
-        topology = {"coordinator": self.slaves[0],
-                    "workers": [self.master, self.slaves[1], self.slaves[2]]}
+        topology = {"coordinator": self.docker_cluster.slaves[0],
+                    "workers": [self.docker_cluster.master,
+                                self.docker_cluster.slaves[1],
+                                self.docker_cluster.slaves[2]]}
         self.upload_topology(topology=topology)
-        self.docker_cluster.stop_container_and_wait(self.slaves[0])
+        self.docker_cluster.stop_container_and_wait(
+            self.docker_cluster.slaves[0])
 
         actual_out = self.server_install()
         self.assertRegexpMatches(actual_out, self.down_node_connection_error
-                                 % {'host': self.slaves[0]})
+                                 % {'host': self.docker_cluster.slaves[0]})
 
-        for container in [self.master, self.slaves[1], self.slaves[2]]:
+        for container in [self.docker_cluster.master,
+                          self.docker_cluster.slaves[1],
+                          self.docker_cluster.slaves[2]]:
             self.assert_common_configs(container)
             self.assert_file_content(container,
                                      '/etc/presto/config.properties',

@@ -25,6 +25,10 @@ from prestoadmin.util.constants import COORDINATOR_DIR, WORKERS_DIR
 
 class TestStatus(BaseProductTestCase):
 
+    def setUp(self):
+        super(TestStatus, self).setUp()
+        self.setup_docker_cluster()
+
     @attr('smoketest')
     def test_status_happy_path(self):
         ips = self.get_ip_address_dict()
@@ -44,15 +48,17 @@ class TestStatus(BaseProductTestCase):
         # Test with worker not started
         self.run_prestoadmin('server start -H master')
         status_output = self.run_prestoadmin('server status')
-        self.check_status(status_output,
-                          self.single_node_up_status(ips, self.master))
+        self.check_status(
+            status_output,
+            self.single_node_up_status(ips, self.docker_cluster.master))
 
         # Test with coordinator not started
         self.run_prestoadmin('server stop')
         self.run_prestoadmin('server start -H slave1')
         status_output = self.run_prestoadmin('server status')
-        self.check_status(status_output,
-                          self.single_node_up_status(ips, self.slaves[0]))
+        self.check_status(
+            status_output,
+            self.single_node_up_status(ips, self.docker_cluster.slaves[0]))
 
         # Check that the slave sees that it's stopped, even though the
         # discovery server is not up.
@@ -68,10 +74,11 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-        self.docker_cluster.stop_container_and_wait(self.slaves[0])
+        self.docker_cluster.stop_container_and_wait(
+            self.docker_cluster.slaves[0])
         status_output = self.run_prestoadmin('server status')
-        statuses = self.node_not_available_status(ips, topology,
-                                                  self.slaves[0])
+        statuses = self.node_not_available_status(
+            ips, topology, self.docker_cluster.slaves[0])
         self.check_status(status_output, statuses)
 
     def test_connection_to_worker_lost(self):
@@ -82,10 +89,11 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-        self.docker_cluster.stop_container_and_wait(self.slaves[1])
+        self.docker_cluster.stop_container_and_wait(
+            self.docker_cluster.slaves[1])
         status_output = self.run_prestoadmin('server status')
-        statuses = self.node_not_available_status(ips, topology,
-                                                  self.slaves[1])
+        statuses = self.node_not_available_status(
+            ips, topology, self.docker_cluster.slaves[1])
         self.check_status(status_output, statuses)
 
     def test_status_port_not_8080(self):
@@ -100,13 +108,13 @@ http-server.http.port=8090"""
         self.write_content_to_docker_host(
             port_config,
             os.path.join(COORDINATOR_DIR, config_filename),
-            self.master
+            self.docker_cluster.master
         )
 
         self.write_content_to_docker_host(
             port_config,
             os.path.join(WORKERS_DIR, config_filename),
-            self.master
+            self.docker_cluster.master
         )
 
         self.server_install()
@@ -118,8 +126,12 @@ http-server.http.port=8090"""
 
     def base_status(self, ips, topology=None):
         if not topology:
-            topology = {'coordinator': self.master, 'workers':
-                        [self.slaves[0], self.slaves[1], self.slaves[2]]}
+            topology = {
+                'coordinator': self.docker_cluster.master, 'workers':
+                [self.docker_cluster.slaves[0],
+                 self.docker_cluster.slaves[1],
+                 self.docker_cluster.slaves[2]]
+            }
         statuses = []
         hosts_in_status = [topology['coordinator']] + topology['workers'][:]
         for host in hosts_in_status:

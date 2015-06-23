@@ -25,13 +25,13 @@ class TestControl(BaseProductTestCase):
 
     @attr('smoketest')
     def test_server_start_stop_simple(self):
-        self.install_default_presto()
+        self.setup_docker_cluster('presto')
         self.assert_simple_start_stop(self.expected_start(),
                                       self.expected_stop())
 
     @attr('smoketest')
     def test_server_restart_simple(self):
-        self.install_default_presto()
+        self.setup_docker_cluster('presto')
         expected_output = self.expected_stop()[:] + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output)
 
@@ -45,6 +45,7 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_topology('restart')
 
     def assert_service_fails_without_topology(self, service):
+        self.setup_docker_cluster()
         self.install_presto_admin()
         # Start without topology added
         cmd_output = self.run_prestoadmin('server %s' % service,
@@ -64,6 +65,7 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_presto('restart')
 
     def assert_service_fails_without_presto(self, service):
+        self.setup_docker_cluster()
         self.install_presto_admin()
         self.upload_topology()
         # Start without Presto installed
@@ -74,16 +76,18 @@ class TestControl(BaseProductTestCase):
                                       '\n'.join(start_output))
 
     def test_server_start_various_states(self):
-        self.install_default_presto()
+        self.setup_docker_cluster('presto')
 
         # Coordinator started, workers not; then server start
         process_per_host = \
-            self.assert_start_with_one_host_started(self.master)
+            self.assert_start_with_one_host_started(
+                self.docker_cluster.master)
 
         # Worker started, coord and other workers not; then server start
         self.run_prestoadmin('server stop').splitlines()
         self.assert_stopped(process_per_host)
-        self.assert_start_with_one_host_started(self.slaves[0])
+        self.assert_start_with_one_host_started(
+            self.docker_cluster.slaves[0])
 
         # All started; then server start
         start_output = self.run_prestoadmin('server start').splitlines()
@@ -95,7 +99,7 @@ class TestControl(BaseProductTestCase):
         self.assert_started(process_per_host)
 
     def test_server_stop_various_states(self):
-        self.install_default_presto()
+        self.setup_docker_cluster('presto')
 
         # Stop with servers not started
         stop_output = self.run_prestoadmin('server stop').splitlines()
@@ -106,13 +110,13 @@ class TestControl(BaseProductTestCase):
         )
 
         # Stop with coordinator started, but not workers
-        self.assert_one_host_stopped(self.master)
+        self.assert_one_host_stopped(self.docker_cluster.master)
 
         # Stop with worker started, but nothing else
-        self.assert_one_host_stopped(self.slaves[0])
+        self.assert_one_host_stopped(self.docker_cluster.slaves[0])
 
     def test_server_restart_various_states(self):
-        self.install_default_presto()
+        self.setup_docker_cluster('presto')
 
         # Restart when the servers aren't started
         expected_output = self.expected_stop(
@@ -122,47 +126,53 @@ class TestControl(BaseProductTestCase):
 
         # Restart when a coordinator is started but workers aren't
         not_running_hosts = self.docker_cluster.all_hosts()[:]
-        not_running_hosts.remove(self.master)
+        not_running_hosts.remove(self.docker_cluster.master)
         expected_output = self.expected_stop(
             not_running=not_running_hosts) + self.expected_start()[:]
-        self.assert_simple_server_restart(expected_output,
-                                          running_host=self.master)
+        self.assert_simple_server_restart(
+            expected_output, running_host=self.docker_cluster.master)
 
         # Restart when one worker is started, but nothing else
         not_running_hosts = self.docker_cluster.all_hosts()[:]
-        not_running_hosts.remove(self.slaves[0])
+        not_running_hosts.remove(self.docker_cluster.slaves[0])
         expected_output = self.expected_stop(
             not_running=not_running_hosts) + self.expected_start()[:]
-        self.assert_simple_server_restart(expected_output,
-                                          running_host=self.slaves[0])
+        self.assert_simple_server_restart(
+            expected_output, running_host=self.docker_cluster.slaves[0])
 
     def test_start_stop_restart_coordinator_down(self):
+        self.setup_docker_cluster()
         self.install_presto_admin()
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
         self.server_install()
-        self.assert_start_stop_restart_down_node(self.slaves[0])
+        self.assert_start_stop_restart_down_node(
+            self.docker_cluster.slaves[0])
 
     def test_start_stop_restart_worker_down(self):
+        self.setup_docker_cluster()
         self.install_presto_admin()
         self.upload_topology()
         self.server_install()
-        self.assert_start_stop_restart_down_node(self.slaves[0])
+        self.assert_start_stop_restart_down_node(
+            self.docker_cluster.slaves[0])
 
     def test_server_start_twice(self):
-        self.install_default_presto()
+        self.setup_docker_cluster('presto')
         start_output = self.run_prestoadmin('server start').splitlines()
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
-        self.run_prestoadmin('server stop -H ' + self.slaves[0])
+        self.run_prestoadmin('server stop -H ' +
+                             self.docker_cluster.slaves[0])
 
         # Start all again
         start_with_warn = self.run_prestoadmin('server start').splitlines()
-        expected = self.expected_start(start_success=[self.slaves[0]],
-                                       already_started=[], failed_hosts=[])
+        expected = self.expected_start(
+            start_success=[self.docker_cluster.slaves[0]],
+            already_started=[], failed_hosts=[])
         alive_hosts = self.docker_cluster.all_hosts()[:]
-        alive_hosts.remove(self.slaves[0])
+        alive_hosts.remove(self.docker_cluster.slaves[0])
         expected.extend(self.expected_port_warn(alive_hosts))
         self.assertRegexpMatchesLineByLine(start_with_warn, expected)
 
@@ -217,24 +227,26 @@ class TestControl(BaseProductTestCase):
             '\n'.join(expected_output).splitlines())
 
     def test_start_restart_config_file_error(self):
-        self.install_default_presto()
+        self.setup_docker_cluster('presto')
 
         # Remove a required config file so that the server can't start
         self.docker_cluster.exec_cmd_on_container(
-            self.master,
+            self.docker_cluster.master,
             'mv /etc/presto/config.properties '
             '/etc/presto/config.properties.bak')
 
         started_hosts = self.docker_cluster.all_hosts()
-        started_hosts.remove(self.master)
-        expected_start = self.expected_start(start_success=started_hosts,
-                                             failed_hosts=[self.master])
+        started_hosts.remove(self.docker_cluster.master)
+        expected_start = self.expected_start(
+            start_success=started_hosts,
+            failed_hosts=[self.docker_cluster.master])
         expected_start += [r'\[master\] out: ERROR: Config file is missing: '
                            r'/etc/presto/config.properties', r'', r'',
                            r'Warning: \[master\] sudo\(\) received nonzero '
                            r'return code 4 while executing \'set -m; '
                            r'/etc/rc.d/init.d/presto start\'!']
-        expected_stop = self.expected_stop(not_running=[self.master])
+        expected_stop = self.expected_stop(
+            not_running=[self.docker_cluster.master])
         self.assert_simple_start_stop(expected_start, expected_stop)
         warn_start = [r'Warning: \[master\] sudo\(\) received nonzero '
                       r'return code 4 while executing \'set -m; '

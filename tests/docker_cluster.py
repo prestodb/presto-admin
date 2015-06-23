@@ -28,8 +28,13 @@ from time import sleep
 from docker import Client
 from docker.errors import APIError
 
+from prestoadmin import main_dir
+
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
+DOCKER_MOUNT_POINT = '/mnt/presto-admin'
+LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
+LOCAL_RESOURCES_DIR = os.path.join(main_dir, 'tests/product/resources/')
 
 
 class DockerCluster(object):
@@ -40,14 +45,14 @@ class DockerCluster(object):
 
     """
     def __init__(self, master_host, slave_hosts):
-        self.master_host = master_host
-        self.slave_hosts = slave_hosts
+        self.master = master_host
+        self.slaves = slave_hosts
         self.client = Client(timeout=180)
         self._DOCKER_START_TIMEOUT = 30
         DockerCluster.check_if_docker_exists()
 
     def all_hosts(self):
-        return self.slave_hosts + [self.master_host]
+        return self.slaves + [self.master]
 
     @staticmethod
     def check_if_docker_exists():
@@ -140,7 +145,7 @@ class DockerCluster(object):
     def _create_and_start_containers(self, local_mount_dir, docker_mount_dir,
                                      master_image, slave_image=None, cmd=None):
         if slave_image:
-            for container_name in self.slave_hosts:
+            for container_name in self.slaves:
                 container_mount_dir = os.path.join(local_mount_dir,
                                                    container_name)
                 self._create_container(slave_image, container_name,
@@ -150,16 +155,16 @@ class DockerCluster(object):
                                          {'bind': docker_mount_dir,
                                           'ro': False}})
 
-        master_mount_dir = os.path.join(local_mount_dir, self.master_host)
+        master_mount_dir = os.path.join(local_mount_dir, self.master)
         self._create_container(
-            master_image, self.master_host, master_mount_dir,
-            hostname=self.master_host, cmd=cmd
+            master_image, self.master, master_mount_dir,
+            hostname=self.master, cmd=cmd
         )
-        self.client.start(self.master_host,
+        self.client.start(self.master,
                           binds={master_mount_dir:
                                  {'bind': docker_mount_dir,
                                   'ro': False}},
-                          links=zip(self.slave_hosts, self.slave_hosts))
+                          links=zip(self.slaves, self.slaves))
 
     def _create_container(self, image, container_name, local_mount_dir,
                           hostname=None, cmd=None):
@@ -238,6 +243,46 @@ class DockerCluster(object):
         if raise_error and exit_code:
             raise OSError(exit_code, output)
         return output
+
+    @staticmethod
+    def start_presto_cluster():
+        presto_cluster = DockerCluster('master',
+                                       ['slave1', 'slave2', 'slave3'])
+        presto_cluster.start_containers(LOCAL_MOUNT_POINT,
+                                        DOCKER_MOUNT_POINT,
+                                        INSTALLED_PRESTO_TEST_MASTER_IMAGE,
+                                        INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
+        return presto_cluster
+
+    @staticmethod
+    def start_centos_cluster():
+        centos_cluster = DockerCluster('master',
+                                       ['slave1', 'slave2', 'slave3'])
+        centos_cluster.create_image(
+            os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
+            'teradatalabs/centos6-ssh-test',
+            'jdeathe/centos-ssh'
+        )
+        centos_cluster.start_containers(
+            LOCAL_MOUNT_POINT,
+            DOCKER_MOUNT_POINT,
+            'teradatalabs/centos6-ssh-test',
+            'teradatalabs/centos6-ssh-test'
+        )
+        return centos_cluster
+
+    @staticmethod
+    def check_for_presto_images():
+        client = Client(timeout=180)
+        images = client.images()
+        has_master_image = False
+        has_slave_image = False
+        for image in images:
+            if INSTALLED_PRESTO_TEST_MASTER_IMAGE in image['RepoTags'][0]:
+                has_master_image = True
+            if INSTALLED_PRESTO_TEST_SLAVE_IMAGE in image['RepoTags'][0]:
+                has_slave_image = True
+        return has_master_image and has_slave_image
 
 
 class DockerClusterException(Exception):

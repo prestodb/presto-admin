@@ -38,9 +38,10 @@ ln -s /usr/bin/python2.6 /usr/bin/python
 class TestInstallation(BaseProductTestCase):
 
     def setUp(self):
-        BaseProductTestCase.setUp(self)
+        super(TestInstallation, self).setUp()
+        self.setup_docker_cluster()
         dist_dir = self.build_dist_if_necessary()
-        self.copy_dist_to_host(dist_dir, self.master)
+        self.copy_dist_to_host(dist_dir, self.docker_cluster.master)
 
     @attr('smoketest')
     def test_install_non_root(self):
@@ -57,7 +58,8 @@ class TestInstallation(BaseProductTestCase):
 
         self.assertRaisesRegexp(OSError, 'mkdir: cannot create directory '
                                 '`/var/log/prestoadmin\': Permission denied',
-                                self.run_script, script, self.master)
+                                self.run_script, script,
+                                self.docker_cluster.master)
 
     @attr('smoketest')
     def test_install_from_different_dir(self):
@@ -76,14 +78,14 @@ class TestInstallation(BaseProductTestCase):
             r'\'/opt/prestoadmin-0.1.0-py2-none-any.whl\'',
             self.run_script,
             script,
-            self.master
+            self.docker_cluster.master
         )
 
     @attr('smoketest')
     def test_install_on_wrong_os_offline_installer(self):
         image = 'ubuntu'
         tag = '14.04'
-        host = image + '-' + self.master
+        host = image + '-' + self.docker_cluster.master
         ubuntu_container = DockerCluster(host, [])
         try:
             ubuntu_container.fetch_image_if_not_present(image, tag)
@@ -116,14 +118,14 @@ class TestInstallation(BaseProductTestCase):
             cd prestoadmin
              ./install-prestoadmin.sh dummy_cert.cert
         """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir)
-        output = self.run_script(script, self.master)
+        output = self.run_script(script, self.docker_cluster.master)
         self.assertRegexpMatches(output, r'Adding pypi.python.org as '
                                  'trusted\-host. Cannot find certificate '
                                  'file: dummy_cert.cert')
 
     @attr('smoketest')
     def test_cert_arg_to_installation_real_cert(self):
-        self.copy_to_host(certifi.where(), self.master)
+        self.copy_to_host(certifi.where(), self.docker_cluster.master)
         install_dir = '/opt'
         cert_file = os.path.basename(certifi.where())
         script = """
@@ -135,7 +137,7 @@ class TestInstallation(BaseProductTestCase):
              ./install-prestoadmin.sh {mount_dir}/{cacert}
         """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir,
                    cacert=cert_file)
-        output = self.run_script(script, self.master)
+        output = self.run_script(script, self.docker_cluster.master)
         self.assertTrue('Adding pypi.python.org as trusted-host. Cannot find'
                         ' certificate file: %s' % cert_file not in output,
                         'Unable to find cert file; output: %s' % output)

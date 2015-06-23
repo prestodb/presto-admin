@@ -27,6 +27,10 @@ from tests.product.base_product_case import BaseProductTestCase, \
 
 class TestAuthentication(BaseProductTestCase):
 
+    def setUp(self):
+        super(TestAuthentication, self).setUp()
+        self.setup_docker_cluster()
+
     success_output = (
         'Deploying tpch.properties connector configurations on: slave1 \n'
         'Deploying tpch.properties connector configurations on: master \n'
@@ -186,10 +190,10 @@ class TestAuthentication(BaseProductTestCase):
 
         # No passwordless SSH, specify keyfile with -i
         self.docker_cluster.exec_cmd_on_container(
-            self.master, 'cp /home/app-admin/.ssh/id_rsa '
-                         '/root/.ssh/id_rsa.bak')
+            self.docker_cluster.master,
+            'cp /home/app-admin/.ssh/id_rsa /root/.ssh/id_rsa.bak')
         self.docker_cluster.exec_cmd_on_container(
-            self.master, 'chmod 600 /root/.ssh/id_rsa.bak')
+            self.docker_cluster.master, 'chmod 600 /root/.ssh/id_rsa.bak')
         command_output = self.run_prestoadmin(
             'connector add -i /root/.ssh/id_rsa.bak')
         self.assertEqualIgnoringOrder(self.success_output, command_output)

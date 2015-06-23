@@ -32,13 +32,10 @@ from nose.tools import nottest
 import prestoadmin
 from tests.base_test_case import BaseTestCase
 from tests.docker_cluster import DockerCluster, DockerClusterException, \
-    INSTALLED_PRESTO_TEST_SLAVE_IMAGE, INSTALLED_PRESTO_TEST_MASTER_IMAGE
+    INSTALLED_PRESTO_TEST_SLAVE_IMAGE, INSTALLED_PRESTO_TEST_MASTER_IMAGE, \
+    LOCAL_MOUNT_POINT, DOCKER_MOUNT_POINT, LOCAL_RESOURCES_DIR
 
-LOCAL_MOUNT_POINT = os.path.join(prestoadmin.main_dir, 'tmp/docker-pa/')
 DIST_DIR = os.path.join(prestoadmin.main_dir, 'tmp/installer')
-LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
-                                   'tests/product/resources/')
-DOCKER_MOUNT_POINT = '/mnt/presto-admin'
 
 # TODO: make tests not dependent on the particular version of Presto at
 # http://teradata-download.s3.amazonaws.com/aster/presto/lib/presto-0.101-1.0.x86_64.rpm
@@ -86,29 +83,34 @@ task.max-memory=1GB\n"""
     def setUp(self):
         super(BaseProductTestCase, self).setUp()
         self.maxDiff = None
+        self.docker_client = Client(timeout=180)
 
-        self.master = 'master'
-        self.slaves = ['slave1', 'slave2', 'slave3']
-        self.setup_docker()
+    def setup_docker_cluster(self, cluster_type='centos'):
+        cluster_types = ['presto', 'centos']
+        if cluster_type not in cluster_types:
+            self.fail('{0} is not a supported cluster type. Must choose one'
+                      ' from {1}'.format(cluster_type, cluster_types))
 
-    def setup_docker(self):
-        self.docker_cluster = DockerCluster(
-            self.master, self.slaves)
         try:
-            self.docker_cluster.create_image(
-                os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
-                'teradatalabs/centos6-ssh-test',
-                'jdeathe/centos-ssh'
-            )
-            self.docker_cluster.start_containers(
-                LOCAL_MOUNT_POINT,
-                DOCKER_MOUNT_POINT,
-                'teradatalabs/centos6-ssh-test',
-                'teradatalabs/centos6-ssh-test'
-            )
+            are_presto_images_present = DockerCluster.check_for_presto_images()
+            if cluster_type == 'presto' and are_presto_images_present:
+                self.docker_cluster = DockerCluster.start_presto_cluster()
+                return
+            self.docker_cluster = DockerCluster.start_centos_cluster()
+            if cluster_type == 'presto' and not are_presto_images_present:
+                self.install_presto_admin()
+                self.upload_topology()
+                self.server_install()
+                self.docker_client.commit(
+                    self.docker_cluster.master,
+                    INSTALLED_PRESTO_TEST_MASTER_IMAGE
+                )
+                self.docker_client.commit(
+                    self.docker_cluster.slaves[0],
+                    INSTALLED_PRESTO_TEST_SLAVE_IMAGE
+                )
         except DockerClusterException as e:
             self.fail(e.msg)
-        self.docker_client = Client(timeout=180)
 
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()
@@ -198,7 +200,7 @@ task.max-memory=1GB\n"""
     def install_presto_admin(self, host=None):
         # default args cannot reference self so we to initialize it like this
         if not host:
-            host = self.master
+            host = self.docker_cluster.master
         dist_dir = self.build_dist_if_necessary()
         self.copy_dist_to_host(dist_dir, host)
         self.copy_to_host(LOCAL_RESOURCES_DIR + "/install-admin.sh", host)
@@ -206,14 +208,16 @@ task.max-memory=1GB\n"""
             host, DOCKER_MOUNT_POINT + "/install-admin.sh")
 
     def dump_and_cp_topology(self, topology):
-        local_container_mount_point = os.path.join(LOCAL_MOUNT_POINT,
-                                                   self.master)
+        local_container_mount_point = os.path.join(
+            LOCAL_MOUNT_POINT, self.docker_cluster.master)
         with open(os.path.join(local_container_mount_point,
                                "config.json"), "w") as conf_file:
             json.dump(topology, conf_file)
         self.docker_cluster.exec_cmd_on_container(
-            self.master, "cp %s /etc/opt/prestoadmin/" %
-                         os.path.join(DOCKER_MOUNT_POINT, "config.json"))
+            self.docker_cluster.master,
+            "cp %s /etc/opt/prestoadmin/" %
+            os.path.join(DOCKER_MOUNT_POINT, "config.json")
+        )
 
     def upload_topology(self, topology=None):
         if not topology:
@@ -223,7 +227,7 @@ task.max-memory=1GB\n"""
 
     def check_if_corrupted_rpm(self):
         self.docker_cluster.exec_cmd_on_container(
-            self.master, 'rpm -K --nosignature '
+            self.docker_cluster.master, 'rpm -K --nosignature '
             + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
 
     def copy_presto_rpm_to_master(self):
@@ -232,7 +236,7 @@ task.max-memory=1GB\n"""
             urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
                                'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
                                rpm_path)
-        self.copy_to_host(rpm_path, self.master)
+        self.copy_to_host(rpm_path, self.docker_cluster.master)
         self.check_if_corrupted_rpm()
 
     def server_install(self):
@@ -243,7 +247,7 @@ task.max-memory=1GB\n"""
 
     def run_prestoadmin(self, command, raise_error=True):
         return self.docker_cluster.exec_cmd_on_container(
-            self.master,
+            self.docker_cluster.master,
             "/opt/prestoadmin/presto-admin %s" % command,
             raise_error=raise_error
         )
@@ -252,11 +256,11 @@ task.max-memory=1GB\n"""
         temp_script = '/opt/prestoadmin/tmp.sh'
         self.write_content_to_docker_host(
             '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
-            temp_script, self.master)
+            temp_script, self.docker_cluster.master)
         self.docker_cluster.exec_cmd_on_container(
-            self.master, 'chmod +x %s' % temp_script)
+            self.docker_cluster.master, 'chmod +x %s' % temp_script)
         return self.docker_cluster.exec_cmd_on_container(
-            self.master, temp_script)
+            self.docker_cluster.master, temp_script)
 
     def run_script(self, script_contents, host):
         temp_script = '/tmp/tmp.sh'
@@ -337,7 +341,7 @@ task.max-memory=1GB\n"""
 
         self.assert_node_config(container, self.default_node_properties_)
 
-        if container in self.slaves:
+        if container in self.docker_cluster.slaves:
             self.assert_file_content(container,
                                      '/etc/presto/config.properties',
                                      self.default_workers_config_)
@@ -390,43 +394,6 @@ task.max-memory=1GB\n"""
                 process_per_host.append((match.group('host'),
                                          match.group('pid')))
         return process_per_host
-
-    def install_default_presto(self):
-        """
-        Installs default Presto on the docker cluster. If there is already
-        a Docker image with Presto installed, use those Docker images. Else,
-        perform the installation and then take a snapshot.
-
-        This method must only be called on clean containers, else you'll
-        get extra state for subsequent tests if it's the first time that
-        install_default_presto has been called.
-        """
-        images = self.docker_client.images()
-        has_master = False
-        has_slave = False
-        for image in images:
-            if INSTALLED_PRESTO_TEST_MASTER_IMAGE in image['RepoTags'][0]:
-                has_master = True
-            if INSTALLED_PRESTO_TEST_SLAVE_IMAGE in image['RepoTags'][0]:
-                has_slave = True
-
-        if has_master and has_slave:
-            self.docker_cluster.tear_down_containers(LOCAL_MOUNT_POINT)
-            presto_cluster = DockerCluster(self.master, self.slaves)
-            presto_cluster.start_containers(LOCAL_MOUNT_POINT,
-                                            DOCKER_MOUNT_POINT,
-                                            INSTALLED_PRESTO_TEST_MASTER_IMAGE,
-                                            INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
-            self.docker_cluster = presto_cluster
-            return
-
-        self.install_presto_admin()
-        self.upload_topology()
-        self.server_install()
-        self.docker_client.commit(self.master,
-                                  INSTALLED_PRESTO_TEST_MASTER_IMAGE)
-        self.docker_client.commit(self.slaves[0],
-                                  INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
 
     def assert_started(self, process_per_host):
         for host, pid in process_per_host:
