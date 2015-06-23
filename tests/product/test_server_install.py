@@ -473,7 +473,9 @@ task.max-memory=1GB\n"""
                 as f:
             expected = f.read()
 
-        self.assertEqualIgnoringOrder(expected, output)
+        expected = self.escape_for_regex(expected)
+        self.assertRegexpMatchesLineByLine(output.splitlines(),
+                                           expected.splitlines())
         for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)

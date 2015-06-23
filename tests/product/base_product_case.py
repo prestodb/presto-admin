@@ -40,8 +40,8 @@ DIST_DIR = os.path.join(prestoadmin.main_dir, 'tmp/installer')
 # TODO: make tests not dependent on the particular version of Presto at
 # http://teradata-download.s3.amazonaws.com/aster/presto/lib/presto-0.101-1.0.x86_64.rpm
 PRESTO_RPM = 'presto-0.101-1.0.x86_64.rpm'
-PRESTO_RPM_BASENAME = 'presto-0.101-1.0.x86_64'
-PRESTO_VERSION = 'presto-main:0.101-1-gb07f2e2'
+PRESTO_RPM_BASENAME = r'presto-.*'
+PRESTO_VERSION = r'presto-main:.*'
 
 
 class BaseProductTestCase(BaseTestCase):
@@ -400,3 +400,13 @@ task.max-memory=1GB\n"""
             self.docker_cluster.exec_cmd_on_container(host, 'kill -0 %s' %
                                                       pid)
         return process_per_host
+
+    def escape_for_regex(self, expected):
+        expected = expected.replace('{rpm}', PRESTO_RPM)
+        expected = expected.replace('{rpm_basename}', PRESTO_RPM_BASENAME)
+        expected = expected.replace('[', '\[')
+        expected = expected.replace(']', '\]')
+        expected = expected.replace(')', '\)')
+        expected = expected.replace('(', '\(')
+        expected = expected.replace('+', '\+')
+        return expected

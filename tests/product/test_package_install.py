@@ -34,16 +34,6 @@ class TestPackageInstall(BaseProductTestCase):
         for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
 
-    def assert_installed(self, container):
-        check_rpm = self.docker_cluster.exec_cmd_on_container(
-            container, 'rpm -q presto')
-        self.assertEqual(PRESTO_RPM[:-4] + '\n', check_rpm)
-
-    def assert_uninstalled(self, container):
-        self.assertRaisesRegexp(OSError, 'package presto is not installed',
-                                self.docker_cluster.exec_cmd_on_container,
-                                container, 'rpm -q presto')
-
     def test_install_coord_using_dash_h(self):
         self.copy_presto_rpm_to_master()
         self.run_prestoadmin('package install /mnt/presto-admin/%s -H master'
@@ -113,19 +103,19 @@ class TestPackageInstall(BaseProductTestCase):
     def test_install_no_path_arg(self):
         self.copy_presto_rpm_to_master()
         output = self.run_prestoadmin('package install', raise_error=False)
-        self.assertEqual(output, "Incorrect number of arguments to task.\n\n"
-                                 "Displaying detailed information for task "
-                                 "'package install':\n\n"
-                                 "    Install the rpm package on the cluster\n"
-                                 "    \n    Args:\n"
-                                 "        local_path: Absolute path to the rpm"
-                                 " to be installed\n        "
-                                 "--nodeps (optional): Flag to indicate if "
-                                 "rpm install\n"
-                                 "            should ignore c"
-                                 "hecking package dependencies. Equivalent\n"
-                                 "            to adding --nodeps flag to rpm "
-                                 "-i.\n\n")
+        self.assertEqual(output, 'Incorrect number of arguments to task.\n\n'
+                                 'Displaying detailed information for task '
+                                 '\'package install\':\n\n'
+                                 '    Install the rpm package on the cluster\n'
+                                 '    \n    Args:\n'
+                                 '        local_path: Absolute path to the rpm'
+                                 ' to be installed\n        '
+                                 '--nodeps (optional): Flag to indicate if '
+                                 'rpm install\n'
+                                 '            should ignore c'
+                                 'hecking package dependencies. Equivalent\n'
+                                 '            to adding --nodeps flag to rpm '
+                                 '-i.\n\n')
 
     def test_install_already_installed(self):
         self.copy_presto_rpm_to_master()
@@ -134,17 +124,17 @@ class TestPackageInstall(BaseProductTestCase):
         self.assert_installed(self.docker_cluster.master)
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%s -H master' % PRESTO_RPM)
-        expected = ['Deploying rpm...',
-                    'Package deployed successfully on: master',
-                    "Warning: [master] sudo() received nonzero return code 1 "
-                    "while executing 'rpm -i "
-                    "/opt/prestoadmin/packages/%s'!" % PRESTO_RPM,
-                    '', '', '[master] out: ',
-                    '[master] out: \tpackage %s is '
-                    'already installed' % PRESTO_RPM_BASENAME]
+        expected = [r'Deploying rpm...',
+                    r'Package deployed successfully on: master',
+                    r'Warning: \[master\] sudo\(\) received nonzero return'
+                    r' code 1 while executing \'rpm -i '
+                    r'/opt/prestoadmin/packages/%s\'!' % PRESTO_RPM,
+                    r'', r'', r'\[master\] out: ',
+                    r'\[master\] out: \tpackage %s is '
+                    r'already installed' % PRESTO_RPM_BASENAME]
 
         actual = cmd_output.splitlines()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertRegexpMatchesLineByLine(actual, expected)
 
     def test_install_not_an_rpm(self):
         self.assertRaisesRegexp(OSError,
@@ -166,13 +156,16 @@ class TestPackageInstall(BaseProductTestCase):
 
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%s -H master' % PRESTO_RPM)
-        self.assertEqualIgnoringOrder(
-            self.jdk_not_found_error_message(), cmd_output)
+        self.assertRegexpMatchesLineByLine(
+            cmd_output.splitlines(),
+            self.jdk_not_found_error_message()
+        )
 
     def jdk_not_found_error_message(self):
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'jdk_not_found.txt')) as f:
             jdk_not_found_error = f.read()
-        return jdk_not_found_error
+        jdk_not_found_error = self.escape_for_regex(jdk_not_found_error)
+        return jdk_not_found_error.splitlines()
 
     def test_install_rpm_missing_dependency(self):
         self.copy_presto_rpm_to_master()
@@ -187,15 +180,17 @@ class TestPackageInstall(BaseProductTestCase):
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%s -H master'
             % PRESTO_RPM)
-        expected = 'Deploying rpm...\n\nWarning: [master] sudo() received ' \
-                   'nonzero return code 1 while executing ' \
-                   '\'rpm -i /opt/prestoadmin/packages/' \
-                   '%s\'!\n\nPackage deployed ' \
-                   'successfully on: master\n[master] out: error: ' \
-                   'Failed dependencies:\n[master] out: 	python >= 2.4 ' \
-                   'is needed by %s\n' \
-                   '[master] out: ' % (PRESTO_RPM, PRESTO_RPM_BASENAME)
-        self.assertEqualIgnoringOrder(expected, cmd_output)
+        expected = [r'Deploying rpm...', '', '',
+                    r'Warning: \[master\] sudo\(\) received nonzero return '
+                    r'code 1 while executing \'rpm -i /opt/prestoadmin/'
+                    r'packages/%s\'!' % PRESTO_RPM,
+                    r'Package deployed successfully on: master',
+                    r'\[master\] out: error: Failed dependencies:',
+                    r'\[master\] out: 	python >= 2.4 is needed by %s'
+                    % PRESTO_RPM_BASENAME, r'\[master\] out: ']
+        self.assertRegexpMatchesLineByLine(
+            [line.rstrip() for line in cmd_output.splitlines()],
+            [line.rstrip() for line in expected])
 
     def test_install_rpm_with_nodeps(self):
         self.copy_presto_rpm_to_master()
