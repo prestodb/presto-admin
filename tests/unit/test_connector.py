@@ -34,14 +34,17 @@ class TestConnector(BaseTestCase):
                                 'Configuration for connector dummy not found',
                                 connector.add, 'dummy')
 
+    @patch('prestoadmin.connector.validate')
     @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.path.isfile')
-    def test_add_exists(self, isfile_mock, deploy_mock):
+    def test_add_exists(self, isfile_mock, deploy_mock, validate_mock):
         isfile_mock.return_value = True
         connector.add('tpch')
-        deploy_mock.assert_called_with(['tpch.properties'],
+        filenames = ['tpch.properties']
+        deploy_mock.assert_called_with(filenames,
                                        constants.CONNECTORS_DIR,
                                        constants.REMOTE_CATALOG_DIR)
+        validate_mock.assert_called_with(filenames)
 
     @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.path.isdir')
@@ -147,3 +150,26 @@ class TestConnector(BaseTestCase):
         sudo_mock.assert_called_with('mkdir -p %s' % remote_dir)
         put_mock.assert_any_call('/my/local/dir/a', remote_dir, use_sudo=True)
         put_mock.assert_any_call('/my/local/dir/b', remote_dir, use_sudo=True)
+
+    @patch('prestoadmin.connector.os.path.isfile')
+    @patch("__builtin__.open")
+    def test_validate(self, open_mock, is_file_mock):
+        is_file_mock.return_value = True
+        file_obj = open_mock.return_value.__enter__.return_value
+        file_obj.read.return_value = 'connector.noname=example'
+
+        self.assertRaisesRegexp(ConfigurationError,
+                                'Catalog configuration example.properties '
+                                'does not contain connector.name',
+                                connector.add, 'example')
+
+    @patch('prestoadmin.connector.os.path.isfile')
+    def test_validate_fail(self, is_file_mock):
+        is_file_mock.return_value = True
+
+        self.assertRaisesRegexp(
+            SystemExit,
+            'Error validating '
+            '/etc/opt/prestoadmin/connectors/example.properties\n\n'
+            'Underlying exception:\n    No such file or directory',
+            connector.add, 'example')

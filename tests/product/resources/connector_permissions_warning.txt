@@ -1,28 +1,24 @@
 
-Warning: [slave2] put() encountered an exception while uploading '/etc/opt/prestoadmin/connectors/tpch.properties'
+Warning: [master] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
 
 Underlying exception:
     Permission denied
 
-Deploying tpch.properties connector configurations on: slave2
 
-Warning: [master] put() encountered an exception while uploading '/etc/opt/prestoadmin/connectors/tpch.properties'
-
-Underlying exception:
-    Permission denied
-
-Deploying tpch.properties connector configurations on: master
-
-Warning: [slave3] put() encountered an exception while uploading '/etc/opt/prestoadmin/connectors/tpch.properties'
+Warning: [slave1] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
 
 Underlying exception:
     Permission denied
 
-Deploying tpch.properties connector configurations on: slave3
 
-Warning: [slave1] put() encountered an exception while uploading '/etc/opt/prestoadmin/connectors/tpch.properties'
+Warning: [slave2] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
 
 Underlying exception:
     Permission denied
 
-Deploying tpch.properties connector configurations on: slave1
+
+Warning: [slave3] Error validating /etc/opt/prestoadmin/connectors/tpch.properties
+
+Underlying exception:
+    Permission denied
+

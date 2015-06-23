@@ -44,12 +44,20 @@ def validate(filenames):
     for name in filenames:
         file_path = os.path.join(constants.CONNECTORS_DIR, name)
         _LOGGER.info('Validating connector configuration: ' + str(name))
-        with open(file_path) as f:
-            file_content = f.read()
+        try:
+            with open(file_path) as f:
+                file_content = f.read()
             if 'connector.name' not in file_content:
                 message = ('Catalog configuration %s does not contain '
                            'connector.name' % name)
                 raise ConfigurationError(message)
+
+        except IOError, e:
+            fabric.utils.error(message='Error validating ' + file_path,
+                               exception=e)
+            return False
+
+    return True
 
 
 @task
@@ -81,7 +89,6 @@ def add(name=None):
     else:
         try:
             filenames = os.listdir(constants.CONNECTORS_DIR)
-            validate(filenames)
         except OSError as e:
             fabric.utils.warn(e.strerror)
             return
@@ -91,6 +98,8 @@ def add(name=None):
                 constants.CONNECTORS_DIR)
             return
 
+    if not validate(filenames):
+        return
     filenames.sort()
     _LOGGER.info('Adding connector configurations: ' + str(filenames))
     print('Deploying %s connector configurations on: %s ' %
