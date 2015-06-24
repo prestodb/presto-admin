@@ -15,7 +15,7 @@ import os
 
 from nose.plugins.attrib import attr
 
-from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM, \
+from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
 
 
@@ -29,23 +29,22 @@ class TestPackageInstall(BaseProductTestCase):
     @attr('smoketest')
     def test_package_install(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%s'
-                             % PRESTO_RPM)
+        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s')
         for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
 
     def test_install_coord_using_dash_h(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%s -H master'
-                             % PRESTO_RPM)
+        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
+                             '-H %(master)s')
         self.assert_installed(self.docker_cluster.master)
         for slave in self.docker_cluster.slaves:
             self.assert_uninstalled(slave)
 
     def test_install_worker_using_dash_h(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%s '
-                             '-H slave1' % PRESTO_RPM)
+        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
+                             '-H %(slave1)s')
 
         self.assert_installed(self.docker_cluster.slaves[0])
         self.assert_uninstalled(self.docker_cluster.master)
@@ -54,8 +53,8 @@ class TestPackageInstall(BaseProductTestCase):
 
     def test_install_workers_using_dash_h(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%s '
-                             '-H slave1,slave2' % PRESTO_RPM)
+        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
+                             '-H %(slave1)s,%(slave2)s')
 
         self.assert_installed(self.docker_cluster.slaves[0])
         self.assert_installed(self.docker_cluster.slaves[1])
@@ -64,8 +63,8 @@ class TestPackageInstall(BaseProductTestCase):
 
     def test_install_exclude_coord(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%s -x master'
-                             % PRESTO_RPM)
+        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
+                             '-x %(master)s')
 
         self.assert_uninstalled(self.docker_cluster.master)
         for slave in self.docker_cluster.slaves:
@@ -73,8 +72,8 @@ class TestPackageInstall(BaseProductTestCase):
 
     def test_install_exclude_worker(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%s -x slave1'
-                             % PRESTO_RPM)
+        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
+                             '-x %(slave1)s')
         self.assert_uninstalled(self.docker_cluster.slaves[0])
         self.assert_installed(self.docker_cluster.slaves[1])
         self.assert_installed(self.docker_cluster.master)
@@ -82,8 +81,8 @@ class TestPackageInstall(BaseProductTestCase):
 
     def test_install_exclude_workers(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%s '
-                             '-x slave1,slave2' % PRESTO_RPM)
+        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
+                             '-x %(slave1)s,%(slave2)s')
 
         self.assert_uninstalled(self.docker_cluster.slaves[0])
         self.assert_uninstalled(self.docker_cluster.slaves[1])
@@ -122,29 +121,26 @@ class TestPackageInstall(BaseProductTestCase):
 
     def test_install_already_installed(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s -H %s' %
-            (PRESTO_RPM, self.docker_cluster.master))
+        self.run_prestoadmin(self.replace_keywords(
+            'package install /mnt/presto-admin/%(rpm)s -H %(master)s'))
         self.assert_installed(self.docker_cluster.master)
-        cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s -H %s' %
-            (PRESTO_RPM, self.docker_cluster.master))
-        expected = """
-Fatal error: [%(host)s] sudo() received nonzero return code 1 while executing!
+        cmd_output = self.run_prestoadmin(self.replace_keywords(
+            'package install /mnt/presto-admin/%(rpm)s -H %(master)s'))
+        expected = self.replace_keywords("""
+Fatal error: [%(master)s] sudo() received nonzero return code 1 while \
+executing!
 
-Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Requested: rpm -i /opt/prestoadmin/packages/%(rpm)s
 Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i \
-/opt/prestoadmin/packages/{rpm}"
+/opt/prestoadmin/packages/%(rpm)s"
 
 Aborting.
-Deploying rpm on %(host)s...
-Package deployed successfully on: %(host)s
-[%(host)s] out: 	package {rpm_basename} is already installed
-[%(host)s] out: """ % {'host': self.docker_cluster.master}
+Deploying rpm on %(master)s...
+Package deployed successfully on: %(master)s
+[%(master)s] out: 	package %(rpm_basename)s is already installed
+[%(master)s] out: """)
 
-        self.assertRegexpMatchesLineByLine(
-            cmd_output.splitlines(),
-            self.escape_for_regex(expected).splitlines())
+        self.assertEqualIgnoringOrder(cmd_output, expected)
 
     def test_install_not_an_rpm(self):
         cmd_output = self.run_prestoadmin('package install '
@@ -173,18 +169,15 @@ Aborting.
                                 'rpm -q jdk1.8.0_40-1.8.0_40-fcs')
 
         cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s -H master' % PRESTO_RPM)
-        self.assertRegexpMatchesLineByLine(
-            cmd_output.splitlines(),
-            self.jdk_not_found_error_message().splitlines()
+            'package install /mnt/presto-admin/%(rpm)s -H %(master)s'
         )
+        self.assertEqualIgnoringOrder(cmd_output,
+                                      self.jdk_not_found_error_message())
 
     def jdk_not_found_error_message(self):
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'jdk_not_found.txt')) as f:
             jdk_not_found_error = f.read()
-        jdk_not_found_error = jdk_not_found_error % {
-            'host': self.docker_cluster.master}
-        return self.escape_for_regex(jdk_not_found_error)
+        return self.replace_keywords(jdk_not_found_error)
 
     def test_install_rpm_missing_dependency(self):
         self.copy_presto_rpm_to_master()
@@ -197,24 +190,22 @@ Aborting.
                                 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s -H master'
-            % PRESTO_RPM)
-        expected = """
-Fatal error: [%(host)s] sudo() received nonzero return code 1 while executing!
+            'package install /mnt/presto-admin/%(rpm)s -H %(master)s')
+        expected = self.replace_keywords("""
+Fatal error: [%(master)s] sudo() received nonzero return code 1 while \
+executing!
 
-Requested: rpm -i /opt/prestoadmin/packages/{rpm}
+Requested: rpm -i /opt/prestoadmin/packages/%(rpm)s
 Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i \
-/opt/prestoadmin/packages/{rpm}"
+/opt/prestoadmin/packages/%(rpm)s"
 
 Aborting.
-Deploying rpm on %(host)s...
-Package deployed successfully on: %(host)s
-[%(host)s] out: error: Failed dependencies:
-[%(host)s] out: 	python >= 2.4 is needed by {rpm_basename}
-[%(host)s] out: """ % {'host': self.docker_cluster.master}
-        self.assertRegexpMatchesLineByLine(
-            cmd_output.splitlines(),
-            self.escape_for_regex(expected).splitlines())
+Deploying rpm on %(master)s...
+Package deployed successfully on: %(master)s
+[%(master)s] out: error: Failed dependencies:
+[%(master)s] out: 	python >= 2.4 is needed by %(rpm_basename)s
+[%(master)s] out: """)
+        self.assertEqualIgnoringOrder(cmd_output, expected)
 
     def test_install_rpm_with_nodeps(self):
         self.copy_presto_rpm_to_master()
@@ -227,8 +218,8 @@ Package deployed successfully on: %(host)s
                                 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%s -H master --nodeps'
-            % PRESTO_RPM)
+            'package install /mnt/presto-admin/%(rpm)s -H %(master)s --nodeps'
+        )
         expected = 'Deploying rpm on %(host)s...\n' \
                    'Package deployed successfully on: %(host)s\n' \
                    'Package installed successfully on: %(host)s' \

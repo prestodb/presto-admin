@@ -239,8 +239,9 @@ class TestControl(BaseProductTestCase):
         started_hosts.remove(self.docker_cluster.master)
         expected_start = self.expected_start(
             start_success=started_hosts)
-        error_msg = self.escape_for_regex("""
-Fatal error: [%s] run() received nonzero return code 2 while executing!
+        error_msg = self.escape_for_regex(self.replace_keywords("""
+Fatal error: [%(master)s] run() received nonzero return code 2 while \
+executing!
 
 Requested: grep http-server.http.port= /etc/presto/config.properties
 Executed: /bin/bash -l -c "grep http-server.http.port= /etc/presto/\
@@ -254,7 +255,7 @@ grep: /etc/presto/config.properties: No such file or directory
 ====
 
 Aborting.
-""" % self.docker_cluster.master).splitlines()
+""")).splitlines()
         expected_start += error_msg
         expected_stop = self.expected_stop(
             not_running=[self.docker_cluster.master])

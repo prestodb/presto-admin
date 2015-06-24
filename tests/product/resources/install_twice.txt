@@ -1,44 +1,44 @@
 
 Fatal error: [%(slave2)s] sudo() received nonzero return code 1 while executing!
 
-Requested: rpm -i /opt/prestoadmin/packages/{rpm}
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
+Requested: rpm -i /opt/prestoadmin/packages/%(rpm)s
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/%(rpm)s"
 
 Aborting.
 Deploying rpm on %(slave2)s...
 Package deployed successfully on: %(slave2)s
-[%(slave2)s] out: 	package {rpm_basename} is already installed
+[%(slave2)s] out: 	package %(rpm_basename)s is already installed
 [%(slave2)s] out:
 
 Fatal error: [%(master)s] sudo() received nonzero return code 1 while executing!
 
-Requested: rpm -i /opt/prestoadmin/packages/{rpm}
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
+Requested: rpm -i /opt/prestoadmin/packages/%(rpm)s
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/%(rpm)s"
 
 Aborting.
 Deploying rpm on %(master)s...
 Package deployed successfully on: %(master)s
-[%(master)s] out: 	package {rpm_basename} is already installed
+[%(master)s] out: 	package %(rpm_basename)s is already installed
 [%(master)s] out:
 
 Fatal error: [%(slave3)s] sudo() received nonzero return code 1 while executing!
 
-Requested: rpm -i /opt/prestoadmin/packages/{rpm}
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
+Requested: rpm -i /opt/prestoadmin/packages/%(rpm)s
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/%(rpm)s"
 
 Aborting.
 Deploying rpm on %(slave3)s...
 Package deployed successfully on: %(slave3)s
-[%(slave3)s] out: 	package {rpm_basename} is already installed
+[%(slave3)s] out: 	package %(rpm_basename)s is already installed
 [%(slave3)s] out:
 
 Fatal error: [%(slave1)s] sudo() received nonzero return code 1 while executing!
 
-Requested: rpm -i /opt/prestoadmin/packages/{rpm}
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/{rpm}"
+Requested: rpm -i /opt/prestoadmin/packages/%(rpm)s
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -i /opt/prestoadmin/packages/%(rpm)s"
 
 Aborting.
 Deploying rpm on %(slave1)s...
 Package deployed successfully on: %(slave1)s
-[%(slave1)s] out: 	package {rpm_basename} is already installed
+[%(slave1)s] out: 	package %(rpm_basename)s is already installed
 [%(slave1)s] out:

@@ -17,28 +17,9 @@ import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
-from tests.product.base_product_case import BaseProductTestCase, PRESTO_RPM, \
+from tests.product.base_product_case import BaseProductTestCase, \
     LOCAL_RESOURCES_DIR
 
-
-install_interactive_out = ['Enter user name for SSH connection to all '
-                           'nodes: [root] Enter port number for SSH '
-                           'connections to all nodes: [22] Enter host name or '
-                           'IP address for coordinator node.  Enter an '
-                           'external host name or ip address if this is a '
-                           'multi-node cluster: [localhost] Enter host names '
-                           'or IP addresses for worker nodes separated by '
-                           'spaces: [localhost] ',
-                           'Package deployed successfully on: slave1',
-                           'Package installed successfully on: slave1',
-                           'Package deployed successfully on: master',
-                           'Package installed successfully on: master',
-                           'Deploying configuration on: master',
-                           'Deploying jmx.properties, tpch.properties '
-                           'connector configurations on: master ',
-                           'Deploying configuration on: slave1',
-                           'Deploying jmx.properties, tpch.properties '
-                           'connector configurations on: slave1 ']
 
 install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
                                        'Deploying rpm on slave2...',
@@ -326,8 +307,9 @@ task.max-memory=1GB\n"""
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.run_prestoadmin_script(
-            "echo -e 'root\n22\nmaster\nslave1\n' | "
-            "./presto-admin server install /mnt/presto-admin/%s " % PRESTO_RPM)
+            'echo -e "root\n22\n%(master)s\n%(slave1)s\n" | '
+            './presto-admin server install /mnt/presto-admin/%(rpm)s ')
+
         actual = cmd_output.splitlines()
         expected = [r'Enter user name for SSH connection to all nodes: '
                     r'\[root\] '
@@ -370,11 +352,14 @@ task.max-memory=1GB\n"""
         ips = self.docker_cluster.get_ip_address_dict()
         self.copy_presto_rpm_to_master()
 
+        additional_keywords = {
+            'master_ip': ips[self.docker_cluster.master],
+            'slave1_ip': ips[self.docker_cluster.slaves[0]]
+        }
         cmd_output = self.run_prestoadmin_script(
-            "echo -e 'root\n22\n%s\n%s\n' | "
-            "./presto-admin server install /mnt/presto-admin/%s " %
-            (ips[self.docker_cluster.master],
-             ips[self.docker_cluster.slaves[0]], PRESTO_RPM)).splitlines()
+            'echo -e "root\n22\n%(master_ip)s\n%(slave1_ip)s\n" | '
+            './presto-admin server install /mnt/presto-admin/%(rpm)s ',
+            additional_keywords=additional_keywords).splitlines()
         expected = [r'Enter user name for SSH connection to all nodes: '
                     r'\[root\] '
                     r'Enter port number for SSH connections to all nodes: '
@@ -385,10 +370,10 @@ task.max-memory=1GB\n"""
                     r'Enter host names or IP addresses for worker nodes '
                     r'separated by spaces: '
                     r'\[localhost\] Deploying rpm on .*\.\.\.',
-                    r'Package deployed successfully on: ' + ips[
-                        self.docker_cluster.master],
-                    r'Package installed successfully on: ' + ips[
-                        self.docker_cluster.master],
+                    r'Package deployed successfully on: ' +
+                    ips[self.docker_cluster.master],
+                    r'Package installed successfully on: ' +
+                    ips[self.docker_cluster.master],
                     r'Package deployed successfully on: '
                     + ips[self.docker_cluster.slaves[0]],
                     r'Package installed successfully on: '
@@ -401,8 +386,8 @@ task.max-memory=1GB\n"""
                     r'Deploying configuration on: ' +
                     ips[self.docker_cluster.slaves[0]],
                     r'Deploying tpch.properties connector '
-                    r'configurations on: ' + ips[
-                        self.docker_cluster.slaves[0]],
+                    r'configurations on: ' +
+                    ips[self.docker_cluster.slaves[0]],
                     r'Deploying rpm on .*\.\.\.']
 
         cmd_output.sort()
@@ -417,7 +402,7 @@ task.max-memory=1GB\n"""
     def test_install_with_wrong_topology(self):
         self.install_presto_admin()
         self.copy_presto_rpm_to_master()
-        topology = {"coordinator": "dummy_master", "workers": ["slave1"]}
+        topology = {'coordinator': 'dummy_master', 'workers': ['slave1']}
         self.upload_topology(topology)
         expected = 'u\'dummy_master\' is not a valid ip address or' \
                    ' host name.' \
@@ -426,14 +411,13 @@ task.max-memory=1GB\n"""
         self.assertRaisesRegexp(OSError,
                                 expected,
                                 self.run_prestoadmin,
-                                "server install /mnt/presto-admin/%s "
-                                % PRESTO_RPM)
+                                'server install /mnt/presto-admin/%(rpm)s ')
 
     def test_install_with_malformed_topology(self):
         self.install_presto_admin()
         self.copy_presto_rpm_to_master()
-        topology = {"coordinator": "master",
-                    "workers": "slave1" "slave2"}
+        topology = {'coordinator': 'master',
+                    'workers': 'slave1' 'slave2'}
         self.upload_topology(topology)
         expected = 'Workers must be of type list.  Found <type \'unicode\'>.' \
                    '  More detailed information can be found in ' \
@@ -442,8 +426,7 @@ task.max-memory=1GB\n"""
         self.assertRaisesRegexp(OSError,
                                 expected,
                                 self.run_prestoadmin,
-                                "server install /mnt/presto-admin/%s "
-                                % PRESTO_RPM)
+                                'server install /mnt/presto-admin/%(rpm)s ')
 
     def test_install_with_malformed_connector(self):
         self.install_presto_admin()
@@ -492,19 +475,17 @@ task.max-memory=1GB\n"""
         self.upload_topology()
         self.run_prestoadmin("configuration deploy")
 
-        script = 'chmod 600 /mnt/presto-admin/%s; su app-admin -c ' \
-                 '"./presto-admin server install /mnt/presto-admin/%s "' \
-                 % (PRESTO_RPM, PRESTO_RPM)
+        script = 'chmod 600 /mnt/presto-admin/%(rpm)s; su app-admin -c ' \
+                 '"./presto-admin server install /mnt/presto-admin/%(rpm)s "'
         error_msg = '\nFatal error: [%(host)s] error: ' \
-                    '/mnt/presto-admin/{rpm}: ' \
+                    '/mnt/presto-admin/%(rpm)s: ' \
                     'open failed: Permission denied\n\nAborting.\n'
         expected = ''
         for host in self.docker_cluster.all_hosts():
-            expected += error_msg % {'host': host}
-        expected = self.escape_for_regex(expected)
+            expected += error_msg % {'host': host,
+                                     'rpm': self.presto_rpm_filename}
         actual = self.run_prestoadmin_script(script)
-        self.assertRegexpMatchesLineByLine(actual.splitlines(),
-                                           expected.splitlines())
+        self.assertEqualIgnoringOrder(actual, expected)
 
     def test_install_twice(self):
         self.test_install()
@@ -513,13 +494,8 @@ task.max-memory=1GB\n"""
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
                 as f:
             expected = f.read()
-        expected = expected % {'master': self.docker_cluster.master,
-                               'slave1': self.docker_cluster.slaves[0],
-                               'slave2': self.docker_cluster.slaves[1],
-                               'slave3': self.docker_cluster.slaves[2]}
-        self.assertRegexpMatchesLineByLine(output.splitlines(),
-                                           self.escape_for_regex(expected).
-                                           splitlines())
+        expected = self.replace_keywords(expected)
+        self.assertEqualIgnoringOrder(output, expected)
         for container in self.docker_cluster.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)

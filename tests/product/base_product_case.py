@@ -35,10 +35,7 @@ from tests.docker_cluster import DockerCluster, DockerClusterException, \
 
 DIST_DIR = os.path.join(prestoadmin.main_dir, 'tmp/installer')
 
-# TODO: make tests not dependent on the particular version of Presto at
-# http://teradata-download.s3.amazonaws.com/aster/presto/lib/presto-0.101-1.0.x86_64.rpm
-PRESTO_RPM = 'presto-0.101-1.0.x86_64.rpm'
-PRESTO_RPM_BASENAME = r'presto-.*'
+PRESTO_RPM_GLOB = r'presto-*.x86_64.rpm'
 PRESTO_VERSION = r'presto-main:.*'
 
 
@@ -82,6 +79,21 @@ task.max-memory=1GB\n"""
         super(BaseProductTestCase, self).setUp()
         self.maxDiff = None
         self.docker_client = Client(timeout=180)
+        self.presto_rpm_filename = self.detect_presto_rpm()
+
+    def detect_presto_rpm(self):
+        """
+        Detects the Presto RPM in the main directory of presto-admin.
+        Returns the name of the RPM, if it exists, else returns None.
+        """
+        rpm_names = fnmatch.filter(os.listdir(prestoadmin.main_dir),
+                                   PRESTO_RPM_GLOB)
+        if rpm_names:
+            # Choose the last RPM name if you sort the list, since if there
+            # are multiple RPMs, the last one is probably the latest
+            return sorted(rpm_names)[-1]
+        else:
+            return None
 
     def setup_docker_cluster(self, cluster_type='centos'):
         cluster_types = ['presto', 'centos']
@@ -217,14 +229,21 @@ task.max-memory=1GB\n"""
     def check_if_corrupted_rpm(self):
         self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master, 'rpm -K --nosignature '
-            + os.path.join(self.docker_cluster.docker_mount_dir, PRESTO_RPM))
+            + os.path.join(self.docker_cluster.docker_mount_dir,
+                           self.presto_rpm_filename))
 
     def copy_presto_rpm_to_master(self):
-        rpm_path = os.path.join(prestoadmin.main_dir, PRESTO_RPM)
-        if not os.path.exists(rpm_path):
+        if not self.presto_rpm_filename:
+            # TODO: once the RPM is on Maven Central, pull the RPM from there
+            self.presto_rpm_filename = 'presto-0.101-1.0.x86_64.rpm'
+            rpm_path = os.path.join(prestoadmin.main_dir,
+                                    self.presto_rpm_filename)
             urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
                                'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
                                rpm_path)
+        else:
+            rpm_path = os.path.join(prestoadmin.main_dir,
+                                    self.presto_rpm_filename)
         self.docker_cluster.copy_to_host(rpm_path, self.docker_cluster.master)
         self.check_if_corrupted_rpm()
 
@@ -233,17 +252,20 @@ task.max-memory=1GB\n"""
         cmd_output = self.run_prestoadmin(
             'server install ' + os.path.join(
                 self.docker_cluster.docker_mount_dir,
-                PRESTO_RPM))
+                self.presto_rpm_filename))
         return cmd_output
 
     def run_prestoadmin(self, command, raise_error=True):
+        command = self.replace_keywords(command)
         return self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master,
             "/opt/prestoadmin/presto-admin %s" % command,
             raise_error=raise_error
         )
 
-    def run_prestoadmin_script(self, script_contents):
+    def run_prestoadmin_script(self, script_contents, additional_keywords={}):
+        script_contents = self.replace_keywords(script_contents,
+                                                additional_keywords)
         temp_script = '/opt/prestoadmin/tmp.sh'
         self.docker_cluster.write_content_to_docker_host(
             '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
@@ -284,7 +306,7 @@ task.max-memory=1GB\n"""
     def assert_installed(self, container):
         check_rpm = self.docker_cluster.exec_cmd_on_container(
             container, 'rpm -q presto')
-        self.assertEqual(PRESTO_RPM[:-4] + '\n', check_rpm)
+        self.assertEqual(self.presto_rpm_filename[:-4] + '\n', check_rpm)
 
     def assert_uninstalled(self, container):
         self.assertRaisesRegexp(OSError, 'package presto is not installed',
@@ -358,9 +380,20 @@ task.max-memory=1GB\n"""
                                                       pid)
         return process_per_host
 
+    def replace_keywords(self, text, additional_keywords={}):
+        test_keywords = {
+            'rpm': self.presto_rpm_filename,
+            'rpm_basename': self.presto_rpm_filename[:-4],
+            'rpm_basename_without_arch': self.presto_rpm_filename[:-11],
+            'master': self.docker_cluster.master,
+            'slave1': self.docker_cluster.slaves[0],
+            'slave2': self.docker_cluster.slaves[1],
+            'slave3': self.docker_cluster.slaves[2]
+        }
+        test_keywords.update(additional_keywords)
+        return text % test_keywords
+
     def escape_for_regex(self, expected):
-        expected = expected.replace('{rpm}', PRESTO_RPM)
-        expected = expected.replace('{rpm_basename}', PRESTO_RPM_BASENAME)
         expected = expected.replace('[', '\[')
         expected = expected.replace(']', '\]')
         expected = expected.replace(')', '\)')
