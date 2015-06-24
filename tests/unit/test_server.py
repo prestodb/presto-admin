@@ -31,6 +31,10 @@ from tests.base_test_case import BaseTestCase
 
 
 class TestInstall(BaseTestCase):
+    SERVER_FAIL_MSG = 'Server failed to start on: failed_node1' \
+                      '\nPlease check ' \
+                      + constants.REMOTE_PRESTO_LOG_DIR + '/server.log'
+
     @patch('prestoadmin.server.deploy_install_configure')
     def test_install_server(self, mock_install):
         local_path = os.path.join("/any/path/rpm")
@@ -72,7 +76,7 @@ class TestInstall(BaseTestCase):
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
-        mock_warn.assert_called_with("Server failed to start on: failed_node1")
+        mock_warn.assert_called_with(self.SERVER_FAIL_MSG)
         server.RETRY_TIMEOUT = old_retry_timeout
 
     @patch('prestoadmin.server.sudo')
@@ -159,7 +163,8 @@ class TestInstall(BaseTestCase):
         mock_sudo.assert_any_call('set -m; ' + INIT_SCRIPTS + ' stop')
         mock_sudo.assert_any_call('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
-        mock_warn.assert_called_with("Server failed to start on: failed_node1")
+
+        mock_warn.assert_called_with(self.SERVER_FAIL_MSG)
 
     @patch('prestoadmin.util.service_util.lookup_port')
     @patch('prestoadmin.server.sudo')

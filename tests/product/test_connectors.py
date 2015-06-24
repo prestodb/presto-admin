@@ -289,6 +289,22 @@ for the change to take effect
             missing_connector_message % {'name': 'tpch'},
             output)
 
+    def test_connector_name_not_found(self):
+        self.setup_docker_cluster('presto')
+        self.run_prestoadmin('server start')
+
+        self.write_content_to_docker_host(
+            'connector.noname=example',
+            os.path.join(constants.CONNECTORS_DIR, 'example.properties'),
+            self.docker_cluster.master
+        )
+
+        output = self.run_prestoadmin('connector add example')
+        expected = self.warning_message('Catalog configuration '
+                                        'example.properties does not '
+                                        'contain connector.name')
+        self.assertEqualIgnoringOrder(expected, output)
+
     def get_connector_info(self):
         output = self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master,

@@ -30,6 +30,7 @@ from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import package
 from prestoadmin import topology
+from prestoadmin.util.constants import REMOTE_PRESTO_LOG_DIR
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
@@ -136,7 +137,8 @@ def check_status_for_control_commands():
     if check_server_status(client):
         print('Server started successfully on: ' + env.host)
     else:
-        warn('Server failed to start on: ' + env.host)
+        warn('Server failed to start on: ' + env.host
+             + '\nPlease check ' + REMOTE_PRESTO_LOG_DIR + '/server.log')
 
 
 def is_port_in_use(host):
