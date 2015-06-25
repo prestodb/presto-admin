@@ -45,12 +45,13 @@ class TestCollect(BaseProductTestCase):
         self.assert_path_exists(self.docker_cluster.master,
                                 TMP_PRESTO_DEBUG)
 
-        downloaded_logs_location = path.join(TMP_PRESTO_DEBUG, "logs")
+        downloaded_logs_location = path.join(TMP_PRESTO_DEBUG, 'logs')
         self.assert_path_exists(self.docker_cluster.master,
                                 downloaded_logs_location)
 
-        for host in self.docker_cluster.all_hosts():
-            host_log_location = path.join(downloaded_logs_location, host)
+        for host in self.docker_cluster.all_internal_hosts():
+            host_log_location = path.join(downloaded_logs_location,
+                                          host)
             self.assert_path_exists(self.docker_cluster.master,
                                     host_log_location)
 
@@ -70,12 +71,13 @@ class TestCollect(BaseProductTestCase):
         self.assert_path_exists(self.docker_cluster.master,
                                 TMP_PRESTO_DEBUG)
 
-        downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, "sysinfo")
+        downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, 'sysinfo')
         self.assert_path_exists(self.docker_cluster.master,
                                 downloaded_sys_info_loc)
 
         master_system_info_location = path.join(
-            downloaded_sys_info_loc, self.docker_cluster.master)
+            downloaded_sys_info_loc,
+            self.docker_cluster.internal_master)
         self.assert_path_exists(self.docker_cluster.master,
                                 master_system_info_location)
 
@@ -89,8 +91,9 @@ class TestCollect(BaseProductTestCase):
         for host in self.docker_cluster.all_hosts():
             self.assert_path_exists(host, version_file_name)
 
-        slave0_system_info_loc = path.join(downloaded_sys_info_loc,
-                                           self.docker_cluster.slaves[0])
+        slave0_system_info_loc = path.join(
+            downloaded_sys_info_loc,
+            self.docker_cluster.internal_slaves[0])
         self.assert_path_exists(self.docker_cluster.master,
                                 slave0_system_info_loc)
 
@@ -150,6 +153,6 @@ class TestCollect(BaseProductTestCase):
             'information. Please check that server is up with ' \
             'command: server status\n\nAborting.\n'
         expected = ''
-        for host in self.docker_cluster.all_hosts():
+        for host in self.docker_cluster.all_internal_hosts():
             expected += message % host
         self.assertEqualIgnoringOrder(actual, expected)

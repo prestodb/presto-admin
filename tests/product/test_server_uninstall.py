@@ -56,11 +56,11 @@ class TestServerUninstall(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output.splitlines())
 
         self.run_prestoadmin('server stop -H %s' %
-                             self.docker_cluster.slaves[0])
+                             self.docker_cluster.internal_slaves[0])
         cmd_output = self.run_prestoadmin('server uninstall').splitlines()
         self.assert_stopped(process_per_host)
         expected = uninstall_output + self.expected_stop(
-            not_running=[self.docker_cluster.slaves[0]])[:]
+            not_running=[self.docker_cluster.internal_slaves[0]])[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
         for container in self.docker_cluster.all_hosts():
@@ -78,7 +78,7 @@ class TestServerUninstall(BaseProductTestCase):
 
     def test_uninstall_lost_host(self):
         self.setup_docker_cluster()
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         topology = {"coordinator": self.docker_cluster.slaves[0],
                     "workers": [self.docker_cluster.master,
                                 self.docker_cluster.slaves[1],
@@ -123,7 +123,7 @@ class TestServerUninstall(BaseProductTestCase):
 
     def test_uninstall_as_non_sudo(self):
         self.setup_docker_cluster()
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
         self.server_install()
 

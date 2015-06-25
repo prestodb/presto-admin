@@ -58,7 +58,7 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_incorrect_hostname(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         topology = {'coordinator': 'dummy_master',
                     'workers': ['slave1', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
@@ -84,10 +84,10 @@ class TestAuthentication(BaseProductTestCase):
                 '[%(master)s] out: sudo password:\n'
                 '[%(master)s] out: Sorry, try again.\n')
         parallel_password_failure = parallel_password_failure % {
-            'master': self.docker_cluster.master,
-            'slave1': self.docker_cluster.slaves[0],
-            'slave2': self.docker_cluster.slaves[1],
-            'slave3': self.docker_cluster.slaves[2]}
+            'master': self.docker_cluster.internal_master,
+            'slave1': self.docker_cluster.internal_slaves[0],
+            'slave2': self.docker_cluster.internal_slaves[1],
+            'slave3': self.docker_cluster.internal_slaves[2]}
         return parallel_password_failure
 
     def non_root_sudo_warning_message(self):
@@ -98,7 +98,7 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_passwordless_ssh_authentication(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
@@ -152,7 +152,7 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_no_passwordless_ssh_authentication(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
@@ -205,14 +205,15 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_prestoadmin_no_sudo_popen(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
         # We use Popen because docker-py loses the first 8 characters of TTY
         # output.
-        args = ['docker', 'exec', '-t', 'master', 'sudo', '-u', 'app-admin',
-                '/opt/prestoadmin/presto-admin', 'topology show']
+        args = ['docker', 'exec', '-t', self.docker_cluster.master, 'sudo',
+                '-u', 'app-admin', '/opt/prestoadmin/presto-admin',
+                'topology show']
         proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
         self.assertEqualIgnoringOrder(

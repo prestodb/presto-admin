@@ -33,14 +33,14 @@ class TestConfiguration(BaseProductTestCase):
 
     @attr('smoketest')
     def test_configuration_deploy_show(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
 
         # deploy a default configuration, no files in coordinator or workers
         output = self.run_prestoadmin('configuration deploy')
         deploy_template = 'Deploying configuration on: %s\n'
         expected = ''
-        for host in self.docker_cluster.all_hosts():
+        for host in self.docker_cluster.all_internal_hosts():
             expected += deploy_template % host
 
         for host in self.docker_cluster.all_hosts():
@@ -64,7 +64,7 @@ class TestConfiguration(BaseProductTestCase):
         # deploy coordinator configuration only.  Has a non-default file
         output = self.run_prestoadmin('configuration deploy coordinator')
         self.assertEqual(output,
-                         deploy_template % self.docker_cluster.master)
+                         deploy_template % self.docker_cluster.internal_master)
         for container in self.docker_cluster.slaves:
             self.assert_has_default_config(container)
 
@@ -86,7 +86,7 @@ class TestConfiguration(BaseProductTestCase):
         # deploy workers configuration only has non-default file
         output = self.run_prestoadmin('configuration deploy workers')
         expected = ''
-        for host in self.docker_cluster.slaves:
+        for host in self.docker_cluster.internal_slaves:
             expected += deploy_template % host
         self.assertEqualIgnoringOrder(output, expected)
 
@@ -107,19 +107,20 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
                                 self.default_node_properties_)
 
     def test_lost_coordinator_connection(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
+        internal_bad_host = self.docker_cluster.internal_slaves[0]
         bad_host = self.docker_cluster.slaves[0]
-        good_hosts = [self.docker_cluster.master,
-                      self.docker_cluster.slaves[1],
-                      self.docker_cluster.slaves[2]]
-        topology = {'coordinator': bad_host,
+        good_hosts = [self.docker_cluster.internal_master,
+                      self.docker_cluster.internal_slaves[1],
+                      self.docker_cluster.internal_slaves[2]]
+        topology = {'coordinator': internal_bad_host,
                     'workers': good_hosts}
         self.upload_topology(topology)
         self.docker_cluster.stop_container_and_wait(bad_host)
         output = self.run_prestoadmin('configuration deploy')
         self.assertRegexpMatches(output, self.down_node_connection_error %
-                                 {'host': bad_host})
-        for host in self.docker_cluster.all_hosts():
+                                 {'host': internal_bad_host})
+        for host in self.docker_cluster.all_internal_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
         expected_size = self.len_down_node_error + \
             len(self.docker_cluster.all_hosts())
@@ -129,28 +130,29 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         error = str.join('\n', output.splitlines()[:6])
         self.assertRegexpMatches(error,
                                  self.down_node_connection_error %
-                                 {'host': bad_host})
+                                 {'host': internal_bad_host})
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_down_node.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(str.join('\n', output.splitlines()[6:]), expected)
 
     def test_deploy_lost_worker_connection(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
+        internal_bad_host = self.docker_cluster.internal_slaves[0]
         bad_host = self.docker_cluster.slaves[0]
         self.docker_cluster.stop_container_and_wait(bad_host)
         output = self.run_prestoadmin('configuration deploy')
         self.assertRegexpMatches(output, self.down_node_connection_error %
-                                 {'host': bad_host})
-        for host in self.docker_cluster.all_hosts():
+                                 {'host': internal_bad_host})
+        for host in self.docker_cluster.all_internal_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
         expected_length = len(self.docker_cluster.all_hosts()) + \
             self.len_down_node_error
         self.assertEqual(len(output.splitlines()), expected_length)
 
     def test_configuration_show(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
 
         # configuration show no configuration

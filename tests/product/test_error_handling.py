@@ -22,7 +22,7 @@ class TestErrorHandling(BaseProductTestCase):
 
     def test_wrong_arguments_parallel(self):
         self.setup_docker_cluster()
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
         actual = self.run_prestoadmin('server start extra_arg',
                                       raise_error=False)
@@ -36,7 +36,7 @@ class TestErrorHandling(BaseProductTestCase):
 
     def test_wrong_arguments_serial(self):
         self.setup_docker_cluster()
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
         actual = self.run_prestoadmin('server start extra_arg --serial',
                                       raise_error=False)

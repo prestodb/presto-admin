@@ -23,6 +23,7 @@ import sys
 import shutil
 import os
 import errno
+import uuid
 from time import sleep
 
 from docker import Client
@@ -47,8 +48,13 @@ class DockerCluster(object):
     """
     def __init__(self, master_host, slave_hosts,
                  local_mount_dir, docker_mount_dir):
-        self.master = master_host
-        self.slaves = slave_hosts
+        # see PyDoc for all_internal_hosts() for an explanation on the
+        # difference between an internal and regular host
+        self.internal_master = master_host
+        self.internal_slaves = slave_hosts
+        self.master = master_host + '-' + str(uuid.uuid4())
+        self.slaves = [slave + '-' + str(uuid.uuid4())
+                       for slave in slave_hosts]
         # the root path for all local mount points; to get a particular
         # container mount point call get_local_mount_dir()
         self.local_mount_dir = local_mount_dir
@@ -60,8 +66,34 @@ class DockerCluster(object):
     def all_hosts(self):
         return self.slaves + [self.master]
 
+    def all_internal_hosts(self):
+        """The difference between this method and all_hosts() is that
+        all_hosts() returns the unique, "outside facing" hostnames that
+        docker uses. On the other hand all_internal_hosts() returns the
+        more human readable host aliases for the containers used internally
+        between containers. For example the unique master host will
+        look something like 'master-07d1774e-72d7-45da-bf84-081cfaa5da9a',
+        whereas the internal master host will be 'master'.
+
+        Returns:
+            List of all internal hosts with the random suffix stripped out.
+        """
+        return [host.split('-')[0] for host in self.all_hosts()]
+
     def get_local_mount_dir(self, host):
-        return os.path.join(self.local_mount_dir, host)
+        return os.path.join(self.local_mount_dir,
+                            self.__get_unique_host(host))
+
+    def __get_unique_host(self, host):
+        matches = [unique_host for unique_host in self.all_hosts()
+                   if unique_host.startswith(host)]
+        if matches:
+            return matches[0]
+        elif host in self.all_hosts():
+            return host
+        else:
+            raise DockerClusterException(
+                'Specified host: {0} does not exist.'.format(host))
 
     @staticmethod
     def check_if_docker_exists():
@@ -108,7 +140,7 @@ class DockerCluster(object):
     def _tear_down_container(self, container_name):
         try:
             self.stop_container_and_wait(container_name)
-            self.client.remove_container(container_name, v=True)
+            self.client.remove_container(container_name, v=True, force=True)
         except APIError as e:
             # container does not exist
             if e.response.status_code != 404:
@@ -151,7 +183,9 @@ class DockerCluster(object):
             for container_name in self.slaves:
                 container_mount_dir = \
                     self.get_local_mount_dir(container_name)
-                self._create_container(slave_image, container_name, cmd=cmd)
+                self._create_container(
+                    slave_image, container_name,
+                    hostname=container_name.split('-')[0], cmd=cmd)
                 self.client.start(container_name,
                                   binds={container_mount_dir:
                                          {'bind': self.docker_mount_dir,
@@ -159,7 +193,8 @@ class DockerCluster(object):
 
         master_mount_dir = self.get_local_mount_dir(self.master)
         self._create_container(
-            master_image, self.master, hostname=self.master, cmd=cmd
+            master_image, self.master, hostname=self.internal_master,
+            cmd=cmd
         )
         self.client.start(self.master,
                           binds={master_mount_dir:
@@ -238,7 +273,8 @@ class DockerCluster(object):
         return True
 
     def exec_cmd_on_container(self, host, cmd, raise_error=True, tty=False):
-        ex = self.client.exec_create(host, cmd, tty=tty)
+        ex = self.client.exec_create(self.__get_unique_host(host), cmd,
+                                     tty=tty)
         output = self.client.exec_start(ex['Id'], tty=tty)
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
         if raise_error and exit_code:
@@ -319,10 +355,12 @@ class DockerCluster(object):
 
     def get_ip_address_dict(self):
         ip_addresses = {}
-        all_hosts = self.all_hosts()
-        for host in all_hosts:
+        for host, internal_host in zip(self.all_hosts(),
+                                       self.all_internal_hosts()):
             inspect = self.client.inspect_container(host)
             ip_addresses[host] = inspect['NetworkSettings']['IPAddress']
+            ip_addresses[internal_host] = \
+                inspect['NetworkSettings']['IPAddress']
         return ip_addresses
 
 

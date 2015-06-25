@@ -108,7 +108,7 @@ task.max-memory=1GB\n"""
                 return
             self.docker_cluster = DockerCluster.start_centos_cluster()
             if cluster_type == 'presto' and not are_presto_images_present:
-                self.install_presto_admin()
+                self.install_presto_admin(self.docker_cluster)
                 self.upload_topology()
                 self.server_install()
                 self.docker_client.commit(
@@ -155,11 +155,11 @@ task.max-memory=1GB\n"""
             shutil.copytree(
                 prestoadmin.main_dir,
                 os.path.join(
-                    self.docker_cluster.get_local_mount_dir(container_name),
+                    installer_container.get_local_mount_dir(container_name),
                     'presto-admin'),
                 ignore=shutil.ignore_patterns('tmp', '.git', 'presto*.rpm')
             )
-            self.docker_cluster.run_script(
+            installer_container.run_script(
                 '-e\n'
                 'pip install --upgrade pip\n'
                 'pip install --upgrade wheel\n'
@@ -179,7 +179,7 @@ task.max-memory=1GB\n"""
                     raise
             local_container_dist_dir = os.path.join(
                 prestoadmin.main_dir,
-                self.docker_cluster.get_local_mount_dir(container_name)
+                installer_container.get_local_mount_dir(container_name)
             )
             installer_file = fnmatch.filter(
                 os.listdir(local_container_dist_dir),
@@ -190,23 +190,25 @@ task.max-memory=1GB\n"""
         finally:
             installer_container.tear_down_containers()
 
-    def copy_dist_to_host(self, local_dist_dir, dest_host):
+    def copy_dist_to_host(self, local_dist_dir, dest_host, cluster=None):
+        if not cluster:
+            cluster = self.docker_cluster
         for dist_file in os.listdir(local_dist_dir):
             if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
-                self.docker_cluster.copy_to_host(
+                cluster.copy_to_host(
                     os.path.join(local_dist_dir, dist_file),
                     dest_host)
 
-    def install_presto_admin(self, host=None):
+    def install_presto_admin(self, cluster, host=None):
         # default args cannot reference self so we to initialize it like this
         if not host:
-            host = self.docker_cluster.master
+            host = cluster.master
         dist_dir = self.build_dist_if_necessary()
-        self.copy_dist_to_host(dist_dir, host)
-        self.docker_cluster.copy_to_host(
+        self.copy_dist_to_host(dist_dir, host, cluster)
+        cluster.copy_to_host(
             LOCAL_RESOURCES_DIR + "/install-admin.sh", host)
-        self.docker_cluster.exec_cmd_on_container(
-            host, self.docker_cluster.docker_mount_dir + "/install-admin.sh")
+        cluster.exec_cmd_on_container(
+            host, cluster.docker_mount_dir + "/install-admin.sh")
 
     def dump_and_cp_topology(self, topology):
         local_container_mount_point = self.docker_cluster.get_local_mount_dir(
@@ -339,7 +341,7 @@ task.max-memory=1GB\n"""
 
     def expected_stop(self, running=None, not_running=None):
         if running is None:
-            running = self.docker_cluster.all_hosts()
+            running = self.docker_cluster.all_internal_hosts()
             if not_running:
                 for host in not_running:
                     running.remove(host)
@@ -385,10 +387,10 @@ task.max-memory=1GB\n"""
             'rpm': self.presto_rpm_filename,
             'rpm_basename': self.presto_rpm_filename[:-4],
             'rpm_basename_without_arch': self.presto_rpm_filename[:-11],
-            'master': self.docker_cluster.master,
-            'slave1': self.docker_cluster.slaves[0],
-            'slave2': self.docker_cluster.slaves[1],
-            'slave3': self.docker_cluster.slaves[2]
+            'master': self.docker_cluster.internal_master,
+            'slave1': self.docker_cluster.internal_slaves[0],
+            'slave2': self.docker_cluster.internal_slaves[1],
+            'slave3': self.docker_cluster.internal_slaves[2]
         }
         test_keywords.update(additional_keywords)
         return text % test_keywords

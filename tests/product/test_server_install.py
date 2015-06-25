@@ -163,7 +163,7 @@ task.max-memory=1GB\n"""
 
     @attr('smoketest')
     def test_install(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
 
         cmd_output = self.server_install()
@@ -178,7 +178,7 @@ task.max-memory=1GB\n"""
             self.assert_has_default_connector(container)
 
     def test_install_worker_is_pa_master(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology)
@@ -197,7 +197,7 @@ task.max-memory=1GB\n"""
              self.docker_cluster.master])
 
     def test_install_ext_host_is_pa_master(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         topology = {"coordinator": "slave1",
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology)
@@ -215,7 +215,7 @@ task.max-memory=1GB\n"""
              self.docker_cluster.slaves[2]])
 
     def test_install_when_connector_json_exists(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         topology = {"coordinator": "master",
                     "workers": ["slave1"]}
         self.upload_topology(topology)
@@ -251,7 +251,7 @@ task.max-memory=1GB\n"""
             self.assert_has_jmx_connector(container)
 
     def test_install_when_topology_has_ips(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         ips = self.docker_cluster.get_ip_address_dict()
         topology = {"coordinator": ips[self.docker_cluster.master],
                     "workers": [ips[self.docker_cluster.slaves[0]]]}
@@ -298,7 +298,7 @@ task.max-memory=1GB\n"""
             self.assert_has_jmx_connector(container)
 
     def test_install_interactive_with_hostnames(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.docker_cluster.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
@@ -322,21 +322,23 @@ task.max-memory=1GB\n"""
                     r'separated by spaces: '
                     r'\[localhost\] Deploying rpm on .*\.\.\.',
                     r'Package deployed successfully on: ' +
-                    self.docker_cluster.master,
+                    self.docker_cluster.internal_master,
                     r'Package installed successfully on: ' +
-                    self.docker_cluster.master,
+                    self.docker_cluster.internal_master,
                     r'Package deployed successfully on: ' +
-                    self.docker_cluster.slaves[0],
+                    self.docker_cluster.internal_slaves[0],
                     r'Package installed successfully on: ' +
-                    self.docker_cluster.slaves[0],
+                    self.docker_cluster.internal_slaves[0],
                     r'Deploying configuration on: ' +
-                    self.docker_cluster.master,
+                    self.docker_cluster.internal_master,
                     r'Deploying jmx.properties, tpch.properties connector '
-                    r'configurations on: ' + self.docker_cluster.master,
+                    r'configurations on: ' +
+                    self.docker_cluster.internal_master,
                     r'Deploying configuration on: ' +
-                    self.docker_cluster.slaves[0],
+                    self.docker_cluster.internal_slaves[0],
                     r'Deploying jmx.properties, tpch.properties connector '
-                    r'configurations on: ' + self.docker_cluster.slaves[0],
+                    r'configurations on: ' +
+                    self.docker_cluster.internal_slaves[0],
                     r'Deploying rpm on .*\.\.\.']
 
         self.assertRegexpMatchesLineByLine(actual, expected)
@@ -348,7 +350,7 @@ task.max-memory=1GB\n"""
             self.assert_has_jmx_connector(container)
 
     def test_install_interactive_with_ips(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         ips = self.docker_cluster.get_ip_address_dict()
         self.copy_presto_rpm_to_master()
 
@@ -400,7 +402,7 @@ task.max-memory=1GB\n"""
             [self.docker_cluster.slaves[0]])
 
     def test_install_with_wrong_topology(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.copy_presto_rpm_to_master()
         topology = {'coordinator': 'dummy_master', 'workers': ['slave1']}
         self.upload_topology(topology)
@@ -414,7 +416,7 @@ task.max-memory=1GB\n"""
                                 'server install /mnt/presto-admin/%(rpm)s ')
 
     def test_install_with_malformed_topology(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.copy_presto_rpm_to_master()
         topology = {'coordinator': 'master',
                     'workers': 'slave1' 'slave2'}
@@ -429,7 +431,7 @@ task.max-memory=1GB\n"""
                                 'server install /mnt/presto-admin/%(rpm)s ')
 
     def test_install_with_malformed_connector(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.copy_presto_rpm_to_master()
         self.upload_topology()
         self.docker_cluster.write_content_to_docker_host(
@@ -447,19 +449,20 @@ task.max-memory=1GB\n"""
             self.assert_has_default_config(container)
 
     def test_connection_to_coord_lost(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.copy_presto_rpm_to_master()
-        topology = {"coordinator": self.docker_cluster.slaves[0],
-                    "workers": [self.docker_cluster.master,
-                                self.docker_cluster.slaves[1],
-                                self.docker_cluster.slaves[2]]}
+        topology = {"coordinator": self.docker_cluster.internal_slaves[0],
+                    "workers": [self.docker_cluster.internal_master,
+                                self.docker_cluster.internal_slaves[1],
+                                self.docker_cluster.internal_slaves[2]]}
         self.upload_topology(topology=topology)
         self.docker_cluster.stop_container_and_wait(
             self.docker_cluster.slaves[0])
 
         actual_out = self.server_install()
-        self.assertRegexpMatches(actual_out, self.down_node_connection_error
-                                 % {'host': self.docker_cluster.slaves[0]})
+        self.assertRegexpMatches(
+            actual_out, self.down_node_connection_error
+            % {'host': self.docker_cluster.internal_slaves[0]})
 
         for container in [self.docker_cluster.master,
                           self.docker_cluster.slaves[1],
@@ -470,7 +473,7 @@ task.max-memory=1GB\n"""
                                      self.default_workers_config_with_slave1_)
 
     def test_install_with_no_perm_to_local_path(self):
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.copy_presto_rpm_to_master()
         self.upload_topology()
         self.run_prestoadmin("configuration deploy")
@@ -481,7 +484,7 @@ task.max-memory=1GB\n"""
                     '/mnt/presto-admin/%(rpm)s: ' \
                     'open failed: Permission denied\n\nAborting.\n'
         expected = ''
-        for host in self.docker_cluster.all_hosts():
+        for host in self.docker_cluster.all_internal_hosts():
             expected += error_msg % {'host': host,
                                      'rpm': self.presto_rpm_filename}
         actual = self.run_prestoadmin_script(script)

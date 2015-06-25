@@ -48,7 +48,7 @@ class TestTopologyShow(BaseProductTestCase):
     def setUp(self):
         super(TestTopologyShow, self).setUp()
         self.setup_docker_cluster()
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
 
     @attr('smoketest')
     def test_topology_show(self):

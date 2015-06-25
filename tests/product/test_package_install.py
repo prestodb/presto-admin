@@ -23,7 +23,7 @@ class TestPackageInstall(BaseProductTestCase):
     def setUp(self):
         super(TestPackageInstall, self).setUp()
         self.setup_docker_cluster()
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
 
     @attr('smoketest')
@@ -97,7 +97,7 @@ class TestPackageInstall(BaseProductTestCase):
                 '/mnt/presto-admin/invalid-path/presto.rpm: open failed: ' \
                 'No such file or directory\n\nAborting.\n'
         expected = ''
-        for host in self.docker_cluster.all_hosts():
+        for host in self.docker_cluster.all_internal_hosts():
             expected += error % host
 
         self.assertEqualIgnoringOrder(cmd_output, expected)
@@ -139,7 +139,6 @@ Deploying rpm on %(master)s...
 Package deployed successfully on: %(master)s
 [%(master)s] out: 	package %(rpm_basename)s is already installed
 [%(master)s] out: """)
-
         self.assertEqualIgnoringOrder(cmd_output, expected)
 
     def test_install_not_an_rpm(self):
@@ -152,7 +151,7 @@ Fatal error: [%s] error: not an rpm package
 Aborting.
 """
         expected = ''
-        for host in self.docker_cluster.all_hosts():
+        for host in self.docker_cluster.all_internal_hosts():
             expected += error % host
 
         self.assertEqualIgnoringOrder(cmd_output, expected)
@@ -223,6 +222,6 @@ Package deployed successfully on: %(master)s
         expected = 'Deploying rpm on %(host)s...\n' \
                    'Package deployed successfully on: %(host)s\n' \
                    'Package installed successfully on: %(host)s' \
-                   % {'host': self.docker_cluster.master}
+                   % {'host': self.docker_cluster.internal_master}
 
         self.assertEqualIgnoringOrder(expected, cmd_output)

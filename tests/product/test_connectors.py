@@ -74,10 +74,11 @@ class TestConnectors(BaseProductTestCase):
         output = self.run_prestoadmin_script(script)
         with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'connector_permissions_warning.txt'), 'r') as f:
-            expected = f.read() % {'master': self.docker_cluster.master,
-                                   'slave1': self.docker_cluster.slaves[0],
-                                   'slave2': self.docker_cluster.slaves[1],
-                                   'slave3': self.docker_cluster.slaves[2]}
+            expected = f.read() % \
+                {'master': self.docker_cluster.internal_master,
+                 'slave1': self.docker_cluster.internal_slaves[0],
+                 'slave2': self.docker_cluster.internal_slaves[1],
+                 'slave3': self.docker_cluster.internal_slaves[2]}
 
         self.assertEqualIgnoringOrder(expected, output)
 
@@ -184,7 +185,7 @@ Aborting.
 
     def test_connector_add_lost_host(self):
         self.setup_docker_cluster()
-        self.install_presto_admin()
+        self.install_presto_admin(self.docker_cluster)
         self.upload_topology()
         self.server_install()
         self.run_prestoadmin('connector remove tpch')
@@ -197,7 +198,7 @@ Aborting.
             self.docker_cluster.master
         )
         output = self.run_prestoadmin('connector add tpch')
-        for host in self.docker_cluster.all_hosts():
+        for host in self.docker_cluster.all_internal_hosts():
             deploying_message = 'Deploying tpch.properties connector ' \
                                 'configurations on: %s'
             self.assertTrue(deploying_message % host in output,
@@ -206,7 +207,7 @@ Aborting.
         self.assertRegexpMatches(
             output,
             self.down_node_connection_error
-            % {'host': self.docker_cluster.slaves[0]})
+            % {'host': self.docker_cluster.internal_slaves[0]})
         self.assertEqual(len(output.splitlines()),
                          len(self.docker_cluster.all_hosts()) +
                          self.len_down_node_error)

@@ -87,7 +87,7 @@ class TestInstallation(BaseProductTestCase):
     def test_install_on_wrong_os_offline_installer(self):
         image = 'ubuntu'
         tag = '14.04'
-        host = image + '-' + self.docker_cluster.master
+        host = image + '-master'
         ubuntu_container = DockerCluster(host, [], DEFAULT_LOCAL_MOUNT_POINT,
                                          DEFAULT_DOCKER_MOUNT_POINT)
         try:
@@ -95,16 +95,18 @@ class TestInstallation(BaseProductTestCase):
             ubuntu_container.start_containers(
                 image + ':' + tag, cmd='tail -f /var/log/bootstrap.log')
 
-            self.docker_cluster.run_script(install_py26_script, host)
+            ubuntu_container.run_script(install_py26_script,
+                                        ubuntu_container.master)
             ubuntu_container.exec_cmd_on_container(
-                host, 'sudo apt-get -y install wget')
+                ubuntu_container.master, 'sudo apt-get -y install wget')
 
             self.assertRaisesRegexp(
                 OSError,
                 r'ERROR\n'
                 r'Paramiko could not be imported. This usually means that',
                 self.install_presto_admin,
-                host
+                ubuntu_container,
+                ubuntu_container.master
             )
         finally:
             ubuntu_container.tear_down_containers()
