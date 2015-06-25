@@ -31,7 +31,7 @@ env.roledefs = {
     'all': []
 }
 
-main_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 import fabric_patches
 import collect

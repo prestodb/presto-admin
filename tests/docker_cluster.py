@@ -27,13 +27,14 @@ from time import sleep
 
 from docker import Client
 from docker.errors import APIError
+from nose.tools import nottest
 
 from prestoadmin import main_dir
 
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
-DOCKER_MOUNT_POINT = '/mnt/presto-admin'
-LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
+DEFAULT_DOCKER_MOUNT_POINT = '/mnt/presto-admin'
+DEFAULT_LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
 LOCAL_RESOURCES_DIR = os.path.join(main_dir, 'tests/product/resources/')
 
 
@@ -44,15 +45,23 @@ class DockerCluster(object):
     for testing purposes.
 
     """
-    def __init__(self, master_host, slave_hosts):
+    def __init__(self, master_host, slave_hosts,
+                 local_mount_dir, docker_mount_dir):
         self.master = master_host
         self.slaves = slave_hosts
+        # the root path for all local mount points; to get a particular
+        # container mount point call get_local_mount_dir()
+        self.local_mount_dir = local_mount_dir
+        self.docker_mount_dir = docker_mount_dir
         self.client = Client(timeout=180)
         self._DOCKER_START_TIMEOUT = 30
         DockerCluster.check_if_docker_exists()
 
     def all_hosts(self):
         return self.slaves + [self.master]
+
+    def get_local_mount_dir(self, host):
+        return os.path.join(self.local_mount_dir, host)
 
     @staticmethod
     def check_if_docker_exists():
@@ -64,7 +73,6 @@ class DockerCluster(object):
 
     def create_image(self, path_to_dockerfile_dir, image_tag, base_image):
         self.fetch_image_if_not_present(base_image)
-
         self._execute_and_wait(self.client.build,
                                path=path_to_dockerfile_dir,
                                tag=image_tag,
@@ -85,19 +93,17 @@ class DockerCluster(object):
                     return True
         return False
 
-    def start_containers(self, local_mount_dir, docker_mount_dir,
-                         master_image, slave_image=None, cmd=None):
-        self.tear_down_containers(local_mount_dir)
-        self._create_host_mount_dirs(local_mount_dir)
+    def start_containers(self, master_image, slave_image=None, cmd=None):
+        self.tear_down_containers()
+        self._create_host_mount_dirs()
 
-        self._create_and_start_containers(local_mount_dir, docker_mount_dir,
-                                          master_image, slave_image, cmd)
+        self._create_and_start_containers(master_image, slave_image, cmd)
         self._ensure_docker_containers_started(master_image)
 
-    def tear_down_containers(self, local_mount_dir):
+    def tear_down_containers(self):
         for container_name in self.all_hosts():
             self._tear_down_container(container_name)
-        self._remove_host_mount_dirs(local_mount_dir)
+        self._remove_host_mount_dirs()
 
     def _tear_down_container(self, container_name):
         try:
@@ -112,24 +118,21 @@ class DockerCluster(object):
         self.client.stop(container_name)
         self.client.wait(container_name)
 
-    def _remove_host_mount_dirs(self, local_mount_dir):
+    def _remove_host_mount_dirs(self):
         for container_name in self.all_hosts():
             try:
-                shutil.rmtree(os.path.join(local_mount_dir, container_name))
+                shutil.rmtree(
+                    self.get_local_mount_dir(container_name))
             except OSError as e:
                 # no such file or directory
                 if e.errno != errno.ENOENT:
                     raise
-        try:
-            shutil.rmtree(local_mount_dir)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
 
-    def _create_host_mount_dirs(self, local_mount_dir):
+    def _create_host_mount_dirs(self):
         for container_name in self.all_hosts():
             try:
-                os.makedirs(os.path.join(local_mount_dir, container_name))
+                os.makedirs(
+                    self.get_local_mount_dir(container_name))
             except OSError as e:
                 # file exists
                 if e.errno != errno.EEXIST:
@@ -142,38 +145,36 @@ class DockerCluster(object):
         for line in ret:
             pass
 
-    def _create_and_start_containers(self, local_mount_dir, docker_mount_dir,
-                                     master_image, slave_image=None, cmd=None):
+    def _create_and_start_containers(self, master_image, slave_image=None,
+                                     cmd=None):
         if slave_image:
             for container_name in self.slaves:
-                container_mount_dir = os.path.join(local_mount_dir,
-                                                   container_name)
-                self._create_container(slave_image, container_name,
-                                       container_mount_dir, cmd=cmd)
+                container_mount_dir = \
+                    self.get_local_mount_dir(container_name)
+                self._create_container(slave_image, container_name, cmd=cmd)
                 self.client.start(container_name,
                                   binds={container_mount_dir:
-                                         {'bind': docker_mount_dir,
+                                         {'bind': self.docker_mount_dir,
                                           'ro': False}})
 
-        master_mount_dir = os.path.join(local_mount_dir, self.master)
+        master_mount_dir = self.get_local_mount_dir(self.master)
         self._create_container(
-            master_image, self.master, master_mount_dir,
-            hostname=self.master, cmd=cmd
+            master_image, self.master, hostname=self.master, cmd=cmd
         )
         self.client.start(self.master,
                           binds={master_mount_dir:
-                                 {'bind': docker_mount_dir,
+                                 {'bind': self.docker_mount_dir,
                                   'ro': False}},
                           links=zip(self.slaves, self.slaves))
 
-    def _create_container(self, image, container_name, local_mount_dir,
-                          hostname=None, cmd=None):
+    def _create_container(self, image, container_name, hostname=None,
+                          cmd=None):
         self._execute_and_wait(self.client.create_container,
                                image,
                                detach=True,
                                name=container_name,
                                hostname=hostname,
-                               volumes=local_mount_dir,
+                               volumes=self.local_mount_dir,
                                command=cmd)
 
     def _ensure_docker_containers_started(self, image):
@@ -247,25 +248,25 @@ class DockerCluster(object):
     @staticmethod
     def start_presto_cluster():
         presto_cluster = DockerCluster('master',
-                                       ['slave1', 'slave2', 'slave3'])
-        presto_cluster.start_containers(LOCAL_MOUNT_POINT,
-                                        DOCKER_MOUNT_POINT,
-                                        INSTALLED_PRESTO_TEST_MASTER_IMAGE,
+                                       ['slave1', 'slave2', 'slave3'],
+                                       DEFAULT_LOCAL_MOUNT_POINT,
+                                       DEFAULT_DOCKER_MOUNT_POINT)
+        presto_cluster.start_containers(INSTALLED_PRESTO_TEST_MASTER_IMAGE,
                                         INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
         return presto_cluster
 
     @staticmethod
     def start_centos_cluster():
         centos_cluster = DockerCluster('master',
-                                       ['slave1', 'slave2', 'slave3'])
+                                       ['slave1', 'slave2', 'slave3'],
+                                       DEFAULT_LOCAL_MOUNT_POINT,
+                                       DEFAULT_DOCKER_MOUNT_POINT)
         centos_cluster.create_image(
             os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
             'teradatalabs/centos6-ssh-test',
             'jdeathe/centos-ssh'
         )
         centos_cluster.start_containers(
-            LOCAL_MOUNT_POINT,
-            DOCKER_MOUNT_POINT,
             'teradatalabs/centos6-ssh-test',
             'teradatalabs/centos6-ssh-test'
         )
@@ -283,6 +284,46 @@ class DockerCluster(object):
             if INSTALLED_PRESTO_TEST_SLAVE_IMAGE in image['RepoTags'][0]:
                 has_slave_image = True
         return has_master_image and has_slave_image
+
+    def run_script(self, script_contents, host):
+        temp_script = '/tmp/tmp.sh'
+        self.write_content_to_docker_host('#!/bin/bash\n%s' % script_contents,
+                                          temp_script, host)
+        self.exec_cmd_on_container(host, 'chmod +x %s' % temp_script)
+        return self.exec_cmd_on_container(host, temp_script, tty=True)
+
+    def write_content_to_docker_host(self, content, path, host):
+        filename = os.path.basename(path)
+        dest_dir = os.path.dirname(path)
+        host_local_mount_point = self.get_local_mount_dir(host)
+        local_path = os.path.join(host_local_mount_point, filename)
+
+        with open(local_path, 'w') as config_file:
+            config_file.write(content)
+
+        self.exec_cmd_on_container(host, 'mkdir -p ' + dest_dir)
+        self.exec_cmd_on_container(
+            host, 'cp %s %s' % (os.path.join(self.docker_mount_dir, filename),
+                                dest_dir))
+
+    def copy_to_host(self, source_path, dest_host):
+        shutil.copy(source_path, self.get_local_mount_dir(dest_host))
+
+    @nottest
+    def clean_up_presto_test_images(self):
+        try:
+            self.client.remove_image(INSTALLED_PRESTO_TEST_MASTER_IMAGE)
+            self.client.remove_image(INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
+        except:
+            pass
+
+    def get_ip_address_dict(self):
+        ip_addresses = {}
+        all_hosts = self.all_hosts()
+        for host in all_hosts:
+            inspect = self.client.inspect_container(host)
+            ip_addresses[host] = inspect['NetworkSettings']['IPAddress']
+        return ip_addresses
 
 
 class DockerClusterException(Exception):

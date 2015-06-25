@@ -54,7 +54,7 @@ class TestConnectors(BaseProductTestCase):
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
                                                   'tcph.properties'))
 
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.docker_cluster.master
@@ -116,7 +116,7 @@ class TestConnectors(BaseProductTestCase):
                                 self.run_prestoadmin, 'connector add')
 
         # test add connector by name when it exists
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.docker_cluster.master
@@ -152,12 +152,12 @@ No connectors will be deployed
         self.assertEqualIgnoringOrder(expected, output)
 
         # test add connectors from directory with more than one connector
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.docker_cluster.master
         )
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.docker_cluster.master
@@ -191,7 +191,7 @@ Aborting.
 
         self.docker_cluster.stop_container_and_wait(
             self.docker_cluster.slaves[0])
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.docker_cluster.master
@@ -263,7 +263,7 @@ for the change to take effect
         self.assertEqualIgnoringOrder(success_message, output)
 
         # test remove connector in directory but not in presto
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.docker_cluster.master
@@ -277,7 +277,7 @@ for the change to take effect
         self.setup_docker_cluster('presto')
         self.run_prestoadmin('server start')
 
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.noname=example',
             os.path.join(constants.CONNECTORS_DIR, 'example.properties'),
             self.docker_cluster.master

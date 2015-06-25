@@ -22,18 +22,16 @@ import json
 import re
 import os
 import shutil
-import tempfile
 import errno
 import urllib
 
 from docker import Client
-from nose.tools import nottest
 
 import prestoadmin
 from tests.base_test_case import BaseTestCase
 from tests.docker_cluster import DockerCluster, DockerClusterException, \
     INSTALLED_PRESTO_TEST_SLAVE_IMAGE, INSTALLED_PRESTO_TEST_MASTER_IMAGE, \
-    LOCAL_MOUNT_POINT, DOCKER_MOUNT_POINT, LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
 
 DIST_DIR = os.path.join(prestoadmin.main_dir, 'tmp/installer')
 
@@ -114,33 +112,20 @@ task.max-memory=1GB\n"""
 
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()
-        self.docker_cluster.tear_down_containers(LOCAL_MOUNT_POINT)
-
-    def copy_to_host(self, source_path, dest_host):
-        shutil.copy(source_path, os.path.join(LOCAL_MOUNT_POINT, dest_host))
-
-    @nottest
-    def clean_up_presto_test_images(self):
-        try:
-            self.docker_client.remove_image(
-                INSTALLED_PRESTO_TEST_MASTER_IMAGE)
-            self.docker_client.remove_image(
-                INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
-        except:
-            pass
+        self.docker_cluster.tear_down_containers()
 
     def build_dist_if_necessary(self):
         if not os.path.exists(DIST_DIR) or not fnmatch.filter(
                 os.listdir(DIST_DIR), 'prestoadmin-*.tar.bz2'):
-            self.clean_up_presto_test_images()
+            self.docker_cluster.clean_up_presto_test_images()
             self.build_installer_in_docker()
         return DIST_DIR
 
     def build_installer_in_docker(self):
         container_name = 'installer'
-        root_local_mount_point = tempfile.mkdtemp()
-        local_mount_point = os.path.join(root_local_mount_point, 'installer')
-        installer_container = DockerCluster(container_name, [])
+        installer_container = DockerCluster(
+            container_name, [], DEFAULT_LOCAL_MOUNT_POINT,
+            DEFAULT_DOCKER_MOUNT_POINT)
         try:
             installer_container.create_image(
                 os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
@@ -148,54 +133,57 @@ task.max-memory=1GB\n"""
                 'jdeathe/centos-ssh'
             )
             installer_container.start_containers(
-                root_local_mount_point,
-                DOCKER_MOUNT_POINT,
                 'teradatalabs/centos6-ssh-test'
             )
         except DockerClusterException as e:
-            installer_container.tear_down_containers(root_local_mount_point)
+            installer_container.tear_down_containers()
             self.fail(e.msg)
 
         try:
-            shutil.copytree(prestoadmin.main_dir,
-                            os.path.join(local_mount_point, 'presto-admin'))
-            local_path = os.path.join(local_mount_point, 'make_installer.sh')
-            with open(local_path, 'w') as f:
-                f.write('#!/bin/bash\n'
-                        '-e\n'
-                        'pip install --upgrade pip\n'
-                        'pip install --upgrade wheel\n'
-                        'pip install --upgrade setuptools\n'
-                        'mv %s/presto-admin ~/\n'
-                        'cd ~/presto-admin\n'
-                        'make dist\n'
-                        'cp dist/prestoadmin-*.tar.bz2 %s'
-                        % (DOCKER_MOUNT_POINT, DOCKER_MOUNT_POINT))
-
-            installer_container.exec_cmd_on_container(
-                container_name,
-                'chmod +x %s/make_installer.sh' % DOCKER_MOUNT_POINT)
-            installer_container.exec_cmd_on_container(
-                container_name,
-                '%s/make_installer.sh' % DOCKER_MOUNT_POINT)
+            shutil.copytree(
+                prestoadmin.main_dir,
+                os.path.join(
+                    self.docker_cluster.get_local_mount_dir(container_name),
+                    'presto-admin'),
+                ignore=shutil.ignore_patterns('tmp', '.git', 'presto*.rpm')
+            )
+            self.docker_cluster.run_script(
+                '-e\n'
+                'pip install --upgrade pip\n'
+                'pip install --upgrade wheel\n'
+                'pip install --upgrade setuptools\n'
+                'mv %s/presto-admin ~/\n'
+                'cd ~/presto-admin\n'
+                'make dist\n'
+                'cp dist/prestoadmin-*.tar.bz2 %s'
+                % (installer_container.docker_mount_dir,
+                   installer_container.docker_mount_dir),
+                container_name)
 
             try:
                 os.makedirs(DIST_DIR)
             except OSError, e:
                 if e.errno != errno.EEXIST:
                     raise
-            installer_file = fnmatch.filter(os.listdir(local_mount_point),
-                                            'prestoadmin-*.tar.bz2')[0]
-            shutil.copy(os.path.join(local_mount_point, installer_file),
-                        DIST_DIR)
+            local_container_dist_dir = os.path.join(
+                prestoadmin.main_dir,
+                self.docker_cluster.get_local_mount_dir(container_name)
+            )
+            installer_file = fnmatch.filter(
+                os.listdir(local_container_dist_dir),
+                'prestoadmin-*.tar.bz2')[0]
+            shutil.copy(
+                os.path.join(local_container_dist_dir, installer_file),
+                DIST_DIR)
         finally:
-            installer_container.tear_down_containers(root_local_mount_point)
+            installer_container.tear_down_containers()
 
     def copy_dist_to_host(self, local_dist_dir, dest_host):
         for dist_file in os.listdir(local_dist_dir):
             if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
-                self.copy_to_host(os.path.join(local_dist_dir, dist_file),
-                                  dest_host)
+                self.docker_cluster.copy_to_host(
+                    os.path.join(local_dist_dir, dist_file),
+                    dest_host)
 
     def install_presto_admin(self, host=None):
         # default args cannot reference self so we to initialize it like this
@@ -203,20 +191,21 @@ task.max-memory=1GB\n"""
             host = self.docker_cluster.master
         dist_dir = self.build_dist_if_necessary()
         self.copy_dist_to_host(dist_dir, host)
-        self.copy_to_host(LOCAL_RESOURCES_DIR + "/install-admin.sh", host)
+        self.docker_cluster.copy_to_host(
+            LOCAL_RESOURCES_DIR + "/install-admin.sh", host)
         self.docker_cluster.exec_cmd_on_container(
-            host, DOCKER_MOUNT_POINT + "/install-admin.sh")
+            host, self.docker_cluster.docker_mount_dir + "/install-admin.sh")
 
     def dump_and_cp_topology(self, topology):
-        local_container_mount_point = os.path.join(
-            LOCAL_MOUNT_POINT, self.docker_cluster.master)
+        local_container_mount_point = self.docker_cluster.get_local_mount_dir(
+            self.docker_cluster.master)
         with open(os.path.join(local_container_mount_point,
                                "config.json"), "w") as conf_file:
             json.dump(topology, conf_file)
         self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master,
             "cp %s /etc/opt/prestoadmin/" %
-            os.path.join(DOCKER_MOUNT_POINT, "config.json")
+            os.path.join(self.docker_cluster.docker_mount_dir, "config.json")
         )
 
     def upload_topology(self, topology=None):
@@ -228,7 +217,7 @@ task.max-memory=1GB\n"""
     def check_if_corrupted_rpm(self):
         self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master, 'rpm -K --nosignature '
-            + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
+            + os.path.join(self.docker_cluster.docker_mount_dir, PRESTO_RPM))
 
     def copy_presto_rpm_to_master(self):
         rpm_path = os.path.join(prestoadmin.main_dir, PRESTO_RPM)
@@ -236,13 +225,15 @@ task.max-memory=1GB\n"""
             urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
                                'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
                                rpm_path)
-        self.copy_to_host(rpm_path, self.docker_cluster.master)
+        self.docker_cluster.copy_to_host(rpm_path, self.docker_cluster.master)
         self.check_if_corrupted_rpm()
 
     def server_install(self):
         self.copy_presto_rpm_to_master()
         cmd_output = self.run_prestoadmin(
-            'server install ' + os.path.join(DOCKER_MOUNT_POINT, PRESTO_RPM))
+            'server install ' + os.path.join(
+                self.docker_cluster.docker_mount_dir,
+                PRESTO_RPM))
         return cmd_output
 
     def run_prestoadmin(self, command, raise_error=True):
@@ -254,47 +245,13 @@ task.max-memory=1GB\n"""
 
     def run_prestoadmin_script(self, script_contents):
         temp_script = '/opt/prestoadmin/tmp.sh'
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
             temp_script, self.docker_cluster.master)
         self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master, 'chmod +x %s' % temp_script)
         return self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master, temp_script)
-
-    def run_script(self, script_contents, host):
-        temp_script = '/tmp/tmp.sh'
-        self.write_content_to_docker_host('#!/bin/bash\n%s' % script_contents,
-                                          temp_script, host)
-        self.docker_cluster.exec_cmd_on_container(
-            host, 'chmod +x %s' % temp_script)
-        return self.docker_cluster.exec_cmd_on_container(
-            host, temp_script, tty=True)
-
-    def get_ip_address_dict(self):
-        ip_addresses = {}
-        all_hosts = self.docker_cluster.all_hosts()
-        for host in all_hosts:
-            inspect = self.docker_client.inspect_container(host)
-            ip_addresses[host] = inspect['NetworkSettings']['IPAddress']
-        return ip_addresses
-
-    def write_content_to_docker_host(self, content, path, host):
-        filename = os.path.basename(path)
-        dest_dir = os.path.dirname(path)
-        host_local_mount_point = os.path.join(LOCAL_MOUNT_POINT,
-                                              host)
-        local_path = os.path.join(host_local_mount_point,
-                                  filename)
-
-        with open(local_path, 'w') as config_file:
-            config_file.write(content)
-
-        self.docker_cluster.exec_cmd_on_container(
-            host, 'mkdir -p ' + dest_dir)
-        self.docker_cluster.exec_cmd_on_container(
-            host, 'cp %s %s' % (
-                os.path.join(DOCKER_MOUNT_POINT, filename), dest_dir))
 
     def assert_path_exists(self, host, file_path):
         self.docker_cluster.exec_cmd_on_container(

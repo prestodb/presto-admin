@@ -17,7 +17,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    DOCKER_MOUNT_POINT, LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR
 
 
 topology_with_slave1_coord = """{'coordinator': u'slave1',
@@ -68,8 +68,8 @@ class TestTopologyShow(BaseProductTestCase):
                                 )
 
     def test_topology_show_coord_down(self):
-        topology = {"coordinator": "slave1",
-                    "workers": ["master", "slave2", "slave3"]}
+        topology = {'coordinator': 'slave1',
+                    'workers': ['master', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
         self.docker_cluster.stop_container_and_wait(
             self.docker_cluster.slaves[0])
@@ -91,14 +91,15 @@ class TestTopologyShow(BaseProductTestCase):
         self.assertEqual(local_topology, actual)
 
     def test_topology_show_bad_json(self):
-        self.copy_to_host(
+        self.docker_cluster.copy_to_host(
             os.path.join(LOCAL_RESOURCES_DIR, 'invalid_json.json'),
             self.docker_cluster.master
         )
         self.docker_cluster.exec_cmd_on_container(
             self.docker_cluster.master,
-            "cp %s /etc/opt/prestoadmin/config.json" %
-            os.path.join(DOCKER_MOUNT_POINT, "invalid_json.json")
+            'cp %s /etc/opt/prestoadmin/config.json' %
+            os.path.join(self.docker_cluster.docker_mount_dir,
+                         'invalid_json.json')
         )
         self.assertRaisesRegexp(OSError,
                                 'Expecting , delimiter: line 3 column 3 '

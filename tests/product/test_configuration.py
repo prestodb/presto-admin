@@ -54,12 +54,12 @@ class TestConfiguration(BaseProductTestCase):
         conf_dummy_prop1 = 'a.dummy.property=\'single-quoted\''
         dummy_prop2 = 'another.dummy=value'
         conf_to_write = '%s\n%s' % (dummy_prop1, dummy_prop2)
-        self.write_content_to_docker_host(conf_to_write, path,
-                                          self.docker_cluster.master)
+        self.docker_cluster.write_content_to_docker_host(
+            conf_to_write, path, self.docker_cluster.master)
 
         path = os.path.join(constants.WORKERS_DIR, filename)
-        self.write_content_to_docker_host(conf_to_write, path,
-                                          self.docker_cluster.master)
+        self.docker_cluster.write_content_to_docker_host(
+            conf_to_write, path, self.docker_cluster.master)
 
         # deploy coordinator configuration only.  Has a non-default file
         output = self.run_prestoadmin('configuration deploy coordinator')
@@ -77,10 +77,10 @@ class TestConfiguration(BaseProductTestCase):
 
         filename = 'node.properties'
         path = os.path.join(constants.WORKERS_DIR, filename)
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'node.environment test', path, self.docker_cluster.master)
         path = os.path.join(constants.COORDINATOR_DIR, filename)
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'node.environment test', path, self.docker_cluster.master)
 
         # deploy workers configuration only has non-default file
@@ -200,12 +200,12 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         # configuration show log has log.properties
         log_properties = 'com.facebook.presto=WARN'
         filename = 'log.properties'
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             log_properties,
             os.path.join(constants.WORKERS_DIR, filename),
             self.docker_cluster.master
         )
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             log_properties,
             os.path.join(constants.COORDINATOR_DIR, filename),
             self.docker_cluster.master

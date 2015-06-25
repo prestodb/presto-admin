@@ -31,7 +31,7 @@ class TestStatus(BaseProductTestCase):
 
     @attr('smoketest')
     def test_status_happy_path(self):
-        ips = self.get_ip_address_dict()
+        ips = self.docker_cluster.get_ip_address_dict()
         self.install_presto_admin()
         self.upload_topology()
         status_output = self.run_prestoadmin('server status')
@@ -67,7 +67,7 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, self.not_started_status(ips))
 
     def test_connection_to_coordinator_lost(self):
-        ips = self.get_ip_address_dict()
+        ips = self.docker_cluster.get_ip_address_dict()
         self.install_presto_admin()
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
@@ -82,7 +82,7 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, statuses)
 
     def test_connection_to_worker_lost(self):
-        ips = self.get_ip_address_dict()
+        ips = self.docker_cluster.get_ip_address_dict()
         self.install_presto_admin()
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
@@ -105,13 +105,13 @@ http-server.http.port=8090"""
 
         # write to master
         config_filename = 'config.properties'
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             port_config,
             os.path.join(COORDINATOR_DIR, config_filename),
             self.docker_cluster.master
         )
 
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             port_config,
             os.path.join(WORKERS_DIR, config_filename),
             self.docker_cluster.master
@@ -121,7 +121,7 @@ http-server.http.port=8090"""
         self.run_prestoadmin('server start')
         cmd_output = self.run_prestoadmin('server status')
 
-        ips = self.get_ip_address_dict()
+        ips = self.docker_cluster.get_ip_address_dict()
         self.check_status(cmd_output, self.base_status(ips), 8090)
 
     def base_status(self, ips, topology=None):

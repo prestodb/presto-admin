@@ -238,7 +238,7 @@ task.max-memory=1GB\n"""
         topology = {"coordinator": "master",
                     "workers": ["slave1"]}
         self.upload_topology(topology)
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.docker_cluster.master
@@ -271,11 +271,11 @@ task.max-memory=1GB\n"""
 
     def test_install_when_topology_has_ips(self):
         self.install_presto_admin()
-        ips = self.get_ip_address_dict()
+        ips = self.docker_cluster.get_ip_address_dict()
         topology = {"coordinator": ips[self.docker_cluster.master],
                     "workers": [ips[self.docker_cluster.slaves[0]]]}
         self.upload_topology(topology)
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.docker_cluster.master
@@ -318,7 +318,7 @@ task.max-memory=1GB\n"""
 
     def test_install_interactive_with_hostnames(self):
         self.install_presto_admin()
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.docker_cluster.master
@@ -367,7 +367,7 @@ task.max-memory=1GB\n"""
 
     def test_install_interactive_with_ips(self):
         self.install_presto_admin()
-        ips = self.get_ip_address_dict()
+        ips = self.docker_cluster.get_ip_address_dict()
         self.copy_presto_rpm_to_master()
 
         cmd_output = self.run_prestoadmin_script(
@@ -449,7 +449,7 @@ task.max-memory=1GB\n"""
         self.install_presto_admin()
         self.copy_presto_rpm_to_master()
         self.upload_topology()
-        self.write_content_to_docker_host(
+        self.docker_cluster.write_content_to_docker_host(
             'connectr.typo:invalid',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.docker_cluster.master

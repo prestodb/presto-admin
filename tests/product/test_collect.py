@@ -116,7 +116,7 @@ class TestCollect(BaseProductTestCase):
         self.assertEqual(actual, expected)
 
     def get_query_id(self, sql):
-        ips = self.get_ip_address_dict()
+        ips = self.docker_cluster.get_ip_address_dict()
         client = PrestoClient(ips[self.docker_cluster.master],
                               'root', 8080)
         run_sql(client, sql)

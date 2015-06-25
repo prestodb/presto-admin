@@ -21,7 +21,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    DOCKER_MOUNT_POINT, LOCAL_MOUNT_POINT
+    DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT
 from tests.docker_cluster import DockerCluster
 
 install_py26_script = """\
@@ -54,11 +54,12 @@ class TestInstallation(BaseProductTestCase):
             sudo -u app-admin tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
             sudo -u app-admin ./install-prestoadmin.sh
-        """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir)
+        """.format(mount_dir=self.docker_cluster.docker_mount_dir,
+                   install_dir=install_dir)
 
         self.assertRaisesRegexp(OSError, 'mkdir: cannot create directory '
                                 '`/var/log/prestoadmin\': Permission denied',
-                                self.run_script, script,
+                                self.docker_cluster.run_script, script,
                                 self.docker_cluster.master)
 
     @attr('smoketest')
@@ -70,13 +71,14 @@ class TestInstallation(BaseProductTestCase):
             cd {install_dir}
             tar jxf prestoadmin-*.tar.bz2
              ./prestoadmin/install-prestoadmin.sh
-        """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir)
+        """.format(mount_dir=self.docker_cluster.docker_mount_dir,
+                   install_dir=install_dir)
 
         self.assertRaisesRegexp(
             OSError,
             r'IOError: \[Errno 2\] No such file or directory: '
             r'\'/opt/prestoadmin-0.1.0-py2-none-any.whl\'',
-            self.run_script,
+            self.docker_cluster.run_script,
             script,
             self.docker_cluster.master
         )
@@ -86,14 +88,14 @@ class TestInstallation(BaseProductTestCase):
         image = 'ubuntu'
         tag = '14.04'
         host = image + '-' + self.docker_cluster.master
-        ubuntu_container = DockerCluster(host, [])
+        ubuntu_container = DockerCluster(host, [], DEFAULT_LOCAL_MOUNT_POINT,
+                                         DEFAULT_DOCKER_MOUNT_POINT)
         try:
             ubuntu_container.fetch_image_if_not_present(image, tag)
             ubuntu_container.start_containers(
-                LOCAL_MOUNT_POINT, DOCKER_MOUNT_POINT,
                 image + ':' + tag, cmd='tail -f /var/log/bootstrap.log')
 
-            self.run_script(install_py26_script, host)
+            self.docker_cluster.run_script(install_py26_script, host)
             ubuntu_container.exec_cmd_on_container(
                 host, 'sudo apt-get -y install wget')
 
@@ -105,7 +107,7 @@ class TestInstallation(BaseProductTestCase):
                 host
             )
         finally:
-            ubuntu_container.tear_down_containers(LOCAL_MOUNT_POINT)
+            ubuntu_container.tear_down_containers()
 
     @attr('smoketest')
     def test_cert_arg_to_installation_nonexistent_file(self):
@@ -117,15 +119,18 @@ class TestInstallation(BaseProductTestCase):
             tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
              ./install-prestoadmin.sh dummy_cert.cert
-        """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir)
-        output = self.run_script(script, self.docker_cluster.master)
+        """.format(mount_dir=self.docker_cluster.docker_mount_dir,
+                   install_dir=install_dir)
+        output = self.docker_cluster.run_script(script,
+                                                self.docker_cluster.master)
         self.assertRegexpMatches(output, r'Adding pypi.python.org as '
                                  'trusted\-host. Cannot find certificate '
                                  'file: dummy_cert.cert')
 
     @attr('smoketest')
     def test_cert_arg_to_installation_real_cert(self):
-        self.copy_to_host(certifi.where(), self.docker_cluster.master)
+        self.docker_cluster.copy_to_host(certifi.where(),
+                                         self.docker_cluster.master)
         install_dir = '/opt'
         cert_file = os.path.basename(certifi.where())
         script = """
@@ -135,9 +140,11 @@ class TestInstallation(BaseProductTestCase):
             tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
              ./install-prestoadmin.sh {mount_dir}/{cacert}
-        """.format(mount_dir=DOCKER_MOUNT_POINT, install_dir=install_dir,
+        """.format(mount_dir=self.docker_cluster.docker_mount_dir,
+                   install_dir=install_dir,
                    cacert=cert_file)
-        output = self.run_script(script, self.docker_cluster.master)
+        output = self.docker_cluster.run_script(script,
+                                                self.docker_cluster.master)
         self.assertTrue('Adding pypi.python.org as trusted-host. Cannot find'
                         ' certificate file: %s' % cert_file not in output,
                         'Unable to find cert file; output: %s' % output)
