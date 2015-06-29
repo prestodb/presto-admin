@@ -361,7 +361,7 @@ task.max-memory=1GB\n"""
         cmd_output = self.run_prestoadmin_script(
             'echo -e "root\n22\n%(master_ip)s\n%(slave1_ip)s\n" | '
             './presto-admin server install /mnt/presto-admin/%(rpm)s ',
-            additional_keywords=additional_keywords).splitlines()
+            **additional_keywords).splitlines()
         expected = [r'Enter user name for SSH connection to all nodes: '
                     r'\[root\] '
                     r'Enter port number for SSH connections to all nodes: '

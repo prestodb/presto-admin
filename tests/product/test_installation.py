@@ -105,8 +105,7 @@ class TestInstallation(BaseProductTestCase):
                 r'ERROR\n'
                 r'Paramiko could not be imported. This usually means that',
                 self.install_presto_admin,
-                ubuntu_container,
-                ubuntu_container.master
+                ubuntu_container
             )
         finally:
             ubuntu_container.tear_down_containers()
