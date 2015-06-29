@@ -124,7 +124,8 @@ task.max-memory=1GB\n"""
 
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()
-        self.docker_cluster.tear_down_containers()
+        if 'docker_cluster' in locals():
+            self.docker_cluster.tear_down_containers()
 
     def build_dist_if_necessary(self):
         if not os.path.exists(DIST_DIR) or not fnmatch.filter(
@@ -133,7 +134,7 @@ task.max-memory=1GB\n"""
             self.build_installer_in_docker()
         return DIST_DIR
 
-    def build_installer_in_docker(self):
+    def build_installer_in_docker(self, online_installer=False):
         container_name = 'installer'
         installer_container = DockerCluster(
             container_name, [], DEFAULT_LOCAL_MOUNT_POINT,
@@ -166,9 +167,10 @@ task.max-memory=1GB\n"""
                 'pip install --upgrade setuptools\n'
                 'mv %s/presto-admin ~/\n'
                 'cd ~/presto-admin\n'
-                'make dist\n'
+                'make %s\n'
                 'cp dist/prestoadmin-*.tar.bz2 %s'
                 % (installer_container.docker_mount_dir,
+                   'dist' if not online_installer else 'dist-online',
                    installer_container.docker_mount_dir),
                 container_name)
 
@@ -257,17 +259,19 @@ task.max-memory=1GB\n"""
                 self.presto_rpm_filename))
         return cmd_output
 
-    def run_prestoadmin(self, command, raise_error=True):
-        command = self.replace_keywords(command)
-        return self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
+    def run_prestoadmin(self, command, raise_error=True, cluster=None):
+        if not cluster:
+            cluster = self.docker_cluster
+        command = self.replace_keywords(command, cluster=cluster)
+        return cluster.exec_cmd_on_container(
+            cluster.master,
             "/opt/prestoadmin/presto-admin %s" % command,
             raise_error=raise_error
         )
 
-    def run_prestoadmin_script(self, script_contents, additional_keywords={}):
+    def run_prestoadmin_script(self, script_contents, **kwargs):
         script_contents = self.replace_keywords(script_contents,
-                                                additional_keywords)
+                                                **kwargs)
         temp_script = '/opt/prestoadmin/tmp.sh'
         self.docker_cluster.write_content_to_docker_host(
             '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
@@ -382,17 +386,22 @@ task.max-memory=1GB\n"""
                                                       pid)
         return process_per_host
 
-    def replace_keywords(self, text, additional_keywords={}):
+    def replace_keywords(self, text, cluster=None, **kwargs):
+        if not cluster:
+            cluster = self.docker_cluster
         test_keywords = {
             'rpm': self.presto_rpm_filename,
             'rpm_basename': self.presto_rpm_filename[:-4],
             'rpm_basename_without_arch': self.presto_rpm_filename[:-11],
-            'master': self.docker_cluster.internal_master,
-            'slave1': self.docker_cluster.internal_slaves[0],
-            'slave2': self.docker_cluster.internal_slaves[1],
-            'slave3': self.docker_cluster.internal_slaves[2]
+            'master': cluster.internal_master
         }
-        test_keywords.update(additional_keywords)
+        if cluster.internal_slaves:
+            test_keywords.update({
+                'slave1': cluster.internal_slaves[0],
+                'slave2': cluster.internal_slaves[1],
+                'slave3': cluster.internal_slaves[2]
+            })
+        test_keywords.update(**kwargs)
         return text % test_keywords
 
     def escape_for_regex(self, expected):

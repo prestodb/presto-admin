@@ -125,11 +125,13 @@ class DockerCluster(object):
                     return True
         return False
 
-    def start_containers(self, master_image, slave_image=None, cmd=None):
+    def start_containers(self, master_image, slave_image=None,
+                         cmd=None, **kwargs):
         self.tear_down_containers()
         self._create_host_mount_dirs()
 
-        self._create_and_start_containers(master_image, slave_image, cmd)
+        self._create_and_start_containers(master_image, slave_image,
+                                          cmd, **kwargs)
         self._ensure_docker_containers_started(master_image)
 
     def tear_down_containers(self):
@@ -178,18 +180,20 @@ class DockerCluster(object):
             pass
 
     def _create_and_start_containers(self, master_image, slave_image=None,
-                                     cmd=None):
+                                     cmd=None, **kwargs):
         if slave_image:
             for container_name in self.slaves:
                 container_mount_dir = \
                     self.get_local_mount_dir(container_name)
                 self._create_container(
                     slave_image, container_name,
-                    hostname=container_name.split('-')[0], cmd=cmd)
+                    container_name.split('-')[0], cmd
+                )
                 self.client.start(container_name,
                                   binds={container_mount_dir:
                                          {'bind': self.docker_mount_dir,
-                                          'ro': False}})
+                                          'ro': False}},
+                                  **kwargs)
 
         master_mount_dir = self.get_local_mount_dir(self.master)
         self._create_container(
@@ -200,7 +204,7 @@ class DockerCluster(object):
                           binds={master_mount_dir:
                                  {'bind': self.docker_mount_dir,
                                   'ro': False}},
-                          links=zip(self.slaves, self.slaves))
+                          links=zip(self.slaves, self.slaves), **kwargs)
 
     def _create_container(self, image, container_name, hostname=None,
                           cmd=None):
