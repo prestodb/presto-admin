@@ -31,6 +31,7 @@ from docker.errors import APIError
 from nose.tools import nottest
 
 from prestoadmin import main_dir
+from tests.product.base_product_case import DIST_DIR
 
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
@@ -84,6 +85,9 @@ class DockerCluster(object):
         return os.path.join(self.local_mount_dir,
                             self.__get_unique_host(host))
 
+    def get_dist_dir(self):
+        return os.path.join(DIST_DIR, self.master)
+
     def __get_unique_host(self, host):
         matches = [unique_host for unique_host in self.all_hosts()
                    if unique_host.startswith(host)]
@@ -125,11 +129,13 @@ class DockerCluster(object):
                     return True
         return False
 
-    def start_containers(self, master_image, slave_image=None, cmd=None):
+    def start_containers(self, master_image, slave_image=None,
+                         cmd=None, **kwargs):
         self.tear_down_containers()
         self._create_host_mount_dirs()
 
-        self._create_and_start_containers(master_image, slave_image, cmd)
+        self._create_and_start_containers(master_image, slave_image,
+                                          cmd, **kwargs)
         self._ensure_docker_containers_started(master_image)
 
     def tear_down_containers(self):
@@ -139,6 +145,7 @@ class DockerCluster(object):
 
     def _tear_down_container(self, container_name):
         try:
+            shutil.rmtree(self.get_dist_dir())
             self.stop_container_and_wait(container_name)
             self.client.remove_container(container_name, v=True, force=True)
         except APIError as e:
@@ -178,18 +185,20 @@ class DockerCluster(object):
             pass
 
     def _create_and_start_containers(self, master_image, slave_image=None,
-                                     cmd=None):
+                                     cmd=None, **kwargs):
         if slave_image:
             for container_name in self.slaves:
                 container_mount_dir = \
                     self.get_local_mount_dir(container_name)
                 self._create_container(
                     slave_image, container_name,
-                    hostname=container_name.split('-')[0], cmd=cmd)
+                    container_name.split('-')[0], cmd
+                )
                 self.client.start(container_name,
                                   binds={container_mount_dir:
                                          {'bind': self.docker_mount_dir,
-                                          'ro': False}})
+                                          'ro': False}},
+                                  **kwargs)
 
         master_mount_dir = self.get_local_mount_dir(self.master)
         self._create_container(
@@ -200,7 +209,7 @@ class DockerCluster(object):
                           binds={master_mount_dir:
                                  {'bind': self.docker_mount_dir,
                                   'ro': False}},
-                          links=zip(self.slaves, self.slaves))
+                          links=zip(self.slaves, self.slaves), **kwargs)
 
     def _create_container(self, image, container_name, hostname=None,
                           cmd=None):

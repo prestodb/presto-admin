@@ -23,7 +23,6 @@ import logging
 import os
 import re
 import StringIO
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -31,7 +30,6 @@ import unittest
 from fabric.state import env
 
 from prestoadmin.util import constants
-from prestoadmin import main_dir
 
 
 class BaseTestCase(unittest.TestCase):
@@ -128,12 +126,3 @@ class BaseTestCase(unittest.TestCase):
         env.update(self.env_vars)
         logging.disable(logging.NOTSET)
         self.restore_log_and_delete_temp_dir()
-
-
-def run_make(arguments):
-    cmd_to_run = ['make'] + arguments
-    popen_obj = subprocess.Popen(' '.join(cmd_to_run), cwd=main_dir,
-                                 shell=True)
-    popen_obj.wait()
-    if popen_obj.returncode:
-        raise RuntimeError(' '.join(cmd_to_run) + ' returned a non-zero code')
