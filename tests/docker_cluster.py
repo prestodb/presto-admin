@@ -31,13 +31,13 @@ from docker.errors import APIError
 from nose.tools import nottest
 
 from prestoadmin import main_dir
-from tests.product.base_product_case import DIST_DIR
 
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
 DEFAULT_DOCKER_MOUNT_POINT = '/mnt/presto-admin'
 DEFAULT_LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
 LOCAL_RESOURCES_DIR = os.path.join(main_dir, 'tests/product/resources/')
+DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 
 
 class DockerCluster(object):
@@ -146,6 +146,12 @@ class DockerCluster(object):
     def _tear_down_container(self, container_name):
         try:
             shutil.rmtree(self.get_dist_dir())
+        except OSError as e:
+            # no such file or directory
+            if e.errno != errno.ENOENT:
+                raise
+
+        try:
             self.stop_container_and_wait(container_name)
             self.client.remove_container(container_name, v=True, force=True)
         except APIError as e:

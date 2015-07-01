@@ -33,8 +33,6 @@ from tests.docker_cluster import DockerCluster, DockerClusterException, \
     INSTALLED_PRESTO_TEST_SLAVE_IMAGE, INSTALLED_PRESTO_TEST_MASTER_IMAGE, \
     LOCAL_RESOURCES_DIR, DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
 
-DIST_DIR = os.path.join(prestoadmin.main_dir, 'tmp/installer')
-
 PRESTO_RPM_GLOB = r'presto-*.x86_64.rpm'
 PRESTO_VERSION = r'presto-main:.*'
 
@@ -130,10 +128,14 @@ task.max-memory=1GB\n"""
     def build_dist_if_necessary(self, cluster=None):
         if not cluster:
             cluster = self.docker_cluster
-        if not cluster.get_dist_dir() or not fnmatch.filter(
-                cluster.get_dist_dir(), 'prestoadmin-*.tar.bz2'):
+        if (not cluster.get_dist_dir() or
+            not os.path.isdir(cluster.get_dist_dir()) or
+            not fnmatch.filter(
+                os.listdir(cluster.get_dist_dir()),
+                'prestoadmin-*.tar.bz2')
+            ):
             cluster.clean_up_presto_test_images()
-            self.build_installer_in_docker()
+            self.build_installer_in_docker(cluster=cluster)
         return cluster.get_dist_dir()
 
     def build_installer_in_docker(self, online_installer=False, cluster=None):
@@ -205,16 +207,13 @@ task.max-memory=1GB\n"""
                     os.path.join(local_dist_dir, dist_file),
                     dest_host)
 
-    def install_presto_admin(self, cluster, host=None):
-        # default args cannot reference self so we to initialize it like this
-        if not host:
-            host = cluster.master
-        dist_dir = self.build_dist_if_necessary()
-        self.copy_dist_to_host(dist_dir, host, cluster)
+    def install_presto_admin(self, cluster):
+        dist_dir = self.build_dist_if_necessary(cluster=cluster)
+        self.copy_dist_to_host(dist_dir, cluster.master, cluster)
         cluster.copy_to_host(
-            LOCAL_RESOURCES_DIR + "/install-admin.sh", host)
+            LOCAL_RESOURCES_DIR + "/install-admin.sh", cluster.master)
         cluster.exec_cmd_on_container(
-            host, cluster.docker_mount_dir + "/install-admin.sh")
+            cluster.master, cluster.docker_mount_dir + "/install-admin.sh")
 
     def dump_and_cp_topology(self, topology):
         local_container_mount_point = self.docker_cluster.get_local_mount_dir(
