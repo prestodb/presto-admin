@@ -22,34 +22,80 @@ import re
 from nose.plugins.attrib import attr
 
 from prestoadmin import main_dir
-from tests.base_test_case import run_make, BaseTestCase
+from tests.docker_cluster import DockerCluster
+from tests.product.base_product_case import BaseProductTestCase, \
+    DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT, \
+    LOCAL_RESOURCES_DIR
 
 
-class TestInstaller(BaseTestCase):
+class TestInstaller(BaseProductTestCase):
+
+    def setUp(self):
+        super(TestInstaller, self).setUp()
+        self.centos_container = \
+            self.__create_and_start_single_centos_container()
 
     def tearDown(self):
-        run_make(['clean-build'])
-        BaseTestCase.tearDown(self)
+        super(TestInstaller, self).tearDown()
+        self.centos_container.tear_down_containers()
 
     @attr('smoketest')
     def test_online_installer(self):
-        run_make(['dist-online'])
-        self._verify_third_party_dir(False)
+        self.build_installer_in_docker(online_installer=True,
+                                       cluster=self.centos_container,
+                                       unique=True)
+        self.__verify_third_party_dir(False)
+        self.install_presto_admin(
+            self.centos_container,
+            dist_dir=self.centos_container.get_dist_dir(True)
+        )
+        self.run_prestoadmin('--help', raise_error=True,
+                             cluster=self.centos_container)
 
     @attr('smoketest')
     def test_offline_installer(self):
-        run_make(['dist'])
-        self._verify_third_party_dir(True)
+        self.build_installer_in_docker(online_installer=False,
+                                       cluster=self.centos_container,
+                                       unique=True)
+        self.__verify_third_party_dir(True)
+        self.centos_container.exec_cmd_on_container(
+            self.centos_container.master, 'ifdown eth0')
+        self.install_presto_admin(
+            self.centos_container,
+            dist_dir=self.centos_container.get_dist_dir(True)
+        )
+        self.run_prestoadmin('--help', raise_error=True,
+                             cluster=self.centos_container)
 
-    def _verify_third_party_dir(self, is_third_party_present):
-        dist_dir = os.path.join(main_dir, 'dist')
-        matches = fnmatch.filter(os.listdir(dist_dir), 'prestoadmin-*.tar.bz2')
+    def __create_and_start_single_centos_container(self):
+        centos_container = DockerCluster(
+            'master', [], DEFAULT_LOCAL_MOUNT_POINT,
+            DEFAULT_DOCKER_MOUNT_POINT)
+        # we can't assume that another test has created the image
+        centos_container.create_image(
+            os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
+            'teradatalabs/centos6-ssh-test',
+            'jdeathe/centos-ssh'
+        )
+        centos_container.start_containers(
+            'teradatalabs/centos6-ssh-test',
+            cap_add=['NET_ADMIN']
+        )
+        return centos_container
+
+    def __verify_third_party_dir(self, is_third_party_present):
+        matches = fnmatch.filter(
+            os.listdir(self.centos_container.get_dist_dir(True)),
+            'prestoadmin-*.tar.bz2')
         if len(matches) > 1:
             raise RuntimeError(
                 'More than one archive found in the dist directory ' +
                 ' '.join(matches)
             )
-        cmd_to_run = ['tar', '-tf', os.path.join(dist_dir, matches[0])]
+        cmd_to_run = ['tar', '-tf',
+                      os.path.join(self.centos_container.get_dist_dir(True),
+                                   matches[0])
+                      ]
         popen_obj = subprocess.Popen(cmd_to_run,
                                      cwd=main_dir, stdout=subprocess.PIPE)
         retcode = popen_obj.returncode
