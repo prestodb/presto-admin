@@ -85,8 +85,11 @@ class DockerCluster(object):
         return os.path.join(self.local_mount_dir,
                             self.__get_unique_host(host))
 
-    def get_dist_dir(self):
-        return os.path.join(DIST_DIR, self.master)
+    def get_dist_dir(self, unique):
+        if unique:
+            return os.path.join(DIST_DIR, self.master)
+        else:
+            return DIST_DIR
 
     def __get_unique_host(self, host):
         matches = [unique_host for unique_host in self.all_hosts()
@@ -145,7 +148,7 @@ class DockerCluster(object):
 
     def _tear_down_container(self, container_name):
         try:
-            shutil.rmtree(self.get_dist_dir())
+            shutil.rmtree(self.get_dist_dir(True))
         except OSError as e:
             # no such file or directory
             if e.errno != errno.ENOENT:

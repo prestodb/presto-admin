@@ -42,20 +42,28 @@ class TestInstaller(BaseProductTestCase):
     @attr('smoketest')
     def test_online_installer(self):
         self.build_installer_in_docker(online_installer=True,
-                                       cluster=self.centos_container)
+                                       cluster=self.centos_container,
+                                       unique=True)
         self.__verify_third_party_dir(False)
-        self.install_presto_admin(self.centos_container)
+        self.install_presto_admin(
+            self.centos_container,
+            dist_dir=self.centos_container.get_dist_dir(True)
+        )
         self.run_prestoadmin('--help', raise_error=True,
                              cluster=self.centos_container)
 
     @attr('smoketest')
     def test_offline_installer(self):
         self.build_installer_in_docker(online_installer=False,
-                                       cluster=self.centos_container)
+                                       cluster=self.centos_container,
+                                       unique=True)
         self.__verify_third_party_dir(True)
         self.centos_container.exec_cmd_on_container(
             self.centos_container.master, 'ifdown eth0')
-        self.install_presto_admin(self.centos_container)
+        self.install_presto_admin(
+            self.centos_container,
+            dist_dir=self.centos_container.get_dist_dir(True)
+        )
         self.run_prestoadmin('--help', raise_error=True,
                              cluster=self.centos_container)
 
@@ -77,7 +85,7 @@ class TestInstaller(BaseProductTestCase):
 
     def __verify_third_party_dir(self, is_third_party_present):
         matches = fnmatch.filter(
-            os.listdir(self.centos_container.get_dist_dir()),
+            os.listdir(self.centos_container.get_dist_dir(True)),
             'prestoadmin-*.tar.bz2')
         if len(matches) > 1:
             raise RuntimeError(
@@ -85,7 +93,7 @@ class TestInstaller(BaseProductTestCase):
                 ' '.join(matches)
             )
         cmd_to_run = ['tar', '-tf',
-                      os.path.join(self.centos_container.get_dist_dir(),
+                      os.path.join(self.centos_container.get_dist_dir(True),
                                    matches[0])
                       ]
         popen_obj = subprocess.Popen(cmd_to_run,

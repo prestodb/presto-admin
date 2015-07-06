@@ -125,20 +125,19 @@ task.max-memory=1GB\n"""
         if hasattr(locals()['self'], 'docker_cluster'):
             self.docker_cluster.tear_down_containers()
 
-    def build_dist_if_necessary(self, cluster=None):
+    def build_dist_if_necessary(self, cluster=None, unique=False):
         if not cluster:
             cluster = self.docker_cluster
-        if (not cluster.get_dist_dir() or
-            not os.path.isdir(cluster.get_dist_dir()) or
+        if (not os.path.isdir(cluster.get_dist_dir(unique)) or
             not fnmatch.filter(
-                os.listdir(cluster.get_dist_dir()),
-                'prestoadmin-*.tar.bz2')
-            ):
+                os.listdir(cluster.get_dist_dir(unique)),
+                'prestoadmin-*.tar.bz2')):
             cluster.clean_up_presto_test_images()
-            self.build_installer_in_docker(cluster=cluster)
-        return cluster.get_dist_dir()
+            self.build_installer_in_docker(cluster=cluster, unique=unique)
+        return cluster.get_dist_dir(unique)
 
-    def build_installer_in_docker(self, online_installer=False, cluster=None):
+    def build_installer_in_docker(self, online_installer=False, cluster=None,
+                                  unique=False):
         if not cluster:
             cluster = self.docker_cluster
         container_name = 'installer'
@@ -181,7 +180,7 @@ task.max-memory=1GB\n"""
                 container_name)
 
             try:
-                os.makedirs(cluster.get_dist_dir())
+                os.makedirs(cluster.get_dist_dir(unique))
             except OSError, e:
                 if e.errno != errno.EEXIST:
                     raise
@@ -194,7 +193,7 @@ task.max-memory=1GB\n"""
                 'prestoadmin-*.tar.bz2')[0]
             shutil.copy(
                 os.path.join(local_container_dist_dir, installer_file),
-                cluster.get_dist_dir())
+                cluster.get_dist_dir(unique))
         finally:
             installer_container.tear_down_containers()
 
@@ -207,8 +206,9 @@ task.max-memory=1GB\n"""
                     os.path.join(local_dist_dir, dist_file),
                     dest_host)
 
-    def install_presto_admin(self, cluster):
-        dist_dir = self.build_dist_if_necessary(cluster=cluster)
+    def install_presto_admin(self, cluster, dist_dir=None):
+        if not dist_dir:
+            dist_dir = self.build_dist_if_necessary(cluster=cluster)
         self.copy_dist_to_host(dist_dir, cluster.master, cluster)
         cluster.copy_to_host(
             LOCAL_RESOURCES_DIR + "/install-admin.sh", cluster.master)
