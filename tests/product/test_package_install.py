@@ -127,7 +127,7 @@ class TestPackageInstall(BaseProductTestCase):
         self.assert_installed(self.cluster.master)
         cmd_output = self.run_prestoadmin(self.replace_keywords(
             'package install /mnt/presto-admin/%(rpm)s -H %(master)s'))
-        expected = self.replace_keywords("""
+        expected = self.escape_for_regex(self.replace_keywords("""
 Fatal error: [%(master)s] sudo() received nonzero return code 1 while \
 executing!
 
@@ -139,8 +139,11 @@ Aborting.
 Deploying rpm on %(master)s...
 Package deployed successfully on: %(master)s
 [%(master)s] out: 	package %(rpm_basename)s is already installed
-[%(master)s] out: """)
-        self.assertEqualIgnoringOrder(cmd_output, expected)
+[%(master)s] out: """))
+        self.assertRegexpMatchesLineByLine(
+            cmd_output.splitlines(),
+            expected.splitlines()
+        )
 
     def test_install_not_an_rpm(self):
         cmd_output = self.run_prestoadmin('package install '
@@ -172,13 +175,16 @@ Aborting.
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%(rpm)s -H %(master)s'
         )
-        self.assertEqualIgnoringOrder(cmd_output,
-                                      self.jdk_not_found_error_message())
+        self.assertRegexpMatchesLineByLine(
+            cmd_output.splitlines(),
+            self.jdk_not_found_error_message().splitlines()
+        )
 
     def jdk_not_found_error_message(self):
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'jdk_not_found.txt')) as f:
             jdk_not_found_error = f.read()
-        return self.replace_keywords(jdk_not_found_error)
+        return self.escape_for_regex(
+            self.replace_keywords(jdk_not_found_error))
 
     @docker_only
     def test_install_rpm_missing_dependency(self):
@@ -207,7 +213,10 @@ Package deployed successfully on: %(master)s
 [%(master)s] out: error: Failed dependencies:
 [%(master)s] out: 	python >= 2.4 is needed by %(rpm_basename)s
 [%(master)s] out: """)
-        self.assertEqualIgnoringOrder(cmd_output, expected)
+        self.assertRegexpMatchesLineByLine(
+            cmd_output.splitlines(),
+            self.escape_for_regex(expected).splitlines()
+        )
 
     @docker_only
     def test_install_rpm_with_nodeps(self):

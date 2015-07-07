@@ -498,8 +498,9 @@ task.max-memory=1GB\n"""
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
                 as f:
             expected = f.read()
-        expected = self.replace_keywords(expected)
-        self.assertEqualIgnoringOrder(output, expected)
+        expected = self.escape_for_regex(self.replace_keywords(expected))
+        self.assertRegexpMatchesLineByLine(output.splitlines(),
+                                           expected.splitlines())
         for container in self.cluster.all_hosts():
             self.assert_installed(container)
             self.assert_has_default_config(container)

@@ -32,7 +32,9 @@ from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster, DockerClusterException, \
     LOCAL_RESOURCES_DIR, DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
 
-PRESTO_RPM_GLOB = r'presto-*.x86_64.rpm'
+RPM_BASENAME = r'presto.*'
+
+PRESTO_RPM_GLOB = r'presto*.rpm'
 PRESTO_VERSION = r'presto-main:.*'
 RETRY_TIMEOUT = 120
 RETRY_INTERVAL = 5
@@ -98,13 +100,13 @@ task.max-memory=1GB\n"""
             # are multiple RPMs, the last one is probably the latest
             return sorted(rpm_names)[-1]
         else:
-            # TODO: once the RPM is on Maven Central, pull the RPM from there
-            rpm_filename = 'presto-0.101-1.0.x86_64.rpm'
+            rpm_filename = 'presto-server-rpm.rpm'
             rpm_path = os.path.join(prestoadmin.main_dir,
                                     rpm_filename)
-            urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
-                               'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
-                               rpm_path)
+            urllib.urlretrieve(
+                'https://repository.sonatype.org/service/local/artifact/maven'
+                '/content?r=central-proxy&g=com.facebook.presto'
+                '&a=presto-server-rpm&e=rpm&v=RELEASE', rpm_path)
             return rpm_filename
 
     def setup_cluster(self, cluster_type='base'):
@@ -335,16 +337,23 @@ task.max-memory=1GB\n"""
             cluster = self.cluster
         try:
             check_rpm = cluster.exec_cmd_on_host(
-                container, 'rpm -q presto')
-            self.assertEqual(self.presto_rpm_filename[:-4] + '\n', check_rpm,
-                             msg=msg)
+                container, 'rpm -q presto-server-rpm')
+            self.assertRegexpMatches(
+                check_rpm, RPM_BASENAME + '\n', msg=msg
+            )
         except OSError as e:
-            self.fail(msg=e.strerror + '\n' + msg)
+            if msg:
+                error_message = e.strerror + '\n' + msg
+            else:
+                error_message = e.strerror
+            self.fail(msg=error_message)
 
     def assert_uninstalled(self, container, msg=None):
-        self.assertRaisesRegexp(OSError, 'package presto is not installed',
-                                self.cluster.exec_cmd_on_host,
-                                container, 'rpm -q presto', msg=msg)
+        self.assertRaisesRegexp(
+            OSError,
+            'package presto-server-rpm is not installed',
+            self.cluster.exec_cmd_on_host, container,
+            'rpm -q presto-server-rpm', msg=msg)
 
     def assert_has_default_config(self, container):
         self.assert_file_content(container,
@@ -417,7 +426,7 @@ task.max-memory=1GB\n"""
             cluster = self.cluster
         test_keywords = {
             'rpm': self.presto_rpm_filename,
-            'rpm_basename': self.presto_rpm_filename[:-4],
+            'rpm_basename': RPM_BASENAME,
             'rpm_basename_without_arch': self.presto_rpm_filename[:-11],
             'master': cluster.internal_master
         }
