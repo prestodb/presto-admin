@@ -25,13 +25,13 @@ class TestControl(BaseProductTestCase):
 
     @attr('smoketest')
     def test_server_start_stop_simple(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         self.assert_simple_start_stop(self.expected_start(),
                                       self.expected_stop())
 
     @attr('smoketest')
     def test_server_restart_simple(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         expected_output = self.expected_stop()[:] + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output)
 
@@ -45,8 +45,8 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_topology('restart')
 
     def assert_service_fails_without_topology(self, service):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         # Start without topology added
         cmd_output = self.run_prestoadmin('server %s' % service,
                                           raise_error=False).splitlines()
@@ -65,8 +65,8 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_presto('restart')
 
     def assert_service_fails_without_presto(self, service):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         # Start without Presto installed
         start_output = self.run_prestoadmin('server %s' % service,
@@ -76,113 +76,113 @@ class TestControl(BaseProductTestCase):
                                       '\n'.join(start_output))
 
     def test_server_start_various_states(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
 
         # Coordinator started, workers not; then server start
         process_per_host = \
             self.assert_start_with_one_host_started(
-                self.docker_cluster.internal_master)
+                self.cluster.internal_master)
 
         # Worker started, coord and other workers not; then server start
         self.run_prestoadmin('server stop').splitlines()
         self.assert_stopped(process_per_host)
         self.assert_start_with_one_host_started(
-            self.docker_cluster.internal_slaves[0])
+            self.cluster.internal_slaves[0])
 
         # All started; then server start
         start_output = self.run_prestoadmin('server start').splitlines()
         self.assertRegexpMatchesLineByLine(
             start_output,
-            self.expected_port_warn(self.docker_cluster.all_internal_hosts())
+            self.expected_port_warn(self.cluster.all_internal_hosts())
         )
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
 
     def test_server_stop_various_states(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
 
         # Stop with servers not started
         stop_output = self.run_prestoadmin('server stop').splitlines()
-        not_started_hosts = self.docker_cluster.all_internal_hosts()
+        not_started_hosts = self.cluster.all_internal_hosts()
         self.assertRegexpMatchesLineByLine(
             stop_output,
             self.expected_stop(not_running=not_started_hosts)
         )
 
         # Stop with coordinator started, but not workers
-        self.assert_one_host_stopped(self.docker_cluster.internal_master)
+        self.assert_one_host_stopped(self.cluster.internal_master)
 
         # Stop with worker started, but nothing else
-        self.assert_one_host_stopped(self.docker_cluster.internal_slaves[0])
+        self.assert_one_host_stopped(self.cluster.internal_slaves[0])
 
     def test_server_restart_various_states(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
 
         # Restart when the servers aren't started
         expected_output = self.expected_stop(
-            not_running=self.docker_cluster.all_internal_hosts())[:] +\
+            not_running=self.cluster.all_internal_hosts())[:] +\
             self.expected_start()[:]
         self.assert_simple_server_restart(expected_output, running_host='')
 
         # Restart when a coordinator is started but workers aren't
-        not_running_hosts = self.docker_cluster.all_internal_hosts()[:]
-        not_running_hosts.remove(self.docker_cluster.internal_master)
+        not_running_hosts = self.cluster.all_internal_hosts()[:]
+        not_running_hosts.remove(self.cluster.internal_master)
         expected_output = self.expected_stop(
             not_running=not_running_hosts) + self.expected_start()[:]
         self.assert_simple_server_restart(
-            expected_output, running_host=self.docker_cluster.internal_master)
+            expected_output, running_host=self.cluster.internal_master)
 
         # Restart when one worker is started, but nothing else
-        not_running_hosts = self.docker_cluster.all_internal_hosts()[:]
-        not_running_hosts.remove(self.docker_cluster.internal_slaves[0])
+        not_running_hosts = self.cluster.all_internal_hosts()[:]
+        not_running_hosts.remove(self.cluster.internal_slaves[0])
         expected_output = self.expected_stop(
             not_running=not_running_hosts) + self.expected_start()[:]
         self.assert_simple_server_restart(
             expected_output,
-            running_host=self.docker_cluster.internal_slaves[0])
+            running_host=self.cluster.internal_slaves[0])
 
     def test_start_stop_restart_coordinator_down(self):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
         self.server_install()
         self.assert_start_stop_restart_down_node(
-            self.docker_cluster.slaves[0],
-            self.docker_cluster.internal_slaves[0])
+            self.cluster.slaves[0],
+            self.cluster.internal_slaves[0])
 
     def test_start_stop_restart_worker_down(self):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.server_install()
         self.assert_start_stop_restart_down_node(
-            self.docker_cluster.slaves[0],
-            self.docker_cluster.internal_slaves[0])
+            self.cluster.slaves[0],
+            self.cluster.internal_slaves[0])
 
     def test_server_start_twice(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         start_output = self.run_prestoadmin('server start').splitlines()
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
         self.run_prestoadmin('server stop -H ' +
-                             self.docker_cluster.internal_slaves[0])
+                             self.cluster.internal_slaves[0])
 
         # Start all again
         start_with_warn = self.run_prestoadmin('server start').splitlines()
         expected = self.expected_start(
-            start_success=[self.docker_cluster.internal_slaves[0]],
+            start_success=[self.cluster.internal_slaves[0]],
             already_started=[], failed_hosts=[])
-        alive_hosts = self.docker_cluster.all_internal_hosts()[:]
-        alive_hosts.remove(self.docker_cluster.internal_slaves[0])
+        alive_hosts = self.cluster.all_internal_hosts()[:]
+        alive_hosts.remove(self.cluster.internal_slaves[0])
         expected.extend(self.expected_port_warn(alive_hosts))
         self.assertRegexpMatchesLineByLine(start_with_warn, expected)
 
     def assert_start_stop_restart_down_node(self, down_node,
                                             down_internal_node):
-        self.docker_cluster.stop_container_and_wait(down_node)
-        alive_hosts = self.docker_cluster.all_internal_hosts()[:]
+        self.cluster.stop_host_and_wait(down_node)
+        alive_hosts = self.cluster.all_internal_hosts()[:]
         alive_hosts.remove(down_internal_node)
 
         start_output = self.run_prestoadmin('server start')
@@ -231,16 +231,16 @@ class TestControl(BaseProductTestCase):
             '\n'.join(expected_output).splitlines())
 
     def test_start_restart_config_file_error(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
 
         # Remove a required config file so that the server can't start
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master,
             'mv /etc/presto/config.properties '
             '/etc/presto/config.properties.bak')
 
-        started_hosts = self.docker_cluster.all_internal_hosts()
-        started_hosts.remove(self.docker_cluster.internal_master)
+        started_hosts = self.cluster.all_internal_hosts()
+        started_hosts.remove(self.cluster.internal_master)
         expected_start = self.expected_start(
             start_success=started_hosts)
         error_msg = self.escape_for_regex(self.replace_keywords("""
@@ -262,7 +262,7 @@ Aborting.
 """)).splitlines()
         expected_start += error_msg
         expected_stop = self.expected_stop(
-            not_running=[self.docker_cluster.internal_master])
+            not_running=[self.cluster.internal_master])
         self.assert_simple_start_stop(expected_start, expected_stop)
         expected_restart = expected_stop[:] + expected_start[:]
         self.assert_simple_server_restart(expected_restart,
@@ -313,7 +313,7 @@ Aborting.
         self.assert_started(process_per_host)
 
         start_output = self.run_prestoadmin('server start').splitlines()
-        started_hosts = self.docker_cluster.all_internal_hosts()
+        started_hosts = self.cluster.all_internal_hosts()
         started_hosts.remove(host)
         started_expected = self.expected_start(start_success=started_hosts)
         started_expected.extend(self.expected_port_warn([host]))
@@ -331,7 +331,7 @@ Aborting.
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
         stop_output = self.run_prestoadmin('server stop').splitlines()
-        not_started_hosts = self.docker_cluster.all_internal_hosts()
+        not_started_hosts = self.cluster.all_internal_hosts()
         not_started_hosts.remove(host)
         self.assertRegexpMatchesLineByLine(
             stop_output,
@@ -354,7 +354,7 @@ Aborting.
 
         # With no args, return message that all started successfully
         if not already_started and not start_success and not failed_hosts:
-            start_success = self.docker_cluster.all_internal_hosts()
+            start_success = self.cluster.all_internal_hosts()
 
         if start_success:
             for host in start_success:

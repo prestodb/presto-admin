@@ -36,37 +36,37 @@ class PrestoError(Exception):
 class TestConnectors(BaseProductTestCase):
     @attr('smoketest')
     def test_basic_connector_add_remove(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         self.run_prestoadmin('server start')
-        for host in self.docker_cluster.all_hosts():
+        for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
 
         self._assert_connectors_loaded([['system'], ['tpch']])
 
         self.run_prestoadmin('connector remove tpch')
         self.run_prestoadmin('server restart')
-        self.assert_path_removed(self.docker_cluster.master,
+        self.assert_path_removed(self.cluster.master,
                                  os.path.join(constants.CONNECTORS_DIR,
                                               'tpch.properties'))
         self._assert_connectors_loaded([['system']])
-        for host in self.docker_cluster.all_hosts():
+        for host in self.cluster.all_hosts():
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
                                                   'tcph.properties'))
 
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
-            self.docker_cluster.master
+            self.cluster.master
         )
         self.run_prestoadmin('connector add')
         self.run_prestoadmin('server restart')
-        for host in self.docker_cluster.all_hosts():
+        for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
         self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_add(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
 
         # test add connector without read permissions on file
         script = 'chmod 600 /etc/opt/prestoadmin/connectors/tpch.properties;' \
@@ -75,10 +75,10 @@ class TestConnectors(BaseProductTestCase):
         with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'connector_permissions_warning.txt'), 'r') as f:
             expected = f.read() % \
-                {'master': self.docker_cluster.internal_master,
-                 'slave1': self.docker_cluster.internal_slaves[0],
-                 'slave2': self.docker_cluster.internal_slaves[1],
-                 'slave3': self.docker_cluster.internal_slaves[2]}
+                {'master': self.cluster.internal_master,
+                 'slave1': self.cluster.internal_slaves[0],
+                 'slave2': self.cluster.internal_slaves[1],
+                 'slave3': self.cluster.internal_slaves[2]}
 
         self.assertEqualIgnoringOrder(expected, output)
 
@@ -106,8 +106,8 @@ class TestConnectors(BaseProductTestCase):
                                 self.run_prestoadmin, 'connector add tpch')
 
         # test add all connectors when the directory does not exist
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master,
             'rmdir /etc/opt/prestoadmin/connectors')
         missing_dir_error = self.fatal_error('Cannot add connectors '
                                              'because directory /etc/'
@@ -117,14 +117,14 @@ class TestConnectors(BaseProductTestCase):
                                 self.run_prestoadmin, 'connector add')
 
         # test add connector by name when it exists
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
-            self.docker_cluster.master
+            self.cluster.master
         )
         self.run_prestoadmin('connector add tpch')
         self.run_prestoadmin('server start')
-        for host in self.docker_cluster.all_hosts():
+        for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
         self._assert_connectors_loaded([['system'], ['tpch']])
 
@@ -153,19 +153,19 @@ No connectors will be deployed
         self.assertEqualIgnoringOrder(expected, output)
 
         # test add connectors from directory with more than one connector
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
-            self.docker_cluster.master
+            self.cluster.master
         )
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.write_content_to_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
-            self.docker_cluster.master
+            self.cluster.master
         )
         self.run_prestoadmin('connector add')
         self.run_prestoadmin('server restart')
-        for host in self.docker_cluster.all_hosts():
+        for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
             self.assert_file_content(host,
                                      '/etc/presto/catalog/jmx.properties',
@@ -184,21 +184,21 @@ Aborting.
         return message % {'error': error}
 
     def test_connector_add_lost_host(self):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.server_install()
         self.run_prestoadmin('connector remove tpch')
 
-        self.docker_cluster.stop_container_and_wait(
-            self.docker_cluster.slaves[0])
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.stop_host_and_wait(
+            self.cluster.slaves[0])
+        self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
-            self.docker_cluster.master
+            self.cluster.master
         )
         output = self.run_prestoadmin('connector add tpch')
-        for host in self.docker_cluster.all_internal_hosts():
+        for host in self.cluster.all_internal_hosts():
             deploying_message = 'Deploying tpch.properties connector ' \
                                 'configurations on: %s'
             self.assertTrue(deploying_message % host in output,
@@ -207,21 +207,21 @@ Aborting.
         self.assertRegexpMatches(
             output,
             self.down_node_connection_error
-            % {'host': self.docker_cluster.internal_slaves[0]})
+            % {'host': self.cluster.internal_slaves[0]})
         self.assertEqual(len(output.splitlines()),
-                         len(self.docker_cluster.all_hosts()) +
+                         len(self.cluster.all_hosts()) +
                          self.len_down_node_error)
         self.run_prestoadmin('server start')
 
-        for host in [self.docker_cluster.master,
-                     self.docker_cluster.slaves[1],
-                     self.docker_cluster.slaves[2]]:
+        for host in [self.cluster.master,
+                     self.cluster.slaves[1],
+                     self.cluster.slaves[2]]:
             self.assert_has_default_connector(host)
         self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_remove(self):
-        self.setup_docker_cluster('presto')
-        for host in self.docker_cluster.all_hosts():
+        self.setup_cluster('presto')
+        for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
 
         missing_connector_message = """
@@ -255,8 +255,8 @@ for the change to take effect
             output)
 
         # test remove connector not in directory, but in presto
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master,
             'rm /etc/opt/prestoadmin/connectors/tpch.properties'
         )
 
@@ -264,10 +264,10 @@ for the change to take effect
         self.assertEqualIgnoringOrder(success_message, output)
 
         # test remove connector in directory but not in presto
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
-            self.docker_cluster.master
+            self.cluster.master
         )
         output = self.run_prestoadmin('connector remove tpch')
         self.assertEqualIgnoringOrder(
@@ -275,13 +275,13 @@ for the change to take effect
             output)
 
     def test_connector_name_not_found(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         self.run_prestoadmin('server start')
 
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.write_content_to_host(
             'connector.noname=example',
             os.path.join(constants.CONNECTORS_DIR, 'example.properties'),
-            self.docker_cluster.master
+            self.cluster.master
         )
 
         expected = self.fatal_error('Catalog configuration '
@@ -291,8 +291,8 @@ for the change to take effect
                                 'connector add example')
 
     def get_connector_info(self):
-        output = self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
+        output = self.cluster.exec_cmd_on_host(
+            self.cluster.master,
             "curl --silent -X POST http://localhost:8080/v1/statement -H "
             "'X-Presto-User:$USER' -H 'X-Presto-Schema:metadata' -H "
             "'X-Presto-Catalog:system' -d 'select catalog_name from catalogs'")
@@ -300,8 +300,8 @@ for the change to take effect
         data = self.get_key_value(output, 'data')
         next_uri = self.get_key_value(output, 'nextUri')
         while not data and next_uri:
-            output = self.docker_cluster.exec_cmd_on_container(
-                self.docker_cluster.master,
+            output = self.cluster.exec_cmd_on_host(
+                self.cluster.master,
                 'curl --silent %s' % self.get_key_value(output, 'nextUri')
             )
             data = self.get_key_value(output, 'data')

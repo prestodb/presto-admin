@@ -37,7 +37,7 @@ class TestInstaller(BaseProductTestCase):
 
     def tearDown(self):
         super(TestInstaller, self).tearDown()
-        self.centos_container.tear_down_containers()
+        self.centos_container.tear_down()
 
     @attr('smoketest')
     def test_online_installer(self):
@@ -58,7 +58,7 @@ class TestInstaller(BaseProductTestCase):
                                        cluster=self.centos_container,
                                        unique=True)
         self.__verify_third_party_dir(True)
-        self.centos_container.exec_cmd_on_container(
+        self.centos_container.exec_cmd_on_host(
             self.centos_container.master, 'ifdown eth0')
         self.install_presto_admin(
             self.centos_container,

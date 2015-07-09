@@ -31,7 +31,7 @@ class TestCollect(BaseProductTestCase):
 
     def setUp(self):
         super(TestCollect, self).setUp()
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
 
     @attr('smoketest')
     def test_collect_logs_basic(self):
@@ -40,23 +40,23 @@ class TestCollect(BaseProductTestCase):
         expected = 'Downloading logs from all the nodes...\n' + \
                    'logs archive created: ' + OUTPUT_FILENAME_FOR_LOGS + '\n'
         self.assertEqual(expected, actual)
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 OUTPUT_FILENAME_FOR_LOGS)
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 TMP_PRESTO_DEBUG)
 
         downloaded_logs_location = path.join(TMP_PRESTO_DEBUG, 'logs')
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 downloaded_logs_location)
 
-        for host in self.docker_cluster.all_internal_hosts():
+        for host in self.cluster.all_internal_hosts():
             host_log_location = path.join(downloaded_logs_location,
                                           host)
-            self.assert_path_exists(self.docker_cluster.master,
+            self.assert_path_exists(self.cluster.master,
                                     host_log_location)
 
         admin_log = path.join(downloaded_logs_location, PRESTOADMIN_LOG_NAME)
-        self.assert_path_exists(self.docker_cluster.master, admin_log)
+        self.assert_path_exists(self.cluster.master, admin_log)
 
     @attr('smoketest')
     def test_collect_system_info_basic(self):
@@ -66,38 +66,38 @@ class TestCollect(BaseProductTestCase):
                    OUTPUT_FILENAME_FOR_SYS_INFO + '\n'
 
         self.assertEqual(expected, actual)
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 OUTPUT_FILENAME_FOR_SYS_INFO)
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 TMP_PRESTO_DEBUG)
 
         downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, 'sysinfo')
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 downloaded_sys_info_loc)
 
         master_system_info_location = path.join(
             downloaded_sys_info_loc,
-            self.docker_cluster.internal_master)
-        self.assert_path_exists(self.docker_cluster.master,
+            self.cluster.internal_master)
+        self.assert_path_exists(self.cluster.master,
                                 master_system_info_location)
 
         conn_file_name = path.join(downloaded_sys_info_loc,
                                    'connector_info.txt')
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 conn_file_name)
 
         version_file_name = path.join(TMP_PRESTO_DEBUG, 'version_info.txt')
 
-        for host in self.docker_cluster.all_hosts():
+        for host in self.cluster.all_hosts():
             self.assert_path_exists(host, version_file_name)
 
         slave0_system_info_loc = path.join(
             downloaded_sys_info_loc,
-            self.docker_cluster.internal_slaves[0])
-        self.assert_path_exists(self.docker_cluster.master,
+            self.cluster.internal_slaves[0])
+        self.assert_path_exists(self.cluster.master,
                                 slave0_system_info_loc)
 
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 OUTPUT_FILENAME_FOR_SYS_INFO)
 
     @attr('smoketest')
@@ -114,13 +114,13 @@ class TestCollect(BaseProductTestCase):
         expected = 'Gathered query information in file: ' + \
                    query_info_file_name + '\n'
 
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 query_info_file_name)
         self.assertEqual(actual, expected)
 
     def get_query_id(self, sql):
-        ips = self.docker_cluster.get_ip_address_dict()
-        client = PrestoClient(ips[self.docker_cluster.master],
+        ips = self.cluster.get_ip_address_dict()
+        client = PrestoClient(ips[self.cluster.master],
                               'root', 8080)
         run_sql(client, sql)
         query_runtime_info = run_sql(client, 'SELECT query_id FROM '
@@ -144,7 +144,7 @@ class TestCollect(BaseProductTestCase):
         expected = 'Downloading logs from all the nodes...\n' + \
                    'logs archive created: ' + OUTPUT_FILENAME_FOR_LOGS + '\n'
         self.assertEqual(actual, expected)
-        self.assert_path_exists(self.docker_cluster.master,
+        self.assert_path_exists(self.cluster.master,
                                 OUTPUT_FILENAME_FOR_LOGS)
 
     def test_collect_system_info_server_stopped(self):
@@ -153,6 +153,6 @@ class TestCollect(BaseProductTestCase):
             'information. Please check that server is up with ' \
             'command: server status\n\nAborting.\n'
         expected = ''
-        for host in self.docker_cluster.all_internal_hosts():
+        for host in self.cluster.all_internal_hosts():
             expected += message % host
         self.assertEqualIgnoringOrder(actual, expected)

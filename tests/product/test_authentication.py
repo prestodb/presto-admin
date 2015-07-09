@@ -28,7 +28,7 @@ from tests.product.base_product_case import BaseProductTestCase, \
 class TestAuthentication(BaseProductTestCase):
     def setUp(self):
         super(TestAuthentication, self).setUp()
-        self.setup_docker_cluster()
+        self.setup_cluster()
 
     success_output = (
         'Deploying tpch.properties connector configurations on: slave1 \n'
@@ -58,7 +58,7 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_incorrect_hostname(self):
-        self.install_presto_admin(self.docker_cluster)
+        self.install_presto_admin(self.cluster)
         topology = {'coordinator': 'dummy_master',
                     'workers': ['slave1', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
@@ -84,10 +84,10 @@ class TestAuthentication(BaseProductTestCase):
                 '[%(master)s] out: sudo password:\n'
                 '[%(master)s] out: Sorry, try again.\n')
         parallel_password_failure = parallel_password_failure % {
-            'master': self.docker_cluster.internal_master,
-            'slave1': self.docker_cluster.internal_slaves[0],
-            'slave2': self.docker_cluster.internal_slaves[1],
-            'slave3': self.docker_cluster.internal_slaves[2]}
+            'master': self.cluster.internal_master,
+            'slave1': self.cluster.internal_slaves[0],
+            'slave2': self.cluster.internal_slaves[1],
+            'slave3': self.cluster.internal_slaves[2]}
         return parallel_password_failure
 
     def non_root_sudo_warning_message(self):
@@ -98,7 +98,7 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_passwordless_ssh_authentication(self):
-        self.install_presto_admin(self.docker_cluster)
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
@@ -152,7 +152,7 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_no_passwordless_ssh_authentication(self):
-        self.install_presto_admin(self.docker_cluster)
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
@@ -162,9 +162,8 @@ class TestAuthentication(BaseProductTestCase):
         self.run_prestoadmin_script(
             'echo "password" | ./presto-admin connector add -I')
 
-        for host in self.docker_cluster.all_hosts():
-            self.docker_cluster.exec_cmd_on_container(host,
-                                                      'rm /root/.ssh/id_rsa')
+        for host in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(host, 'rm /root/.ssh/id_rsa')
 
         # No passwordless SSH, no -I or -p
         parallel_password_failure = self.parallel_password_failure_message(
@@ -194,24 +193,24 @@ class TestAuthentication(BaseProductTestCase):
             self.success_output + self.sudo_password_prompt, command_output)
 
         # No passwordless SSH, specify keyfile with -i
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master,
             'cp /home/app-admin/.ssh/id_rsa /root/.ssh/id_rsa.bak')
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master, 'chmod 600 /root/.ssh/id_rsa.bak')
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master, 'chmod 600 /root/.ssh/id_rsa.bak')
         command_output = self.run_prestoadmin(
             'connector add -i /root/.ssh/id_rsa.bak')
         self.assertEqualIgnoringOrder(self.success_output, command_output)
 
     @attr('smoketest')
     def test_prestoadmin_no_sudo_popen(self):
-        self.install_presto_admin(self.docker_cluster)
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
         # We use Popen because docker-py loses the first 8 characters of TTY
         # output.
-        args = ['docker', 'exec', '-t', self.docker_cluster.master, 'sudo',
+        args = ['docker', 'exec', '-t', self.cluster.master, 'sudo',
                 '-u', 'app-admin', '/opt/prestoadmin/presto-admin',
                 'topology show']
         proc = subprocess.Popen(args, stdout=subprocess.PIPE,

@@ -62,7 +62,7 @@ class DockerCluster(object):
         self.docker_mount_dir = docker_mount_dir
         self.client = Client(timeout=180)
         self._DOCKER_START_TIMEOUT = 30
-        DockerCluster.check_if_docker_exists()
+        DockerCluster.__check_if_docker_exists()
 
     def all_hosts(self):
         return self.slaves + [self.master]
@@ -103,7 +103,7 @@ class DockerCluster(object):
                 'Specified host: {0} does not exist.'.format(host))
 
     @staticmethod
-    def check_if_docker_exists():
+    def __check_if_docker_exists():
         try:
             subprocess.call(['docker', '--version'])
         except OSError:
@@ -134,14 +134,14 @@ class DockerCluster(object):
 
     def start_containers(self, master_image, slave_image=None,
                          cmd=None, **kwargs):
-        self.tear_down_containers()
+        self.tear_down()
         self._create_host_mount_dirs()
 
         self._create_and_start_containers(master_image, slave_image,
                                           cmd, **kwargs)
         self._ensure_docker_containers_started(master_image)
 
-    def tear_down_containers(self):
+    def tear_down(self):
         for container_name in self.all_hosts():
             self._tear_down_container(container_name)
         self._remove_host_mount_dirs()
@@ -155,14 +155,14 @@ class DockerCluster(object):
                 raise
 
         try:
-            self.stop_container_and_wait(container_name)
+            self.stop_host_and_wait(container_name)
             self.client.remove_container(container_name, v=True, force=True)
         except APIError as e:
             # container does not exist
             if e.response.status_code != 404:
                 raise
 
-    def stop_container_and_wait(self, container_name):
+    def stop_host_and_wait(self, container_name):
         self.client.stop(container_name)
         self.client.wait(container_name)
 
@@ -277,10 +277,10 @@ class DockerCluster(object):
           True if the specified services have started, False otherwise.
 
         """
-        ps_output = self.exec_cmd_on_container(host, 'ps')
+        ps_output = self.exec_cmd_on_host(host, 'ps')
         # also ensure that the app-admin user exists
         try:
-            user_output = self.exec_cmd_on_container(
+            user_output = self.exec_cmd_on_host(
                 host, 'grep app-admin /etc/passwd'
             )
         except OSError:
@@ -290,7 +290,7 @@ class DockerCluster(object):
             return False
         return True
 
-    def exec_cmd_on_container(self, host, cmd, raise_error=True, tty=False):
+    def exec_cmd_on_host(self, host, cmd, raise_error=True, tty=False):
         ex = self.client.exec_create(self.__get_unique_host(host), cmd,
                                      tty=tty)
         output = self.client.exec_start(ex['Id'], tty=tty)
@@ -300,14 +300,27 @@ class DockerCluster(object):
         return output
 
     @staticmethod
-    def start_presto_cluster():
-        presto_cluster = DockerCluster('master',
-                                       ['slave1', 'slave2', 'slave3'],
-                                       DEFAULT_LOCAL_MOUNT_POINT,
-                                       DEFAULT_DOCKER_MOUNT_POINT)
-        presto_cluster.start_containers(INSTALLED_PRESTO_TEST_MASTER_IMAGE,
-                                        INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
-        return presto_cluster
+    def start_presto_cluster(install_func):
+        if DockerCluster._check_for_presto_images():
+            presto_cluster = DockerCluster('master',
+                                           ['slave1', 'slave2', 'slave3'],
+                                           DEFAULT_LOCAL_MOUNT_POINT,
+                                           DEFAULT_DOCKER_MOUNT_POINT)
+            presto_cluster.start_containers(INSTALLED_PRESTO_TEST_MASTER_IMAGE,
+                                            INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
+            return presto_cluster
+        else:
+            presto_cluster = DockerCluster.start_centos_cluster()
+            install_func(presto_cluster)
+            presto_cluster.client.commit(
+                presto_cluster.master,
+                INSTALLED_PRESTO_TEST_MASTER_IMAGE
+            )
+            presto_cluster.client.commit(
+                presto_cluster.slaves[0],
+                INSTALLED_PRESTO_TEST_SLAVE_IMAGE
+            )
+            return presto_cluster
 
     @staticmethod
     def start_centos_cluster():
@@ -327,7 +340,7 @@ class DockerCluster(object):
         return centos_cluster
 
     @staticmethod
-    def check_for_presto_images():
+    def _check_for_presto_images():
         client = Client(timeout=180)
         images = client.images()
         has_master_image = False
@@ -339,14 +352,14 @@ class DockerCluster(object):
                 has_slave_image = True
         return has_master_image and has_slave_image
 
-    def run_script(self, script_contents, host):
+    def run_script_on_host(self, script_contents, host):
         temp_script = '/tmp/tmp.sh'
-        self.write_content_to_docker_host('#!/bin/bash\n%s' % script_contents,
-                                          temp_script, host)
-        self.exec_cmd_on_container(host, 'chmod +x %s' % temp_script)
-        return self.exec_cmd_on_container(host, temp_script, tty=True)
+        self.write_content_to_host('#!/bin/bash\n%s' % script_contents,
+                                   temp_script, host)
+        self.exec_cmd_on_host(host, 'chmod +x %s' % temp_script)
+        return self.exec_cmd_on_host(host, temp_script, tty=True)
 
-    def write_content_to_docker_host(self, content, path, host):
+    def write_content_to_host(self, content, path, host):
         filename = os.path.basename(path)
         dest_dir = os.path.dirname(path)
         host_local_mount_point = self.get_local_mount_dir(host)
@@ -355,8 +368,8 @@ class DockerCluster(object):
         with open(local_path, 'w') as config_file:
             config_file.write(content)
 
-        self.exec_cmd_on_container(host, 'mkdir -p ' + dest_dir)
-        self.exec_cmd_on_container(
+        self.exec_cmd_on_host(host, 'mkdir -p ' + dest_dir)
+        self.exec_cmd_on_host(
             host, 'cp %s %s' % (os.path.join(self.docker_mount_dir, filename),
                                 dest_dir))
 

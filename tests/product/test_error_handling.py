@@ -21,8 +21,8 @@ from tests.product.base_product_case import BaseProductTestCase
 class TestErrorHandling(BaseProductTestCase):
 
     def test_wrong_arguments_parallel(self):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         actual = self.run_prestoadmin('server start extra_arg',
                                       raise_error=False)
@@ -35,8 +35,8 @@ class TestErrorHandling(BaseProductTestCase):
         self.assertEqual(expected, actual)
 
     def test_wrong_arguments_serial(self):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         actual = self.run_prestoadmin('server start extra_arg --serial',
                                       raise_error=False)

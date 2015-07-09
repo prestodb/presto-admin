@@ -47,8 +47,8 @@ class TestTopologyShow(BaseProductTestCase):
 
     def setUp(self):
         super(TestTopologyShow, self).setUp()
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
 
     @attr('smoketest')
     def test_topology_show(self):
@@ -71,16 +71,16 @@ class TestTopologyShow(BaseProductTestCase):
         topology = {'coordinator': 'slave1',
                     'workers': ['master', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
-        self.docker_cluster.stop_container_and_wait(
-            self.docker_cluster.slaves[0])
+        self.cluster.stop_host_and_wait(
+            self.cluster.slaves[0])
         actual = self.run_prestoadmin('topology show')
         expected = topology_with_slave1_coord
         self.assertEqual(expected, actual)
 
     def test_topology_show_worker_down(self):
         self.upload_topology()
-        self.docker_cluster.stop_container_and_wait(
-            self.docker_cluster.slaves[0])
+        self.cluster.stop_host_and_wait(
+            self.cluster.slaves[0])
         actual = self.run_prestoadmin('topology show')
         expected = normal_topology
         self.assertEqual(expected, actual)
@@ -91,14 +91,14 @@ class TestTopologyShow(BaseProductTestCase):
         self.assertEqual(local_topology, actual)
 
     def test_topology_show_bad_json(self):
-        self.docker_cluster.copy_to_host(
+        self.cluster.copy_to_host(
             os.path.join(LOCAL_RESOURCES_DIR, 'invalid_json.json'),
-            self.docker_cluster.master
+            self.cluster.master
         )
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master,
             'cp %s /etc/opt/prestoadmin/config.json' %
-            os.path.join(self.docker_cluster.docker_mount_dir,
+            os.path.join(self.cluster.docker_mount_dir,
                          'invalid_json.json')
         )
         self.assertRaisesRegexp(OSError,

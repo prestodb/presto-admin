@@ -25,12 +25,9 @@ import shutil
 import errno
 import urllib
 
-from docker import Client
-
 import prestoadmin
 from tests.base_test_case import BaseTestCase
 from tests.docker_cluster import DockerCluster, DockerClusterException, \
-    INSTALLED_PRESTO_TEST_SLAVE_IMAGE, INSTALLED_PRESTO_TEST_MASTER_IMAGE, \
     LOCAL_RESOURCES_DIR, DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
 
 PRESTO_RPM_GLOB = r'presto-*.x86_64.rpm'
@@ -76,8 +73,8 @@ task.max-memory=1GB\n"""
     def setUp(self):
         super(BaseProductTestCase, self).setUp()
         self.maxDiff = None
-        self.docker_client = Client(timeout=180)
         self.presto_rpm_filename = self.detect_presto_rpm()
+        self.cluster = None
 
     def detect_presto_rpm(self):
         """
@@ -100,59 +97,51 @@ task.max-memory=1GB\n"""
                                rpm_path)
             return rpm_filename
 
-    def setup_docker_cluster(self, cluster_type='centos'):
+    def setup_cluster(self, cluster_type='centos'):
         cluster_types = ['presto', 'centos']
-        if cluster_type not in cluster_types:
-            self.fail('{0} is not a supported cluster type. Must choose one'
-                      ' from {1}'.format(cluster_type, cluster_types))
-
         try:
-            are_presto_images_present = DockerCluster.check_for_presto_images()
-            if cluster_type == 'presto' and are_presto_images_present:
-                self.docker_cluster = DockerCluster.start_presto_cluster()
-                return
-            self.docker_cluster = DockerCluster.start_centos_cluster()
-            if cluster_type == 'presto' and not are_presto_images_present:
-                self.install_presto_admin(self.docker_cluster)
-                self.upload_topology()
-                self.server_install()
-                self.docker_client.commit(
-                    self.docker_cluster.master,
-                    INSTALLED_PRESTO_TEST_MASTER_IMAGE
-                )
-                self.docker_client.commit(
-                    self.docker_cluster.slaves[0],
-                    INSTALLED_PRESTO_TEST_SLAVE_IMAGE
-                )
+            if cluster_type == 'presto':
+                self.cluster = DockerCluster.start_presto_cluster(
+                    self.install_default_presto)
+            elif cluster_type == 'centos':
+                self.cluster = DockerCluster.start_centos_cluster()
+            else:
+                self.fail('{0} is not a supported cluster type. Must choose '
+                          'one from {1}'.format(cluster_type, cluster_types))
         except DockerClusterException as e:
             self.fail(e.msg)
 
+    def install_default_presto(self, cluster):
+        self.install_presto_admin(cluster=cluster)
+        self.upload_topology(cluster=cluster)
+        self.server_install(cluster=cluster)
+
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()
-        if hasattr(locals()['self'], 'docker_cluster'):
-            self.docker_cluster.tear_down_containers()
+        if self.cluster:
+            self.cluster.tear_down()
         super(BaseProductTestCase, self).tearDown()
 
     def build_dist_if_necessary(self, cluster=None, unique=False):
         if not cluster:
-            cluster = self.docker_cluster
+            cluster = self.cluster
         if (not os.path.isdir(cluster.get_dist_dir(unique)) or
             not fnmatch.filter(
                 os.listdir(cluster.get_dist_dir(unique)),
                 'prestoadmin-*.tar.bz2')):
-            cluster.clean_up_presto_test_images()
             self.build_installer_in_docker(cluster=cluster, unique=unique)
         return cluster.get_dist_dir(unique)
 
     def build_installer_in_docker(self, online_installer=False, cluster=None,
                                   unique=False):
         if not cluster:
-            cluster = self.docker_cluster
+            cluster = self.cluster
         container_name = 'installer'
         installer_container = DockerCluster(
             container_name, [], DEFAULT_LOCAL_MOUNT_POINT,
             DEFAULT_DOCKER_MOUNT_POINT)
         try:
+            installer_container.clean_up_presto_test_images()
             installer_container.create_image(
                 os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
                 'teradatalabs/centos6-ssh-test',
@@ -162,7 +151,7 @@ task.max-memory=1GB\n"""
                 'teradatalabs/centos6-ssh-test'
             )
         except DockerClusterException as e:
-            installer_container.tear_down_containers()
+            installer_container.tear_down()
             self.fail(e.msg)
 
         try:
@@ -173,7 +162,7 @@ task.max-memory=1GB\n"""
                     'presto-admin'),
                 ignore=shutil.ignore_patterns('tmp', '.git', 'presto*.rpm')
             )
-            installer_container.run_script(
+            installer_container.run_script_on_host(
                 '-e\n'
                 'pip install --upgrade pip\n'
                 'pip install --upgrade wheel\n'
@@ -203,11 +192,11 @@ task.max-memory=1GB\n"""
                 os.path.join(local_container_dist_dir, installer_file),
                 cluster.get_dist_dir(unique))
         finally:
-            installer_container.tear_down_containers()
+            installer_container.tear_down()
 
     def copy_dist_to_host(self, local_dist_dir, dest_host, cluster=None):
         if not cluster:
-            cluster = self.docker_cluster
+            cluster = self.cluster
         for dist_file in os.listdir(local_dist_dir):
             if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
                 cluster.copy_to_host(
@@ -220,52 +209,56 @@ task.max-memory=1GB\n"""
         self.copy_dist_to_host(dist_dir, cluster.master, cluster)
         cluster.copy_to_host(
             LOCAL_RESOURCES_DIR + "/install-admin.sh", cluster.master)
-        cluster.exec_cmd_on_container(
+        cluster.exec_cmd_on_host(
             cluster.master, cluster.docker_mount_dir + "/install-admin.sh")
 
-    def dump_and_cp_topology(self, topology):
-        local_container_mount_point = self.docker_cluster.get_local_mount_dir(
-            self.docker_cluster.master)
-        with open(os.path.join(local_container_mount_point,
-                               "config.json"), "w") as conf_file:
-            json.dump(topology, conf_file)
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master,
-            "cp %s /etc/opt/prestoadmin/" %
-            os.path.join(self.docker_cluster.docker_mount_dir, "config.json")
+    def dump_and_cp_topology(self, topology, cluster=None):
+        if not cluster:
+            cluster = self.cluster
+        cluster.write_content_to_host(
+            json.dumps(topology),
+            '/etc/opt/prestoadmin/config.json',
+            cluster.master
         )
 
-    def upload_topology(self, topology=None):
+    def upload_topology(self, topology=None, cluster=None):
+        if not cluster:
+            cluster = self.cluster
         if not topology:
             topology = {"coordinator": "master",
                         "workers": ["slave1", "slave2", "slave3"]}
-        self.dump_and_cp_topology(topology)
+        self.dump_and_cp_topology(topology, cluster)
 
-    def check_if_corrupted_rpm(self):
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master, 'rpm -K --nosignature '
-            + os.path.join(self.docker_cluster.docker_mount_dir,
-                           self.presto_rpm_filename))
+    def _check_if_corrupted_rpm(self, cluster):
+        cluster.exec_cmd_on_host(
+            cluster.master, 'rpm -K --nosignature '
+            + os.path.join(cluster.docker_mount_dir, self.presto_rpm_filename)
+        )
 
-    def copy_presto_rpm_to_master(self):
+    def copy_presto_rpm_to_master(self, cluster=None):
+        if not cluster:
+            cluster = self.cluster
         rpm_path = os.path.join(prestoadmin.main_dir,
                                 self.presto_rpm_filename)
-        self.docker_cluster.copy_to_host(rpm_path, self.docker_cluster.master)
-        self.check_if_corrupted_rpm()
+        cluster.copy_to_host(rpm_path, cluster.master)
+        self._check_if_corrupted_rpm(cluster)
 
-    def server_install(self):
-        self.copy_presto_rpm_to_master()
+    def server_install(self, cluster=None):
+        if not cluster:
+            cluster = self.cluster
+        self.copy_presto_rpm_to_master(cluster)
         cmd_output = self.run_prestoadmin(
-            'server install ' + os.path.join(
-                self.docker_cluster.docker_mount_dir,
-                self.presto_rpm_filename))
+            'server install ' +
+            os.path.join(cluster.docker_mount_dir, self.presto_rpm_filename),
+            cluster=cluster
+        )
         return cmd_output
 
     def run_prestoadmin(self, command, raise_error=True, cluster=None):
         if not cluster:
-            cluster = self.docker_cluster
+            cluster = self.cluster
         command = self.replace_keywords(command, cluster=cluster)
-        return cluster.exec_cmd_on_container(
+        return cluster.exec_cmd_on_host(
             cluster.master,
             "/opt/prestoadmin/presto-admin %s" % command,
             raise_error=raise_error
@@ -275,25 +268,25 @@ task.max-memory=1GB\n"""
         script_contents = self.replace_keywords(script_contents,
                                                 **kwargs)
         temp_script = '/opt/prestoadmin/tmp.sh'
-        self.docker_cluster.write_content_to_docker_host(
+        self.cluster.write_content_to_host(
             '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
-            temp_script, self.docker_cluster.master)
-        self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master, 'chmod +x %s' % temp_script)
-        return self.docker_cluster.exec_cmd_on_container(
-            self.docker_cluster.master, temp_script)
+            temp_script, self.cluster.master)
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master, 'chmod +x %s' % temp_script)
+        return self.cluster.exec_cmd_on_host(
+            self.cluster.master, temp_script)
 
     def assert_path_exists(self, host, file_path):
-        self.docker_cluster.exec_cmd_on_container(
+        self.cluster.exec_cmd_on_host(
             host, ' [ -e %s ] ' % file_path)
 
     def assert_file_content(self, host, filepath, expected):
-        config = self.docker_cluster.exec_cmd_on_container(
+        config = self.cluster.exec_cmd_on_host(
             host, 'cat %s' % filepath)
         self.assertEqual(config, expected)
 
     def assert_file_content_regex(self, host, filepath, expected):
-        config = self.docker_cluster.exec_cmd_on_container(
+        config = self.cluster.exec_cmd_on_host(
             host, 'cat %s' % filepath)
         self.assertRegexpMatches(config, expected)
 
@@ -308,17 +301,17 @@ task.max-memory=1GB\n"""
                                  'connector.name=jmx')
 
     def assert_path_removed(self, container, directory):
-        self.docker_cluster.exec_cmd_on_container(
+        self.cluster.exec_cmd_on_host(
             container, ' [ ! -e %s ]' % directory)
 
     def assert_installed(self, container):
-        check_rpm = self.docker_cluster.exec_cmd_on_container(
+        check_rpm = self.cluster.exec_cmd_on_host(
             container, 'rpm -q presto')
         self.assertEqual(self.presto_rpm_filename[:-4] + '\n', check_rpm)
 
     def assert_uninstalled(self, container):
         self.assertRaisesRegexp(OSError, 'package presto is not installed',
-                                self.docker_cluster.exec_cmd_on_container,
+                                self.cluster.exec_cmd_on_host,
                                 container, 'rpm -q presto')
 
     def assert_has_default_config(self, container):
@@ -328,7 +321,7 @@ task.max-memory=1GB\n"""
 
         self.assert_node_config(container, self.default_node_properties_)
 
-        if container in self.docker_cluster.slaves:
+        if container in self.cluster.slaves:
             self.assert_file_content(container,
                                      '/etc/presto/config.properties',
                                      self.default_workers_config_)
@@ -339,7 +332,7 @@ task.max-memory=1GB\n"""
                                      self.default_coordinator_config_)
 
     def assert_node_config(self, container, expected):
-        node_properties = self.docker_cluster.exec_cmd_on_container(
+        node_properties = self.cluster.exec_cmd_on_host(
             container, 'cat /etc/presto/node.properties')
         split_properties = node_properties.split('\n', 1)
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
@@ -347,7 +340,7 @@ task.max-memory=1GB\n"""
 
     def expected_stop(self, running=None, not_running=None):
         if running is None:
-            running = self.docker_cluster.all_internal_hosts()
+            running = self.cluster.all_internal_hosts()
             if not_running:
                 for host in not_running:
                     running.remove(host)
@@ -369,7 +362,7 @@ task.max-memory=1GB\n"""
         for host, pid in process_per_host:
             self.assertRaisesRegexp(OSError,
                                     'No such process',
-                                    self.docker_cluster.exec_cmd_on_container,
+                                    self.cluster.exec_cmd_on_host,
                                     host, 'kill -0 %s' % pid)
 
     def get_process_per_host(self, output_lines):
@@ -384,13 +377,12 @@ task.max-memory=1GB\n"""
 
     def assert_started(self, process_per_host):
         for host, pid in process_per_host:
-            self.docker_cluster.exec_cmd_on_container(host, 'kill -0 %s' %
-                                                      pid)
+            self.cluster.exec_cmd_on_host(host, 'kill -0 %s' % pid)
         return process_per_host
 
     def replace_keywords(self, text, cluster=None, **kwargs):
         if not cluster:
-            cluster = self.docker_cluster
+            cluster = self.cluster
         test_keywords = {
             'rpm': self.presto_rpm_filename,
             'rpm_basename': self.presto_rpm_filename[:-4],

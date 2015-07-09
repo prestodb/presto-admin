@@ -29,7 +29,7 @@ uninstall_output = ['Package uninstalled successfully on: slave1',
 class TestServerUninstall(BaseProductTestCase):
     @attr('smoketest')
     def test_uninstall(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
@@ -39,7 +39,7 @@ class TestServerUninstall(BaseProductTestCase):
         expected = uninstall_output + self.expected_stop()[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
-        for container in self.docker_cluster.all_hosts():
+        for container in self.cluster.all_hosts():
             self.assert_uninstalled_dirs_removed(container)
 
     def assert_uninstalled_dirs_removed(self, container):
@@ -51,19 +51,19 @@ class TestServerUninstall(BaseProductTestCase):
         self.assert_path_removed(container, '/etc/rc.d/init.d/presto')
 
     def test_uninstall_when_server_down(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
 
         self.run_prestoadmin('server stop -H %s' %
-                             self.docker_cluster.internal_slaves[0])
+                             self.cluster.internal_slaves[0])
         cmd_output = self.run_prestoadmin('server uninstall').splitlines()
         self.assert_stopped(process_per_host)
         expected = uninstall_output + self.expected_stop(
-            not_running=[self.docker_cluster.internal_slaves[0]])[:]
+            not_running=[self.cluster.internal_slaves[0]])[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
-        for container in self.docker_cluster.all_hosts():
+        for container in self.cluster.all_hosts():
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_twice(self):
@@ -77,37 +77,37 @@ class TestServerUninstall(BaseProductTestCase):
         self.assertEqualIgnoringOrder(expected, output)
 
     def test_uninstall_lost_host(self):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
-        topology = {"coordinator": self.docker_cluster.slaves[0],
-                    "workers": [self.docker_cluster.master,
-                                self.docker_cluster.slaves[1],
-                                self.docker_cluster.slaves[2]]}
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
+        topology = {"coordinator": self.cluster.slaves[0],
+                    "workers": [self.cluster.master,
+                                self.cluster.slaves[1],
+                                self.cluster.slaves[2]]}
         self.upload_topology(topology)
         self.server_install()
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
-        self.docker_cluster.stop_container_and_wait(
-            self.docker_cluster.slaves[0])
+        self.cluster.stop_host_and_wait(
+            self.cluster.slaves[0])
 
         expected = self.down_node_connection_error % \
-            {'host': self.docker_cluster.slaves[0]}
+            {'host': self.cluster.slaves[0]}
         cmd_output = self.run_prestoadmin('server uninstall')
         self.assertRegexpMatches(cmd_output, expected)
         process_per_active_host = []
         for host, pid in process_per_host:
-            if host not in self.docker_cluster.slaves[0]:
+            if host not in self.cluster.slaves[0]:
                 process_per_active_host.append((host, pid))
         self.assert_stopped(process_per_active_host)
 
-        for container in [self.docker_cluster.master,
-                          self.docker_cluster.slaves[1],
-                          self.docker_cluster.slaves[2]]:
+        for container in [self.cluster.master,
+                          self.cluster.slaves[1],
+                          self.cluster.slaves[2]]:
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_with_dir_readonly(self):
-        self.setup_docker_cluster('presto')
+        self.setup_cluster('presto')
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
@@ -118,12 +118,12 @@ class TestServerUninstall(BaseProductTestCase):
         expected = uninstall_output + self.expected_stop()[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
-        for container in self.docker_cluster.all_hosts():
+        for container in self.cluster.all_hosts():
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_as_non_sudo(self):
-        self.setup_docker_cluster()
-        self.install_presto_admin(self.docker_cluster)
+        self.setup_cluster()
+        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.server_install()
 
