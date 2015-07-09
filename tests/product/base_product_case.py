@@ -124,6 +124,7 @@ task.max-memory=1GB\n"""
         self.restore_stdout_stderr_keep_open()
         if hasattr(locals()['self'], 'docker_cluster'):
             self.docker_cluster.tear_down_containers()
+        super(BaseProductTestCase, self).tearDown()
 
     def build_dist_if_necessary(self, cluster=None, unique=False):
         if not cluster:

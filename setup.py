@@ -36,15 +36,15 @@ with open('HISTORY.rst') as history_file:
 # tox which relies on the existence of both.
 requirements = [
     'fabric==1.10.1',
-    'requests>=2.6.0'
+    'requests==2.7.0'
 ]
 
 test_requirements = [
-    'tox>=1.9.0',
-    'nose>=1.0',
-    'mock>=1.0.1',
-    'wheel>=0.23.0',
-    'docker-py>=1.2.2',
+    'tox==1.9.0',
+    'nose==1.3.7',
+    'mock==1.0.1',
+    'wheel==0.23.0',
+    'docker-py==1.2.2',
     'certifi==2015.4.28',
     'fudge==1.1.0'
 ]
