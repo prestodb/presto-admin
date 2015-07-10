@@ -40,7 +40,7 @@ requirements = [
 ]
 
 test_requirements = [
-    'tox==1.9.0',
+    'tox==1.9.2',
     'nose==1.3.7',
     'mock==1.0.1',
     'wheel==0.23.0',

@@ -91,7 +91,14 @@ task.max-memory=1GB\n"""
             # are multiple RPMs, the last one is probably the latest
             return sorted(rpm_names)[-1]
         else:
-            return None
+            # TODO: once the RPM is on Maven Central, pull the RPM from there
+            rpm_filename = 'presto-0.101-1.0.x86_64.rpm'
+            rpm_path = os.path.join(prestoadmin.main_dir,
+                                    self.presto_rpm_filename)
+            urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
+                               'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
+                               rpm_path)
+            return rpm_filename
 
     def setup_docker_cluster(self, cluster_type='centos'):
         cluster_types = ['presto', 'centos']
@@ -241,17 +248,8 @@ task.max-memory=1GB\n"""
                            self.presto_rpm_filename))
 
     def copy_presto_rpm_to_master(self):
-        if not self.presto_rpm_filename:
-            # TODO: once the RPM is on Maven Central, pull the RPM from there
-            self.presto_rpm_filename = 'presto-0.101-1.0.x86_64.rpm'
-            rpm_path = os.path.join(prestoadmin.main_dir,
-                                    self.presto_rpm_filename)
-            urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
-                               'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
-                               rpm_path)
-        else:
-            rpm_path = os.path.join(prestoadmin.main_dir,
-                                    self.presto_rpm_filename)
+        rpm_path = os.path.join(prestoadmin.main_dir,
+                                self.presto_rpm_filename)
         self.docker_cluster.copy_to_host(rpm_path, self.docker_cluster.master)
         self.check_if_corrupted_rpm()
 
