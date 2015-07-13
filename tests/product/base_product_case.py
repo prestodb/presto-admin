@@ -94,7 +94,7 @@ task.max-memory=1GB\n"""
             # TODO: once the RPM is on Maven Central, pull the RPM from there
             rpm_filename = 'presto-0.101-1.0.x86_64.rpm'
             rpm_path = os.path.join(prestoadmin.main_dir,
-                                    self.presto_rpm_filename)
+                                    rpm_filename)
             urllib.urlretrieve('http://teradata-download.s3.amazonaws.com/'
                                'aster/presto/lib/presto-0.101-1.0.x86_64.rpm',
                                rpm_path)
