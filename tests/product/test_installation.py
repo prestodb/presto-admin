@@ -21,7 +21,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT
+    DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT, docker_only
 from tests.docker_cluster import DockerCluster
 
 install_py26_script = """\
@@ -44,6 +44,7 @@ class TestInstallation(BaseProductTestCase):
         self.copy_dist_to_host(dist_dir, self.cluster.master)
 
     @attr('smoketest')
+    @docker_only
     def test_install_non_root(self):
         install_dir = '/home/app-admin'
         script = """
@@ -54,7 +55,7 @@ class TestInstallation(BaseProductTestCase):
             sudo -u app-admin tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
             sudo -u app-admin ./install-prestoadmin.sh
-        """.format(mount_dir=self.cluster.docker_mount_dir,
+        """.format(mount_dir=self.cluster.mount_dir,
                    install_dir=install_dir)
 
         self.assertRaisesRegexp(OSError, 'mkdir: cannot create directory '
@@ -71,7 +72,7 @@ class TestInstallation(BaseProductTestCase):
             cd {install_dir}
             tar jxf prestoadmin-*.tar.bz2
              ./prestoadmin/install-prestoadmin.sh
-        """.format(mount_dir=self.cluster.docker_mount_dir,
+        """.format(mount_dir=self.cluster.mount_dir,
                    install_dir=install_dir)
 
         self.assertRaisesRegexp(
@@ -84,6 +85,7 @@ class TestInstallation(BaseProductTestCase):
         )
 
     @attr('smoketest')
+    @docker_only
     def test_install_on_wrong_os_offline_installer(self):
         image = 'ubuntu'
         tag = '14.04'
@@ -120,7 +122,7 @@ class TestInstallation(BaseProductTestCase):
             tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
              ./install-prestoadmin.sh dummy_cert.cert
-        """.format(mount_dir=self.cluster.docker_mount_dir,
+        """.format(mount_dir=self.cluster.mount_dir,
                    install_dir=install_dir)
         output = self.cluster.run_script_on_host(script, self.cluster.master)
         self.assertRegexpMatches(output, r'Adding pypi.python.org as '
@@ -139,7 +141,7 @@ class TestInstallation(BaseProductTestCase):
             tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
              ./install-prestoadmin.sh {mount_dir}/{cacert}
-        """.format(mount_dir=self.cluster.docker_mount_dir,
+        """.format(mount_dir=self.cluster.mount_dir,
                    install_dir=install_dir,
                    cacert=cert_file)
         output = self.cluster.run_script_on_host(script, self.cluster.master)

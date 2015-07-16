@@ -181,7 +181,7 @@ class TestControl(BaseProductTestCase):
 
     def assert_start_stop_restart_down_node(self, down_node,
                                             down_internal_node):
-        self.cluster.stop_host_and_wait(down_node)
+        self.cluster.stop_host(down_node)
         alive_hosts = self.cluster.all_internal_hosts()[:]
         alive_hosts.remove(down_internal_node)
 

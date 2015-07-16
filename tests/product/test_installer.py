@@ -25,7 +25,7 @@ from prestoadmin import main_dir
 from tests.docker_cluster import DockerCluster
 from tests.product.base_product_case import BaseProductTestCase, \
     DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, docker_only
 
 
 class TestInstaller(BaseProductTestCase):
@@ -40,6 +40,7 @@ class TestInstaller(BaseProductTestCase):
         self.centos_container.tear_down()
 
     @attr('smoketest')
+    @docker_only
     def test_online_installer(self):
         self.build_installer_in_docker(online_installer=True,
                                        cluster=self.centos_container,
@@ -53,6 +54,7 @@ class TestInstaller(BaseProductTestCase):
                              cluster=self.centos_container)
 
     @attr('smoketest')
+    @docker_only
     def test_offline_installer(self):
         self.build_installer_in_docker(online_installer=False,
                                        cluster=self.centos_container,

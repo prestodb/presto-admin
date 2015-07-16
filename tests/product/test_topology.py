@@ -71,7 +71,7 @@ class TestTopologyShow(BaseProductTestCase):
         topology = {'coordinator': 'slave1',
                     'workers': ['master', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
-        self.cluster.stop_host_and_wait(
+        self.cluster.stop_host(
             self.cluster.slaves[0])
         actual = self.run_prestoadmin('topology show')
         expected = topology_with_slave1_coord
@@ -79,7 +79,7 @@ class TestTopologyShow(BaseProductTestCase):
 
     def test_topology_show_worker_down(self):
         self.upload_topology()
-        self.cluster.stop_host_and_wait(
+        self.cluster.stop_host(
             self.cluster.slaves[0])
         actual = self.run_prestoadmin('topology show')
         expected = normal_topology
@@ -98,8 +98,7 @@ class TestTopologyShow(BaseProductTestCase):
         self.cluster.exec_cmd_on_host(
             self.cluster.master,
             'cp %s /etc/opt/prestoadmin/config.json' %
-            os.path.join(self.cluster.docker_mount_dir,
-                         'invalid_json.json')
+            os.path.join(self.cluster.mount_dir, 'invalid_json.json')
         )
         self.assertRaisesRegexp(OSError,
                                 'Expecting , delimiter: line 3 column 3 '

@@ -22,7 +22,7 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, docker_only
 
 
 CONNECTOR_CHECK_TIMEOUT = 120
@@ -65,7 +65,8 @@ class TestConnectors(BaseProductTestCase):
             self.assert_has_default_connector(host)
         self._assert_connectors_loaded([['system'], ['tpch']])
 
-    def test_connector_add(self):
+    @docker_only
+    def test_connector_add_wrong_permissions(self):
         self.setup_cluster('presto')
 
         # test add connector without read permissions on file
@@ -100,7 +101,12 @@ class TestConnectors(BaseProductTestCase):
         self.assertRaisesRegexp(OSError, not_found_error,
                                 self.run_prestoadmin_script, script)
 
+    def test_connector_add(self):
+        self.setup_cluster('presto')
+
         # test add a connector that does not exist
+        not_found_error = self.fatal_error(
+            'Configuration for connector tpch not found')
         self.run_prestoadmin('connector remove tpch')
         self.assertRaisesRegexp(OSError, not_found_error,
                                 self.run_prestoadmin, 'connector add tpch')
@@ -190,7 +196,7 @@ Aborting.
         self.server_install()
         self.run_prestoadmin('connector remove tpch')
 
-        self.cluster.stop_host_and_wait(
+        self.cluster.stop_host(
             self.cluster.slaves[0])
         self.cluster.write_content_to_host(
             'connector.name=tpch',

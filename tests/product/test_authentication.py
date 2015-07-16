@@ -22,7 +22,7 @@ import subprocess
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, docker_only
 
 
 class TestAuthentication(BaseProductTestCase):
@@ -97,6 +97,7 @@ class TestAuthentication(BaseProductTestCase):
         return non_root_sudo_warning
 
     @attr('smoketest')
+    @docker_only
     def test_passwordless_ssh_authentication(self):
         self.install_presto_admin(self.cluster)
         self.upload_topology()
@@ -151,6 +152,7 @@ class TestAuthentication(BaseProductTestCase):
             self.success_output, command_output)
 
     @attr('smoketest')
+    @docker_only
     def test_no_passwordless_ssh_authentication(self):
         self.install_presto_admin(self.cluster)
         self.upload_topology()
@@ -163,7 +165,10 @@ class TestAuthentication(BaseProductTestCase):
             'echo "password" | ./presto-admin connector add -I')
 
         for host in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(host, 'rm /root/.ssh/id_rsa')
+            self.cluster.exec_cmd_on_host(
+                host,
+                'mv /root/.ssh/id_rsa /root/.ssh/id_rsa.bak'
+            )
 
         # No passwordless SSH, no -I or -p
         parallel_password_failure = self.parallel_password_failure_message(
@@ -194,15 +199,19 @@ class TestAuthentication(BaseProductTestCase):
 
         # No passwordless SSH, specify keyfile with -i
         self.cluster.exec_cmd_on_host(
-            self.cluster.master,
-            'cp /home/app-admin/.ssh/id_rsa /root/.ssh/id_rsa.bak')
-        self.cluster.exec_cmd_on_host(
             self.cluster.master, 'chmod 600 /root/.ssh/id_rsa.bak')
         command_output = self.run_prestoadmin(
             'connector add -i /root/.ssh/id_rsa.bak')
         self.assertEqualIgnoringOrder(self.success_output, command_output)
 
+        for host in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(
+                host,
+                'mv /root/.ssh/id_rsa.bak /root/.ssh/id_rsa'
+            )
+
     @attr('smoketest')
+    @docker_only
     def test_prestoadmin_no_sudo_popen(self):
         self.install_presto_admin(self.cluster)
         self.upload_topology()

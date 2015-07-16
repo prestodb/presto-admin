@@ -16,6 +16,7 @@
 Product tests for presto-admin status commands
 """
 import os
+import re
 
 from nose.plugins.attrib import attr
 
@@ -76,7 +77,7 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-        self.cluster.stop_host_and_wait(
+        self.cluster.stop_host(
             self.cluster.slaves[0])
         status_output = self.run_prestoadmin('server status')
         statuses = self.node_not_available_status(
@@ -91,7 +92,7 @@ class TestStatus(BaseProductTestCase):
         self.upload_topology(topology=topology)
         self.server_install()
         self.run_prestoadmin('server start')
-        self.cluster.stop_host_and_wait(
+        self.cluster.stop_host(
             self.cluster.slaves[1])
         status_output = self.run_prestoadmin('server status')
         statuses = self.node_not_available_status(
@@ -174,7 +175,7 @@ http-server.http.port=8090"""
         index = -1
         i = 0
         for status in statuses:
-            if status['host'] is node:
+            if status['host'] == node:
                 index = i
                 status['no_status'] = True
                 status['is_running'] = 'Not Running'
@@ -189,27 +190,41 @@ http-server.http.port=8090"""
         return statuses
 
     def check_status(self, cmd_output, statuses, port=8080):
-        expected_output = []
+        expected_output_without_errors = []
+        expected_errors = []
         num_bad_hosts = 0
         for status in statuses:
             if 'no_status' in status:
                 num_bad_hosts += 1
-                expected_output = [status['error_message']] + expected_output
+                expected_errors += [status['error_message']]
             else:
-                expected_output += \
+                expected_output_without_errors += \
                     ['Server Status:',
                      '\t%s\(IP: %s roles: %s\): %s' %
                      (status['host'], status['ip'], status['role'],
                       status['is_running'])]
                 if status['is_running'] is 'Running':
-                    expected_output += \
+                    expected_output_without_errors += \
                         ['\tNode URI\(http\): http://%s:%s' % (status['ip'],
                                                                str(port)),
                          '\tPresto Version: ' + PRESTO_VERSION,
                          '\tNode is active: True',
                          '\tConnectors:     system, tpch']
                 else:
-                    expected_output += [status['error_message']]
+                    expected_output_without_errors += [status['error_message']]
 
-        actual = cmd_output.splitlines()
-        self.assertRegexpMatches('\n'.join(actual), '\n'.join(expected_output))
+        # Error messages can be anywhere, so strip them out
+        (actual_output, actual_errors) = \
+            self.strip_out_error_messages(cmd_output)
+        errors_split_by_line = []
+        for error in actual_errors:
+            errors_split_by_line += error.splitlines()
+        self.assertRegexpMatches(actual_output,
+                                 '\n'.join(expected_output_without_errors))
+        self.assertRegexpMatchesLineByLine(actual_errors, expected_errors)
+
+    def strip_out_error_messages(self, cmd_output):
+        error_regex = self.down_node_connection_error % {'host': '.*'} + '\n'
+        error_output = re.findall(cmd_output, error_regex, re.MULTILINE)
+        errorless_output = re.sub(error_regex, '', cmd_output)
+        return errorless_output, error_output

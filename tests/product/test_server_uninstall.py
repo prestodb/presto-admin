@@ -17,7 +17,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, docker_only
 
 
 uninstall_output = ['Package uninstalled successfully on: slave1',
@@ -79,31 +79,31 @@ class TestServerUninstall(BaseProductTestCase):
     def test_uninstall_lost_host(self):
         self.setup_cluster()
         self.install_presto_admin(self.cluster)
-        topology = {"coordinator": self.cluster.slaves[0],
-                    "workers": [self.cluster.master,
-                                self.cluster.slaves[1],
-                                self.cluster.slaves[2]]}
+        topology = {"coordinator": self.cluster.internal_slaves[0],
+                    "workers": [self.cluster.internal_master,
+                                self.cluster.internal_slaves[1],
+                                self.cluster.internal_slaves[2]]}
         self.upload_topology(topology)
         self.server_install()
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
-        self.cluster.stop_host_and_wait(
+        self.cluster.stop_host(
             self.cluster.slaves[0])
 
         expected = self.down_node_connection_error % \
-            {'host': self.cluster.slaves[0]}
+            {'host': self.cluster.internal_slaves[0]}
         cmd_output = self.run_prestoadmin('server uninstall')
         self.assertRegexpMatches(cmd_output, expected)
         process_per_active_host = []
         for host, pid in process_per_host:
-            if host not in self.cluster.slaves[0]:
+            if host not in self.cluster.internal_slaves[0]:
                 process_per_active_host.append((host, pid))
         self.assert_stopped(process_per_active_host)
 
-        for container in [self.cluster.master,
-                          self.cluster.slaves[1],
-                          self.cluster.slaves[2]]:
+        for container in [self.cluster.internal_master,
+                          self.cluster.internal_slaves[1],
+                          self.cluster.internal_slaves[2]]:
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_with_dir_readonly(self):
@@ -121,6 +121,7 @@ class TestServerUninstall(BaseProductTestCase):
         for container in self.cluster.all_hosts():
             self.assert_uninstalled_dirs_removed(container)
 
+    @docker_only
     def test_uninstall_as_non_sudo(self):
         self.setup_cluster()
         self.install_presto_admin(self.cluster)

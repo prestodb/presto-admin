@@ -18,7 +18,7 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, docker_only
 
 
 install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
@@ -456,7 +456,7 @@ task.max-memory=1GB\n"""
                                 self.cluster.internal_slaves[1],
                                 self.cluster.internal_slaves[2]]}
         self.upload_topology(topology=topology)
-        self.cluster.stop_host_and_wait(
+        self.cluster.stop_host(
             self.cluster.slaves[0])
 
         actual_out = self.server_install()
@@ -472,6 +472,7 @@ task.max-memory=1GB\n"""
                                      '/etc/presto/config.properties',
                                      self.default_workers_config_with_slave1_)
 
+    @docker_only
     def test_install_with_no_perm_to_local_path(self):
         self.install_presto_admin(self.cluster)
         self.copy_presto_rpm_to_master()

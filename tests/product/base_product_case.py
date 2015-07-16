@@ -27,6 +27,7 @@ import urllib
 
 import prestoadmin
 from tests.base_test_case import BaseTestCase
+from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster, DockerClusterException, \
     LOCAL_RESOURCES_DIR, DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
 
@@ -97,14 +98,26 @@ task.max-memory=1GB\n"""
                                rpm_path)
             return rpm_filename
 
-    def setup_cluster(self, cluster_type='centos'):
-        cluster_types = ['presto', 'centos']
+    def setup_cluster(self, cluster_type='base'):
+        cluster_types = ['presto', 'base']
+        config_filename = ConfigurableCluster.check_for_cluster_config()
         try:
             if cluster_type == 'presto':
-                self.cluster = DockerCluster.start_presto_cluster(
-                    self.install_default_presto)
-            elif cluster_type == 'centos':
-                self.cluster = DockerCluster.start_centos_cluster()
+                if config_filename:
+                    self.cluster = ConfigurableCluster.start_presto_cluster(
+                        config_filename, self.install_default_presto,
+                        self.assert_installed
+                    )
+                else:
+                    self.cluster = DockerCluster.start_presto_cluster(
+                        self.install_default_presto)
+            elif cluster_type == 'base':
+                if config_filename:
+                    self.cluster = ConfigurableCluster.start_base_cluster(
+                        config_filename, self.assert_installed
+                    )
+                else:
+                    self.cluster = DockerCluster.start_base_cluster()
             else:
                 self.fail('{0} is not a supported cluster type. Must choose '
                           'one from {1}'.format(cluster_type, cluster_types))
@@ -171,9 +184,9 @@ task.max-memory=1GB\n"""
                 'cd ~/presto-admin\n'
                 'make %s\n'
                 'cp dist/prestoadmin-*.tar.bz2 %s'
-                % (installer_container.docker_mount_dir,
+                % (installer_container.mount_dir,
                    'dist' if not online_installer else 'dist-online',
-                   installer_container.docker_mount_dir),
+                   installer_container.mount_dir),
                 container_name)
 
             try:
@@ -210,7 +223,11 @@ task.max-memory=1GB\n"""
         cluster.copy_to_host(
             LOCAL_RESOURCES_DIR + "/install-admin.sh", cluster.master)
         cluster.exec_cmd_on_host(
-            cluster.master, cluster.docker_mount_dir + "/install-admin.sh")
+            cluster.master,
+            'chmod +x ' + cluster.mount_dir + "/install-admin.sh"
+        )
+        cluster.exec_cmd_on_host(
+            cluster.master, cluster.mount_dir + "/install-admin.sh")
 
     def dump_and_cp_topology(self, topology, cluster=None):
         if not cluster:
@@ -232,7 +249,7 @@ task.max-memory=1GB\n"""
     def _check_if_corrupted_rpm(self, cluster):
         cluster.exec_cmd_on_host(
             cluster.master, 'rpm -K --nosignature '
-            + os.path.join(cluster.docker_mount_dir, self.presto_rpm_filename)
+            + os.path.join(cluster.mount_dir, self.presto_rpm_filename)
         )
 
     def copy_presto_rpm_to_master(self, cluster=None):
@@ -249,7 +266,7 @@ task.max-memory=1GB\n"""
         self.copy_presto_rpm_to_master(cluster)
         cmd_output = self.run_prestoadmin(
             'server install ' +
-            os.path.join(cluster.docker_mount_dir, self.presto_rpm_filename),
+            os.path.join(cluster.mount_dir, self.presto_rpm_filename),
             cluster=cluster
         )
         return cmd_output
@@ -304,9 +321,11 @@ task.max-memory=1GB\n"""
         self.cluster.exec_cmd_on_host(
             container, ' [ ! -e %s ]' % directory)
 
-    def assert_installed(self, container, msg=None):
+    def assert_installed(self, container, cluster=None, msg=None):
+        if not cluster:
+            cluster = self.cluster
         try:
-            check_rpm = self.cluster.exec_cmd_on_host(
+            check_rpm = cluster.exec_cmd_on_host(
                 container, 'rpm -q presto')
             self.assertEqual(self.presto_rpm_filename[:-4] + '\n', check_rpm,
                              msg=msg)
@@ -409,3 +428,12 @@ task.max-memory=1GB\n"""
         expected = expected.replace('(', '\(')
         expected = expected.replace('+', '\+')
         return expected
+
+
+def docker_only(original_function):
+    def test_inner(self, *args, **kwargs):
+        if type(getattr(self, 'cluster')) is DockerCluster:
+            original_function(self, *args, **kwargs)
+        else:
+            print 'Warning: Docker only test, passing with a noop'
+    return test_inner

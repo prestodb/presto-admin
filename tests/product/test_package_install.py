@@ -16,7 +16,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, docker_only
 
 
 class TestPackageInstall(BaseProductTestCase):
@@ -157,6 +157,7 @@ Aborting.
 
         self.assertEqualIgnoringOrder(cmd_output, expected)
 
+    @docker_only
     def test_install_rpm_with_missing_jdk(self):
         self.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
@@ -179,6 +180,7 @@ Aborting.
             jdk_not_found_error = f.read()
         return self.replace_keywords(jdk_not_found_error)
 
+    @docker_only
     def test_install_rpm_missing_dependency(self):
         self.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
@@ -207,6 +209,7 @@ Package deployed successfully on: %(master)s
 [%(master)s] out: """)
         self.assertEqualIgnoringOrder(cmd_output, expected)
 
+    @docker_only
     def test_install_rpm_with_nodeps(self):
         self.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(

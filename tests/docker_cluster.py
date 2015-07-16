@@ -59,7 +59,7 @@ class DockerCluster(object):
         # the root path for all local mount points; to get a particular
         # container mount point call get_local_mount_dir()
         self.local_mount_dir = local_mount_dir
-        self.docker_mount_dir = docker_mount_dir
+        self.mount_dir = docker_mount_dir
         self.client = Client(timeout=180)
         self._DOCKER_START_TIMEOUT = 30
         DockerCluster.__check_if_docker_exists()
@@ -155,14 +155,14 @@ class DockerCluster(object):
                 raise
 
         try:
-            self.stop_host_and_wait(container_name)
+            self.stop_host(container_name)
             self.client.remove_container(container_name, v=True, force=True)
         except APIError as e:
             # container does not exist
             if e.response.status_code != 404:
                 raise
 
-    def stop_host_and_wait(self, container_name):
+    def stop_host(self, container_name):
         self.client.stop(container_name)
         self.client.wait(container_name)
 
@@ -205,7 +205,7 @@ class DockerCluster(object):
                 )
                 self.client.start(container_name,
                                   binds={container_mount_dir:
-                                         {'bind': self.docker_mount_dir,
+                                         {'bind': self.mount_dir,
                                           'ro': False}},
                                   **kwargs)
 
@@ -216,7 +216,7 @@ class DockerCluster(object):
         )
         self.client.start(self.master,
                           binds={master_mount_dir:
-                                 {'bind': self.docker_mount_dir,
+                                 {'bind': self.mount_dir,
                                   'ro': False}},
                           links=zip(self.slaves, self.slaves), **kwargs)
 
@@ -311,7 +311,7 @@ class DockerCluster(object):
                                             INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
             return presto_cluster
         else:
-            presto_cluster = DockerCluster.start_centos_cluster()
+            presto_cluster = DockerCluster.start_base_cluster()
             install_func(presto_cluster)
             presto_cluster.client.commit(
                 presto_cluster.master,
@@ -324,7 +324,7 @@ class DockerCluster(object):
             return presto_cluster
 
     @staticmethod
-    def start_centos_cluster():
+    def start_base_cluster():
         centos_cluster = DockerCluster('master',
                                        ['slave1', 'slave2', 'slave3'],
                                        DEFAULT_LOCAL_MOUNT_POINT,
@@ -371,7 +371,7 @@ class DockerCluster(object):
 
         self.exec_cmd_on_host(host, 'mkdir -p ' + dest_dir)
         self.exec_cmd_on_host(
-            host, 'cp %s %s' % (os.path.join(self.docker_mount_dir, filename),
+            host, 'cp %s %s' % (os.path.join(self.mount_dir, filename),
                                 dest_dir))
 
     def copy_to_host(self, source_path, dest_host):
