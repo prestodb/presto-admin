@@ -80,16 +80,20 @@ class BaseTestCase(unittest.TestCase):
 
     # This method is equivalent to Python 2.7's unittest.assertRaisesRegexp()
     def assertRaisesRegexp(self, expected_exception, expected_regexp,
-                           callable_object, *args):
+                           callable_object, *args, **kwargs):
+        if 'msg' in kwargs:
+            msg = ' ' + kwargs['msg']
+        else:
+            msg = ''
         try:
             callable_object(*args)
         except expected_exception as e:
             self.assertTrue(re.search(expected_regexp, str(e)),
                             repr(expected_regexp) + " not found in "
-                            + repr(str(e)))
+                            + repr(str(e)) + msg)
         else:
             self.fail("Expected exception " + str(expected_exception) +
-                      " not raised")
+                      " not raised" + msg)
 
     # equivalent to python 2.7's unittest.assertRegexpMatches()
     def assertRegexpMatches(self, text, expected_regexp, msg=None):

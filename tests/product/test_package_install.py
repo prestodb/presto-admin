@@ -29,65 +29,66 @@ class TestPackageInstall(BaseProductTestCase):
     @attr('smoketest')
     def test_package_install(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s')
+        output = self.run_prestoadmin('package install '
+                                      '/mnt/presto-admin/%(rpm)s')
         for container in self.cluster.all_hosts():
-            self.assert_installed(container)
+            self.assert_installed(container, msg=output)
 
     def test_install_coord_using_dash_h(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
-                             '-H %(master)s')
+        output = self.run_prestoadmin(
+            'package install /mnt/presto-admin/%(rpm)s -H %(master)s')
         self.assert_installed(self.cluster.master)
         for slave in self.cluster.slaves:
-            self.assert_uninstalled(slave)
+            self.assert_uninstalled(slave, msg=output)
 
     def test_install_worker_using_dash_h(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
-                             '-H %(slave1)s')
+        output = self.run_prestoadmin(
+            'package install /mnt/presto-admin/%(rpm)s -H %(slave1)s')
 
-        self.assert_installed(self.cluster.slaves[0])
-        self.assert_uninstalled(self.cluster.master)
-        self.assert_uninstalled(self.cluster.slaves[1])
-        self.assert_uninstalled(self.cluster.slaves[2])
+        self.assert_installed(self.cluster.slaves[0], msg=output)
+        self.assert_uninstalled(self.cluster.master, msg=output)
+        self.assert_uninstalled(self.cluster.slaves[1], msg=output)
+        self.assert_uninstalled(self.cluster.slaves[2], msg=output)
 
     def test_install_workers_using_dash_h(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
-                             '-H %(slave1)s,%(slave2)s')
+        output = self.run_prestoadmin('package install /mnt/presto-admin/'
+                                      '%(rpm)s -H %(slave1)s,%(slave2)s')
 
-        self.assert_installed(self.cluster.slaves[0])
-        self.assert_installed(self.cluster.slaves[1])
-        self.assert_uninstalled(self.cluster.master)
-        self.assert_uninstalled(self.cluster.slaves[2])
+        self.assert_installed(self.cluster.slaves[0], msg=output)
+        self.assert_installed(self.cluster.slaves[1], msg=output)
+        self.assert_uninstalled(self.cluster.master, msg=output)
+        self.assert_uninstalled(self.cluster.slaves[2], msg=output)
 
     def test_install_exclude_coord(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
-                             '-x %(master)s')
+        output = self.run_prestoadmin('package install /mnt/presto-admin/'
+                                      '%(rpm)s -x %(master)s')
 
-        self.assert_uninstalled(self.cluster.master)
+        self.assert_uninstalled(self.cluster.master, msg=output)
         for slave in self.cluster.slaves:
-            self.assert_installed(slave)
+            self.assert_installed(slave, msg=output)
 
     def test_install_exclude_worker(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
-                             '-x %(slave1)s')
-        self.assert_uninstalled(self.cluster.slaves[0])
-        self.assert_installed(self.cluster.slaves[1])
-        self.assert_installed(self.cluster.master)
-        self.assert_installed(self.cluster.slaves[2])
+        output = self.run_prestoadmin('package install /mnt/presto-admin/'
+                                      '%(rpm)s -x %(slave1)s')
+        self.assert_uninstalled(self.cluster.slaves[0], msg=output)
+        self.assert_installed(self.cluster.slaves[1], msg=output)
+        self.assert_installed(self.cluster.master, msg=output)
+        self.assert_installed(self.cluster.slaves[2], msg=output)
 
     def test_install_exclude_workers(self):
         self.copy_presto_rpm_to_master()
-        self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s '
-                             '-x %(slave1)s,%(slave2)s')
+        output = self.run_prestoadmin('package install /mnt/presto-admin/'
+                                      '%(rpm)s -x %(slave1)s,%(slave2)s')
 
-        self.assert_uninstalled(self.cluster.slaves[0])
-        self.assert_uninstalled(self.cluster.slaves[1])
-        self.assert_installed(self.cluster.master)
-        self.assert_installed(self.cluster.slaves[2])
+        self.assert_uninstalled(self.cluster.slaves[0], msg=output)
+        self.assert_uninstalled(self.cluster.slaves[1], msg=output)
+        self.assert_installed(self.cluster.master, msg=output)
+        self.assert_installed(self.cluster.slaves[2], msg=output)
 
     def test_install_invalid_path(self):
         self.copy_presto_rpm_to_master()
