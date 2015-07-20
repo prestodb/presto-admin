@@ -305,10 +305,13 @@ task.max-memory=1GB\n"""
             container, ' [ ! -e %s ]' % directory)
 
     def assert_installed(self, container, msg=None):
-        check_rpm = self.cluster.exec_cmd_on_host(
-            container, 'rpm -q presto')
-        self.assertEqual(self.presto_rpm_filename[:-4] + '\n', check_rpm,
-                         msg=msg)
+        try:
+            check_rpm = self.cluster.exec_cmd_on_host(
+                container, 'rpm -q presto')
+            self.assertEqual(self.presto_rpm_filename[:-4] + '\n', check_rpm,
+                             msg=msg)
+        except OSError as e:
+            self.fail(msg=e.msg + ' ' + msg)
 
     def assert_uninstalled(self, container, msg=None):
         self.assertRaisesRegexp(OSError, 'package presto is not installed',
