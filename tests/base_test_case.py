@@ -81,7 +81,7 @@ class BaseTestCase(unittest.TestCase):
     # This method is equivalent to Python 2.7's unittest.assertRaisesRegexp()
     def assertRaisesRegexp(self, expected_exception, expected_regexp,
                            callable_object, *args, **kwargs):
-        if 'msg' in kwargs:
+        if 'msg' in kwargs and kwargs['msg']:
             msg = ' ' + kwargs['msg']
         else:
             msg = ''
