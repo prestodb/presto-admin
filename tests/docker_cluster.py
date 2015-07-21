@@ -283,6 +283,7 @@ class DockerCluster(object):
             user_output = self.exec_cmd_on_host(
                 host, 'grep app-admin /etc/passwd'
             )
+            user_output += self.exec_cmd_on_host(host, 'stat /home/app-admin')
         except OSError:
             user_output = ''
         if 'sshd_bootstrap' in ps_output or 'sshd\n' not in ps_output\

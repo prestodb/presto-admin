@@ -311,7 +311,7 @@ task.max-memory=1GB\n"""
             self.assertEqual(self.presto_rpm_filename[:-4] + '\n', check_rpm,
                              msg=msg)
         except OSError as e:
-            self.fail(msg=e.msg + ' ' + msg)
+            self.fail(msg=e.strerror + '\n' + msg)
 
     def assert_uninstalled(self, container, msg=None):
         self.assertRaisesRegexp(OSError, 'package presto is not installed',

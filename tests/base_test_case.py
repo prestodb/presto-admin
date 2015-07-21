@@ -82,7 +82,7 @@ class BaseTestCase(unittest.TestCase):
     def assertRaisesRegexp(self, expected_exception, expected_regexp,
                            callable_object, *args, **kwargs):
         if 'msg' in kwargs and kwargs['msg']:
-            msg = ' ' + kwargs['msg']
+            msg = '\n' + kwargs['msg']
         else:
             msg = ''
         try:
