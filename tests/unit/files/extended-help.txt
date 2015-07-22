@@ -46,6 +46,7 @@ Commands:
     connector add
     connector remove
     package install
+    script run
     server install
     server restart
     server start
