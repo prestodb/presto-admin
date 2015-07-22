@@ -67,13 +67,13 @@ class TestMain(BaseTestCase):
     def test_help_text_short(self):
         # See if the help text matches what we expect it to be (in
         # tests/help.txt)
-        self._run_command_compare_to_file(["-h"], 0, "/files/help.txt")
+        self._run_command_compare_to_file(["-h"], 0, "/resources/help.txt")
 
     def test_help_text_long(self):
-        self._run_command_compare_to_file(["--help"], 0, "/files/help.txt")
+        self._run_command_compare_to_file(["--help"], 0, "/resources/help.txt")
 
     def test_help_displayed_with_no_args(self):
-        self._run_command_compare_to_file([], 0, "/files/help.txt")
+        self._run_command_compare_to_file([], 0, "/resources/help.txt")
 
     def test_version(self):
         # Note: this will have to be updated whenever we have a new version.
@@ -232,7 +232,7 @@ class TestMain(BaseTestCase):
 
     def test_extended_help(self):
         self._run_command_compare_to_file(['--extended-help'], 0,
-                                          "/files/extended-help.txt")
+                                          "/resources/extended-help.txt")
 
     @patch('prestoadmin.main.crawl')
     @patch('prestoadmin.fabric_patches.crawl')

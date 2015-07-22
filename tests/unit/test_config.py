@@ -17,7 +17,7 @@ import os
 from mock import patch
 
 from prestoadmin import config
-from prestoadmin.util.exception import ConfigurationError,\
+from prestoadmin.util.exception import ConfigurationError, \
     ConfigFileNotFoundError
 from tests.base_test_case import BaseTestCase
 
@@ -26,7 +26,6 @@ DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 class TestConfiguration(BaseTestCase):
-
     def test_file_does_not_exist_json(self):
         self.assertRaisesRegexp(ConfigFileNotFoundError,
                                 'Missing configuration file at',
@@ -35,17 +34,18 @@ class TestConfiguration(BaseTestCase):
 
     def test_file_is_empty_json(self):
         emptyconf = {}
-        conf = config.get_conf_from_json_file(DIR + '/files/empty.txt')
+        conf = config.get_conf_from_json_file(DIR + '/resources/empty.txt')
         self.assertEqual(conf, emptyconf)
 
     def test_file_is_empty_properties(self):
         emptyconf = {}
-        conf = config.get_conf_from_properties_file(DIR + '/files/empty.txt')
+        conf = config.get_conf_from_properties_file(
+            DIR + '/resources/empty.txt')
         self.assertEqual(conf, emptyconf)
 
     def test_file_is_empty_config(self):
         emptyconf = []
-        conf = config.get_conf_from_config_file(DIR + '/files/empty.txt')
+        conf = config.get_conf_from_config_file(DIR + '/resources/empty.txt')
         self.assertEqual(conf, emptyconf)
 
     def test_invalid_json(self):
@@ -53,15 +53,15 @@ class TestConfiguration(BaseTestCase):
                                 'Expecting , delimiter: line 3 column 3 '
                                 '\(char 19\)',
                                 config.get_conf_from_json_file,
-                                DIR + '/files/invalid_json_conf.json')
+                                DIR + '/resources/invalid_json_conf.json')
 
     def test_get_config(self):
-        config_file = os.path.join(DIR, 'files', 'valid.config')
+        config_file = os.path.join(DIR, 'resources', 'valid.config')
         conf = config.get_conf_from_config_file(config_file)
         self.assertEqual(conf, ['prop1', 'prop2', 'prop3'])
 
     def test_get_properties(self):
-        config_file = os.path.join(DIR, 'files', 'valid.properties')
+        config_file = os.path.join(DIR, 'resources', 'valid.properties')
         conf = config.get_conf_from_properties_file(config_file)
         self.assertEqual(conf, {'a': '1', 'b': '2', 'c': '3',
                                 'd\\=': '4', 'e\\:': '5', 'f': '==6',
@@ -75,7 +75,7 @@ class TestConfiguration(BaseTestCase):
         self.assertEqual(conf, {'key1': 'value1', 'key2': 'value2'})
 
     def test_get_properties_invalid(self):
-        config_file = os.path.join(DIR, 'files', 'invalid.properties')
+        config_file = os.path.join(DIR, 'resources', 'invalid.properties')
         self.assertRaisesRegexp(ConfigurationError,
                                 'abcd is not in the expected format: '
                                 '<property>=<value>, <property>:<value> or '
