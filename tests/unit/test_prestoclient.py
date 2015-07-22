@@ -98,7 +98,8 @@ class TestPrestoClient(BaseTestCase):
         client = PrestoClient('any_host', 'any_user', 8080)
         dir = os.path.abspath(os.path.dirname(__file__))
 
-        with open(dir + '/files/valid_rest_response_level1.txt') as json_file:
+        with open(dir + '/resources/valid_rest_response_level1.txt') \
+                as json_file:
             client.response_from_server = json.load(json_file)
         mock_get_from_uri.return_value = True
         mock_uri.side_effect = [
@@ -109,7 +110,8 @@ class TestPrestoClient(BaseTestCase):
         self.assertEqual(client.next_uri,
                          "http://localhost:8080/v1/statement/2015_harih/2")
 
-        with open(dir + '/files/valid_rest_response_level2.txt') as json_file:
+        with open(dir + '/resources/valid_rest_response_level2.txt') \
+                as json_file:
             client.response_from_server = json.load(json_file)
         mock_uri.side_effect = [
             "http://localhost:8080/v1/statement/2015_harih/2", ""
@@ -128,7 +130,8 @@ class TestPrestoClient(BaseTestCase):
         client = PrestoClient('any_host', 'any_user', 8080)
         dir = os.path.abspath(os.path.dirname(__file__))
 
-        with open(dir + '/files/valid_rest_response_level2.txt') as json_file:
+        with open(dir + '/resources/valid_rest_response_level2.txt') \
+                as json_file:
             client.response_from_server = json.load(json_file)
         mock_get_from_uri.return_value = True
         mock_uri.side_effect = ["any_next_uri", "any_next_next_uri", "", ""]
@@ -147,7 +150,8 @@ class TestPrestoClient(BaseTestCase):
     def test_limit_rows(self, mock_uri, mock_get_from_uri):
         client = PrestoClient('any_host', 'any_user', 8080)
         dir = os.path.abspath(os.path.dirname(__file__))
-        with open(dir + '/files/valid_rest_response_level2.txt') as json_file:
+        with open(dir + '/resources/valid_rest_response_level2.txt') \
+                as json_file:
             client.response_from_server = json.load(json_file)
         mock_get_from_uri.return_value = True
         mock_uri.side_effect = ["any_next_uri", ""]

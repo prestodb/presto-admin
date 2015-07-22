@@ -41,14 +41,14 @@ class TestTopologyConfig(BaseTestCase):
 
     def test_invalid_property(self):
         conf = config.get_conf_from_json_file(os.path.dirname(__file__) +
-                                              "/files/invalid_conf.json")
+                                              "/resources/invalid_conf.json")
         self.assertRaisesRegexp(ConfigurationError,
                                 "Invalid property: invalid property",
                                 topology.validate, conf)
 
     def test_valid_conf(self):
         conf = config.get_conf_from_json_file(os.path.dirname(__file__) +
-                                              "/files/valid_conf.json")
+                                              "/resources/valid_conf.json")
         self.assertEqual(topology.validate(conf), conf)
 
     def test_valid_ipv4(self):

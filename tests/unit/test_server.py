@@ -262,7 +262,7 @@ class TestInstall(BaseTestCase):
         env.host = "Node4"
         server.status()
 
-        expected = self.read_file_output('/files/server_status_out.txt')
+        expected = self.read_file_output('/resources/server_status_out.txt')
         self.assertEqual(sorted(expected), sorted(self.test_stdout.getvalue()))
 
     @patch('prestoadmin.server.run')

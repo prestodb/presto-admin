@@ -193,7 +193,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
 
             file_dir = os.path.abspath(os.path.dirname(__file__))
             template = os.path.join(file_dir,
-                                    'files',
+                                    'resources',
                                     expected_file)
             expected_install_script = open(template).read()
 
