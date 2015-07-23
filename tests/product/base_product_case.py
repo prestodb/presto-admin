@@ -23,6 +23,7 @@ import re
 import os
 import shutil
 import errno
+from time import sleep
 import urllib
 
 import prestoadmin
@@ -33,6 +34,8 @@ from tests.docker_cluster import DockerCluster, DockerClusterException, \
 
 PRESTO_RPM_GLOB = r'presto-*.x86_64.rpm'
 PRESTO_VERSION = r'presto-main:.*'
+RETRY_TIMEOUT = 120
+RETRY_INTERVAL = 5
 
 
 class BaseProductTestCase(BaseTestCase):
@@ -69,6 +72,12 @@ task.max-memory=1GB\n"""
                                  r'to connect to %(host)s \(tried 1 ' \
                                  r'time\)\n\nUnderlying exception:' \
                                  r'\n    timed out\n)'
+
+    status_down_node_error = r'(\tLow level socket error connecting to host ' \
+                             r'%(host)s on port 22: No route to host \(tried ' \
+                             r'1 time\)|\tTimed out trying to connect to ' \
+                             r'%(host)s \(tried 1 time\))'
+
     len_down_node_error = 6
 
     def setUp(self):
@@ -429,6 +438,22 @@ task.max-memory=1GB\n"""
         expected = expected.replace('+', '\+')
         return expected
 
+    def retry(self, method_to_check):
+        time_spent_waiting = 0
+        while time_spent_waiting <= RETRY_TIMEOUT:
+            try:
+                result = method_to_check()
+                # No exception thrown, success
+                return result
+            except (AssertionError, PrestoError):
+                pass
+            except OSError as e:
+                if not e.errno == 7:
+                    raise
+            sleep(RETRY_INTERVAL)
+            time_spent_waiting += RETRY_INTERVAL
+        return method_to_check()
+
 
 def docker_only(original_function):
     def test_inner(self, *args, **kwargs):
@@ -437,3 +462,7 @@ def docker_only(original_function):
         else:
             print 'Warning: Docker only test, passing with a noop'
     return test_inner
+
+
+class PrestoError(Exception):
+    pass

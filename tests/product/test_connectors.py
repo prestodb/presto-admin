@@ -15,22 +15,13 @@
 """
 Product tests for presto-admin connector support.
 """
-from time import sleep
 import json
 import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only
-
-
-CONNECTOR_CHECK_TIMEOUT = 120
-CONNECTOR_CHECK_INTERVAL = 5
-
-
-class PrestoError(Exception):
-    pass
+    LOCAL_RESOURCES_DIR, docker_only, PrestoError
 
 
 class TestConnectors(BaseProductTestCase):
@@ -333,19 +324,5 @@ for the change to take effect
     # have been loaded. Thus in order to verify that connectors get
     # correctly added we check continuously within a timeout.
     def _assert_connectors_loaded(self, expected_connectors):
-        time_spent_waiting = 0
-        while time_spent_waiting <= CONNECTOR_CHECK_TIMEOUT:
-            try:
-                self.assertEqual(self.get_connector_info(),
-                                 expected_connectors)
-                # no exception thrown, the correct connectors were
-                # were loaded
-                return
-            except (AssertionError, PrestoError):
-                pass  # not all connectors loaded
-            except OSError as e:
-                if not e.errno == 7:
-                    raise
-            sleep(CONNECTOR_CHECK_INTERVAL)
-            time_spent_waiting += CONNECTOR_CHECK_INTERVAL
-        self.assertEqual(self.get_connector_info(), expected_connectors)
+        self.retry(lambda: self.assertEqual(expected_connectors,
+                                            self.get_connector_info()))

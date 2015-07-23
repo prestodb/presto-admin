@@ -15,6 +15,7 @@
 import logging
 from fabric.context_managers import settings, hide
 from fabric.operations import run
+from fabric.tasks import execute
 from prestoadmin import topology
 from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util import constants
@@ -33,9 +34,15 @@ def lookup_port(host):
     :return:
     """
     config_file = constants.REMOTE_CONF_DIR + '/config.properties'
-    with settings(hide('stdout', 'warnings'), host=host):
-        port = run("grep http-server.http.port= " + config_file)
-    if port.failed:
+    with settings(hide('stdout', 'warnings', 'aborts')):
+        try:
+            port = execute(run, 'grep http-server.http.port= ' + config_file,
+                           warn_only=True, host=host)[host]
+        except:
+            raise ConfigurationError('Configuration file %s does not exist on '
+                                     'host %s' % (config_file, host))
+
+    if isinstance(port, Exception):
         raise ConfigurationError('Configuration file %s does not exist on '
                                  'host %s' % (config_file, host))
     else:

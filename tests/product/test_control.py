@@ -243,23 +243,18 @@ class TestControl(BaseProductTestCase):
         started_hosts.remove(self.cluster.internal_master)
         expected_start = self.expected_start(
             start_success=started_hosts)
-        error_msg = self.escape_for_regex(self.replace_keywords("""
-Fatal error: [%(master)s] run() received nonzero return code 2 while \
-executing!
-
-Requested: grep http-server.http.port= /etc/presto/config.properties
-Executed: /bin/bash -l -c "grep http-server.http.port= /etc/presto/\
-config.properties"
-
-=============================== Standard output ===============================
-
-grep: /etc/presto/config.properties: No such file or directory
-
-============================================================================\
-====
-
-Aborting.
-""")).splitlines()
+        error_msg = self.escape_for_regex(self.replace_keywords(
+            '[%(master)s] out: Starting presto\n'
+            '[%(master)s] out: ERROR: Config file is missing: '
+            '/etc/presto/config.properties\n'
+            '[%(master)s] out:\n\n'
+            'Fatal error: [%(master)s] sudo() received nonzero return code 4 '
+            'while executing!\n\n'
+            'Requested: set -m; /etc/rc.d/init.d/presto start\n'
+            'Executed: sudo -S -p \'sudo password:\'  /bin/bash -l -c '
+            '"set -m; /etc/rc.d/init.d/presto start"\n\n'
+            'Aborting.\n'
+        )).splitlines()
         expected_start += error_msg
         expected_stop = self.expected_stop(
             not_running=[self.cluster.internal_master])

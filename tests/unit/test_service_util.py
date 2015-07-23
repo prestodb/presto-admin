@@ -22,8 +22,7 @@ from tests.base_test_case import BaseTestCase
 class TestServiceUtil(BaseTestCase):
     @patch('prestoadmin.util.service_util.run')
     def test_lookup_port_failure(self, run_mock):
-        run_mock.return_value = _AttributeString('http-server.http.port=8080')
-        run_mock.return_value.failed = True
+        run_mock.return_value = Exception('File not found')
 
         self.assertRaisesRegexp(
             ConfigurationError,

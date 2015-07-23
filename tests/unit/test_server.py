@@ -35,6 +35,11 @@ class TestInstall(BaseTestCase):
                       '\nPlease check ' \
                       + constants.REMOTE_PRESTO_LOG_DIR + '/server.log'
 
+    def setUp(self):
+        self.remove_runs_once_flag(server.status)
+        self.maxDiff = None
+        super(TestInstall, self).setUp()
+
     @patch('prestoadmin.server.deploy_install_configure')
     def test_install_server(self, mock_install):
         local_path = os.path.join("/any/path/rpm")
@@ -224,46 +229,57 @@ class TestInstall(BaseTestCase):
         self.assertEqual(server.check_server_status(client_mock), False)
         server.RETRY_TIMEOUT = old_retry_timeout
 
-    @patch('prestoadmin.server.get_presto_version')
-    @patch("prestoadmin.server.execute_connector_info_sql")
-    @patch("prestoadmin.server.get_server_status")
-    @patch("prestoadmin.server.get_ext_ip_of_node")
-    @patch("prestoadmin.server.run_sql")
-    @patch('prestoadmin.server.run')
-    def test_status_from_each_node(self, mock_run, mock_nodeinfo, mock_ext_ip,
-                                   mock_server_up, mock_conninfo,
-                                   mock_version):
+    @patch('prestoadmin.server.execute')
+    @patch('prestoadmin.server.run_sql')
+    def test_status_from_each_node(self, mock_run_sql, mock_execute):
         env.roledefs = {
-            'coordinator': ["Node1"],
-            'worker': ["Node1", "Node2", "Node3", "Node4"],
-            'all': ["Node1", "Node2", "Node3", "Node4"]
+            'coordinator': ['Node1'],
+            'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
+            'all': ['Node1', 'Node2', 'Node3', 'Node4']
         }
-        mock_ext_ip.side_effect = ["IP1", "IP2", "IP3", ""]
-        mock_server_up.side_effect = [True, True, True, False]
-        mock_nodeinfo.side_effect = [
+        env.hosts = env.roledefs['all']
+        mock_run_sql.side_effect = [
+            [['select * from system.runtime.nodes']],
+            [['hive'], ['system'], ['tpch']],
             [['http://active/statement', 'presto-main:0.97-SNAPSHOT', True]],
             [['http://inactive/stmt', 'presto-main:0.99-SNAPSHOT', False]],
             [[]],
             [['http://servrdown/statement', 'any', True]]
         ]
-        mock_conninfo.side_effect = [[['hive'], ['system'], ['tpch']],
-                                     [[]],
-                                     [['any']],
-                                     [['any']]]
-
-        mock_version.return_value = '0.101'
-
-        env.host = "Node1"
-        server.status()
-        env.host = "Node2"
-        server.status()
-        env.host = "Node3"
-        server.status()
-        env.host = "Node4"
+        mock_execute.side_effect = [{
+            'Node1': ('IP1', True, ''),
+            'Node2': ('IP2', True, ''),
+            'Node3': ('IP3', True, ''),
+            'Node4': Exception('Timed out trying to connect to Node4')
+        }]
+        env.host = 'Node1'
         server.status()
 
         expected = self.read_file_output('/resources/server_status_out.txt')
-        self.assertEqual(sorted(expected), sorted(self.test_stdout.getvalue()))
+        self.assertEqual(
+            expected.splitlines(),
+            self.test_stdout.getvalue().splitlines()
+        )
+
+    @patch('prestoadmin.server.check_presto_version')
+    @patch('prestoadmin.server.service')
+    @patch('prestoadmin.server.get_ext_ip_of_node')
+    def test_collect_node_information(self, mock_ext_ip, mock_service,
+                                      mock_version):
+        env.roledefs = {
+            'coordinator': ['Node1'],
+            'all': ['Node1']
+        }
+        mock_ext_ip.side_effect = ['IP1', 'IP3', 'IP4']
+        mock_service.side_effect = [True, False, Exception('Not running')]
+        mock_version.side_effect = ['', 'Presto not installed', '', '']
+
+        self.assertEqual(('IP1', True, ''), server.collect_node_information())
+        self.assertEqual(('Unknown', False, 'Presto not installed'),
+                         server.collect_node_information())
+        self.assertEqual(('IP3', False, ''), server.collect_node_information())
+        self.assertEqual(('IP4', False, ''),
+                         server.collect_node_information())
 
     @patch('prestoadmin.server.run')
     def test_get_external_ip(self, mock_nodeuuid):
@@ -291,33 +307,39 @@ class TestInstall(BaseTestCase):
         result_file.close()
         return file_content
 
+    @patch('prestoadmin.server.run_sql')
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.warn')
-    def test_warning_presto_version(self, mock_warn, mock_run):
+    def test_warning_presto_version_wrong(self, mock_warn, mock_run,
+                                          mock_run_sql):
         env.host = 'node1'
         env.roledefs['coordinator'] = ['node1']
         env.roledefs['worker'] = ['node1']
+        env.roledefs['all'] = ['node1']
+        env.hosts = env.roledefs['all']
 
         old_version = '0.97'
         mock_run.return_value = old_version
-        server.status()
+        server.collect_node_information()
         version_warning = 'Presto version is %s, version >= 0.%d required.'\
                           % (old_version, PRESTO_RPM_MIN_REQUIRED_VERSION)
         mock_warn.assert_called_with(version_warning)
 
+    @patch('prestoadmin.server.run_sql')
+    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.warn')
+    def test_warning_presto_version_not_installed(self, mock_warn, mock_run,
+                                                  mock_run_sql):
+        env.host = 'node1'
+        env.roledefs['coordinator'] = ['node1']
+        env.roledefs['worker'] = ['node1']
+        env.roledefs['all'] = ['node1']
+        env.hosts = env.roledefs['all']
         mock_run.return_value = 'No presto installed'
         env.host = 'node1'
-        server.status()
+        server.collect_node_information()
         installation_warning = 'Presto is not installed.'
         mock_warn.assert_called_with(installation_warning)
-
-        self.assertEqual(
-            'Server Status:\n\tnode1(IP: Unknown roles: coordinator, worker):'
-            ' Not Running\n\t' + version_warning + '\nServer Status:\n\t'
-            'node1(IP: Unknown roles: coordinator, worker): Not Running\n\t'
-            + installation_warning + '\n',
-            self.test_stdout.getvalue()
-        )
 
     @patch('prestoadmin.server.run')
     def test_td_presto_version(self,  mock_run):

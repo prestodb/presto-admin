@@ -19,9 +19,9 @@ using presto-admin
 import logging
 import re
 
-from fabric.api import task, sudo, env, serial
+from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
-from fabric.decorators import runs_once
+from fabric.decorators import runs_once, with_settings, parallel
 from fabric.operations import run, os
 from fabric.tasks import execute
 from fabric.utils import warn
@@ -34,9 +34,8 @@ from prestoadmin.util.constants import REMOTE_PRESTO_LOG_DIR
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
-from prestoadmin.util.exception import ConfigFileNotFoundError, \
-    ConfigurationError
-from prestoadmin.util.fabricapi import get_host_list
+from prestoadmin.util.exception import ConfigFileNotFoundError
+from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
 from prestoadmin.util.service_util import lookup_port
 import util.filesystem
 
@@ -45,7 +44,7 @@ __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 INIT_SCRIPTS = '/etc/rc.d/init.d/presto'
 RETRY_TIMEOUT = 120
 SLEEP_INTERVAL = 10
-SERVER_CHECK_SQL = 'select * from system.runtime.nodes'
+SYSTEM_RUNTIME_NODES = 'select * from system.runtime.nodes'
 NODE_INFO_PER_URI_SQL = 'select http_uri, node_version, active from ' \
                         'system.runtime.nodes where ' \
                         'url_extract_host(http_uri) = \'%s\''
@@ -121,10 +120,10 @@ def uninstall():
 def service(control=None):
     if check_presto_version() != '':
         return False
-    if control.strip() == 'start' and is_port_in_use(env.host):
+    if control == 'start' and is_port_in_use(env.host):
         return False
     _LOGGER.info('Executing %s on presto server' % control)
-    ret = sudo('set -m; ' + INIT_SCRIPTS + control)
+    ret = sudo('set -m; ' + INIT_SCRIPTS + ' ' + control)
     return ret.succeeded
 
 
@@ -168,7 +167,7 @@ def start():
     A status check is performed on the entire cluster and a list of
     servers that did not start, if any, are reported at the end.
     """
-    if service(' start'):
+    if service('start'):
         check_status_for_control_commands()
 
 
@@ -178,7 +177,7 @@ def stop():
     """
     Stop the Presto server on all nodes
     """
-    service(' stop')
+    service('stop')
 
 
 def stop_and_start():
@@ -254,7 +253,7 @@ def check_server_status(client):
     result = True
     time = 0
     while time < RETRY_TIMEOUT:
-        result = client.execute_query(SERVER_CHECK_SQL)
+        result = client.execute_query(SYSTEM_RUNTIME_NODES)
         if not result:
             run('sleep %d' % SLEEP_INTERVAL)
             _LOGGER.debug('Status retrieval for the server failed after '
@@ -336,20 +335,6 @@ def get_connector_info_from(client):
     return ', '.join(syscatalog)
 
 
-def get_server_status(client):
-    """
-    Check if the server is running for host.
-
-    Parameters:
-        client - client that executes the query
-
-    Returns:
-        True or False
-    """
-    result = client.execute_query(SERVER_CHECK_SQL)
-    return result
-
-
 def is_server_up(status):
     if status:
         return 'Running'
@@ -397,48 +382,84 @@ def get_ext_ip_of_node(client):
     return external_ip
 
 
-def print_status_header(external_ip, server_status):
+def print_status_header(external_ip, server_status, host):
     print('Server Status:')
-    print('\t%s(IP: %s roles: %s): %s' % (env.host, external_ip,
-                                          ', '.join(get_roles_for(env.host)),
-                                          is_server_up(server_status)))
+    print('\t%s(IP: %s, Roles: %s): %s' % (host, external_ip,
+                                           ', '.join(get_roles_for(host)),
+                                           is_server_up(server_status)))
 
 
-def get_status():
-    client = PrestoClient(env.host, env.user)
-    external_ip = get_ext_ip_of_node(client)
-
-    server_status = get_server_status(client)
-    print_status_header(external_ip, server_status)
-    if server_status:
-        # just get the node_info row for the host if server is up
-        node_info_row = run_sql(client, NODE_INFO_PER_URI_SQL % external_ip)
-        node_status = get_sysnode_info_from(node_info_row)
-        if node_status:
-            connector_status = get_connector_info_from(client)
-            print_node_info(node_status, connector_status)
-        else:
-            print('\tNo information available')
+@parallel
+def collect_node_information():
+    client = PrestoClient(get_coordinator_role()[0], env.user)
+    with settings(hide('warnings')):
+        error_message = check_presto_version()
+    if error_message:
+        external_ip = 'Unknown'
+        is_running = False
     else:
-        print('\tNo information available')
+        with settings(hide('warnings', 'aborts', 'stdout')):
+            try:
+                external_ip = get_ext_ip_of_node(client)
+            except:
+                external_ip = 'Unknown'
+            try:
+                is_running = service('status')
+            except:
+                is_running = False
+    return external_ip, is_running, error_message
+
+
+def get_status_from_coordinator():
+    client = PrestoClient(get_coordinator_role()[0], env.user)
+    try:
+        coordinator_status = run_sql(client, SYSTEM_RUNTIME_NODES)
+        connector_status = get_connector_info_from(client)
+    except BaseException as e:
+        # Just log errors that come from a missing port or anything else; if
+        # we can't connect to the coordinator, we just want to print out a
+        # minimal status anyway.
+        _LOGGER.warn(e.message)
+        coordinator_status = []
+        connector_status = []
+
+    with settings(hide('running')):
+        node_information = execute(collect_node_information,
+                                   hosts=get_host_list())
+
+    for host in get_host_list():
+        if isinstance(node_information[host], Exception):
+            external_ip = 'Unknown'
+            is_running = False
+            error_message = node_information[host].message
+        else:
+            (external_ip, is_running, error_message) = node_information[host]
+
+        print_status_header(external_ip, is_running, host)
+        if error_message:
+            print('\t' + error_message)
+        elif not coordinator_status:
+            print('\tNo information available: the coordinator is down')
+        elif not is_running:
+            print('\tNo information available')
+        else:
+            # just get the node_info row for the host if server is up
+            node_info_row = run_sql(client, NODE_INFO_PER_URI_SQL
+                                    % external_ip)
+            node_status = get_sysnode_info_from(node_info_row)
+            if node_status:
+                print_node_info(node_status, connector_status)
+            else:
+                print('\tNo information available: the coordinator has not yet'
+                      ' discovered this node')
 
 
 @task
-@serial
+@runs_once
 @requires_topology
+@with_settings(hide('warnings'))
 def status():
     """
     Print the status of presto in the cluster
     """
-    with settings(hide('warnings')):
-        presto_version_warning = check_presto_version()
-
-    if not presto_version_warning:
-        try:
-            get_status()
-        except ConfigurationError as e:
-            print_status_header(external_ip='Unknown', server_status=None)
-            print('\t' + e.message)
-    else:
-        print_status_header(external_ip='Unknown', server_status=None)
-        print('\t' + presto_version_warning)
+    get_status_from_coordinator()
