@@ -69,6 +69,7 @@ class TestStatus(BaseProductTestCase):
         status_output = self.run_prestoadmin('server status')
         self.check_status(status_output, self.not_started_status(ips))
 
+    @attr('quarantine')
     def test_connection_to_coordinator_lost(self):
         ips = self.cluster.get_ip_address_dict()
         self.install_presto_admin(self.cluster)
@@ -84,6 +85,7 @@ class TestStatus(BaseProductTestCase):
             ips, topology, self.cluster.internal_slaves[0])
         self.check_status(status_output, statuses)
 
+    @attr('quarantine')
     def test_connection_to_worker_lost(self):
         ips = self.cluster.get_ip_address_dict()
         self.install_presto_admin(self.cluster)

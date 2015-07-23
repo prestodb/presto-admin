@@ -219,6 +219,7 @@ class DockerCluster(object):
                                  {'bind': self.mount_dir,
                                   'ro': False}},
                           links=zip(self.slaves, self.slaves), **kwargs)
+        self._add_hostnames_to_slaves()
 
     def _create_container(self, image, container_name, hostname=None,
                           cmd=None):
@@ -229,6 +230,19 @@ class DockerCluster(object):
                                hostname=hostname,
                                volumes=self.local_mount_dir,
                                command=cmd)
+
+    def _add_hostnames_to_slaves(self):
+        ips = self.get_ip_address_dict()
+        additions_to_etc_hosts = ''
+        for host in self.all_internal_hosts():
+            additions_to_etc_hosts += '%s\t%s\n' % (ips[host], host)
+
+        for host in self.slaves:
+            self.exec_cmd_on_host(
+                host,
+                'bin/bash -c \'echo "%s" >> /etc/hosts\''
+                % additions_to_etc_hosts
+            )
 
     def _ensure_docker_containers_started(self, image):
         centos_based_images = ['teradatalabs/centos6-ssh-test',
