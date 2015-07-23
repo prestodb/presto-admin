@@ -423,3 +423,21 @@ Example
 ::
 
     sudo ./presto-admin server uninstall
+
+****************
+script run
+****************
+::
+
+    presto-admin script run <local-path-to-script> [<remote-dir-to-put-script>]
+
+This command can be used to run an arbitrary script on a cluster. It copies the
+script from its local location to the specified remote directory (defaults to
+/tmp), makes the file executable, and runs it.
+
+Example
+-------
+::
+
+    sudo ./presto-admin script run /my/local/script.sh
+    sudo ./presto-admin script run /my/local/script.sh /remote/dir
