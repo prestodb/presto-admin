@@ -217,7 +217,7 @@ def check_presto_version():
         return ''
     try:
         # remove -SNAPSHOT or .SNAPSHOT from the version string
-        version = re.sub(r'[-\.]SNAPSHOT', '', version)
+        version = re.sub(r'[-\.]SNAPSHOT.*', '', version)
         float(version)
         version_number = version.strip().split('.')
         if int(version_number[1]) < PRESTO_RPM_MIN_REQUIRED_VERSION:

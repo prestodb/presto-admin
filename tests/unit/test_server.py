@@ -363,6 +363,11 @@ class TestInstall(BaseTestCase):
         expected = server.check_presto_version()
         self.assertEqual(expected, '')
 
+        snapshot_version = '0.107.SNAPSHOT-1.x86_64'
+        mock_run.return_value = snapshot_version
+        expected = server.check_presto_version()
+        self.assertEqual(expected, '')
+
         snapshot_version = '0.107-SNAPSHOT'
         mock_run.return_value = snapshot_version
         expected = server.check_presto_version()
