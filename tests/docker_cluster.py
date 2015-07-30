@@ -229,7 +229,8 @@ class DockerCluster(object):
                                name=container_name,
                                hostname=hostname,
                                volumes=self.local_mount_dir,
-                               command=cmd)
+                               command=cmd,
+                               mem_limit='2g')
 
     def _add_hostnames_to_slaves(self):
         ips = self.get_ip_address_dict()
