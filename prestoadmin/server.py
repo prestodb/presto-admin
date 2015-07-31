@@ -19,7 +19,7 @@ using presto-admin
 import logging
 import re
 
-from fabric.api import task, sudo, env
+from fabric.api import task, sudo, env, quiet
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once, with_settings, parallel
 from fabric.operations import run, os
@@ -112,7 +112,15 @@ def uninstall():
     Uninstall Presto after stopping the services on all nodes
     """
     stop()
-    ret = sudo('rpm -e presto')
+
+    # currently we have two rpm names out so we need this retry
+    with quiet():
+        ret = sudo('rpm -e presto')
+        if ret.succeeded:
+            print('Package uninstalled successfully on: ' + env.host)
+            return
+
+    ret = sudo('rpm -e presto-server-rpm')
     if ret.succeeded:
         print('Package uninstalled successfully on: ' + env.host)
 
@@ -235,6 +243,10 @@ def check_presto_version():
 def get_presto_version():
     with settings(hide('warnings', 'stdout'), warn_only=True):
         version = run('rpm -q --qf \"%{VERSION}\\n\" presto')
+
+        # currently we have two rpm names out so we need this retry
+        if not version.succeeded:
+            version = run('rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm')
         _LOGGER.debug('Presto rpm version: ' + version)
         return version
 

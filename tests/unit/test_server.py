@@ -18,6 +18,7 @@ Tests the presto install
 import os
 
 from fabric.api import env
+from fabric.operations import _AttributeString
 from mock import patch, MagicMock
 
 from prestoadmin.prestoclient import PrestoClient
@@ -59,9 +60,17 @@ class TestInstall(BaseTestCase):
     @patch('prestoadmin.server.sudo')
     def test_uninstall_is_called(self, mock_sudo, mock_version_check):
         env.host = "any_host"
+        output1 = _AttributeString()
+        output1.succeeded = False
+        output2 = _AttributeString()
+        output2.succeeded = True
+        mock_sudo.side_effect = [output1, output2]
+
         server.uninstall()
+
         mock_version_check.assert_called_with()
-        mock_sudo.assert_called_with('rpm -e presto')
+        mock_sudo.assert_any_call('rpm -e presto')
+        mock_sudo.assert_called_with('rpm -e presto-server-rpm')
 
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.sudo')
@@ -319,7 +328,9 @@ class TestInstall(BaseTestCase):
         env.hosts = env.roledefs['all']
 
         old_version = '0.97'
-        mock_run.return_value = old_version
+        output = _AttributeString(old_version)
+        output.succeeded = True
+        mock_run.return_value = output
         server.collect_node_information()
         version_warning = 'Presto version is %s, version >= 0.%d required.'\
                           % (old_version, PRESTO_RPM_MIN_REQUIRED_VERSION)
@@ -335,7 +346,9 @@ class TestInstall(BaseTestCase):
         env.roledefs['worker'] = ['node1']
         env.roledefs['all'] = ['node1']
         env.hosts = env.roledefs['all']
-        mock_run.return_value = 'No presto installed'
+        output = _AttributeString('No presto installed')
+        output.succeeded = True
+        mock_run.return_value = output
         env.host = 'node1'
         server.collect_node_information()
         installation_warning = 'Presto is not installed.'
@@ -344,7 +357,9 @@ class TestInstall(BaseTestCase):
     @patch('prestoadmin.server.run')
     def test_td_presto_version(self,  mock_run):
         td_version = '101t'
-        mock_run.return_value = td_version
+        output = _AttributeString(td_version)
+        output.succeeded = True
+        mock_run.return_value = output
         expected = server.check_presto_version()
         self.assertEqual(expected, '')
 
@@ -381,16 +396,39 @@ class TestInstall(BaseTestCase):
     @patch('prestoadmin.server.run')
     def test_version_with_snapshot(self, mock_run):
         snapshot_version = '0.107.SNAPSHOT'
-        mock_run.return_value = snapshot_version
+        output = _AttributeString(snapshot_version)
+        output.succeeded = True
+        mock_run.return_value = output
+
         expected = server.check_presto_version()
         self.assertEqual(expected, '')
 
         snapshot_version = '0.107.SNAPSHOT-1.x86_64'
-        mock_run.return_value = snapshot_version
+        output = _AttributeString(snapshot_version)
+        output.succeeded = True
+        mock_run.return_value = output
         expected = server.check_presto_version()
         self.assertEqual(expected, '')
 
         snapshot_version = '0.107-SNAPSHOT'
-        mock_run.return_value = snapshot_version
+        output = _AttributeString(snapshot_version)
+        output.succeeded = True
+        mock_run.return_value = output
         expected = server.check_presto_version()
+        self.assertEqual(expected, '')
+
+    @patch('prestoadmin.server.run')
+    def test_multiple_version_rpms(self, mock_run):
+        err_msg = 'Presto is not installed.'
+        output1 = _AttributeString(err_msg)
+        output1.succeeded = False
+
+        output2 = _AttributeString('0.111.SNAPSHOT')
+        output2.succeeded = True
+        mock_run.side_effect = [output1, output2]
+
+        expected = server.check_presto_version()
+        mock_run.assert_any_call('rpm -q --qf \"%{VERSION}\\n\" presto')
+        mock_run.assert_called_with(
+            'rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm')
         self.assertEqual(expected, '')
