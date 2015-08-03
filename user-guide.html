@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>User Guide &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Quick Start Guide" href="quick-start-guide.html" />
+    <link rel="prev" title="Hardware Requirements" href="hardware-requirements.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quick-start-guide.html" title="Quick Start Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="hardware-requirements.html" title="Hardware Requirements"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="user-guide">
+<span id="comprehensive-guide-label"></span><h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
+<p>A full explanation of the commands and features of <code class="docutils literal"><span class="pre">presto-admin</span></code>.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quick-start-guide.html">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation/presto-admin-installation.html">Presto Admin Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/presto-admin-configuration.html">Presto-Admin Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/java-installation.html">Java 8 Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/presto-port-configuration.html">Presto Port Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/presto-server-installation.html">Presto Server Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/presto-cli-installation.html">Running Presto Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/troubleshooting-installation.html">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation/advanced-installation-options.html">Advanced Installation Options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation/advanced-installation-options.html#online-vs-offline-installer">Online vs Offline Installer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/advanced-installation-options.html#specifying-a-certificate-authority-for-the-online-installer">Specifying a Certificate Authority for the Online Installer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ssh-configuration.html">SSH Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ssh-configuration.html#using-presto-admin-with-passwordless-ssh">Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with passwordless SSH</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ssh-configuration.html#using-presto-admin-with-ssh-passwords">Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with SSH passwords</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="presto-admin-commands.html">Presto-Admin Commands</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-install">server install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#package-install">package install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-start">server start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-stop">server stop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-restart">server restart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-status">server status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#topology-show">topology show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#configuration-deploy">configuration deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#configuration-show">configuration show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#connector-add">connector add</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#connector-remove">connector remove</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-logs">collect logs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-query-info">collect query_info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-system-info">collect system_info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-uninstall">server uninstall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#script-run">script run</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="presto-admin-cli-options.html">Presto-Admin Command-Line Options</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="hardware-requirements.html"
+                        title="previous chapter">Hardware Requirements</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="quick-start-guide.html"
+                        title="next chapter">Quick Start Guide</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/user-guide.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quick-start-guide.html" title="Quick Start Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="hardware-requirements.html" title="Hardware Requirements"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

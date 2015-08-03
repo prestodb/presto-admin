@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Advanced Installation Options &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="User Guide" href="../user-guide.html" />
+    <link rel="next" title="SSH Configuration" href="../ssh-configuration.html" />
+    <link rel="prev" title="Troubleshooting" href="troubleshooting-installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ssh-configuration.html" title="SSH Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="troubleshooting-installation.html" title="Troubleshooting"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="advanced-installation-options">
+<span id="advanced-installation-options-label"></span><h1>Advanced Installation Options<a class="headerlink" href="#advanced-installation-options" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="online-vs-offline-installer">
+<h2>Online vs Offline Installer<a class="headerlink" href="#online-vs-offline-installer" title="Permalink to this headline">¶</a></h2>
+<p>The installer has two different versions: the offline installer &#8211;
+<code class="docutils literal"><span class="pre">prestoadmin-0.1.0-offline.tar.bz2</span></code>&#8211; and the online installer &#8211;
+<code class="docutils literal"><span class="pre">prestoadmin-0.1.0-online.tar.bz2</span></code>. The offline installer includes all of the
+dependencies for <code class="docutils literal"><span class="pre">presto-admin</span></code>, so it can be used on a cluster without an
+outside network connection. The offline installer is recommended because it is faster.</p>
+<p>The online installer downloads all of the dependencies when you call <code class="docutils literal"><span class="pre">./install-prestoadmin.sh</span></code>.
+You may need to use the online installer if you try to install <code class="docutils literal"><span class="pre">presto-admin</span></code> on an unsupported
+operating system, because some of the binary files are dependent on the
+system files of a given operating system. Be aware, though, that there may be other
+operating system dependent differences beyond the installation process for
+unsupported operating system, and <code class="docutils literal"><span class="pre">presto-admin</span></code> may not work.</p>
+<p>For instructions on how to build either installer see the
+<a class="reference external" href="https://github.com/prestodb/presto-admin">README</a> in the presto-admin
+repository.</p>
+</div>
+<div class="section" id="specifying-a-certificate-authority-for-the-online-installer">
+<h2>Specifying a Certificate Authority for the Online Installer<a class="headerlink" href="#specifying-a-certificate-authority-for-the-online-installer" title="Permalink to this headline">¶</a></h2>
+<p>The online installer downloads its dependencies from <code class="docutils literal"><span class="pre">pypi.python.org</span></code>, the
+standard Python location for hosting packages. For some operating systems,
+the certificate for pypi.python.org is not included in the CA cert bundle,
+so our installation scripts specify <code class="docutils literal"><span class="pre">--trusted-host</span> <span class="pre">pypi.python.org</span></code> when
+downloading the dependencies.</p>
+<p>If using <code class="docutils literal"><span class="pre">--trusted-host</span></code> is not suitable for your security needs, it is
+possible to supply your own certificates to use to authenticate to
+<code class="docutils literal"><span class="pre">pypi.python.org</span></code>.  Please note that if these certificates do not work to
+access <code class="docutils literal"><span class="pre">pypi.python.org</span></code>, the installation will fail. For example, to install
+with your own certificates:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./install-prestoadmin.sh &lt;path_to_cert&gt;/cacert.pem
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Advanced Installation Options</a><ul>
+<li><a class="reference internal" href="#online-vs-offline-installer">Online vs Offline Installer</a></li>
+<li><a class="reference internal" href="#specifying-a-certificate-authority-for-the-online-installer">Specifying a Certificate Authority for the Online Installer</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="troubleshooting-installation.html"
+                        title="previous chapter">Troubleshooting</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../ssh-configuration.html"
+                        title="next chapter">SSH Configuration</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/advanced-installation-options.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ssh-configuration.html" title="SSH Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="troubleshooting-installation.html" title="Troubleshooting"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

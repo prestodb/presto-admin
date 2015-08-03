@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SSH Configuration &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="index.html" />
+    <link rel="up" title="User Guide" href="user-guide.html" />
+    <link rel="next" title="Presto-Admin Commands" href="presto-admin-commands.html" />
+    <link rel="prev" title="Advanced Installation Options" href="installation/advanced-installation-options.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-commands.html" title="Presto-Admin Commands"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation/advanced-installation-options.html" title="Advanced Installation Options"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ssh-configuration">
+<span id="ssh-configuration-label"></span><h1>SSH Configuration<a class="headerlink" href="#ssh-configuration" title="Permalink to this headline">¶</a></h1>
+<p>In order to run <code class="docutils literal"><span class="pre">presto-admin</span></code>, the node that is running <code class="docutils literal"><span class="pre">presto-admin</span></code> must be able to connect to all of the nodes running Presto via SSH. <code class="docutils literal"><span class="pre">presto-admin</span></code> makes the SSH connection with the username and port specified in <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. Even if you have a single-node installation, <code class="docutils literal"><span class="pre">ssh</span> <span class="pre">username&#64;localhost</span></code> needs to work properly.</p>
+<p>There are two ways to configure SSH: with keys so that you can use passwordless SSH, or with passwords. If your cluster already has passwordless SSH configured, you can skip this step. If you are intending to use <code class="docutils literal"><span class="pre">presto-admin</span></code> with passwords, take a look at the documentation below, because there are several ways to specify the password.</p>
+<div class="section" id="using-presto-admin-with-passwordless-ssh">
+<h2>Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with passwordless SSH<a class="headerlink" href="#using-presto-admin-with-passwordless-ssh" title="Permalink to this headline">¶</a></h2>
+<p>In order to set up passwordless SSH, you must first generate keys with no passphrase on the node running <code class="docutils literal"><span class="pre">presto-admin</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa
+</pre></div>
+</div>
+<p>Copy the public key to all of the coordinator and worker nodes:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh &lt;username&gt;@&lt;ip&gt; &quot;mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh&quot;
+scp ~/.ssh/id_rsa.pub &lt;username&gt;@&lt;ip&gt;:~/.ssh/id_rsa.pub
+</pre></div>
+</div>
+<p>Log into all of those nodes and copy the public key to the authorized key file:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh &lt;username&gt;@&lt;ip&gt; &quot;cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys&quot;
+</pre></div>
+</div>
+<p>Once you have passwordless SSH set up, you can just run <code class="docutils literal"><span class="pre">presto-admin</span></code> commands as they appear in the documentation. If your private key is not in <code class="docutils literal"><span class="pre">~/.ssh</span></code>, it is possible to specify one or several private keys using the -i CLI option:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin &lt;command&gt; -i &lt;path_to_private_key&gt; -i &lt;path_to_second_private_key&gt;
+</pre></div>
+</div>
+<p>Please also note that it is not common for servers to allow passwordless SSH to root because of security concerns, so it is preferable for your SSH user not to be root.</p>
+</div>
+<div class="section" id="using-presto-admin-with-ssh-passwords">
+<h2>Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with SSH passwords<a class="headerlink" href="#using-presto-admin-with-ssh-passwords" title="Permalink to this headline">¶</a></h2>
+<p>If you do not want to set up passwordless SSH on your cluster, it is possible to use <code class="docutils literal"><span class="pre">presto-admin</span></code> with SSH passwords. However, you will need to add a password argument to the <code class="docutils literal"><span class="pre">presto-admin</span></code> commands as they appear in the documentation. There are several options. To specify a password on the CLI in plaintext:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin &lt;command&gt; -p &lt;password&gt;
+</pre></div>
+</div>
+<p>However, from a security perspective, it is preferable not to type your password in plaintext. Thus, it is also possible to add an interactive password prompt, which prompts you for the initial value of your password before running any commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin &lt;command&gt; -I
+Initial value for env.password: &lt;type your password here&gt;
+</pre></div>
+</div>
+<p>If you do not specify a password, the command will fail with a parallel execution failure, since, by default, <code class="docutils literal"><span class="pre">presto-admin</span></code> runs in parallel and cannot prompt for a password while running in parallel. If you specify the <code class="docutils literal"><span class="pre">--serial</span></code> option for <code class="docutils literal"><span class="pre">presto-admin</span></code>, <code class="docutils literal"><span class="pre">presto-admin</span></code> will prompt you for a password if it cannot connect.</p>
+<p>Please note that the SSH password for the user specified in <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code> must match the sudo password for that user.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SSH Configuration</a><ul>
+<li><a class="reference internal" href="#using-presto-admin-with-passwordless-ssh">Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with passwordless SSH</a></li>
+<li><a class="reference internal" href="#using-presto-admin-with-ssh-passwords">Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with SSH passwords</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation/advanced-installation-options.html"
+                        title="previous chapter">Advanced Installation Options</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="presto-admin-commands.html"
+                        title="next chapter">Presto-Admin Commands</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ssh-configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-commands.html" title="Presto-Admin Commands"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation/advanced-installation-options.html" title="Advanced Installation Options"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="user-guide.html" >User Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

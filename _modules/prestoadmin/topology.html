@@ -1,0 +1,355 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.topology &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.topology</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c"># you may not use this file except in compliance with the License.</span>
+<span class="c"># You may obtain a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c"># See the License for the specific language governing permissions and</span>
+<span class="c"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for setting and validating the presto-admin config</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">import</span> <span class="nn">fabric</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">runs_once</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span>\
+    <span class="n">ConfigFileNotFoundError</span>
+<span class="kn">import</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">as</span> <span class="nn">util</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;show&#39;</span><span class="p">]</span>
+
+<span class="n">PRESTO_ADMIN_PROPERTIES</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;username&#39;</span><span class="p">,</span> <span class="s">&#39;port&#39;</span><span class="p">,</span> <span class="s">&#39;coordinator&#39;</span><span class="p">,</span> <span class="s">&#39;workers&#39;</span><span class="p">]</span>
+<span class="n">DEFAULT_PROPERTIES</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;root&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="s">&#39;22&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;coordinator&#39;</span><span class="p">:</span> <span class="s">&#39;localhost&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;workers&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;localhost&#39;</span><span class="p">]}</span>
+
+
+<span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="n">conf</span><span class="p">):</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">json_to_string</span><span class="p">(</span><span class="n">conf</span><span class="p">),</span> <span class="n">constants</span><span class="o">.</span><span class="n">CONFIG_PATH</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">requires_topology</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">required</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&#39;topology_config_not_found&#39;</span> <span class="ow">in</span> <span class="n">env</span> \
+                <span class="ow">and</span> <span class="n">env</span><span class="o">.</span><span class="n">topology_config_not_found</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigFileNotFoundError</span><span class="p">(</span><span class="s">&#39;Missing topology configuration in &#39;</span>
+                                          <span class="o">+</span> <span class="n">constants</span><span class="o">.</span><span class="n">CONFIG_PATH</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">required</span>
+
+
+<span class="k">def</span> <span class="nf">set_topology_if_missing</span><span class="p">():</span>
+    <span class="c"># this setting is here to avoid errors about prompts in parallel mode</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">parallel</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&#39;topology_config_not_found&#39;</span> <span class="ow">in</span> <span class="n">env</span> <span class="ow">and</span> \
+                <span class="n">env</span><span class="o">.</span><span class="n">topology_config_not_found</span><span class="p">:</span>
+            <span class="n">set_conf_interactive</span><span class="p">()</span>
+            <span class="n">set_env_from_conf</span><span class="p">()</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">topology_config_not_found</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<span class="nd">@requires_topology</span>
+<div class="viewcode-block" id="show"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.topology.show">[docs]</a><span class="k">def</span> <span class="nf">show</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shows the current topology configuration for the cluster (including the</span>
+<span class="sd">    coordinators, workers, SSH port, and SSH username)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">get_conf_from_fabric</span><span class="p">(),</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">get_conf_from_fabric</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;coordinator&#39;</span><span class="p">:</span> <span class="n">util</span><span class="o">.</span><span class="n">get_coordinator_role</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s">&#39;workers&#39;</span><span class="p">:</span> <span class="n">util</span><span class="o">.</span><span class="n">get_worker_role</span><span class="p">(),</span>
+            <span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+            <span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">user</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">get_conf</span><span class="p">():</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">_get_conf_from_file</span><span class="p">()</span>
+    <span class="n">validate</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">fill_defaults</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">DEFAULT_PROPERTIES</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conf</span>
+
+
+<span class="k">def</span> <span class="nf">_get_conf_from_file</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">get_conf_from_json_file</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">CONFIG_PATH</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">set_conf_interactive</span><span class="p">():</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">build_conf_interactive</span><span class="p">())</span>
+    <span class="k">del</span> <span class="n">env</span><span class="p">[</span><span class="s">&#39;topology_config_not_found&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">build_conf_interactive</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="n">prompt_for_username</span><span class="p">(),</span>
+            <span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="n">prompt_for_port</span><span class="p">(),</span>
+            <span class="s">&#39;coordinator&#39;</span><span class="p">:</span> <span class="n">prompt_for_coordinator</span><span class="p">(),</span>
+            <span class="s">&#39;workers&#39;</span><span class="p">:</span> <span class="n">prompt_for_workers</span><span class="p">()}</span>
+
+
+<span class="k">def</span> <span class="nf">prompt_for_username</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">prompt</span><span class="p">(</span><span class="s">&#39;Enter user name for SSH connection to &#39;</span>
+                                    <span class="s">&#39;all nodes:&#39;</span><span class="p">,</span>
+                                    <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PROPERTIES</span><span class="p">[</span><span class="s">&#39;username&#39;</span><span class="p">],</span>
+                                    <span class="n">validate</span><span class="o">=</span><span class="n">validate_username</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">prompt_for_port</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">prompt</span><span class="p">(</span><span class="s">&#39;Enter port number for SSH connections to &#39;</span>
+                                    <span class="s">&#39;all nodes:&#39;</span><span class="p">,</span>
+                                    <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PROPERTIES</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">],</span>
+                                    <span class="n">validate</span><span class="o">=</span><span class="n">validate_port</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">prompt_for_coordinator</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">prompt</span><span class="p">(</span><span class="s">&#39;Enter host name or IP address for &#39;</span>
+                                    <span class="s">&#39;coordinator node.  Enter an external &#39;</span>
+                                    <span class="s">&#39;host name or ip address if this is a &#39;</span>
+                                    <span class="s">&#39;multi-node cluster:&#39;</span><span class="p">,</span>
+                                    <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PROPERTIES</span><span class="p">[</span><span class="s">&#39;coordinator&#39;</span><span class="p">],</span>
+                                    <span class="n">validate</span><span class="o">=</span><span class="n">validate_coordinator</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">prompt_for_workers</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">prompt</span><span class="p">(</span><span class="s">&#39;Enter host names or IP addresses for &#39;</span>
+                                    <span class="s">&#39;worker nodes separated by spaces:&#39;</span><span class="p">,</span>
+                                    <span class="n">default</span><span class="o">=</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                                        <span class="n">DEFAULT_PROPERTIES</span><span class="p">[</span><span class="s">&#39;workers&#39;</span><span class="p">]),</span>
+                                    <span class="n">validate</span><span class="o">=</span><span class="n">validate_workers_for_prompt</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">validate_workers_for_prompt</span><span class="p">(</span><span class="n">workers</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">validate_workers</span><span class="p">(</span><span class="n">workers</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+
+
+<span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">conf</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">conf</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PRESTO_ADMIN_PROPERTIES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Invalid property: &#39;</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;username&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">validate_username</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">coordinator</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;coordinator&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">validate_coordinator</span><span class="p">(</span><span class="n">coordinator</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">workers</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;workers&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">validate_workers</span><span class="p">(</span><span class="n">workers</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ssh_port</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;ssh-port&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">validate_port</span><span class="p">(</span><span class="n">ssh_port</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conf</span>
+
+
+<span class="k">def</span> <span class="nf">validate_username</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Username must be of type string.&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">username</span>
+
+
+<span class="k">def</span> <span class="nf">validate_coordinator</span><span class="p">(</span><span class="n">coordinator</span><span class="p">):</span>
+    <span class="n">validate_host</span><span class="p">(</span><span class="n">coordinator</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">coordinator</span>
+
+
+<span class="k">def</span> <span class="nf">validate_workers</span><span class="p">(</span><span class="n">workers</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">workers</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Workers must be of type list.  Found &#39;</span>
+                                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">workers</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">workers</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Must specify at least one worker&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="n">workers</span><span class="p">:</span>
+        <span class="n">validate_host</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">workers</span>
+
+
+<span class="k">def</span> <span class="nf">validate_port</span><span class="p">(</span><span class="n">port</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">port_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Port must be of type string, but &#39;</span>
+                                 <span class="s">&#39;found &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">port</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Invalid value &#39;</span> <span class="o">+</span> <span class="n">port</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span>
+                                 <span class="s">&#39;port must be a number between 1 and 65535.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">port_int</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">port_int</span> <span class="o">&lt;</span> <span class="mi">65535</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Invalid port number &#39;</span> <span class="o">+</span> <span class="n">port</span> <span class="o">+</span>
+                                 <span class="s">&#39;: port must be between 1 and 65535&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">port</span>
+
+
+<span class="k">def</span> <span class="nf">validate_host</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">inet_pton</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">host</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Host must be of type string.  Found &#39;</span>
+                                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">host</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">inet_pton</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET6</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">host</span>
+    <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_hostname</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; is not a valid &#39;</span>
+                                 <span class="s">&#39;ip address or host name.&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">host</span>
+
+
+<span class="k">def</span> <span class="nf">is_valid_hostname</span><span class="p">(</span><span class="n">hostname</span><span class="p">):</span>
+    <span class="n">valid_name</span> <span class="o">=</span> <span class="s">&#39;^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*&#39;</span> \
+                 <span class="s">&#39;([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$&#39;</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">valid_name</span><span class="p">,</span> <span class="n">hostname</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">dedup_list</span><span class="p">(</span><span class="n">host_list</span><span class="p">):</span>
+    <span class="n">deduped_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">host_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">deduped_list</span><span class="p">:</span>
+            <span class="n">deduped_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">deduped_list</span>
+
+
+<span class="k">def</span> <span class="nf">set_env_from_conf</span><span class="p">():</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">get_conf</span><span class="p">()</span>
+
+    <span class="n">env</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;username&#39;</span><span class="p">]</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s">&#39;coordinator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">conf</span><span class="p">[</span><span class="s">&#39;coordinator&#39;</span><span class="p">]]</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s">&#39;worker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;workers&#39;</span><span class="p">]</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dedup_list</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">get_coordinator_role</span><span class="p">()</span>
+                                     <span class="o">+</span> <span class="n">util</span><span class="o">.</span><span class="n">get_worker_role</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">env</span><span class="o">.</span><span class="n">hosts</span><span class="p">:</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">hosts</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s">&#39;all&#39;</span><span class="p">][:]</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

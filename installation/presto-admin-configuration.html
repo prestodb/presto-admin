@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Presto-Admin Configuration &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
+    <link rel="next" title="Java 8 Installation" href="java-installation.html" />
+    <link rel="prev" title="Presto Admin Installation" href="presto-admin-installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="java-installation.html" title="Java 8 Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-installation.html" title="Presto Admin Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="presto-admin-configuration">
+<span id="presto-admin-configuration-label"></span><h1>Presto-Admin Configuration<a class="headerlink" href="#presto-admin-configuration" title="Permalink to this headline">¶</a></h1>
+<p>A Presto cluster consists of a coordinator node and one or more workers nodes. A coordinator and worker may be located on the same node, meaning that you can have a single-node installation of Presto, but having a dedicated node for the coordinator is recommended for better performance, especially on larger clusters.</p>
+<p>In order to use <code class="docutils literal"><span class="pre">presto-admin</span></code> to manage software on a cluster of nodes, you must specify a configuration for <code class="docutils literal"><span class="pre">presto-admin</span></code>. This configuration indicates the nodes on which to install as well as other credentials.</p>
+<p>To set up a configuration, create a file <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code> with the content below. Replace the variables denoted with brackets &lt;&gt; with actual values enclosed in quotations. The user specified by <code class="docutils literal"><span class="pre">username</span></code> must have sudo access on all of Presto nodes, and <code class="docutils literal"><span class="pre">presto-admin</span></code> also must be able to login to all of the nodes via SSH as that user (see <a class="reference internal" href="../ssh-configuration.html#ssh-configuration-label"><span>SSH Configuration</span></a> for details on how to set that up). The file should be owned by root with R/W permissions (i.e. 622).</p>
+<div class="highlight-python"><div class="highlight"><pre>{
+&quot;username&quot;: &quot;&lt;ssh_user_name&gt;&quot;,
+&quot;port&quot;: &quot;&lt;ssh_port&gt;&quot;,
+&quot;coordinator&quot;: &quot;&lt;host_name&gt;&quot;,
+&quot;workers&quot;: [&quot;&lt;host_name_1&gt;&quot;, &quot;&lt;host_name_2&gt;&quot;, ... &quot;&lt;host_name_n&gt;&quot;]
+}
+</pre></div>
+</div>
+<p>All of the properties are optional. If you include a blank <code class="docutils literal"><span class="pre">config.json</span></code> file, the following default configuration is used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+<span class="s">&quot;username&quot;</span><span class="p">:</span> <span class="s">&quot;root&quot;</span><span class="p">,</span>
+<span class="s">&quot;port&quot;</span><span class="p">:</span> <span class="s">&quot;22&quot;</span><span class="p">,</span>
+<span class="s">&quot;coordinator&quot;</span><span class="p">:</span> <span class="s">&quot;localhost&quot;</span><span class="p">,</span>
+<span class="s">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;localhost&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The above configuration is for a single-node installation of Presto on the same node that <code class="docutils literal"><span class="pre">presto-admin</span></code> is installed on. You can also specify some but not all of the properties. For example, for a 6 node cluster with default username and port, a sample <code class="docutils literal"><span class="pre">config.json</span></code> would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+<span class="s">&quot;coordinator&quot;</span><span class="p">:</span> <span class="s">&quot;master&quot;</span><span class="p">,</span>
+<span class="s">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;slave1&quot;</span><span class="p">,</span><span class="s">&quot;slave2&quot;</span><span class="p">,</span><span class="s">&quot;slave3&quot;</span><span class="p">,</span><span class="s">&quot;slave4&quot;</span><span class="p">,</span><span class="s">&quot;slave5&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="sudo-password-specification">
+<span id="sudo-password-spec"></span><h2>Sudo Password Specification<a class="headerlink" href="#sudo-password-specification" title="Permalink to this headline">¶</a></h2>
+<p>Please note that if the username you specify is not root, and that user needs to specify a sudo password, you do so in one of two ways. You can specify it on the command line:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin &lt;command&gt; -p &lt;password&gt;
+</pre></div>
+</div>
+<p>Alternatively, you can opt to use an interactive password prompt, which prompts you for the initial value of your password before running any commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin &lt;command&gt; -I
+Initial value for env.password: &lt;type your password here&gt;
+</pre></div>
+</div>
+<p>The sudo password for the user must be the same as the SSH password.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Presto-Admin Configuration</a><ul>
+<li><a class="reference internal" href="#sudo-password-specification">Sudo Password Specification</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="presto-admin-installation.html"
+                        title="previous chapter">Presto Admin Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="java-installation.html"
+                        title="next chapter">Java 8 Installation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/presto-admin-configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="java-installation.html" title="Java 8 Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-installation.html" title="Presto Admin Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

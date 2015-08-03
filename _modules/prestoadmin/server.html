@@ -1,0 +1,534 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.server &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.server</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c"># you may not use this file except in compliance with the License.</span>
+<span class="c"># You may obtain a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c"># See the License for the specific language governing permissions and</span>
+<span class="c"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for installing, monitoring and controlling presto server</span>
+<span class="sd">using presto-admin</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">serial</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hide</span>
+<span class="kn">from</span> <span class="nn">fabric.decorators</span> <span class="kn">import</span> <span class="n">runs_once</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">run</span><span class="p">,</span> <span class="n">os</span>
+<span class="kn">from</span> <span class="nn">fabric.tasks</span> <span class="kn">import</span> <span class="n">execute</span>
+<span class="kn">from</span> <span class="nn">fabric.utils</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">configure_cmds</span>
+<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">connector</span>
+<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">package</span>
+<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">topology</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.constants</span> <span class="kn">import</span> <span class="n">REMOTE_PRESTO_LOG_DIR</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.prestoclient</span> <span class="kn">import</span> <span class="n">PrestoClient</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.topology</span> <span class="kn">import</span> <span class="n">requires_topology</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigFileNotFoundError</span><span class="p">,</span> \
+    <span class="n">ConfigurationError</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">import</span> <span class="n">get_host_list</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.service_util</span> <span class="kn">import</span> <span class="n">lookup_port</span>
+<span class="kn">import</span> <span class="nn">util.filesystem</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;install&#39;</span><span class="p">,</span> <span class="s">&#39;uninstall&#39;</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">,</span> <span class="s">&#39;stop&#39;</span><span class="p">,</span> <span class="s">&#39;restart&#39;</span><span class="p">,</span> <span class="s">&#39;status&#39;</span><span class="p">]</span>
+
+<span class="n">INIT_SCRIPTS</span> <span class="o">=</span> <span class="s">&#39;/etc/rc.d/init.d/presto&#39;</span>
+<span class="n">RETRY_TIMEOUT</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="n">SLEEP_INTERVAL</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">SERVER_CHECK_SQL</span> <span class="o">=</span> <span class="s">&#39;select * from system.runtime.nodes&#39;</span>
+<span class="n">NODE_INFO_PER_URI_SQL</span> <span class="o">=</span> <span class="s">&#39;select http_uri, node_version, active from &#39;</span> \
+                        <span class="s">&#39;system.runtime.nodes where &#39;</span> \
+                        <span class="s">&#39;url_extract_host(http_uri) = </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">&#39;</span>
+<span class="n">EXTERNAL_IP_SQL</span> <span class="o">=</span> <span class="s">&#39;select url_extract_host(http_uri) from system.runtime.nodes&#39;</span> \
+                  <span class="s">&#39; WHERE node_id = </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">&#39;</span>
+<span class="n">CONNECTOR_INFO_SQL</span> <span class="o">=</span> <span class="s">&#39;select catalog_name from system.metadata.catalogs&#39;</span>
+<span class="n">PRESTO_RPM_MIN_REQUIRED_VERSION</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">PRESTO_TD_RPM</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;101t&#39;</span><span class="p">]</span>
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<div class="viewcode-block" id="install"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.server.install">[docs]</a><span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy and install the presto-server rpm to all the nodes in the cluster and</span>
+<span class="sd">    configure the nodes.</span>
+
+<span class="sd">    The topology information will be read from the config.json file. If this</span>
+<span class="sd">    file is missing, then the coordinator and workers will be obtained</span>
+<span class="sd">    interactively. Install will fail for invalid json configuration.</span>
+
+<span class="sd">    The connector configurations will be read from the directory</span>
+<span class="sd">    /etc/opt/prestoadmin/connectors. If this directory is missing or empty</span>
+<span class="sd">    then no connector configuration is deployed.</span>
+
+<span class="sd">    Install will fail for incorrectly formatted configuration files. Expected</span>
+<span class="sd">    format is key=value for .properties files and one option per line for</span>
+<span class="sd">    jvm.config</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        local_path - Absolute path to the presto rpm to be installed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">topology</span><span class="o">.</span><span class="n">set_topology_if_missing</span><span class="p">()</span>
+    <span class="n">execute</span><span class="p">(</span><span class="n">deploy_install_configure</span><span class="p">,</span> <span class="n">local_path</span><span class="p">,</span> <span class="n">hosts</span><span class="o">=</span><span class="n">get_host_list</span><span class="p">())</span>
+
+</div>
+<span class="k">def</span> <span class="nf">deploy_install_configure</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">deploy_install</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
+    <span class="n">update_configs</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">add_tpch_connector</span><span class="p">():</span>
+    <span class="n">tpch_connector_config</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">CONNECTORS_DIR</span><span class="p">,</span>
+                                         <span class="s">&#39;tpch.properties&#39;</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">filesystem</span><span class="o">.</span><span class="n">write_to_file_if_not_exists</span><span class="p">(</span><span class="s">&#39;connector.name=tpch&#39;</span><span class="p">,</span>
+                                                <span class="n">tpch_connector_config</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">update_configs</span><span class="p">():</span>
+    <span class="n">configure_cmds</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+
+    <span class="n">add_tpch_connector</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">connector</span><span class="o">.</span><span class="n">add</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">ConfigFileNotFoundError</span><span class="p">:</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;No connector directory found, not adding connectors.&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_topology</span>
+<div class="viewcode-block" id="uninstall"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.server.uninstall">[docs]</a><span class="k">def</span> <span class="nf">uninstall</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uninstall Presto after stopping the services on all nodes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stop</span><span class="p">()</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -e presto&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ret</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Package uninstalled successfully on: &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">service</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">check_presto_version</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">control</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;start&#39;</span> <span class="ow">and</span> <span class="n">is_port_in_use</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Executing </span><span class="si">%s</span><span class="s"> on presto server&#39;</span> <span class="o">%</span> <span class="n">control</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;set -m; &#39;</span> <span class="o">+</span> <span class="n">INIT_SCRIPTS</span> <span class="o">+</span> <span class="n">control</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">succeeded</span>
+
+
+<span class="k">def</span> <span class="nf">check_status_for_control_commands</span><span class="p">():</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">PrestoClient</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Waiting to make sure we can connect to the Presto server on </span><span class="si">%s</span><span class="s">, &#39;</span>
+          <span class="s">&#39;please wait. This check will time out after </span><span class="si">%d</span><span class="s"> minutes if the &#39;</span>
+          <span class="s">&#39;server does not respond.&#39;</span>
+          <span class="o">%</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="p">(</span><span class="n">RETRY_TIMEOUT</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">check_server_status</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Server started successfully on: &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&#39;Server failed to start on: &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span>
+             <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Please check &#39;</span> <span class="o">+</span> <span class="n">REMOTE_PRESTO_LOG_DIR</span> <span class="o">+</span> <span class="s">&#39;/server.log&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">is_port_in_use</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Checking if port used by Prestoserver is already in use..&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">portnum</span> <span class="o">=</span> <span class="n">lookup_port</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Cannot find port from config.properties. &quot;</span>
+                     <span class="s">&quot;Skipping check for port already being used&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s">&#39;warnings&#39;</span><span class="p">,</span> <span class="s">&#39;stdout&#39;</span><span class="p">),</span> <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="s">&#39;netstat -an |grep </span><span class="si">%s</span><span class="s"> |grep LISTEN&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">portnum</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Presto server port already in use. Skipping &quot;</span>
+                     <span class="s">&quot;server start...&quot;</span><span class="p">)</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&#39;Server failed to start on </span><span class="si">%s</span><span class="s">. Port </span><span class="si">%s</span><span class="s"> already in use&#39;</span>
+             <span class="o">%</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">portnum</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_topology</span>
+<div class="viewcode-block" id="start"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.server.start">[docs]</a><span class="k">def</span> <span class="nf">start</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the Presto server on all nodes</span>
+
+<span class="sd">    A status check is performed on the entire cluster and a list of</span>
+<span class="sd">    servers that did not start, if any, are reported at the end.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="s">&#39; start&#39;</span><span class="p">):</span>
+        <span class="n">check_status_for_control_commands</span><span class="p">()</span>
+
+</div>
+<span class="nd">@task</span>
+<span class="nd">@requires_topology</span>
+<div class="viewcode-block" id="stop"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.server.stop">[docs]</a><span class="k">def</span> <span class="nf">stop</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stop the Presto server on all nodes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">service</span><span class="p">(</span><span class="s">&#39; stop&#39;</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">stop_and_start</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">check_presto_version</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;set -m; &#39;</span> <span class="o">+</span> <span class="n">INIT_SCRIPTS</span> <span class="o">+</span> <span class="s">&#39; stop&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_port_in_use</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Executing start on presto server&#39;</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;set -m; &#39;</span> <span class="o">+</span> <span class="n">INIT_SCRIPTS</span> <span class="o">+</span> <span class="s">&#39; start&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">succeeded</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_topology</span>
+<div class="viewcode-block" id="restart"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.server.restart">[docs]</a><span class="k">def</span> <span class="nf">restart</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Restart the Presto server on all nodes.</span>
+
+<span class="sd">    A status check is performed on the entire cluster and a list of</span>
+<span class="sd">    servers that did not start, if any, are reported at the end.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">stop_and_start</span><span class="p">():</span>
+        <span class="n">check_status_for_control_commands</span><span class="p">()</span>
+
+</div>
+<span class="k">def</span> <span class="nf">check_presto_version</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks that the Presto version is suitable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Error string if applicable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">get_presto_version</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">PRESTO_TD_RPM</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># remove -SNAPSHOT or .SNAPSHOT from the version string</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">r&#39;[-\.]SNAPSHOT.*&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">version_number</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">version_number</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">PRESTO_RPM_MIN_REQUIRED_VERSION</span><span class="p">:</span>
+            <span class="n">incorrect_version_str</span> <span class="o">=</span> <span class="s">&#39;Presto version is </span><span class="si">%s</span><span class="s">, version &gt;= 0.</span><span class="si">%d</span><span class="s"> &#39;</span> \
+                                    <span class="s">&#39;required.&#39;</span> <span class="o">%</span> \
+                                    <span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">PRESTO_RPM_MIN_REQUIRED_VERSION</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">incorrect_version_str</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">incorrect_version_str</span>
+        <span class="k">return</span> <span class="s">&#39;&#39;</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">not_installed_str</span> <span class="o">=</span> <span class="s">&#39;Presto is not installed.&#39;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="n">not_installed_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">not_installed_str</span>
+
+
+<span class="k">def</span> <span class="nf">get_presto_version</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s">&#39;warnings&#39;</span><span class="p">,</span> <span class="s">&#39;stdout&#39;</span><span class="p">),</span> <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="s">&#39;rpm -q --qf </span><span class="se">\&quot;</span><span class="s">%{VERSION}</span><span class="se">\\</span><span class="s">n</span><span class="se">\&quot;</span><span class="s"> presto&#39;</span><span class="p">)</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Presto rpm version: &#39;</span> <span class="o">+</span> <span class="n">version</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">version</span>
+
+
+<span class="k">def</span> <span class="nf">check_server_status</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if server is running for env.host. Retries connecting to server</span>
+<span class="sd">    until server is up or till RETRY_TIMEOUT is reached</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        client - client that executes the query</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True or False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="n">RETRY_TIMEOUT</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span><span class="n">SERVER_CHECK_SQL</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">run</span><span class="p">(</span><span class="s">&#39;sleep </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">SLEEP_INTERVAL</span><span class="p">)</span>
+            <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Status retrieval for the server failed after &#39;</span>
+                          <span class="s">&#39;waiting for </span><span class="si">%d</span><span class="s"> seconds. Retrying...&#39;</span> <span class="o">%</span> <span class="n">time</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">+=</span> <span class="n">SLEEP_INTERVAL</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">run_sql</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">get_rows</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># TODO: Check if we can get some error cause from server response and</span>
+        <span class="c"># log that to the user</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Querying server failed&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+
+<span class="k">def</span> <span class="nf">execute_connector_info_sql</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns [[catalog_name], [catalog_2]..] from catalogs system table</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        client - client that executes the query</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">run_sql</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">CONNECTOR_INFO_SQL</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">execute_external_ip_sql</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">uuid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns external ip of the host with uuid after parsing the http_uri column</span>
+<span class="sd">    from nodes system table</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        client - client that executes the query</span>
+<span class="sd">        uuid - node_id of the node</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">run_sql</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">EXTERNAL_IP_SQL</span> <span class="o">%</span> <span class="n">uuid</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_sysnode_info_from</span><span class="p">(</span><span class="n">node_info_row</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns system node info dict from node info row for a node</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        node_info_row -</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Node info dict in format:</span>
+<span class="sd">        {&#39;http://node1/statement&#39;: [presto-main:0.97-SNAPSHOT, True]}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">node_info_row</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">:</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Node info: </span><span class="si">%s</span><span class="s"> &#39;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span> <span class="nf">get_connector_info_from</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns installed connectors</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        client - client that executes the query</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        comma delimited connectors eg: tpch, hive, system</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">syscatalog</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">connector_info</span> <span class="o">=</span> <span class="n">execute_connector_info_sql</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">conn_info</span> <span class="ow">in</span> <span class="n">connector_info</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">conn_info</span><span class="p">:</span>
+            <span class="n">syscatalog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conn_info</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">syscatalog</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_server_status</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the server is running for host.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        client - client that executes the query</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True or False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span><span class="n">SERVER_CHECK_SQL</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">is_server_up</span><span class="p">(</span><span class="n">status</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;Running&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;Not Running&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">get_roles_for</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+    <span class="n">roles</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;coordinator&#39;</span><span class="p">,</span> <span class="s">&#39;worker&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="n">role</span><span class="p">]:</span>
+            <span class="n">roles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">role</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">roles</span>
+
+
+<span class="k">def</span> <span class="nf">print_node_info</span><span class="p">(</span><span class="n">node_status</span><span class="p">,</span> <span class="n">connector_status</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">node_status</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">Node URI(http): &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span>
+              <span class="s">&#39;</span><span class="se">\n\t</span><span class="s">Presto Version: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">node_status</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span>
+              <span class="s">&#39;</span><span class="se">\n\t</span><span class="s">Node is active: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">node_status</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">connector_status</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">Connectors:     &#39;</span> <span class="o">+</span> <span class="n">connector_status</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_ext_ip_of_node</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="n">node_properties_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span><span class="p">,</span>
+                                        <span class="s">&#39;node.properties&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s">&#39;stdout&#39;</span><span class="p">)):</span>
+        <span class="n">node_uuid</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="s">&#39;sed -n s/^node.id=//p &#39;</span> <span class="o">+</span> <span class="n">node_properties_file</span><span class="p">)</span>
+    <span class="n">external_ip_row</span> <span class="o">=</span> <span class="n">execute_external_ip_sql</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">node_uuid</span><span class="p">)</span>
+    <span class="n">external_ip</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">external_ip_row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warn_more_than_one_ip</span> <span class="o">=</span> <span class="s">&#39;More than one external ip found for &#39;</span> \
+                                <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s">&#39;. There could be multiple nodes &#39;</span> \
+                                             <span class="s">&#39;associated with the same node.id&#39;</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">warn_more_than_one_ip</span><span class="p">)</span>
+        <span class="n">warn</span><span class="p">(</span><span class="n">warn_more_than_one_ip</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">external_ip</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">external_ip_row</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">:</span>
+            <span class="n">external_ip</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">external_ip</span><span class="p">:</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Cannot get external IP for &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">external_ip</span> <span class="o">=</span> <span class="s">&#39;Unknown&#39;</span>
+    <span class="k">return</span> <span class="n">external_ip</span>
+
+
+<span class="k">def</span> <span class="nf">print_status_header</span><span class="p">(</span><span class="n">external_ip</span><span class="p">,</span> <span class="n">server_status</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Server Status:&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%s</span><span class="s">(IP: </span><span class="si">%s</span><span class="s"> roles: </span><span class="si">%s</span><span class="s">): </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">external_ip</span><span class="p">,</span>
+                                          <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_roles_for</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)),</span>
+                                          <span class="n">is_server_up</span><span class="p">(</span><span class="n">server_status</span><span class="p">)))</span>
+
+
+<span class="k">def</span> <span class="nf">get_status</span><span class="p">():</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">PrestoClient</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">external_ip</span> <span class="o">=</span> <span class="n">get_ext_ip_of_node</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+
+    <span class="n">server_status</span> <span class="o">=</span> <span class="n">get_server_status</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+    <span class="n">print_status_header</span><span class="p">(</span><span class="n">external_ip</span><span class="p">,</span> <span class="n">server_status</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">server_status</span><span class="p">:</span>
+        <span class="c"># just get the node_info row for the host if server is up</span>
+        <span class="n">node_info_row</span> <span class="o">=</span> <span class="n">run_sql</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">NODE_INFO_PER_URI_SQL</span> <span class="o">%</span> <span class="n">external_ip</span><span class="p">)</span>
+        <span class="n">node_status</span> <span class="o">=</span> <span class="n">get_sysnode_info_from</span><span class="p">(</span><span class="n">node_info_row</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node_status</span><span class="p">:</span>
+            <span class="n">connector_status</span> <span class="o">=</span> <span class="n">get_connector_info_from</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">print_node_info</span><span class="p">(</span><span class="n">node_status</span><span class="p">,</span> <span class="n">connector_status</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">No information available&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">No information available&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@serial</span>
+<span class="nd">@requires_topology</span>
+<div class="viewcode-block" id="status"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.server.status">[docs]</a><span class="k">def</span> <span class="nf">status</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print the status of presto in the cluster</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s">&#39;warnings&#39;</span><span class="p">)):</span>
+        <span class="n">presto_version_warning</span> <span class="o">=</span> <span class="n">check_presto_version</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">presto_version_warning</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">get_status</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">print_status_header</span><span class="p">(</span><span class="n">external_ip</span><span class="o">=</span><span class="s">&#39;Unknown&#39;</span><span class="p">,</span> <span class="n">server_status</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">print_status_header</span><span class="p">(</span><span class="n">external_ip</span><span class="o">=</span><span class="s">&#39;Unknown&#39;</span><span class="p">,</span> <span class="n">server_status</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">presto_version_warning</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

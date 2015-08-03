@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Presto Port Configuration &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
+    <link rel="next" title="Presto Server Installation" href="presto-server-installation.html" />
+    <link rel="prev" title="Java 8 Installation" href="java-installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-server-installation.html" title="Presto Server Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="java-installation.html" title="Java 8 Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="presto-port-configuration">
+<span id="presto-port-configuration-label"></span><h1>Presto Port Configuration<a class="headerlink" href="#presto-port-configuration" title="Permalink to this headline">¶</a></h1>
+<p>By default, Presto configuration uses 8080 for the HTTP port. If the port is already used on a given node on your cluster, that server will fail to start.
+You can check if that port is already in use on a node by running the following on that node:</p>
+<div class="highlight-python"><div class="highlight"><pre>netstat -an |grep 8080 |grep LISTEN
+</pre></div>
+</div>
+<p>It will return nothing if port 8080 is free.</p>
+<p>You can configure the server to use a different port by changing the following properties in <code class="docutils literal"><span class="pre">config.properties</span></code> for both coordinator and workers:</p>
+<div class="highlight-python"><div class="highlight"><pre>http-server.http.port=&lt;port&gt;
+discovery.uri=http://&lt;coordinator_ip_or_host&gt;:&lt;port&gt;
+</pre></div>
+</div>
+<p>You can add these properties with the new <code class="docutils literal"><span class="pre">port</span></code> to the file <code class="docutils literal"><span class="pre">config.properties</span></code> under each of the directories <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code>
+and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers</span></code> locally, prior to running <a class="reference internal" href="../presto-admin-commands.html#server-install-label"><span>server install</span></a>. You may need to create these two directories.
+If you have already installed Presto using <a class="reference internal" href="../presto-admin-commands.html#server-install-label"><span>server install</span></a> then you
+can reconfigure the cluster to use a new port by updating the <code class="docutils literal"><span class="pre">config.properties</span></code> at  <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code>
+and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers</span></code> and then running <a class="reference internal" href="../presto-admin-commands.html#configuration-deploy-label"><span>configuration deploy</span></a>.</p>
+<p><code class="docutils literal"><span class="pre">presto-admin</span></code> <a class="reference internal" href="../presto-admin-commands.html#server-start-label"><span>server start</span></a> and <a class="reference internal" href="../presto-admin-commands.html#server-restart-label"><span>server restart</span></a> will check if the port configured for the server
+is already in use. If the port is in use on a node, then <code class="docutils literal"><span class="pre">presto-admin</span></code> will issue a warning and skip starting the server on that particular node.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="java-installation.html"
+                        title="previous chapter">Java 8 Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="presto-server-installation.html"
+                        title="next chapter">Presto Server Installation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/presto-port-configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-server-installation.html" title="Presto Server Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="java-installation.html" title="Java 8 Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

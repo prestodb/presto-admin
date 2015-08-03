@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Java 8 Installation &mdash; presto-admin 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
+    <link rel="next" title="Presto Port Configuration" href="presto-port-configuration.html" />
+    <link rel="prev" title="Presto-Admin Configuration" href="presto-admin-configuration.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-port-configuration.html" title="Presto Port Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-configuration.html" title="Presto-Admin Configuration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="java-8-installation">
+<span id="java-installation-label"></span><h1>Java 8 Installation<a class="headerlink" href="#java-8-installation" title="Permalink to this headline">¶</a></h1>
+<p>Prerequisites: <a class="reference internal" href="presto-admin-installation.html#presto-admin-installation-label"><span>Presto Admin Installation</span></a> and <a class="reference internal" href="presto-admin-configuration.html#presto-admin-configuration-label"><span>Presto-Admin Configuration</span></a></p>
+<p>The Oracle Java 1.8 JRE (64-bit), update 45 or higher, is a prerequisite for Presto. If a suitable 64-bit version of Oracle Java 8 is already installed on the cluster, you can skip this step.</p>
+<p>The <code class="docutils literal"><span class="pre">presto-admin</span></code> tool simplifies installing Java 8 on all nodes in the Presto cluster. To install the Oracle Java 1.8 (64-bit) RPM for Linux using <code class="docutils literal"><span class="pre">presto-admin</span></code>, first download <a class="reference external" href="http://java.com/en/download/linux_manual.jsp">Oracle Java 8</a> and copy it to a location accessible by <code class="docutils literal"><span class="pre">presto-admin</span></code>. Next, run the following command to install Java 8 on each node in the Presto cluster.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo ./presto-admin package install &lt;local_path_to_java_rpm&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <code class="docutils literal"><span class="pre">server-install-label</span></code> will look for your Oracle Java 1.8 installation at locations where Java is installed normally using the binary or the RPM based installer. Otherwise, you need to have an environment variable called <code class="docutils literal"><span class="pre">JAVA8_HOME</span></code> set with your Java 1.8 install path. If <code class="docutils literal"><span class="pre">JAVA8_HOME</span></code> is not set or is pointing to an incompatible version of Java, the installer will look for the <code class="docutils literal"><span class="pre">JAVA_HOME</span></code> environment variable for a compatible version of Java. If neither of these environmental variables is set with a compatible version, and <code class="docutils literal"><span class="pre">presto-admin</span></code> fails to find Java 8 at any of the normal install locations, then <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> will fail. After successfully running <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> you can find the Java being used by Presto at <code class="docutils literal"><span class="pre">/etc/presto/env.sh</span></code>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="presto-admin-configuration.html"
+                        title="previous chapter">Presto-Admin Configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="presto-port-configuration.html"
+                        title="next chapter">Presto Port Configuration</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/java-installation.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-port-configuration.html" title="Presto Port Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-configuration.html" title="Presto-Admin Configuration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>
