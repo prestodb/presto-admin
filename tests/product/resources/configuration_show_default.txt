@@ -15,6 +15,7 @@ master: Configuration file at /etc/presto/jvm.config:
 -XX:\+HeapDumpOnOutOfMemoryError
 -XX:\+UseGCOverheadLimit
 -XX:OnOutOfMemoryError=kill -9 %p
+-DHADOOP_USER_NAME=hive
 
 
 master: Configuration file at /etc/presto/config.properties:
@@ -22,6 +23,9 @@ coordinator=true
 discovery-server.enabled=true
 discovery.uri=http://master:8080
 http-server.http.port=8080
+node.scheduler.include-coordinator=false
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB
 
 
@@ -42,12 +46,15 @@ slave1: Configuration file at /etc/presto/jvm.config:
 -XX:\+HeapDumpOnOutOfMemoryError
 -XX:\+UseGCOverheadLimit
 -XX:OnOutOfMemoryError=kill -9 %p
+-DHADOOP_USER_NAME=hive
 
 
 slave1: Configuration file at /etc/presto/config.properties:
 coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB
 
 
@@ -68,12 +75,15 @@ slave2: Configuration file at /etc/presto/jvm.config:
 -XX:\+HeapDumpOnOutOfMemoryError
 -XX:\+UseGCOverheadLimit
 -XX:OnOutOfMemoryError=kill -9 %p
+-DHADOOP_USER_NAME=hive
 
 
 slave2: Configuration file at /etc/presto/config.properties:
 coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB
 
 
@@ -94,10 +104,13 @@ slave3: Configuration file at /etc/presto/jvm.config:
 -XX:\+HeapDumpOnOutOfMemoryError
 -XX:\+UseGCOverheadLimit
 -XX:OnOutOfMemoryError=kill -9 %p
+-DHADOOP_USER_NAME=hive
 
 
 slave3: Configuration file at /etc/presto/config.properties:
 coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB

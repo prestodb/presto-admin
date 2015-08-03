@@ -109,23 +109,33 @@ class TestServerInstall(BaseProductTestCase):
     default_workers_config_with_slave1_ = """coordinator=false
 discovery.uri=http://slave1:8080
 http-server.http.port=8080
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB\n"""
 
     default_coord_config_with_slave1_ = """coordinator=true
 discovery-server.enabled=true
 discovery.uri=http://slave1:8080
 http-server.http.port=8080
+node-scheduler.include-coordinator=false
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB\n"""
 
     default_workers_config_regex_ = """coordinator=false
 discovery.uri=http:.*:8080
 http-server.http.port=8080
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB\n"""
 
     default_coord_config_regex_ = """coordinator=true
 discovery-server.enabled=true
 discovery.uri=http:.*:8080
 http-server.http.port=8080
+node-scheduler.include-coordinator=false
+query.max-memory-per-node=512MB
+query.max-memory=50GB
 task.max-memory=1GB\n"""
 
     def setUp(self):
@@ -305,6 +315,7 @@ task.max-memory=1GB\n"""
             self.cluster.master
         )
         self.copy_presto_rpm_to_master()
+        self.write_test_configs(self.cluster)
 
         cmd_output = self.run_prestoadmin_script(
             'echo -e "root\n22\n%(master)s\n%(slave1)s\n" | '
@@ -353,6 +364,7 @@ task.max-memory=1GB\n"""
         self.install_presto_admin(self.cluster)
         ips = self.cluster.get_ip_address_dict()
         self.copy_presto_rpm_to_master()
+        self.write_test_configs(self.cluster)
 
         additional_keywords = {
             'master_ip': ips[self.cluster.master],

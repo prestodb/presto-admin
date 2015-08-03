@@ -30,6 +30,7 @@ class TestConfiguration(BaseProductTestCase):
     def setUp(self):
         super(TestConfiguration, self).setUp()
         self.setup_cluster()
+        self.write_test_configs(self.cluster)
 
     @attr('smoketest')
     def test_configuration_deploy_show(self):
