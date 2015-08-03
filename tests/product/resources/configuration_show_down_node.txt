@@ -3,6 +3,8 @@ master: Configuration file at /etc/presto/config.properties:
 coordinator=false
 discovery.uri=http://slave1:8080
 http-server.http.port=8080
+query.max-memory-per-node=1GB
+query.max-memory=50GB
 task.max-memory=1GB
 
 
@@ -10,6 +12,8 @@ slave2: Configuration file at /etc/presto/config.properties:
 coordinator=false
 discovery.uri=http://slave1:8080
 http-server.http.port=8080
+query.max-memory-per-node=1GB
+query.max-memory=50GB
 task.max-memory=1GB
 
 
@@ -17,4 +21,6 @@ slave3: Configuration file at /etc/presto/config.properties:
 coordinator=false
 discovery.uri=http://slave1:8080
 http-server.http.port=8080
+query.max-memory-per-node=1GB
+query.max-memory=50GB
 task.max-memory=1GB

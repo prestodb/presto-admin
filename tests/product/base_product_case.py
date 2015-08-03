@@ -27,6 +27,7 @@ from time import sleep
 import urllib
 
 import prestoadmin
+from prestoadmin.util import constants
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster, DockerClusterException, \
@@ -44,6 +45,8 @@ class BaseProductTestCase(BaseTestCase):
     default_workers_config_ = """coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
+query.max-memory-per-node=1GB
+query.max-memory=50GB
 task.max-memory=1GB\n"""
     default_node_properties_ = """node.data-dir=/var/lib/presto/data
 node.environment=presto
@@ -57,12 +60,16 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
 -XX:+ExplicitGCInvokesConcurrent
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
--XX:OnOutOfMemoryError=kill -9 %p\n"""
+-XX:OnOutOfMemoryError=kill -9 %p
+-DHADOOP_USER_NAME=hive\n"""
 
     default_coordinator_config_ = """coordinator=true
 discovery-server.enabled=true
 discovery.uri=http://master:8080
 http-server.http.port=8080
+node-scheduler.include-coordinator=false
+query.max-memory-per-node=1GB
+query.max-memory=50GB
 task.max-memory=1GB\n"""
 
     down_node_connection_error = r'(\nWarning: (\[%(host)s\] )?Low level socket ' \
@@ -273,10 +280,23 @@ task.max-memory=1GB\n"""
         cluster.copy_to_host(rpm_path, cluster.master)
         self._check_if_corrupted_rpm(cluster)
 
+    def write_test_configs(self, cluster):
+        cluster.write_content_to_host(
+            'query.max-memory-per-node=512MB',
+            os.path.join(constants.COORDINATOR_DIR, 'config.properties'),
+            cluster.master
+        )
+        cluster.write_content_to_host(
+            'query.max-memory-per-node=512MB',
+            os.path.join(constants.WORKERS_DIR, 'config.properties'),
+            cluster.master
+        )
+
     def server_install(self, cluster=None):
         if not cluster:
             cluster = self.cluster
         self.copy_presto_rpm_to_master(cluster)
+        self.write_test_configs(cluster)
         cmd_output = self.run_prestoadmin(
             'server install ' +
             os.path.join(cluster.mount_dir, self.presto_rpm_filename),

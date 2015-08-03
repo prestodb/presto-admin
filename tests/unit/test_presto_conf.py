@@ -53,7 +53,7 @@ class TestPrestoConf(BaseTestCase):
 
     def test_valid_conf(self):
         conf = {'node.properties': {}, 'jvm.config': [],
-                'config.properties': {}}
+                'config.properties': {'discovery.uri': 'http://uri'}}
         self.assertEqual(validate_presto_conf(conf), conf)
 
     def test_invalid_conf(self):
