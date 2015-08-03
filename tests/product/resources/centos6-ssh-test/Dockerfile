@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM jdeathe/centos-ssh
+FROM jdeathe/centos-ssh:centos-6-1.2.0
 MAINTAINER Christina Wallin <christina.wallin@teradata.com>
 
 # Install Oracle Java

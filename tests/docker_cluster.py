@@ -110,8 +110,9 @@ class DockerCluster(object):
             sys.exit('Docker is not installed. Try installing it with '
                      'presto-admin/bin/install-docker.sh.')
 
-    def create_image(self, path_to_dockerfile_dir, image_tag, base_image):
-        self.fetch_image_if_not_present(base_image)
+    def create_image(self, path_to_dockerfile_dir, image_tag, base_image,
+                     base_image_tag=None):
+        self.fetch_image_if_not_present(base_image, base_image_tag)
         self._execute_and_wait(self.client.build,
                                path=path_to_dockerfile_dir,
                                tag=image_tag,
@@ -347,7 +348,8 @@ class DockerCluster(object):
         centos_cluster.create_image(
             os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
             'teradatalabs/centos6-ssh-test',
-            'jdeathe/centos-ssh'
+            'jdeathe/centos-ssh',
+            'centos-6-1.2.0'
         )
         centos_cluster.start_containers(
             'teradatalabs/centos6-ssh-test',
