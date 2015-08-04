@@ -138,7 +138,9 @@ task.max-memory=1GB\n"""
     def install_default_presto(self, cluster):
         self.install_presto_admin(cluster=cluster)
         self.upload_topology(cluster=cluster)
-        self.server_install(cluster=cluster)
+        output = self.server_install(cluster=cluster)
+        self.assert_installed(self.cluster.master, cluster=cluster,
+                              msg=output)
 
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()
