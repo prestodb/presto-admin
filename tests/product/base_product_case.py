@@ -23,6 +23,7 @@ import re
 import os
 import shutil
 import errno
+from nose.tools import nottest
 from time import sleep
 import urllib
 
@@ -297,23 +298,27 @@ task.max-memory=1GB\n"""
         cluster.copy_to_host(rpm_path, cluster.master)
         self._check_if_corrupted_rpm(cluster)
 
-    def write_test_configs(self, cluster):
+    @nottest
+    def write_test_configs(self, cluster, extra_configs=None):
+        config = 'query.max-memory-per-node=512MB'
+        if extra_configs:
+            config += '\n' + extra_configs
         cluster.write_content_to_host(
-            'query.max-memory-per-node=512MB',
+            config,
             os.path.join(constants.COORDINATOR_DIR, 'config.properties'),
             cluster.master
         )
         cluster.write_content_to_host(
-            'query.max-memory-per-node=512MB',
+            config,
             os.path.join(constants.WORKERS_DIR, 'config.properties'),
             cluster.master
         )
 
-    def server_install(self, cluster=None):
+    def server_install(self, cluster=None, extra_configs=None):
         if not cluster:
             cluster = self.cluster
         self.copy_presto_rpm_to_master(cluster)
-        self.write_test_configs(cluster)
+        self.write_test_configs(cluster, extra_configs)
         cmd_output = self.run_prestoadmin(
             'server install ' +
             os.path.join(cluster.mount_dir, self.presto_rpm_filename),

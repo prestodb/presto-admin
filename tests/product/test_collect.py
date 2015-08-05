@@ -24,7 +24,7 @@ from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import run_sql
-from tests.product.base_product_case import BaseProductTestCase
+from tests.product.base_product_case import BaseProductTestCase, PrestoError
 
 
 class TestCollect(BaseProductTestCase):
@@ -104,7 +104,7 @@ class TestCollect(BaseProductTestCase):
     def test_collect_query_info(self):
         self.run_prestoadmin('server start')
         sql_to_run = 'SELECT * FROM system.runtime.nodes WHERE 1234 = 1234'
-        query_id = self.get_query_id(sql_to_run)
+        query_id = self.retry(lambda: self.get_query_id(sql_to_run))
 
         actual = self.run_prestoadmin('collect query_info ' + query_id)
         query_info_file_name = path.join(TMP_PRESTO_DEBUG,
@@ -126,6 +126,8 @@ class TestCollect(BaseProductTestCase):
         query_runtime_info = run_sql(client, 'SELECT query_id FROM '
                                      'system.runtime.queries '
                                      'WHERE query = \'' + sql + '\'')
+        if not query_runtime_info:
+            raise PrestoError('Presto not started up yet.')
         for row in query_runtime_info:
             return row[0]
 

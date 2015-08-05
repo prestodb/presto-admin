@@ -15,13 +15,11 @@
 """
 Product tests for presto-admin status commands
 """
-import os
 
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
     PRESTO_VERSION, PrestoError
-from prestoadmin.util.constants import COORDINATOR_DIR, WORKERS_DIR
 
 
 class TestStatus(BaseProductTestCase):
@@ -48,7 +46,9 @@ class TestStatus(BaseProductTestCase):
 
         # Test with worker not started
         self.run_prestoadmin('server start -H master')
-        status_output = self._server_status_with_retries()
+        # don't run with retries because it won't be able to query the
+        # coordinator because the coordinator is set to not be a worker
+        status_output = self.run_prestoadmin('server status')
         self.check_status(
             status_output,
             self.single_node_up_status(
@@ -61,7 +61,7 @@ class TestStatus(BaseProductTestCase):
         self.check_status(
             status_output,
             self.single_node_up_status(
-                ips, self.cluster.internal_slaves[0], coordinator_down=True))
+                ips, self.cluster.internal_slaves[0]))
 
         # Check that the slave sees that it's stopped, even though the
         # discovery server is not up.
@@ -107,21 +107,7 @@ class TestStatus(BaseProductTestCase):
         port_config = """discovery.uri=http://master:8090
 http-server.http.port=8090"""
 
-        # write to master
-        config_filename = 'config.properties'
-        self.cluster.write_content_to_host(
-            port_config,
-            os.path.join(COORDINATOR_DIR, config_filename),
-            self.cluster.master
-        )
-
-        self.cluster.write_content_to_host(
-            port_config,
-            os.path.join(WORKERS_DIR, config_filename),
-            self.cluster.master
-        )
-
-        self.server_install()
+        self.server_install(extra_configs=port_config)
         self.run_prestoadmin('server start')
         status_output = self._server_status_with_retries()
 
@@ -151,8 +137,8 @@ http-server.http.port=8090"""
         for status in statuses:
             status['ip'] = 'Unknown'
             status['is_running'] = 'Not Running'
-            status['error_message'] = '\tNo information available: the ' \
-                                      'coordinator is down'
+            status['error_message'] = '\tNo information available: ' \
+                                      'unable to query coordinator'
         return statuses
 
     def not_installed_status(self, ips):
@@ -163,16 +149,11 @@ http-server.http.port=8090"""
             status['error_message'] = '\tPresto is not installed.'
         return statuses
 
-    def single_node_up_status(self, ips, node, coordinator_down=False):
+    def single_node_up_status(self, ips, node):
         statuses = self.not_started_status(ips)
         for status in statuses:
             if status['host'] is node:
                 status['is_running'] = 'Running'
-                if not coordinator_down:
-                    status['ip'] = ips[node]
-                    status['error_message'] = ''
-            elif not coordinator_down:
-                status['error_message'] = '\tNo information available'
         return statuses
 
     def node_not_available_status(self, ips, topology, node,
@@ -185,8 +166,8 @@ http-server.http.port=8090"""
                     self.status_down_node_error % {'host': node}
                 status['ip'] = 'Unknown'
             elif coordinator_down:
-                status['error_message'] = '\tNo information available: the ' \
-                                          'coordinator is down'
+                status['error_message'] = '\tNo information available: ' \
+                                          'unable to query coordinator'
                 status['ip'] = 'Unknown'
 
         return statuses
@@ -219,7 +200,8 @@ http-server.http.port=8090"""
         if 'the coordinator has not yet discovered this node' in status_output:
             raise PrestoError('Coordinator has not discovered all nodes yet: '
                               '%s' % status_output)
-        if 'Roles: coordinator): Running\n\tNo information available: the ' \
-           'coordinator is down' in status_output:
-            raise PrestoError('Coordinator not started up properly yet.')
+        if 'Roles: coordinator): Running\n\tNo information available: ' \
+           'unable to query coordinator' in status_output:
+            raise PrestoError('Coordinator not started up properly yet.'
+                              '\nOutput: %s' % status_output)
         return status_output

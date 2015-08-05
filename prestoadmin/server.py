@@ -451,7 +451,7 @@ def get_status_from_coordinator():
         if error_message:
             print('\t' + error_message)
         elif not coordinator_status:
-            print('\tNo information available: the coordinator is down')
+            print('\tNo information available: unable to query coordinator')
         elif not is_running:
             print('\tNo information available')
         else:
