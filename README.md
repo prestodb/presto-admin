@@ -2,6 +2,8 @@
 
 presto-admin installs, configures, and manages Presto installations.
 
+Comprehensive documentation can be found [here](http://prestodb.github.io/presto-admin/).
+
 ## Requirements
 
 1. Python 2.6 or 2.7
