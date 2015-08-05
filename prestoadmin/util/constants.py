@@ -21,7 +21,7 @@ import os
 
 import prestoadmin
 
-PRESTOADMIN_LOG_DIR = "/var/log/prestoadmin"
+PRESTOADMIN_LOG_DIR = '/var/log/prestoadmin'
 
 
 # Logging Config File Locations
@@ -31,14 +31,15 @@ LOGGING_CONFIG_FILE_DIRECTORIES = [
 ]
 
 # local configuration
-LOCAL_CONF_DIR = "/etc/opt/prestoadmin"
-CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, "config.json")
-COORDINATOR_DIR = os.path.join(LOCAL_CONF_DIR, "coordinator")
-WORKERS_DIR = os.path.join(LOCAL_CONF_DIR, "workers")
-CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, "connectors")
+LOCAL_CONF_DIR = '/etc/opt/prestoadmin'
+CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'config.json')
+COORDINATOR_DIR = os.path.join(LOCAL_CONF_DIR, 'coordinator')
+WORKERS_DIR = os.path.join(LOCAL_CONF_DIR, 'workers')
+CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, 'connectors')
 
 # remote configuration
-REMOTE_CONF_DIR = "/etc/presto"
-REMOTE_CATALOG_DIR = os.path.join(REMOTE_CONF_DIR, "catalog")
-REMOTE_PACKAGES_PATH = "/opt/prestoadmin/packages"
-REMOTE_PRESTO_LOG_DIR = "/var/log/presto"
+REMOTE_CONF_DIR = '/etc/presto'
+REMOTE_CATALOG_DIR = os.path.join(REMOTE_CONF_DIR, 'catalog')
+REMOTE_PACKAGES_PATH = '/opt/prestoadmin/packages'
+REMOTE_PRESTO_LOG_DIR = '/var/log/presto'
+REMOTE_PLUGIN_DIR = '/usr/lib/presto/lib/plugin'

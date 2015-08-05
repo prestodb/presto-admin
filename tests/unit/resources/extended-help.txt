@@ -46,6 +46,7 @@ Commands:
     connector add
     connector remove
     package install
+    plugin add_jar
     script run
     server install
     server restart

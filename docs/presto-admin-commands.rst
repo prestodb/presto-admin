@@ -351,6 +351,29 @@ For example: To remove the jmx connector, run ::
     sudo ./presto-admin connector remove jmx
     sudo ./presto-admin server restart
 
+**************
+plugin add_jar
+**************
+::
+
+    presto-admin plugin add_jar <local-path> <plugin-name> [<plugin-dir>]
+
+This command deploys the jar at ``local-path`` to the plugin directory for
+``plugin-name``.  By default ``/usr/lib/presto/lib/plugin`` is used as the
+top-level plugin directory. To deploy the jar to a different location, use the
+optional ``plugin-dir`` argument.
+
+Example
+-------
+::
+
+    sudo ./presto-admin plugin add_jar program.jar hive-cdh5
+    sudo ./presto-admin plugin add_jar program.jar hive-cdh5 /my/plugin/dir
+
+The first example will deploy program.jar to
+``/usr/lib/presto/lib/plugin/hive-cdh5/program.jar``
+The second example will deploy it to ``/my/plugin/dir/hive-cdh5/program.jar``.
+
 .. _collect-logs:
 
 ************
