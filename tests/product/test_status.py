@@ -26,51 +26,58 @@ class TestStatus(BaseProductTestCase):
 
     def setUp(self):
         super(TestStatus, self).setUp()
-        self.setup_cluster()
 
-    @attr('smoketest')
-    def test_status_happy_path(self):
-        ips = self.cluster.get_ip_address_dict()
+    def test_status_uninstalled(self):
+        self.setup_cluster()
         self.install_presto_admin(self.cluster)
         self.upload_topology()
         status_output = self._server_status_with_retries()
-        self.check_status(status_output, self.not_installed_status(ips))
+        self.check_status(status_output, self.not_installed_status())
+
+    def test_status_not_started(self):
+        self.setup_cluster('presto')
+
         self.server_install()
         status_output = self._server_status_with_retries()
-        self.check_status(status_output, self.not_started_status(ips))
+        self.check_status(status_output, self.not_started_status())
+
+    @attr('smoketest')
+    def test_status_happy_path(self):
+        self.setup_cluster('presto')
         self.run_prestoadmin('server start')
         status_output = self._server_status_with_retries()
-        self.check_status(status_output, self.base_status(ips))
+        self.check_status(status_output, self.base_status())
 
-        self.run_prestoadmin('server stop')
+    def test_status_only_coordinator(self):
+        self.setup_cluster('presto')
 
-        # Test with worker not started
         self.run_prestoadmin('server start -H master')
         # don't run with retries because it won't be able to query the
         # coordinator because the coordinator is set to not be a worker
         status_output = self.run_prestoadmin('server status')
         self.check_status(
             status_output,
-            self.single_node_up_status(
-                ips, self.cluster.internal_master))
+            self.single_node_up_status(self.cluster.internal_master)
+        )
 
-        # Test with coordinator not started
-        self.run_prestoadmin('server stop')
+    def test_status_only_worker(self):
+        self.setup_cluster('presto')
+
         self.run_prestoadmin('server start -H slave1')
         status_output = self._server_status_with_retries()
         self.check_status(
             status_output,
-            self.single_node_up_status(
-                ips, self.cluster.internal_slaves[0]))
+            self.single_node_up_status(self.cluster.internal_slaves[0])
+        )
 
         # Check that the slave sees that it's stopped, even though the
         # discovery server is not up.
         self.run_prestoadmin('server stop')
         status_output = self._server_status_with_retries()
-        self.check_status(status_output, self.not_started_status(ips))
+        self.check_status(status_output, self.not_started_status())
 
     def test_connection_to_coordinator_lost(self):
-        ips = self.cluster.get_ip_address_dict()
+        self.setup_cluster()
         self.install_presto_admin(self.cluster)
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
@@ -81,12 +88,12 @@ class TestStatus(BaseProductTestCase):
             self.cluster.slaves[0])
         status_output = self._server_status_with_retries()
         statuses = self.node_not_available_status(
-            ips, topology, self.cluster.internal_slaves[0],
+            topology, self.cluster.internal_slaves[0],
             coordinator_down=True)
         self.check_status(status_output, statuses)
 
     def test_connection_to_worker_lost(self):
-        ips = self.cluster.get_ip_address_dict()
+        self.setup_cluster()
         self.install_presto_admin(self.cluster)
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
@@ -97,10 +104,11 @@ class TestStatus(BaseProductTestCase):
             self.cluster.slaves[1])
         status_output = self._server_status_with_retries()
         statuses = self.node_not_available_status(
-            ips, topology, self.cluster.internal_slaves[1])
+            topology, self.cluster.internal_slaves[1])
         self.check_status(status_output, statuses)
 
     def test_status_port_not_8080(self):
+        self.setup_cluster()
         self.install_presto_admin(self.cluster)
         self.upload_topology()
 
@@ -111,10 +119,10 @@ http-server.http.port=8090"""
         self.run_prestoadmin('server start')
         status_output = self._server_status_with_retries()
 
-        ips = self.cluster.get_ip_address_dict()
-        self.check_status(status_output, self.base_status(ips), 8090)
+        self.check_status(status_output, self.base_status(), 8090)
 
-    def base_status(self, ips, topology=None):
+    def base_status(self, topology=None):
+        ips = self.cluster.get_ip_address_dict()
         if not topology:
             topology = {
                 'coordinator': self.cluster.internal_master, 'workers':
@@ -132,8 +140,8 @@ http-server.http.port=8090"""
             statuses += [status]
         return statuses
 
-    def not_started_status(self, ips):
-        statuses = self.base_status(ips)
+    def not_started_status(self):
+        statuses = self.base_status()
         for status in statuses:
             status['ip'] = 'Unknown'
             status['is_running'] = 'Not Running'
@@ -141,24 +149,24 @@ http-server.http.port=8090"""
                                       'unable to query coordinator'
         return statuses
 
-    def not_installed_status(self, ips):
-        statuses = self.base_status(ips)
+    def not_installed_status(self):
+        statuses = self.base_status()
         for status in statuses:
             status['ip'] = 'Unknown'
             status['is_running'] = 'Not Running'
             status['error_message'] = '\tPresto is not installed.'
         return statuses
 
-    def single_node_up_status(self, ips, node):
-        statuses = self.not_started_status(ips)
+    def single_node_up_status(self, node):
+        statuses = self.not_started_status()
         for status in statuses:
             if status['host'] is node:
                 status['is_running'] = 'Running'
         return statuses
 
-    def node_not_available_status(self, ips, topology, node,
+    def node_not_available_status(self, topology, node,
                                   coordinator_down=False):
-        statuses = self.base_status(ips, topology)
+        statuses = self.base_status(topology)
         for status in statuses:
             if status['host'] == node:
                 status['is_running'] = 'Not Running'
