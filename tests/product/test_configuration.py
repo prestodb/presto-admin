@@ -119,8 +119,10 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.upload_topology(topology)
         self.cluster.stop_host(bad_host)
         output = self.run_prestoadmin('configuration deploy')
-        self.assertRegexpMatches(output, self.down_node_connection_error %
-                                 {'host': internal_bad_host})
+        self.assertRegexpMatches(
+            output,
+            self.down_node_connection_error(internal_bad_host)
+        )
         for host in self.cluster.all_internal_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
         expected_size = self.len_down_node_error + \
@@ -128,14 +130,15 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.assertEqual(len(output.splitlines()), expected_size)
 
         output = self.run_prestoadmin('configuration show config')
-        error = str.join('\n', output.splitlines()[:6])
-        self.assertRegexpMatches(error,
-                                 self.down_node_connection_error %
-                                 {'host': internal_bad_host})
+        self.assertRegexpMatches(
+            output,
+            self.down_node_connection_error(internal_bad_host)
+        )
         with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
                                'configuration_show_down_node.txt'), 'r') as f:
             expected = f.read()
-        self.assertEqual(str.join('\n', output.splitlines()[6:]), expected)
+        self.assertRegexpMatches(str.join('\n', output.splitlines()[6:]),
+                                 expected)
 
     def test_deploy_lost_worker_connection(self):
         self.install_presto_admin(self.cluster)
@@ -144,8 +147,10 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         bad_host = self.cluster.slaves[0]
         self.cluster.stop_host(bad_host)
         output = self.run_prestoadmin('configuration deploy')
-        self.assertRegexpMatches(output, self.down_node_connection_error %
-                                 {'host': internal_bad_host})
+        self.assertRegexpMatches(
+            output,
+            self.down_node_connection_error(internal_bad_host)
+        )
         for host in self.cluster.all_internal_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
         expected_length = len(self.cluster.all_hosts()) + \

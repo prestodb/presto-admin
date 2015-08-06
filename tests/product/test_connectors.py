@@ -203,8 +203,8 @@ Aborting.
                             % (deploying_message % host, output))
         self.assertRegexpMatches(
             output,
-            self.down_node_connection_error
-            % {'host': self.cluster.internal_slaves[0]})
+            self.down_node_connection_error(self.cluster.internal_slaves[0])
+        )
         self.assertEqual(len(output.splitlines()),
                          len(self.cluster.all_hosts()) +
                          self.len_down_node_error)

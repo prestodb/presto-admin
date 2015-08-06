@@ -169,6 +169,9 @@ class DockerCluster(object):
         self.client.stop(container_name)
         self.client.wait(container_name)
 
+    def get_down_hostname(self, host_name):
+        return host_name
+
     def _remove_host_mount_dirs(self):
         for container_name in self.all_hosts():
             try:

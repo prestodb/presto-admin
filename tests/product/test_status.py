@@ -86,6 +86,8 @@ class TestStatus(BaseProductTestCase):
         self.run_prestoadmin('server start')
         self.cluster.stop_host(
             self.cluster.slaves[0])
+        topology = {"coordinator": self.cluster.get_down_hostname("slave1"),
+                    "workers": ["master", "slave2", "slave3"]}
         status_output = self._server_status_with_retries()
         statuses = self.node_not_available_status(
             topology, self.cluster.internal_slaves[0],
@@ -102,6 +104,9 @@ class TestStatus(BaseProductTestCase):
         self.run_prestoadmin('server start')
         self.cluster.stop_host(
             self.cluster.slaves[1])
+        topology = {"coordinator": "slave1", "workers":
+                    ["master", self.cluster.get_down_hostname("slave2"),
+                     "slave3"]}
         status_output = self._server_status_with_retries()
         statuses = self.node_not_available_status(
             topology, self.cluster.internal_slaves[1])
@@ -171,8 +176,9 @@ http-server.http.port=8090"""
             if status['host'] == node:
                 status['is_running'] = 'Not Running'
                 status['error_message'] = \
-                    self.status_down_node_error % {'host': node}
+                    self.status_node_connection_error(node)
                 status['ip'] = 'Unknown'
+                status['host'] = self.cluster.get_down_hostname(node)
             elif coordinator_down:
                 status['error_message'] = '\tNo information available: ' \
                                           'unable to query coordinator'

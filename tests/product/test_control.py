@@ -183,12 +183,14 @@ class TestControl(BaseProductTestCase):
                                             down_internal_node):
         self.cluster.stop_host(down_node)
         alive_hosts = self.cluster.all_internal_hosts()[:]
-        alive_hosts.remove(down_internal_node)
+        alive_hosts.remove(self.cluster.get_down_hostname(down_internal_node))
 
         start_output = self.run_prestoadmin('server start')
 
-        self.assertRegexpMatches(start_output, self.down_node_connection_error
-                                 % {'host': down_internal_node})
+        self.assertRegexpMatches(
+            start_output,
+            self.down_node_connection_error(down_internal_node)
+        )
 
         expected_start = self.expected_start(start_success=alive_hosts)
         for message in expected_start:
@@ -199,8 +201,10 @@ class TestControl(BaseProductTestCase):
         self.assert_started(process_per_host)
 
         stop_output = self.run_prestoadmin('server stop')
-        self.assertRegexpMatches(stop_output, self.down_node_connection_error
-                                 % {'host': down_internal_node})
+        self.assertRegexpMatches(
+            stop_output,
+            self.down_node_connection_error(down_internal_node)
+        )
         expected_stop = self.expected_stop(running=alive_hosts)
         for message in expected_stop:
             self.assertRegexpMatches(stop_output, message, 'expected %s \n '
@@ -211,9 +215,10 @@ class TestControl(BaseProductTestCase):
         self.assertEqual(len(stop_output.splitlines()),
                          self.expected_down_node_output_size(expected_stop))
         restart_output = self.run_prestoadmin('server restart')
-        self.assertRegexpMatches(restart_output,
-                                 self.down_node_connection_error
-                                 % {'host': down_internal_node})
+        self.assertRegexpMatches(
+            restart_output,
+            self.down_node_connection_error(down_internal_node)
+        )
         expected_restart = list(
             set(expected_stop[:] + expected_start[:]))
         for host in alive_hosts:

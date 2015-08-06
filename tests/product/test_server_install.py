@@ -463,7 +463,8 @@ task.max-memory=1GB\n"""
     def test_connection_to_coord_lost(self):
         self.install_presto_admin(self.cluster)
         self.copy_presto_rpm_to_master()
-        topology = {"coordinator": self.cluster.internal_slaves[0],
+        down_node = self.cluster.internal_slaves[0]
+        topology = {"coordinator": down_node,
                     "workers": [self.cluster.internal_master,
                                 self.cluster.internal_slaves[1],
                                 self.cluster.internal_slaves[2]]}
@@ -473,16 +474,21 @@ task.max-memory=1GB\n"""
 
         actual_out = self.server_install()
         self.assertRegexpMatches(
-            actual_out, self.down_node_connection_error
-            % {'host': self.cluster.internal_slaves[0]})
+            actual_out,
+            self.down_node_connection_error(down_node)
+        )
 
         for container in [self.cluster.master,
                           self.cluster.slaves[1],
                           self.cluster.slaves[2]]:
             self.assert_common_configs(container)
-            self.assert_file_content(container,
-                                     '/etc/presto/config.properties',
-                                     self.default_workers_config_with_slave1_)
+            self.assert_file_content(
+                container,
+                '/etc/presto/config.properties',
+                self.default_workers_config_with_slave1_.replace(
+                    down_node, self.cluster.get_down_hostname(down_node)
+                )
+            )
 
     @docker_only
     def test_install_with_no_perm_to_local_path(self):

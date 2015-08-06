@@ -17,7 +17,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR
+    LOCAL_RESOURCES_DIR, docker_only
 
 
 topology_with_slave1_coord = """{'coordinator': u'slave1',
@@ -67,6 +67,7 @@ class TestTopologyShow(BaseProductTestCase):
                                 'topology show'
                                 )
 
+    @docker_only
     def test_topology_show_coord_down(self):
         topology = {'coordinator': 'slave1',
                     'workers': ['master', 'slave2', 'slave3']}
@@ -77,6 +78,7 @@ class TestTopologyShow(BaseProductTestCase):
         expected = topology_with_slave1_coord
         self.assertEqual(expected, actual)
 
+    @docker_only
     def test_topology_show_worker_down(self):
         self.upload_topology()
         self.cluster.stop_host(

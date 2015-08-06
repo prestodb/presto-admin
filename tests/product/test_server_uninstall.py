@@ -88,16 +88,17 @@ class TestServerUninstall(BaseProductTestCase):
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
+        down_node = self.cluster.internal_slaves[0]
         self.cluster.stop_host(
             self.cluster.slaves[0])
 
-        expected = self.down_node_connection_error % \
-            {'host': self.cluster.internal_slaves[0]}
+        expected = self.down_node_connection_error(
+            self.cluster.internal_slaves[0])
         cmd_output = self.run_prestoadmin('server uninstall')
         self.assertRegexpMatches(cmd_output, expected)
         process_per_active_host = []
         for host, pid in process_per_host:
-            if host not in self.cluster.internal_slaves[0]:
+            if host not in down_node:
                 process_per_active_host.append((host, pid))
         self.assert_stopped(process_per_active_host)
 

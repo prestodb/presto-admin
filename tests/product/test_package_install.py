@@ -150,7 +150,8 @@ Package deployed successfully on: %(master)s
                                           '/etc/opt/prestoadmin/config.json')
 
         error = """
-Fatal error: [%s] error: not an rpm package
+Fatal error: \[%s\] error: (/etc/opt/prestoadmin/config.json: )?not an rpm \
+package
 
 Aborting.
 """
@@ -158,7 +159,8 @@ Aborting.
         for host in self.cluster.all_internal_hosts():
             expected += error % host
 
-        self.assertEqualIgnoringOrder(cmd_output, expected)
+        self.assertRegexpMatchesLineByLine(cmd_output.splitlines(),
+                                           expected.splitlines())
 
     @docker_only
     def test_install_rpm_with_missing_jdk(self):

@@ -79,8 +79,9 @@ class ConfigurableCluster(object):
     def all_hosts(self):
         return self.slaves + [self.master]
 
-    def all_internal_hosts(self):
-        return self.internal_slaves + [self.internal_master]
+    def all_internal_hosts(self, stopped_host=None):
+        internal_hosts = self.internal_slaves + [self.internal_master]
+        return internal_hosts
 
     def get_dist_dir(self, unique):
         if unique:
@@ -91,25 +92,47 @@ class ConfigurableCluster(object):
     def tear_down(self):
         for host in self.all_hosts():
             script = """
-            if [ -e /etc/hosts_bak ];
-            then mv /etc/hosts_bak /etc/hosts;
-            fi
             service presto stop
-            rpm -e presto
+            rpm -e presto-server-rpm
             rm -rf /opt/prestoadmin
             rm -rf /etc/opt/prestoadmin
-            rm -rf /var/log/prestoadmin
             rm -rf /tmp/presto-debug
+            rm -rf /etc/presto/
             rm -rf %s
             """ % self.mount_dir
             self.run_script_on_host(script, host)
 
     def stop_host(self, host_name):
-        # Change the IP in /etc/hosts to something invalid
+        if host_name not in self.all_hosts():
+            raise Exception('Must specify external hostname to stop_host')
+
+        # Change the topology to something that doesn't exist
         ips = self.get_ip_address_dict()
-        for host in self.all_hosts():
-            self.exec_cmd_on_host(host, 'sed -i_bak  \'s/%s/%s/g\' /etc/hosts'
-                                  % (ips[host_name], '8.8.8.8'))
+        down_hostname = self.get_down_hostname(host_name)
+        self.exec_cmd_on_host(
+            self.master,
+            'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
+            host_name, down_hostname
+        )
+        self.exec_cmd_on_host(
+            self.master,
+            'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json'
+            % (ips[host_name], down_hostname)
+        )
+        index = self.all_hosts().index(host_name)
+        self.exec_cmd_on_host(
+            self.master,
+            'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
+            (self.all_internal_hosts()[index], down_hostname)
+        )
+
+        if index >= len(self.internal_slaves):
+            self.internal_master = down_hostname
+        else:
+            self.internal_slaves[index] = down_hostname
+
+    def get_down_hostname(self, host_name):
+        return '1.0.0.0'
 
     def exec_cmd_on_host(self, host, cmd, raise_error=True, tty=False):
         # We need to execute the commands on the external, not internal, host.

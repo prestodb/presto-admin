@@ -90,20 +90,20 @@ query.max-memory-per-node=512MB
 query.max-memory=50GB
 task.max-memory=1GB\n"""
 
-    down_node_connection_error = r'(\nWarning: (\[%(host)s\] )?Low level socket ' \
-                                 r'error connecting to host %(host)s on ' \
-                                 r'port 22: No route to host ' \
-                                 r'\(tried 1 time\)\n\nUnderlying ' \
-                                 r'exception:\n    No route to host\n' \
-                                 r'|\nWarning: (\[%(host)s] )?Timed out trying ' \
-                                 r'to connect to %(host)s \(tried 1 ' \
-                                 r'time\)\n\nUnderlying exception:' \
-                                 r'\n    timed out\n)'
+    down_node_connection_string = r'(\nWarning: (\[%(host)s\] )?Low level socket ' \
+                                  r'error connecting to host %(host)s on ' \
+                                  r'port 22: No route to host ' \
+                                  r'\(tried 1 time\)\n\nUnderlying ' \
+                                  r'exception:\n    No route to host\n' \
+                                  r'|\nWarning: (\[%(host)s] )?Timed out trying ' \
+                                  r'to connect to %(host)s \(tried 1 ' \
+                                  r'time\)\n\nUnderlying exception:' \
+                                  r'\n    timed out\n)'
 
-    status_down_node_error = r'(\tLow level socket error connecting to host ' \
-                             r'%(host)s on port 22: No route to host \(tried ' \
-                             r'1 time\)|\tTimed out trying to connect to ' \
-                             r'%(host)s \(tried 1 time\))'
+    status_down_node_string = r'(\tLow level socket error connecting to host ' \
+                              r'%(host)s on port 22: No route to host \(tried ' \
+                              r'1 time\)|\tTimed out trying to connect to ' \
+                              r'%(host)s \(tried 1 time\))'
 
     len_down_node_error = 6
 
@@ -527,6 +527,14 @@ task.max-memory=1GB\n"""
             sleep(RETRY_INTERVAL)
             time_spent_waiting += RETRY_INTERVAL
         return method_to_check()
+
+    def down_node_connection_error(self, host):
+        hostname = self.cluster.get_down_hostname(host)
+        return self.down_node_connection_string % {'host': hostname}
+
+    def status_node_connection_error(self, host):
+        hostname = self.cluster.get_down_hostname(host)
+        return self.status_down_node_string % {'host': hostname}
 
 
 def docker_only(original_function):
