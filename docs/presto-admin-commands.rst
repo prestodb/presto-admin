@@ -175,6 +175,8 @@ the ``/etc/presto`` directory on your Presto cluster:
 * jvm.config
 * log.properties (if it exists)
 
+.. NOTE:: This command will not deploy the configurations for connectors.  To deploy connector configurations run `connector add`_
+
 If the coordinator is also a worker, it will get the coordinator configuration.
 The deployed configuration files will overwrite the existing configurations on
 the cluster. However, the node.id from the
