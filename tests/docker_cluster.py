@@ -325,6 +325,14 @@ class DockerCluster(object):
                                            DEFAULT_DOCKER_MOUNT_POINT)
             presto_cluster.start_containers(INSTALLED_PRESTO_TEST_MASTER_IMAGE,
                                             INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
+            # replace the node uuid on all the workers
+            for worker in presto_cluster.slaves:
+                presto_cluster.run_script_on_host(
+                    'sed -i /node.id/d /etc/presto/node.properties; '
+                    'uuid=$(uuidgen); '
+                    'echo node.id=$uuid >> /etc/presto/node.properties',
+                    worker
+                )
             return presto_cluster
         else:
             presto_cluster = DockerCluster.start_base_cluster()
