@@ -198,32 +198,38 @@ configurations:
 *jvm.config* ::
 
     -server
-    -Xmx16G
-    -XX:+UseConcMarkSweepGC
+    -Xmx1G
+    -XX:-UseBiasedLocking
+    -XX:+UseG1GC
     -XX:+ExplicitGCInvokesConcurrent
-    -XX:+AggressiveOpts
     -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+UseGCOverheadLimit
     -XX:OnOutOfMemoryError=kill -9 %p
-    -XX:ReservedCodeCacheSize=150M"
+    -DHADOOP_USER_NAME=hive
 
 *config.properties*
 
 For workers: ::
 
     coordinator=false
-    http-server.http.port=8080
-    task.max-memory=1GB
     discovery.uri=http://<coordinator>:8080
+    http-server.http.port=8080
+    query.max-memory-per-node=1GB
+    query.max-memory=50GB
+    task.max-memory=1GB
 
 For coordinator: ::
 
     coordinator=true
-    http-server.http.port=8080
-    task.max-memory=1GB
     discovery-server.enabled=true
     discovery.uri=http://<coordinator>:8080
+    http-server.http.port=8080
+    node.scheduler.include-coordinator=false
+    query.max-memory-per-node=1GB
+    query.max-memory=50GB
+    task.max-memory=1GB
 
-    # if the coordinator is also a worker, it will have the following property too
+    # if the coordinator is also a worker, it will have the following property instead
     node-scheduler.include-coordinator=true
 
 See :ref:`presto-port-configuration-label` for details on http port configuration.
