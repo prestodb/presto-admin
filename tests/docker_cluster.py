@@ -113,10 +113,12 @@ class DockerCluster(object):
     def create_image(self, path_to_dockerfile_dir, image_tag, base_image,
                      base_image_tag=None):
         self.fetch_image_if_not_present(base_image, base_image_tag)
-        self._execute_and_wait(self.client.build,
-                               path=path_to_dockerfile_dir,
-                               tag=image_tag,
-                               rm=True)
+        output = self._execute_and_wait(self.client.build,
+                                        path=path_to_dockerfile_dir,
+                                        tag=image_tag,
+                                        rm=True)
+        if not self._is_image_present_locally(image_tag, 'latest'):
+            raise OSError('Unable to build image %s: %s' % (image_tag, output))
 
     def fetch_image_if_not_present(self, image, tag=None):
         if not tag and not self.client.images(image):
@@ -191,8 +193,10 @@ class DockerCluster(object):
     def _execute_and_wait(func, *args, **kwargs):
         ret = func(*args, **kwargs)
         # go through all lines in returned stream to ensure func finishes
+        output = ''
         for line in ret:
-            pass
+            output += line
+        return output
 
     def _create_and_start_containers(self, master_image, slave_image=None,
                                      cmd=None, **kwargs):

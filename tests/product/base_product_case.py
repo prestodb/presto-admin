@@ -113,6 +113,16 @@ task.max-memory=1GB\n"""
         self.presto_rpm_filename = self.detect_presto_rpm()
         self.cluster = None
 
+    def download_rpm(self):
+        rpm_filename = 'presto-server-rpm.rpm'
+        rpm_path = os.path.join(prestoadmin.main_dir,
+                                rpm_filename)
+        urllib.urlretrieve(
+            'https://repository.sonatype.org/service/local/artifact/maven'
+            '/content?r=central-proxy&g=com.facebook.presto'
+            '&a=presto-server-rpm&e=rpm&v=RELEASE', rpm_path)
+        return rpm_filename
+
     def detect_presto_rpm(self):
         """
         Detects the Presto RPM in the main directory of presto-admin.
@@ -125,14 +135,7 @@ task.max-memory=1GB\n"""
             # are multiple RPMs, the last one is probably the latest
             return sorted(rpm_names)[-1]
         else:
-            rpm_filename = 'presto-server-rpm.rpm'
-            rpm_path = os.path.join(prestoadmin.main_dir,
-                                    rpm_filename)
-            urllib.urlretrieve(
-                'https://repository.sonatype.org/service/local/artifact/maven'
-                '/content?r=central-proxy&g=com.facebook.presto'
-                '&a=presto-server-rpm&e=rpm&v=RELEASE', rpm_path)
-            return rpm_filename
+            return self.download_rpm()
 
     def setup_cluster(self, cluster_type='base'):
         cluster_types = ['presto', 'base']
@@ -293,10 +296,19 @@ task.max-memory=1GB\n"""
     def copy_presto_rpm_to_master(self, cluster=None):
         if not cluster:
             cluster = self.cluster
-        rpm_path = os.path.join(prestoadmin.main_dir,
-                                self.presto_rpm_filename)
-        cluster.copy_to_host(rpm_path, cluster.master)
-        self._check_if_corrupted_rpm(cluster)
+        try:
+            rpm_path = os.path.join(prestoadmin.main_dir,
+                                    self.presto_rpm_filename)
+            cluster.copy_to_host(rpm_path, cluster.master)
+            self._check_if_corrupted_rpm(cluster)
+        except OSError:
+            print 'Downloading RPM again'
+            # try to download the RPM again if it's corrupt (but only once)
+            self.download_rpm()
+            rpm_path = os.path.join(prestoadmin.main_dir,
+                                    self.presto_rpm_filename)
+            cluster.copy_to_host(rpm_path, cluster.master)
+            self._check_if_corrupted_rpm(cluster)
 
     @nottest
     def write_test_configs(self, cluster, extra_configs=None):
