@@ -398,6 +398,11 @@ task.max-memory=1GB\n"""
                 check_rpm, RPM_BASENAME + '\n', msg=msg
             )
         except OSError as e:
+            if isinstance(cluster, DockerCluster):
+                cluster.client.commit(cluster.master, 'db_error_master')
+                cluster.client.commit(cluster.slaves[0], 'db_error_slave0')
+                cluster.client.commit(cluster.slaves[1], 'db_error_slave1')
+                cluster.client.commit(cluster.slaves[2], 'db_error_slave2')
             if msg:
                 error_message = e.strerror + '\n' + msg
             else:
