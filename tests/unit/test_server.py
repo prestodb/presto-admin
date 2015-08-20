@@ -19,7 +19,7 @@ import os
 
 from fabric.api import env
 from fabric.operations import _AttributeString
-from mock import patch, MagicMock
+from mock import patch, call, MagicMock
 
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin import server
@@ -346,8 +346,8 @@ class TestInstall(BaseTestCase):
         env.roledefs['worker'] = ['node1']
         env.roledefs['all'] = ['node1']
         env.hosts = env.roledefs['all']
-        output = _AttributeString('No presto installed')
-        output.succeeded = True
+        output = _AttributeString('package presto is not installed')
+        output.succeeded = False
         mock_run.return_value = output
         env.host = 'node1'
         server.collect_node_information()
@@ -419,16 +419,23 @@ class TestInstall(BaseTestCase):
 
     @patch('prestoadmin.server.run')
     def test_multiple_version_rpms(self, mock_run):
-        err_msg = 'Presto is not installed.'
-        output1 = _AttributeString(err_msg)
-        output1.succeeded = False
 
-        output2 = _AttributeString('0.111.SNAPSHOT')
+        output1 = _AttributeString('package presto is not installed')
+        output1.succeeded = False
+        output2 = _AttributeString('presto-server-rpm-0.115t-1.x86_64')
         output2.succeeded = True
-        mock_run.side_effect = [output1, output2]
+        output3 = _AttributeString('Presto is not installed.')
+        output3.succeeded = False
+        output4 = _AttributeString('0.111.SNAPSHOT')
+        output4.succeeded = True
+
+        mock_run.side_effect = [output1, output2, output3, output4]
 
         expected = server.check_presto_version()
-        mock_run.assert_any_call('rpm -q --qf \"%{VERSION}\\n\" presto')
-        mock_run.assert_called_with(
-            'rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm')
+        mock_run.assert_has_calls([
+            call('rpm -q presto'),
+            call('rpm -q presto-server-rpm'),
+            call('rpm -q --qf \"%{VERSION}\\n\" presto'),
+            call('rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm'),
+        ])
         self.assertEqual(expected, '')
