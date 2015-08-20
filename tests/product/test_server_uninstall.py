@@ -48,7 +48,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.assert_path_removed(container, '/usr/lib/presto')
         self.assert_path_removed(container, '/var/lib/presto')
         self.assert_path_removed(container, '/usr/shared/doc/presto')
-        self.assert_path_removed(container, '/etc/rc.d/init.d/presto')
+        self.assert_path_removed(container, '/etc/init.d/presto')
 
     def test_uninstall_when_server_down(self):
         self.setup_cluster('presto')
