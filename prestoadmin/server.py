@@ -41,7 +41,7 @@ import util.filesystem
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
 
-INIT_SCRIPTS = '/etc/rc.d/init.d/presto'
+INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 120
 SLEEP_INTERVAL = 10
 SYSTEM_RUNTIME_NODES = 'select * from system.runtime.nodes'

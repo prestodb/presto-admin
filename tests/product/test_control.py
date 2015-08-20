@@ -252,7 +252,7 @@ class TestControl(BaseProductTestCase):
             'while executing!\n\n'
             'Requested: set -m; /etc/rc.d/init.d/presto start\n'
             'Executed: sudo -S -p \'sudo password:\'  /bin/bash -l -c '
-            '"set -m; /etc/rc.d/init.d/presto start"\n\n'
+            '"set -m; /etc/init.d/presto start"\n\n'
             'Aborting.\n'
         )).splitlines()
         expected_start += error_msg

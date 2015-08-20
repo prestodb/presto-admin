@@ -1,8 +1,8 @@
 
 Fatal error: [slave3] sudo() received nonzero return code 1 while executing!
 
-Requested: set -m; /etc/rc.d/init.d/presto stop
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/rc.d/init.d/presto stop"
+Requested: set -m; /etc/init.d/presto stop
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/init.d/presto stop"
 
 Aborting.
 [slave3] out:
@@ -19,8 +19,8 @@ Aborting.
 
 Fatal error: [slave1] sudo() received nonzero return code 1 while executing!
 
-Requested: set -m; /etc/rc.d/init.d/presto stop
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/rc.d/init.d/presto stop"
+Requested: set -m; /etc/init.d/presto stop
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/init.d/presto stop"
 
 Aborting.
 [slave1] out:
@@ -37,8 +37,8 @@ Aborting.
 
 Fatal error: [slave2] sudo() received nonzero return code 1 while executing!
 
-Requested: set -m; /etc/rc.d/init.d/presto stop
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/rc.d/init.d/presto stop"
+Requested: set -m; /etc/init.d/presto stop
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/init.d/presto stop"
 
 Aborting.
 [slave2] out:
@@ -55,8 +55,8 @@ Aborting.
 
 Fatal error: [master] sudo() received nonzero return code 1 while executing!
 
-Requested: set -m; /etc/rc.d/init.d/presto stop
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/rc.d/init.d/presto stop"
+Requested: set -m; /etc/init.d/presto stop
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "set -m; /etc/init.d/presto stop"
 
 Aborting.
 [master] out:
