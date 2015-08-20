@@ -51,7 +51,7 @@ NODE_INFO_PER_URI_SQL = 'select http_uri, node_version, active from ' \
 EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from system.runtime.nodes' \
                   ' WHERE node_id = \'%s\''
 CONNECTOR_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
-PRESTO_RPM_MIN_REQUIRED_VERSION = 100
+PRESTO_RPM_MIN_REQUIRED_VERSION = 103
 PRESTO_TD_RPM = ['101t']
 _LOGGER = logging.getLogger(__name__)
 
@@ -219,34 +219,48 @@ def check_presto_version():
     Returns:
         Error string if applicable
     """
-    version = get_presto_version()
-    if version in PRESTO_TD_RPM:
-        return ''
-    try:
-        # remove -SNAPSHOT or .SNAPSHOT from the version string
-        version = re.sub(r'[-\.]SNAPSHOT.*', '', version)
-        float(version)
-        version_number = version.strip().split('.')
-        if int(version_number[1]) < PRESTO_RPM_MIN_REQUIRED_VERSION:
-            incorrect_version_str = 'Presto version is %s, version >= 0.%d ' \
-                                    'required.' % \
-                                    (version, PRESTO_RPM_MIN_REQUIRED_VERSION)
-            warn(incorrect_version_str)
-            return incorrect_version_str
-        return ''
-    except ValueError:
+    if not presto_installed():
         not_installed_str = 'Presto is not installed.'
         warn(not_installed_str)
         return not_installed_str
+
+    version = get_presto_version()
+    if version in PRESTO_TD_RPM:
+        return ''
+
+    matched = re.search('(\d+)\.(\d+)t?([-\.]SNAPSHOT)?', version)
+    if not matched:
+        incorrect_version_str = 'Incorrect presto version:  %s,' % version
+        warn(incorrect_version_str)
+        return incorrect_version_str
+
+    minor_version = matched.group(2)
+
+    if int(minor_version) < PRESTO_RPM_MIN_REQUIRED_VERSION:
+        incorrect_version_str = 'Presto version is %s, version >= 0.%d ' \
+                                'required.' % \
+                                (version, PRESTO_RPM_MIN_REQUIRED_VERSION)
+        warn(incorrect_version_str)
+        return incorrect_version_str
+
+    return ''
+
+
+def presto_installed():
+    with settings(hide('warnings', 'stdout'), warn_only=True):
+        package_search = run('rpm -q presto')
+        if not package_search.succeeded:
+            package_search = run('rpm -q presto-server-rpm')
+        return package_search.succeeded
 
 
 def get_presto_version():
     with settings(hide('warnings', 'stdout'), warn_only=True):
         version = run('rpm -q --qf \"%{VERSION}\\n\" presto')
-
         # currently we have two rpm names out so we need this retry
         if not version.succeeded:
             version = run('rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm')
+        version = version.strip()
         _LOGGER.debug('Presto rpm version: ' + version)
         return version
 
