@@ -14,7 +14,8 @@ FROM jdeathe/centos-ssh:centos-6-1.2.0
 MAINTAINER Christina Wallin <christina.wallin@teradata.com>
 
 # Install Oracle Java
-RUN yum update -y && \
+RUN yum upgrade ca-certificates --disablerepo=epel && \
+    yum update -y && \
     yum install -y wget && \
     wget --header "Cookie: oraclelicense=accept-securebackup-cookie" https://edelivery.oracle.com/otn-pub/java/jdk/8u40-b26/jdk-8u40-linux-x64.rpm
 RUN rpm -ivh jdk-8u40-linux-x64.rpm && rm jdk-8u40-linux-x64.rpm

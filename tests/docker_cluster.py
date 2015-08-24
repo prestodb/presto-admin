@@ -60,7 +60,7 @@ class DockerCluster(object):
         # container mount point call get_local_mount_dir()
         self.local_mount_dir = local_mount_dir
         self.mount_dir = docker_mount_dir
-        self.client = Client(timeout=180)
+        self.client = Client(timeout=240)
         self._DOCKER_START_TIMEOUT = 30
         DockerCluster.__check_if_docker_exists()
 

@@ -135,7 +135,11 @@ task.max-memory=1GB\n"""
             # are multiple RPMs, the last one is probably the latest
             return sorted(rpm_names)[-1]
         else:
-            return self.download_rpm()
+            try:
+                return self.download_rpm()
+            except:
+                # retry once
+                return self.download_rpm()
 
     def setup_cluster(self, cluster_type='base'):
         cluster_types = ['presto', 'base']
