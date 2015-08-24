@@ -40,14 +40,17 @@ class TestPlugin(BaseProductTestCase):
         self.assertEqualIgnoringOrder(output, '')
         for host in self.cluster.all_hosts():
             self.assert_path_exists(host, STD_REMOTE_PATH)
+            self.cluster.exec_cmd_on_host(host, 'rm %s' % STD_REMOTE_PATH,
+                                          raise_error=False)
 
         # supply plugin directory
         output = self.run_prestoadmin(
             'plugin add_jar %s hive-cdh5 /etc/presto/plugin' % TMP_JAR_PATH)
         self.assertEqual(output, '')
         for host in self.cluster.all_hosts():
-            self.assert_path_exists(host,
-                                    '/etc/presto/plugin/hive-cdh5/pretend.jar')
+            temp_jar_location = '/etc/presto/plugin/hive-cdh5/pretend.jar'
+            self.assert_path_exists(host, temp_jar_location)
+            self.cluster.exec_cmd_on_host(host, 'rm %s' % temp_jar_location)
 
     def test_lost_coordinator(self):
         internal_bad_host = self.cluster.internal_slaves[0]
@@ -67,6 +70,8 @@ class TestPlugin(BaseProductTestCase):
         self.assertEqual(len(output.splitlines()), self.len_down_node_error)
         for host in good_hosts:
             self.assert_path_exists(host, STD_REMOTE_PATH)
+            self.cluster.exec_cmd_on_host(host, 'rm %s' % STD_REMOTE_PATH,
+                                          raise_error=False)
 
     def test_lost_worker(self):
         internal_bad_host = self.cluster.internal_slaves[0]
@@ -86,3 +91,5 @@ class TestPlugin(BaseProductTestCase):
         self.assertEqual(len(output.splitlines()), self.len_down_node_error)
         for host in good_hosts:
             self.assert_path_exists(host, STD_REMOTE_PATH)
+            self.cluster.exec_cmd_on_host(host, 'rm %s' % STD_REMOTE_PATH,
+                                          raise_error=False)
