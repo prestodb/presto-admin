@@ -46,7 +46,7 @@ clean-test:
 	rm -fr htmlcov/
 	rm -fr tmp
 	docker rmi -f teradatalabs/centos-presto-test-master teradatalabs/centos-presto-test-slave || true
-	echo "Note: The above command is just cleaning up a Docker image that may not exit. If the command fails, it is not a problem."
+	echo "Note: The above command is just cleaning up a Docker image that may not exist. If the command fails, it is not a problem."
 
 lint:
 	flake8 prestoadmin packaging tests
