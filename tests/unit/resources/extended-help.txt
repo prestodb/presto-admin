@@ -42,6 +42,8 @@ Commands:
     collect query_info
     collect system_info
     configuration deploy
+    configuration deploy_directory
+    configuration gather_directory
     configuration show
     connector add
     connector remove
@@ -54,5 +56,6 @@ Commands:
     server status
     server stop
     server uninstall
+    server upgrade
     topology show
 

@@ -37,9 +37,11 @@ from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError
 from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
 from prestoadmin.util.service_util import lookup_port
+
+from tempfile import mkdtemp
 import util.filesystem
 
-__all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
+__all__ = ['install', 'uninstall', 'upgrade', 'start', 'stop', 'restart', 'status']
 
 INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 120
@@ -123,6 +125,15 @@ def uninstall():
     ret = sudo('rpm -e presto-server-rpm')
     if ret.succeeded:
         print('Package uninstalled successfully on: ' + env.host)
+
+
+@task
+@requires_topology
+def upgrade(local_package_path, local_config_dir):
+    configure_cmds.gather_directory(local_config_dir)
+    uninstall()
+    package.deploy_install(local_package_path)
+    configure_cmds.deploy_all(local_config_dir)
 
 
 def service(control=None):

@@ -18,14 +18,18 @@ Module for various configuration management tasks using presto-admin
 import logging
 import os
 from StringIO import StringIO
+from contextlib import closing
 from fabric.contrib import files
 from fabric.decorators import task, serial
 from fabric.operations import get
+from fabric.operations import put
 from fabric.state import env
 from fabric.utils import abort, warn
 import prestoadmin.deploy
 from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
+from prestoadmin.util.fabricapi import by_rolename
+from prestoadmin.util.filesystem import ensure_parent_directories_exist
 
 
 CONFIG_PROPERTIES = "config.properties"
@@ -33,9 +37,11 @@ LOG_PROPERTIES = "log.properties"
 JVM_CONFIG = "jvm.config"
 NODE_PROPERTIES = "node.properties"
 
+ALL_CONFIG = [CONFIG_PROPERTIES, LOG_PROPERTIES, JVM_CONFIG, NODE_PROPERTIES]
+
 _LOGGER = logging.getLogger(__name__)
 
-__all__ = ['deploy', 'show']
+__all__ = ['deploy', 'show', 'gather_directory', 'deploy_directory']
 
 
 @task
@@ -69,15 +75,59 @@ def deploy(rolename=None):
             abort("Invalid Argument. Possible values: coordinator, workers")
 
 
-def configuration_show(file_name, should_warn=True):
-    file_path = os.path.join(constants.REMOTE_CONF_DIR, file_name)
-    if not files.exists(file_path):
+@task
+@requires_topology
+def deploy_directory(source_directory, rolename=None):
+    by_rolename(env.host, rolename, deploy_all, source_directory)
+
+
+@task
+@requires_topology
+def gather_directory(target_directory, allow_overwrite=False, rolename=None):
+    by_rolename(env.host, rolename, fetch_all, target_directory,
+                allow_overwrite=allow_overwrite)
+
+
+def deploy_all(source_directory, should_warn=True):
+    host_config_dir = os.path.join(source_directory, env.host)
+    for file_name in ALL_CONFIG:
+        local_config_file = os.path.join(host_config_dir, file_name)
+        if not os.path.exists(local_config_file):
+            if should_warn:
+                warn("No configuration file found for %s at %s"
+                     % (env.host, local_config_file))
+            continue
+        remote_config_file = os.path.join(constants.REMOTE_CONF_DIR, file_name)
+        put(local_config_file, remote_config_file)
+
+
+def fetch_all(target_directory, allow_overwrite=False):
+    host_config_dir = os.path.join(target_directory, env.host)
+    for file_name in ALL_CONFIG:
+        local_config_file = os.path.join(host_config_dir, file_name)
+        ensure_parent_directories_exist(local_config_file)
+        if not allow_overwrite and os.path.exists(local_config_file):
+            abort("Refusing to overwrite %s" % (local_config_file))
+        configuration_fetch(file_name, local_config_file)
+
+
+def configuration_fetch(file_name, config_destination, should_warn=True):
+    remote_file_path = os.path.join(constants.REMOTE_CONF_DIR, file_name)
+    if not files.exists(remote_file_path):
         if should_warn:
             warn("No configuration file found for %s at %s"
-                 % (env.host, file_path))
+                 % (env.host, remote_file_path))
+        return None
     else:
-        file_content_buffer = StringIO()
-        get(file_path, file_content_buffer)
+        get(remote_file_path, config_destination)
+        return remote_file_path
+
+
+def configuration_show(file_name, should_warn=True):
+    with closing(StringIO()) as file_content_buffer:
+        file_path = configuration_fetch(file_name, file_content_buffer, should_warn)
+        if file_path is None:
+            return
         config_values = file_content_buffer.getvalue()
         file_content_buffer.close()
         print ("\n%s: Configuration file at %s:" % (env.host, file_path))

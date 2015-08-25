@@ -102,3 +102,56 @@ class TestConfigureCmds(BaseTestCase):
         configure_cmds.deploy("workers")
         mock_workers.assert_called_with()
         assert not mock_coordinator.called
+
+    @patch('prestoadmin.configure_cmds.os.path.exists')
+    @patch('prestoadmin.configure_cmds.ensure_parent_directories_exist')
+    @patch('prestoadmin.configure_cmds.configuration_fetch')
+    def test_fetchall_overwrite(self, mock_fetch, mock_ensure, mock_exists):
+        mock_exists.return_value = True
+        env.host = 'any_host'
+        configure_cmds.fetch_all('any_dir', allow_overwrite=True)
+        self.assertTrue(mock_fetch.called)
+
+    @patch('prestoadmin.configure_cmds.os.path.exists')
+    @patch('prestoadmin.configure_cmds.ensure_parent_directories_exist')
+    @patch('prestoadmin.configure_cmds.configuration_fetch')
+    def test_fetchall_no_overwrite(self, mock_fetch, mock_ensure, mock_exists):
+        mock_exists.return_value = True
+        env.host = 'any_host'
+        env.abort_exception = Exception
+        self.assertRaises(Exception, configure_cmds.fetch_all, 'any_dir')
+        self.assertFalse(mock_fetch.called)
+
+    @patch('prestoadmin.configure_cmds.get')
+    @patch('prestoadmin.configure_cmds.put')
+    @patch('prestoadmin.configure_cmds.files.exists')
+    @patch('prestoadmin.configure_cmds.os.path.exists')
+    @patch('prestoadmin.configure_cmds.ensure_parent_directories_exist')
+    def test_fetch_deploy_all_same_paths(self, mock_ensure, mock_local_exists, mock_remote_exists, mock_put, mock_get):
+        env.host = 'any_host'
+        get_files = set()
+        put_files = set()
+
+        def get(remote_path, local_path):
+            get_files.add((local_path, remote_path))
+
+        def put(local_path, remote_path):
+            put_files.add((local_path, remote_path))
+
+        mock_put.side_effect = put
+        mock_get.side_effect = get
+
+        # Local files don't exist for the fetch phase so we don't have to worry about
+        # allow_overwrite behavior.
+        mock_local_exists.return_value = False
+        mock_remote_exists.return_value = True
+
+        local_dir = 'any_dir'
+        configure_cmds.fetch_all(local_dir)
+
+        # Local files *do* exist for the deploy phase. If not, they'll be skipped and the test
+        # will fail.
+        mock_local_exists.return_value = True
+        configure_cmds.deploy_all(local_dir)
+        self.assertGreater(len(get_files), 0)
+        self.assertEquals(get_files, put_files)
