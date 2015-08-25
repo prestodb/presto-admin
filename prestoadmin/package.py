@@ -61,9 +61,17 @@ def check_if_valid_rpm(local_path):
 
 
 def deploy_install(local_path):
+    deploy_action(local_path, rpm_install)
+
+
+def deploy_upgrade(local_path):
+    deploy_action(local_path, rpm_upgrade)
+
+
+def deploy_action(local_path, rpm_action):
     check_if_valid_rpm(local_path)
     deploy(local_path)
-    rpm_install(os.path.basename(local_path))
+    rpm_action(os.path.basename(local_path))
 
 
 def deploy(local_path=None):
@@ -86,6 +94,23 @@ def rpm_install(rpm_name):
         nodeps = '--nodeps '
 
     ret = sudo('rpm -i %s%s' %
-               (nodeps, constants.REMOTE_PACKAGES_PATH + "/" + rpm_name))
+               (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH,
+                                     rpm_name)))
     if ret.succeeded:
         print("Package installed successfully on: " + env.host)
+
+
+def rpm_upgrade(rpm_name):
+    _LOGGER.info("Upgrading the rpm")
+    nodeps = ''
+    if env.nodeps:
+        nodeps = '--nodeps '
+
+    package_path = os.path.join(constants.REMOTE_PACKAGES_PATH, rpm_name)
+    package_name = sudo('rpm -qp --queryformat \'%%{NAME}\' %s'
+                        % package_path, quiet=True)
+
+    ret_uninstall = sudo('rpm -e %s%s' % (nodeps, package_name))
+    ret_install = sudo('rpm -i %s%s' % (nodeps, package_path))
+    if ret_uninstall.succeeded and ret_install.succeeded:
+        print("Package upgraded successfully on: " + env.host)
