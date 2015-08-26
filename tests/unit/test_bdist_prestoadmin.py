@@ -33,7 +33,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
         self.attrs = {
             'name': 'prestoadmin',
             'cmdclass': {'bdist_prestoadmin': bdist_prestoadmin},
-            'version': '0.1.0',
+            'version': '1.1',
             'packages': ['prestoadmin'],
             'package_dir': {'prestoadmin': 'prestoadmin'},
             'install_requires': ['fabric']
@@ -86,7 +86,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
 
     @patch('distutils.core.Command.run_command')
     def test_build_wheel(self, run_command_mock):
-        self.assertEquals('prestoadmin-0.1.0-py2-none-any',
+        self.assertEquals('prestoadmin-1.1-py2-none-any',
                           self.bdist.build_wheel('build'))
 
     @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
@@ -207,7 +207,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
             mkpath(build_path)
             self.bdist.archive_dist(build_path, 'dist')
 
-            archive = os.path.join('dist', 'prestoadmin-0.1.0-offline.tar.bz2')
+            archive = os.path.join('dist', 'prestoadmin-1.1-offline.tar.bz2')
             self.assertTrue(os.path.exists(archive))
         finally:
             remove_tree(os.path.dirname(build_path))
@@ -220,7 +220,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
             self.bdist.online_install = True
             self.bdist.archive_dist(build_path, 'dist')
 
-            archive = os.path.join('dist', 'prestoadmin-0.1.0-online.tar.bz2')
+            archive = os.path.join('dist', 'prestoadmin-1.1-online.tar.bz2')
             self.assertTrue(os.path.exists(archive))
         finally:
             remove_tree(os.path.dirname(build_path))

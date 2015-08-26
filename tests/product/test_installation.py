@@ -78,7 +78,7 @@ class TestInstallation(BaseProductTestCase):
         self.assertRaisesRegexp(
             OSError,
             r'IOError: \[Errno 2\] No such file or directory: '
-            r'\'/opt/prestoadmin-0.1.0-py2-none-any.whl\'',
+            r'\'/opt/prestoadmin-1.1-py2-none-any.whl\'',
             self.cluster.run_script_on_host,
             script,
             self.cluster.master
