@@ -41,7 +41,7 @@ ALL_CONFIG = [CONFIG_PROPERTIES, LOG_PROPERTIES, JVM_CONFIG, NODE_PROPERTIES]
 
 _LOGGER = logging.getLogger(__name__)
 
-__all__ = ['deploy', 'show', 'gather_directory', 'deploy_directory']
+__all__ = ['deploy', 'show']
 
 
 @task
@@ -75,13 +75,11 @@ def deploy(rolename=None):
             abort("Invalid Argument. Possible values: coordinator, workers")
 
 
-@task
 @requires_topology
 def deploy_directory(source_directory, rolename=None):
     by_rolename(env.host, rolename, deploy_all, source_directory)
 
 
-@task
 @requires_topology
 def gather_directory(target_directory, allow_overwrite=False, rolename=None):
     by_rolename(env.host, rolename, fetch_all, target_directory,

@@ -59,11 +59,16 @@ def check_if_valid_rpm(local_path):
     elif result.stderr:
         abort(result.stderr)
 
-
 def deploy_install(local_path):
+    deploy_action(local_path, rpm_install)
+
+def deploy_upgrade(local_path):
+    deploy_action(local_path, rpm_upgrade)
+
+def deploy_action(local_path, rpm_action):
     check_if_valid_rpm(local_path)
     deploy(local_path)
-    rpm_install(os.path.basename(local_path))
+    rpm_action(os.path.basename(local_path))
 
 
 def deploy(local_path=None):
@@ -86,6 +91,17 @@ def rpm_install(rpm_name):
         nodeps = '--nodeps '
 
     ret = sudo('rpm -i %s%s' %
-               (nodeps, constants.REMOTE_PACKAGES_PATH + "/" + rpm_name))
+               (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH, rpm_name)))
     if ret.succeeded:
         print("Package installed successfully on: " + env.host)
+
+def rpm_upgrade(rpm_name):
+    _LOGGER.info("Upgrading the rpm")
+    nodeps = ''
+    if env.nodeps:
+        nodeps = '--nodeps '
+
+    ret = sudo('rpm -U --oldpackage %s%s' %
+               (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH, rpm_name)))
+    if ret.succeeded:
+        print("Package upgraded successfully on: " + env.host)
