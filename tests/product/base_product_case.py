@@ -63,7 +63,7 @@ plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin\n"""
 
     default_jvm_config_ = """-server
--Xmx1G
+-Xmx2G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent

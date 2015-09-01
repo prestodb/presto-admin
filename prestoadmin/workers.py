@@ -37,7 +37,7 @@ DEFAULT_PROPERTIES = {'node.properties':
                        'plugin.config-dir': '/etc/presto/catalog',
                        'plugin.dir': '/usr/lib/presto/lib/plugin'},
                       'jvm.config': ['-server',
-                                     '-Xmx1G',
+                                     '-Xmx2G',
                                      '-XX:-UseBiasedLocking',
                                      '-XX:+UseG1GC',
                                      '-XX:+ExplicitGCInvokesConcurrent',
