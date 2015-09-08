@@ -110,8 +110,7 @@ class TestServerInstall(BaseProductTestCase):
 discovery.uri=http://slave1:8080
 http-server.http.port=8080
 query.max-memory-per-node=512MB
-query.max-memory=50GB
-task.max-memory=1GB\n"""
+query.max-memory=50GB\n"""
 
     default_coord_config_with_slave1_ = """coordinator=true
 discovery-server.enabled=true
@@ -119,15 +118,13 @@ discovery.uri=http://slave1:8080
 http-server.http.port=8080
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
-query.max-memory=50GB
-task.max-memory=1GB\n"""
+query.max-memory=50GB\n"""
 
     default_workers_config_regex_ = """coordinator=false
 discovery.uri=http:.*:8080
 http-server.http.port=8080
 query.max-memory-per-node=512MB
-query.max-memory=50GB
-task.max-memory=1GB\n"""
+query.max-memory=50GB\n"""
 
     default_coord_config_regex_ = """coordinator=true
 discovery-server.enabled=true
@@ -135,8 +132,7 @@ discovery.uri=http:.*:8080
 http-server.http.port=8080
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
-query.max-memory=50GB
-task.max-memory=1GB\n"""
+query.max-memory=50GB\n"""
 
     def setUp(self):
         super(TestServerInstall, self).setUp()

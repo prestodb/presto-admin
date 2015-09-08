@@ -46,7 +46,6 @@ class TestWorkers(BaseTestCase):
                     'config.properties': {'coordinator': 'false',
                                           'discovery.uri': 'http://a:8080',
                                           'http-server.http.port': '8080',
-                                          'task.max-memory': '1GB',
                                           'query.max-memory': '50GB',
                                           'query.max-memory-per-node': '1GB'}
                     }
@@ -114,7 +113,6 @@ class TestWorkers(BaseTestCase):
                     'config.properties': {'coordinator': 'false',
                                           'discovery.uri': 'http://j:8080',
                                           'http-server.http.port': '8080',
-                                          'task.max-memory': '1GB',
                                           'query.max-memory': '50GB',
                                           'query.max-memory-per-node': '1GB'}
                     }

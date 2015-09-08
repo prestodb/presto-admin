@@ -47,7 +47,6 @@ DEFAULT_PROPERTIES = {'node.properties':
                                      '-DHADOOP_USER_NAME=hive'],
                       'config.properties': {'coordinator': 'false',
                                             'http-server.http.port': '8080',
-                                            'task.max-memory': '1GB',
                                             'query.max-memory': '50GB',
                                             'query.max-memory-per-node': '1GB'}
                       }

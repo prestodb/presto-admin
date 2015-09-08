@@ -26,7 +26,6 @@ http-server.http.port=8080
 node.scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
 query.max-memory=50GB
-task.max-memory=1GB
 
 
 slave1: Configuration file at /etc/presto/node.properties:
@@ -55,7 +54,6 @@ discovery.uri=http://master:8080
 http-server.http.port=8080
 query.max-memory-per-node=512MB
 query.max-memory=50GB
-task.max-memory=1GB
 
 
 slave2: Configuration file at /etc/presto/node.properties:
@@ -84,7 +82,6 @@ discovery.uri=http://master:8080
 http-server.http.port=8080
 query.max-memory-per-node=512MB
 query.max-memory=50GB
-task.max-memory=1GB
 
 
 slave3: Configuration file at /etc/presto/node.properties:
@@ -113,4 +110,3 @@ discovery.uri=http://master:8080
 http-server.http.port=8080
 query.max-memory-per-node=512MB
 query.max-memory=50GB
-task.max-memory=1GB
