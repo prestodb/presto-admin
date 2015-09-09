@@ -515,11 +515,8 @@ query.max-memory=50GB\n"""
                 result = method_to_check()
                 # No exception thrown, success
                 return result
-            except (AssertionError, PrestoError):
+            except (AssertionError, PrestoError, OSError):
                 pass
-            except OSError as e:
-                if not e.errno == 7:
-                    raise
             sleep(RETRY_INTERVAL)
             time_spent_waiting += RETRY_INTERVAL
         return method_to_check()

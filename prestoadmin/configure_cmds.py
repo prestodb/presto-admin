@@ -28,7 +28,6 @@ from fabric.utils import abort, warn
 import prestoadmin.deploy
 from prestoadmin.topology import requires_topology
 from prestoadmin.util import constants
-from prestoadmin.util.fabricapi import by_rolename
 from prestoadmin.util.filesystem import ensure_parent_directories_exist
 
 
@@ -75,15 +74,8 @@ def deploy(rolename=None):
             abort("Invalid Argument. Possible values: coordinator, workers")
 
 
-@requires_topology
-def deploy_directory(source_directory, rolename=None):
-    by_rolename(env.host, rolename, deploy_all, source_directory)
-
-
-@requires_topology
-def gather_directory(target_directory, allow_overwrite=False, rolename=None):
-    by_rolename(env.host, rolename, fetch_all, target_directory,
-                allow_overwrite=allow_overwrite)
+def gather_directory(target_directory, allow_overwrite=False):
+    fetch_all(target_directory, allow_overwrite=allow_overwrite)
 
 
 def deploy_all(source_directory, should_warn=True):
@@ -123,7 +115,8 @@ def configuration_fetch(file_name, config_destination, should_warn=True):
 
 def configuration_show(file_name, should_warn=True):
     with closing(StringIO()) as file_content_buffer:
-        file_path = configuration_fetch(file_name, file_content_buffer, should_warn)
+        file_path = configuration_fetch(file_name, file_content_buffer,
+                                        should_warn)
         if file_path is None:
             return
         config_values = file_content_buffer.getvalue()

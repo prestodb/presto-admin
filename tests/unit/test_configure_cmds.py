@@ -127,7 +127,10 @@ class TestConfigureCmds(BaseTestCase):
     @patch('prestoadmin.configure_cmds.files.exists')
     @patch('prestoadmin.configure_cmds.os.path.exists')
     @patch('prestoadmin.configure_cmds.ensure_parent_directories_exist')
-    def test_fetch_deploy_all_same_paths(self, mock_ensure, mock_local_exists, mock_remote_exists, mock_put, mock_get):
+    def test_fetch_deploy_all_same_paths(self, mock_ensure,
+                                         mock_local_exists,
+                                         mock_remote_exists,
+                                         mock_put, mock_get):
         env.host = 'any_host'
         get_files = set()
         put_files = set()
@@ -141,16 +144,16 @@ class TestConfigureCmds(BaseTestCase):
         mock_put.side_effect = put
         mock_get.side_effect = get
 
-        # Local files don't exist for the fetch phase so we don't have to worry about
-        # allow_overwrite behavior.
+        # Local files don't exist for the fetch phase so we don't have to
+        # worry about allow_overwrite behavior.
         mock_local_exists.return_value = False
         mock_remote_exists.return_value = True
 
         local_dir = 'any_dir'
         configure_cmds.fetch_all(local_dir)
 
-        # Local files *do* exist for the deploy phase. If not, they'll be skipped and the test
-        # will fail.
+        # Local files *do* exist for the deploy phase. If not, they'll be
+        # skipped and the test will fail.
         mock_local_exists.return_value = True
         configure_cmds.deploy_all(local_dir)
         self.assertGreater(len(get_files), 0)
