@@ -173,3 +173,23 @@ class TestConnector(BaseTestCase):
             '/etc/opt/prestoadmin/connectors/example.properties\n\n'
             'Underlying exception:\n    No such file or directory',
             connector.add, 'example')
+
+    @patch('prestoadmin.connector.get')
+    @patch('prestoadmin.connector.files.exists')
+    @patch('prestoadmin.connector.ensure_directory_exists')
+    @patch('prestoadmin.connector.os.path.exists')
+    def test_gather_connectors(self, path_exists, ensure_dir_exists,
+                               files_exists, get_mock):
+        fabric.api.env.host = 'any_host'
+        path_exists.return_value = False
+        files_exists.return_value = True
+        connector.gather_connectors('local_config_dir')
+        get_mock.assert_called_once_with(
+            constants.REMOTE_CATALOG_DIR, 'local_config_dir/any_host/catalog')
+
+        # if remote catalog dir does not exist
+        get_mock.reset_mock()
+        files_exists.return_value = False
+        results = connector.gather_connectors('local_config_dir')
+        self.assertEqual([], results)
+        self.assertFalse(get_mock.called)

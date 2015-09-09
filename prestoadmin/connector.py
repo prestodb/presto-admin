@@ -18,14 +18,16 @@ Module for presto connector configurations
 import logging
 import errno
 
-from fabric.api import task, env
+from fabric.api import task, env, abort
 from fabric.context_managers import hide
-from fabric.operations import sudo, os, put
+from fabric.contrib import files
+from fabric.operations import sudo, os, put, get
 import fabric.utils
 
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
+from prestoadmin.util.filesystem import ensure_directory_exists
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +40,17 @@ def deploy_files(filenames, local_dir, remote_dir):
     sudo('mkdir -p ' + remote_dir)
     for name in filenames:
         put(os.path.join(local_dir, name), remote_dir, use_sudo=True)
+
+
+def gather_connectors(local_config_dir, allow_overwrite=False):
+    local_catalog_dir = os.path.join(local_config_dir, env.host, 'catalog')
+    if not allow_overwrite and os.path.exists(local_catalog_dir):
+        abort("Refusing to overwrite %s" % local_catalog_dir)
+    ensure_directory_exists(local_catalog_dir)
+    if files.exists(constants.REMOTE_CATALOG_DIR):
+        return get(constants.REMOTE_CATALOG_DIR, local_catalog_dir)
+    else:
+        return []
 
 
 def validate(filenames):

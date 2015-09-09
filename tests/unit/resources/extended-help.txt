@@ -54,5 +54,6 @@ Commands:
     server status
     server stop
     server uninstall
+    server upgrade
     topology show
 

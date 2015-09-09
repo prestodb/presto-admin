@@ -30,6 +30,14 @@ def ensure_parent_directories_exist(path):
             raise e
 
 
+def ensure_directory_exists(path):
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
+
+
 def write_to_file_if_not_exists(content, path):
     flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
 

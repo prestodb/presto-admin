@@ -169,6 +169,9 @@ class DockerCluster(object):
         self.client.stop(container_name)
         self.client.wait(container_name)
 
+    def start_host(self, container_name):
+        self.client.start(container_name)
+
     def get_down_hostname(self, host_name):
         return host_name
 

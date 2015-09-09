@@ -37,9 +37,12 @@ from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError
 from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
 from prestoadmin.util.service_util import lookup_port
+
+from tempfile import mkdtemp
 import util.filesystem
 
-__all__ = ['install', 'uninstall', 'start', 'stop', 'restart', 'status']
+__all__ = ['install', 'uninstall', 'upgrade', 'start', 'stop', 'restart',
+           'status']
 
 INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 120
@@ -123,6 +126,50 @@ def uninstall():
     ret = sudo('rpm -e presto-server-rpm')
     if ret.succeeded:
         print('Package uninstalled successfully on: ' + env.host)
+
+
+@task
+@requires_topology
+def upgrade(local_package_path, local_config_dir=None):
+    """
+    Copy and upgrade a new presto-server rpm to all of the nodes in the
+    cluster. Retains existing node configuration.
+
+    The existing topology information is read from the config.json file.
+    Unlike install, there is no provision to supply topology information
+    interactively.
+
+    The existing cluster configuration is collected from the nodes on the
+    cluster and stored on the host running presto-admin. After the
+    presto-server packages have been upgraded, presto-admin pushes the
+    collected configuration back out to the hosts on the cluster.
+
+    Note that the configuration files in /etc/opt/prestoadmin are not updated
+    during upgrade.
+
+    :param local_package_path - Absolute path to the presto rpm to be
+                                installed
+    :param local_config_dir -   (optional) Directory to store the cluster
+                                configuration in. If not specified, a temp
+                                directory is used.
+    """
+    stop()
+
+    if not local_config_dir:
+        local_config_dir = mkdtemp()
+        print('Saving cluster configuration to %s' % local_config_dir)
+
+    configure_cmds.gather_directory(local_config_dir)
+    filenames = connector.gather_connectors(local_config_dir)
+
+    package.deploy_upgrade(local_package_path)
+
+    configure_cmds.deploy_all(local_config_dir)
+    connector.deploy_files(
+        filenames,
+        os.path.join(local_config_dir, env.host, 'catalog'),
+        constants.REMOTE_CATALOG_DIR
+    )
 
 
 def service(control=None):
