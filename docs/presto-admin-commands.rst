@@ -331,6 +331,25 @@ once, you could run ::
     sudo ./presto-admin connector add
     sudo ./presto-admin server restart
 
+Adding a Custom Connector
+--------------------------
+In order to install a custom connector not included with Presto, the jar must be
+added to the Presto plugin location using the ``plugin add_jar`` command before
+running the ``connector add`` command.
+
+Example: ::
+   
+   sudo ./presto-admin plugin add_jar my_connector.jar my_connector
+   sudo ./presto-admin connector add my_connector
+   sudo ./presto-admin server restart
+
+The ``add_jar`` command assumes the default plugin location of
+``/usr/lib/presto/lib/plugin`` (see `plugin add_jar`_).  As with the default
+connectors, a ``my_connector.properties`` file must be created. Refer to the
+custom connector's documentation for the properties to specify.
+
+The ``plugin add_jar`` command works with both jars and directories containing jars.
+
 ****************
 connector remove
 ****************
