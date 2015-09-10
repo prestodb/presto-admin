@@ -156,5 +156,5 @@ class TestConfigureCmds(BaseTestCase):
         # skipped and the test will fail.
         mock_local_exists.return_value = True
         configure_cmds.deploy_all(local_dir)
-        self.assertGreater(len(get_files), 0)
+        self.assertTrue(len(get_files) > 0)
         self.assertEquals(get_files, put_files)
