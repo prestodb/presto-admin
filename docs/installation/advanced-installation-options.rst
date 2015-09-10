@@ -41,3 +41,13 @@ with your own certificates:
 
  sudo ./install-prestoadmin.sh <path_to_cert>/cacert.pem
 
+Upgrading Presto-Admin
+----------------------
+Upgrading to a newer version of ``presto-admin`` requires removing the old
+installation and then installing the new version.  To remove the old
+installation, delete the ``presto-admin-install`` and ``/opt/prestoadmin``
+directories and the ``presto-admin`` script. Then install the newer version of
+``presto-admin`` by following the instructions in the installation section (see
+:ref:`presto-admin-installation-label`). Your configuration files located in
+``/etc/opt/prestoadmin`` will remain intact and continue to be used by the newer
+version of ``presto-admin``.
