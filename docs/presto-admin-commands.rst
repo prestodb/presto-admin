@@ -2,174 +2,65 @@
 Presto-Admin Commands
 =====================
 
-.. _server-install-label:
-
-**************
-server install
-**************
-::
-
-    presto-admin server install <local_path>
-
-This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The ``local_path`` should be accessible by ``presto-admin``.
-The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
-
-The general configurations for Presto's coordinator and workers are taken from the directories ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers`` respectively. If these directories or any required configuration files are absent when you run ``server install``, a default configuration will be deployed. See `configuration deploy`_ for details.
-
-The connectors directory ``/etc/opt/prestoadmin/connectors/`` should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
-The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``server install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
-
-Example
--------
-::
-
-    sudo ./presto-admin server install /tmp/presto-0.101-1.0.x86_64.rpm
-
-**Standalone RPM Install**
-
-If you want to do a single node installation where coordinator and worker are co-located, you can just use:
-::
-
-    rpm -i presto-0.101-1.0.x86_64.rpm
-
-This will deploy the necessary configurations for the presto-server to operate in single-node mode.
-
-***************
-package install
-***************
-
-::
-
-    presto-admin package install local_path [--nodeps]
-
-This command copies any rpm from ``local_path`` to all the nodes in the cluster and installs it. Similar to ``server install`` the cluster topology is obtained from the file ``/etc/opt/prestoadmin/config.json``. If this file is missing, then the command prompts for user input to get the topology information.
-
-This command takes an optional ``--nodeps`` flag which indicates if the rpm installed should ignore checking any package dependencies.
-
-.. WARNING:: Using ``--nodeps`` can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm installation.
-
-Example
--------
-::
-
-    sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
-
-.. _server-start-label:
+.. _collect-logs:
 
 ************
-server start
+collect logs
 ************
 ::
 
-    presto-admin server start
+    presto-admin collect logs
 
-This command starts the Presto servers on the cluster. A status check is performed on the entire cluster and is reported at the end.
+This command gathers Presto server logs and launcher logs from the ``/var/log/presto/`` directory across the cluster along with the
+``/var/log/prestoadmin/presto-admin.log`` and creates a tar file. The final tar output will be saved at ``/tmp/presto-debug-logs.tar.bz2``.
+
 
 Example
 -------
 ::
 
-    sudo ./presto-admin server start
+    sudo ./presto-admin collect logs
 
-***********
-server stop
-***********
+.. _collect-query-info:
+
+******************
+collect query_info
+******************
 ::
 
-    presto-admin server stop
+    presto-admin collect query_info <query_id>
 
-This command stops the Presto servers on the cluster.
+This command gathers information about a Presto query identified by the given ``query_id`` and stores that information in a JSON file.
+The output file will be saved at ``/tmp/presto-debug/query_info_<query_id>.json``.
 
 Example
 -------
 ::
 
-    sudo ./presto-admin server stop
+    sudo ./presto-admin collect query_info 20150525_234711_00000_7qwaz
 
-.. _server-restart-label:
+.. _collect-system-info:
 
-**************
-server restart
-**************
+*******************
+collect system_info
+*******************
 ::
 
-    presto-admin server restart
+    presto-admin collect system_info
 
-This command first stops any Presto servers running and then starts them. A status check is performed on the entire cluster and is reported at the end.
+This command gathers various system specific information from the cluster. The information is saved in a tar file at ``/tmp/presto-debug-sysinfo.tar.bz2``.
+The gathered information includes:
+
+ * Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.
+ * Connectors configured
+ * Other system specific information like OS information, Java version, ``presto-admin`` version and Presto server version
 
 Example
 -------
 ::
 
-    sudo ./presto-admin server restart
+    sudo ./presto-admin collect system_info
 
-
-
-.. _server-status:
-
-*************
-server status
-*************
-::
-
-    presto-admin server status
-
-This command prints the status information of Presto in the cluster. This command will
-fail to report the correct status if the Presto installed is older than version 0.100. It will not print any status information if a given node is inaccessible.
-
-The status output will have the following information:
-    * server status
-    * node uri
-    * Presto version installed
-    * node is active/inactive
-    * connectors deployed
-
-Example
--------
-::
-
-    sudo ./presto-admin server status
-
-
-**************
-server upgrade
-**************
-::
-
-    presto-admin server upgrade local_package_path [local_config_dir]
-
-This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM specified
-by ``local_package_path``, preserving the existing configuration on the cluster. The existing
-cluster configuration is saved locally to local_config_dir (which defaults to a temporary
-folder if not specified).
-
-This command can also be used to downgrade the Presto installation, if the RPM at ``local_package_path``
-is an earlier version than the Presto installed on the cluster.
-
-Note that if the configuration files on the cluster differ from the presto-admin configuration
-files found in ``/etc/opt/prestoadmin``, the presto-admin configuration files are not updated.
-
-Example
--------
-::
-
-    sudo ./presto-admin server upgrade new-rpm.rpm /tmp/cluster-configuration
-
-
-*************
-topology show
-*************
-::
-
- presto-admin topology show
-
-This command shows the current topology configuration for the cluster (including the coordinators, workers, SSH port, and SSH username).
-
-Example
--------
-::
-
-    sudo ./presto-admin topology show
 
 .. _configuration-deploy-label:
 
@@ -380,6 +271,28 @@ For example: To remove the jmx connector, run ::
     sudo ./presto-admin connector remove jmx
     sudo ./presto-admin server restart
 
+
+***************
+package install
+***************
+
+::
+
+    presto-admin package install local_path [--nodeps]
+
+This command copies any rpm from ``local_path`` to all the nodes in the cluster and installs it. Similar to ``server install`` the cluster topology is obtained from the file ``/etc/opt/prestoadmin/config.json``. If this file is missing, then the command prompts for user input to get the topology information.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm installed should ignore checking any package dependencies.
+
+.. WARNING:: Using ``--nodeps`` can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm installation.
+
+Example
+-------
+::
+
+    sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
+
+
 **************
 plugin add_jar
 **************
@@ -403,64 +316,134 @@ The first example will deploy program.jar to
 ``/usr/lib/presto/lib/plugin/hive-cdh5/program.jar``
 The second example will deploy it to ``/my/plugin/dir/hive-cdh5/program.jar``.
 
-.. _collect-logs:
+**********
+script run
+**********
+::
+
+    presto-admin script run <local-path-to-script> [<remote-dir-to-put-script>]
+
+This command can be used to run an arbitrary script on a cluster. It copies the
+script from its local location to the specified remote directory (defaults to
+/tmp), makes the file executable, and runs it.
+
+Example
+-------
+::
+
+    sudo ./presto-admin script run /my/local/script.sh
+    sudo ./presto-admin script run /my/local/script.sh /remote/dir
+
+
+.. _server-install-label:
+
+**************
+server install
+**************
+::
+
+    presto-admin server install <local_path>
+
+This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The ``local_path`` should be accessible by ``presto-admin``.
+The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
+
+The general configurations for Presto's coordinator and workers are taken from the directories ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers`` respectively. If these directories or any required configuration files are absent when you run ``server install``, a default configuration will be deployed. See `configuration deploy`_ for details.
+
+The connectors directory ``/etc/opt/prestoadmin/connectors/`` should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
+The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``server install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
+
+Example
+-------
+::
+
+    sudo ./presto-admin server install /tmp/presto-0.101-1.0.x86_64.rpm
+
+**Standalone RPM Install**
+
+If you want to do a single node installation where coordinator and worker are co-located, you can just use:
+::
+
+    rpm -i presto-0.101-1.0.x86_64.rpm
+
+This will deploy the necessary configurations for the presto-server to operate in single-node mode.
+
+.. _server-restart-label:
+
+**************
+server restart
+**************
+::
+
+    presto-admin server restart
+
+This command first stops any Presto servers running and then starts them. A status check is performed on the entire cluster and is reported at the end.
+
+Example
+-------
+::
+
+    sudo ./presto-admin server restart
+
+
+.. _server-start-label:
 
 ************
-collect logs
+server start
 ************
 ::
 
-    presto-admin collect logs
+    presto-admin server start
 
-This command gathers Presto server logs and launcher logs from the ``/var/log/presto/`` directory across the cluster along with the
-``/var/log/prestoadmin/presto-admin.log`` and creates a tar file. The final tar output will be saved at ``/tmp/presto-debug-logs.tar.bz2``.
-
+This command starts the Presto servers on the cluster. A status check is performed on the entire cluster and is reported at the end.
 
 Example
 -------
 ::
 
-    sudo ./presto-admin collect logs
+    sudo ./presto-admin server start
 
-.. _collect-query-info:
 
-******************
-collect query_info
-******************
+.. _server-status:
+
+*************
+server status
+*************
 ::
 
-    presto-admin collect query_info <query_id>
+    presto-admin server status
 
-This command gathers information about a Presto query identified by the given ``query_id`` and stores that information in a JSON file.
-The output file will be saved at ``/tmp/presto-debug/query_info_<query_id>.json``.
+This command prints the status information of Presto in the cluster. This command will
+fail to report the correct status if the Presto installed is older than version 0.100. It will not print any status information if a given node is inaccessible.
+
+The status output will have the following information:
+    * server status
+    * node uri
+    * Presto version installed
+    * node is active/inactive
+    * connectors deployed
 
 Example
 -------
 ::
 
-    sudo ./presto-admin collect query_info 20150525_234711_00000_7qwaz
+    sudo ./presto-admin server status
 
-.. _collect-system-info:
 
-*******************
-collect system_info
-*******************
+***********
+server stop
+***********
 ::
 
-    presto-admin collect system_info
+    presto-admin server stop
 
-This command gathers various system specific information from the cluster. The information is saved in a tar file at ``/tmp/presto-debug-sysinfo.tar.bz2``.
-The gathered information includes:
-
- * Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.
- * Connectors configured
- * Other system specific information like OS information, Java version, ``presto-admin`` version and Presto server version
+This command stops the Presto servers on the cluster.
 
 Example
 -------
 ::
 
-    sudo ./presto-admin collect system_info
+    sudo ./presto-admin server stop
+
 
 ****************
 server uninstall
@@ -478,21 +461,45 @@ Example
 
     sudo ./presto-admin server uninstall
 
-****************
-script run
-****************
+
+**************
+server upgrade
+**************
 ::
 
-    presto-admin script run <local-path-to-script> [<remote-dir-to-put-script>]
+    presto-admin server upgrade local_package_path [local_config_dir]
 
-This command can be used to run an arbitrary script on a cluster. It copies the
-script from its local location to the specified remote directory (defaults to
-/tmp), makes the file executable, and runs it.
+This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM specified
+by ``local_package_path``, preserving the existing configuration on the cluster. The existing
+cluster configuration is saved locally to local_config_dir (which defaults to a temporary
+folder if not specified).
+
+This command can also be used to downgrade the Presto installation, if the RPM at ``local_package_path``
+is an earlier version than the Presto installed on the cluster.
+
+Note that if the configuration files on the cluster differ from the presto-admin configuration
+files found in ``/etc/opt/prestoadmin``, the presto-admin configuration files are not updated.
 
 Example
 -------
 ::
 
-    sudo ./presto-admin script run /my/local/script.sh
-    sudo ./presto-admin script run /my/local/script.sh /remote/dir
+    sudo ./presto-admin server upgrade new-rpm.rpm /tmp/cluster-configuration
+
+
+*************
+topology show
+*************
+::
+
+ presto-admin topology show
+
+This command shows the current topology configuration for the cluster (including the coordinators, workers, SSH port, and SSH username).
+
+Example
+-------
+::
+
+    sudo ./presto-admin topology show
+
 
