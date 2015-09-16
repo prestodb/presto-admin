@@ -63,7 +63,8 @@ class DockerCluster(object):
         self.mount_dir = docker_mount_dir
 
         kwargs = kwargs_from_env()
-        kwargs['tls'].assert_hostname = False
+        if 'tls' in kwargs:
+            kwargs['tls'].assert_hostname = False
         kwargs['timeout'] = 240
         self.client = Client(**kwargs)
 
