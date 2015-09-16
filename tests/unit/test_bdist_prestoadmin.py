@@ -14,6 +14,7 @@
 
 import os
 import errno
+import re
 
 from distutils.dir_util import remove_tree
 from distutils.dir_util import mkpath
@@ -58,8 +59,9 @@ class TestBDistPrestoAdmin(BaseTestCase):
         self.assertEquals(bdist.online_install, False)
 
     def test_finalize(self):
-        self.assertEquals(self.bdist.bdist_dir,
-                          'build/bdist.linux-x86_64/prestoadmin')
+        self.assertRegexpMatches(
+            self.bdist.bdist_dir,
+            'build/bdist\.(linux.*|macos.*)/prestoadmin')
         self.assertEquals(self.bdist.dist_dir, 'dist')
         self.assertEquals(self.bdist.default_virtualenv_version, '12.0.7')
         self.assertEquals(self.bdist.keep_temp, False)
@@ -244,11 +246,20 @@ class TestBDistPrestoAdmin(BaseTestCase):
                  mkpath_mock):
         self.bdist.run()
 
-        build_path = 'build/bdist.linux-x86_64/prestoadmin'
-        build_wheel_mock.assert_called_once_with(build_path)
-        install_script_mock.assert_called_once_with('wheel_name', build_path)
-        package_dependencies_mock.assert_called_once_with(build_path)
-        archive_dist_mock.assert_called_once_with(build_path, 'dist')
+        def matching_regex(expected_regex):
+            class RegexMatcher:
+                def __eq__(self, other):
+                    return re.match(expected_regex, other)
+            return RegexMatcher()
+
+        build_path_re = matching_regex(
+            'build/bdist\.(linux.*|macos.*)/prestoadmin')
+        build_wheel_mock.assert_called_once_with(build_path_re)
+        install_script_mock.assert_called_once_with('wheel_name',
+                                                    build_path_re)
+        package_dependencies_mock.assert_called_once_with(
+            build_path_re)
+        archive_dist_mock.assert_called_once_with(build_path_re, 'dist')
 
     def test_description(self):
         self.assertEquals('create a distribution for prestoadmin',
