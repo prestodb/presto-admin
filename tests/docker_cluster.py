@@ -28,6 +28,7 @@ from time import sleep
 
 from docker import Client
 from docker.errors import APIError
+from docker.utils.utils import kwargs_from_env
 from nose.tools import nottest
 
 from prestoadmin import main_dir
@@ -60,7 +61,12 @@ class DockerCluster(object):
         # container mount point call get_local_mount_dir()
         self.local_mount_dir = local_mount_dir
         self.mount_dir = docker_mount_dir
-        self.client = Client(timeout=240)
+
+        kwargs = kwargs_from_env()
+        kwargs['tls'].assert_hostname = False
+        kwargs['timeout'] = 240
+        self.client = Client(**kwargs)
+
         self._DOCKER_START_TIMEOUT = 30
         DockerCluster.__check_if_docker_exists()
 
