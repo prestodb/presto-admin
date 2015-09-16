@@ -61,7 +61,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
     def test_finalize(self):
         self.assertRegexpMatches(
             self.bdist.bdist_dir,
-            'build/bdist\.(linux.*|macos.*)/prestoadmin')
+            'build/bdist.*/prestoadmin')
         self.assertEquals(self.bdist.dist_dir, 'dist')
         self.assertEquals(self.bdist.default_virtualenv_version, '12.0.7')
         self.assertEquals(self.bdist.keep_temp, False)
@@ -253,7 +253,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
             return RegexMatcher()
 
         build_path_re = matching_regex(
-            'build/bdist\.(linux.*|macos.*)/prestoadmin')
+            'build/bdist.*/prestoadmin')
         build_wheel_mock.assert_called_once_with(build_path_re)
         install_script_mock.assert_called_once_with('wheel_name',
                                                     build_path_re)
