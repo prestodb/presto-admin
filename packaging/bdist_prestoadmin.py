@@ -56,9 +56,12 @@ class bdist_prestoadmin(Command):
     def build_wheel(self, build_dir):
         cmd = self.reinitialize_command('bdist_wheel')
         cmd.dist_dir = build_dir
+        self.run_command('bdist_wheel')
+
+        # Ensure that you get the finalized archive name
+        cmd.finalize_options()
         wheel_name = cmd.get_archive_basename()
         logger.info('creating %s in %s', wheel_name + '.whl', build_dir)
-        self.run_command('bdist_wheel')
 
         return wheel_name
 
