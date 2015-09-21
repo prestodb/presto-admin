@@ -63,7 +63,7 @@ class TestConnectors(BaseProductTestCase):
         # test add connector without read permissions on file
         script = 'chmod 600 /etc/opt/prestoadmin/connectors/tpch.properties;' \
                  ' su app-admin -c "./presto-admin connector add tpch"'
-        output = self.run_prestoadmin_script(script)
+        output = self.run_script_from_prestoadmin_dir(script)
         with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'connector_permissions_warning.txt'), 'r') as f:
             expected = f.read() % \
@@ -77,7 +77,7 @@ class TestConnectors(BaseProductTestCase):
         # test add connector directory without read permissions on directory
         script = 'chmod 600 /etc/opt/prestoadmin/connectors; ' \
                  'su app-admin -c "./presto-admin connector add"'
-        output = self.run_prestoadmin_script(script)
+        output = self.run_script_from_prestoadmin_dir(script)
         permission_error = '\nWarning: [slave3] Permission denied\n\n\n' \
                            'Warning: [slave2] Permission denied\n\n\n' \
                            'Warning: [slave1] Permission denied\n\n\n' \
@@ -90,7 +90,7 @@ class TestConnectors(BaseProductTestCase):
         not_found_error = self.fatal_error(
             'Configuration for connector tpch not found')
         self.assertRaisesRegexp(OSError, not_found_error,
-                                self.run_prestoadmin_script, script)
+                                self.run_script_from_prestoadmin_dir, script)
 
     def test_connector_add(self):
         self.setup_cluster('presto')
