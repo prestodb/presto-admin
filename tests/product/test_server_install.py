@@ -313,7 +313,7 @@ query.max-memory=50GB\n"""
         self.copy_presto_rpm_to_master()
         self.write_test_configs(self.cluster)
 
-        cmd_output = self.run_prestoadmin_script(
+        cmd_output = self.run_script_from_prestoadmin_dir(
             'echo -e "root\n22\n%(master)s\n%(slave1)s\n" | '
             './presto-admin server install /mnt/presto-admin/%(rpm)s ')
 
@@ -366,7 +366,7 @@ query.max-memory=50GB\n"""
             'master_ip': ips[self.cluster.master],
             'slave1_ip': ips[self.cluster.slaves[0]]
         }
-        cmd_output = self.run_prestoadmin_script(
+        cmd_output = self.run_script_from_prestoadmin_dir(
             'echo -e "root\n22\n%(master_ip)s\n%(slave1_ip)s\n" | '
             './presto-admin server install /mnt/presto-admin/%(rpm)s ',
             **additional_keywords).splitlines()
@@ -502,7 +502,7 @@ query.max-memory=50GB\n"""
         for host in self.cluster.all_internal_hosts():
             expected += error_msg % {'host': host,
                                      'rpm': self.presto_rpm_filename}
-        actual = self.run_prestoadmin_script(script)
+        actual = self.run_script_from_prestoadmin_dir(script)
         self.assertEqualIgnoringOrder(actual, expected)
 
     def test_install_twice(self):

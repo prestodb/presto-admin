@@ -106,7 +106,7 @@ class TestAuthentication(BaseProductTestCase):
         # Passwordless SSH as root, but specify -I
         # We need to do it as a script because docker_py doesn't support
         # redirecting stdin.
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I')
 
         self.assertEqualIgnoringOrder(
@@ -120,7 +120,7 @@ class TestAuthentication(BaseProductTestCase):
         # Passwordless SSH as app-admin, specify -I
         non_root_sudo_warning = self.non_root_sudo_warning_message()
 
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
@@ -134,7 +134,7 @@ class TestAuthentication(BaseProductTestCase):
 
         # Passwordless SSH as app-admin, but specify wrong password with -I
         parallel_password_failure = self.parallel_password_failure_message()
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "asdf" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(parallel_password_failure +
                                       self.interactive_text, command_output)
@@ -146,7 +146,7 @@ class TestAuthentication(BaseProductTestCase):
                                       command_output)
 
         # Passwordless SSH as root, in serial mode
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             './presto-admin connector add --serial')
         self.assertEqualIgnoringOrder(
             self.success_output, command_output)
@@ -161,7 +161,7 @@ class TestAuthentication(BaseProductTestCase):
         # This is needed because the test for
         # No passwordless SSH, -I correct -u app-admin,
         # was giving Device not a stream error in jenkins
-        self.run_prestoadmin_script(
+        self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I')
 
         for host in self.cluster.all_hosts():
@@ -185,7 +185,7 @@ class TestAuthentication(BaseProductTestCase):
 
         # No passwordless SSH, -I correct -u app-admin
         non_root_sudo_warning = self.non_root_sudo_warning_message()
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
@@ -234,4 +234,4 @@ class TestAuthentication(BaseProductTestCase):
                            'echo \'connector.name=tpch\' ' \
                            '>> /etc/opt/prestoadmin/connectors/' \
                            'tpch.properties\n'
-        self.run_prestoadmin_script(connector_script)
+        self.run_script_from_prestoadmin_dir(connector_script)
