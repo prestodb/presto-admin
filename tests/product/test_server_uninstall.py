@@ -120,14 +120,26 @@ class TestServerUninstall(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
 
-        self.run_prestoadmin_script("chmod 500 -R /usr/lib/presto")
-        cmd_output = self.run_prestoadmin('server uninstall').splitlines()
-        self.assert_stopped(process_per_host)
-        expected = uninstall_output + self.expected_stop()[:]
-        self.assertRegexpMatchesLineByLine(cmd_output, expected)
+        self.run_script_from_prestoadmin_dir("chmod 500 -R /usr/lib/presto")
+        self.run_prestoadmin('server uninstall').splitlines()
 
-        for container in self.cluster.all_hosts():
+        # The master node was not able to be stopped or uninstalled because
+        # the permissions of the directory were changed such that the
+        # stop command can't run
+        pid_to_remove = None
+        for (host, pid) in process_per_host:
+            if host == self.cluster.internal_master:
+                pid_to_remove = pid
+        process_per_host.remove((self.cluster.internal_master, pid_to_remove))
+        self.assert_stopped(process_per_host)
+
+        uninstalled_hosts = self.cluster.all_hosts()[:]
+        uninstalled_hosts.remove(self.cluster.master)
+
+        for container in uninstalled_hosts:
             self.assert_uninstalled_dirs_removed(container)
+
+        self.installer.assert_installed(self, container=self.cluster.master)
 
     @docker_only
     def test_uninstall_as_non_sudo(self):
@@ -136,7 +148,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.installer.install(dummy=True)
 
         script = './presto-admin server uninstall -u testuser -p testpass'
-        output = self.run_prestoadmin_script(script)
+        output = self.run_script_from_prestoadmin_dir(script)
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'non_sudo_uninstall.txt'),
                   'r') as f:
             expected = f.read()

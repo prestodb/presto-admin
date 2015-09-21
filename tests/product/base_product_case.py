@@ -210,17 +210,21 @@ query.max-memory=50GB\n"""
             raise_error=raise_error
         )
 
-    def run_prestoadmin_script(self, script_contents, **kwargs):
+    def run_script_from_prestoadmin_dir(self, script_contents, host='',
+                                        **kwargs):
+        if not host:
+            host = self.cluster.master
+
         script_contents = self.replace_keywords(script_contents,
                                                 **kwargs)
         temp_script = '/opt/prestoadmin/tmp.sh'
         self.cluster.write_content_to_host(
             '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
-            temp_script, self.cluster.master)
+            temp_script, host)
         self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'chmod +x %s' % temp_script)
+            host, 'chmod +x %s' % temp_script)
         return self.cluster.exec_cmd_on_host(
-            self.cluster.master, temp_script)
+            host, temp_script)
 
     def assert_path_exists(self, host, file_path):
         self.cluster.exec_cmd_on_host(
