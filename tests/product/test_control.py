@@ -197,7 +197,7 @@ class TestControl(BaseProductTestCase):
             self.assertRegexpMatches(start_output, message, 'expected %s \n '
                                      'actual %s' % (message, start_output))
 
-        process_per_host = self.get_process_per_host(start_output)
+        process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
 
         stop_output = self.run_prestoadmin('server stop')
@@ -226,7 +226,8 @@ class TestControl(BaseProductTestCase):
         for message in expected_restart:
             self.assertRegexpMatches(restart_output, message, 'expected %s \n'
                                      ' actual %s' % (message, restart_output))
-        self.assertEqual(len(restart_output.splitlines()),
+        restart_output = restart_output.splitlines()
+        self.assertEqual(len(restart_output),
                          self.expected_down_node_output_size(expected_restart))
         process_per_host = self.get_process_per_host(restart_output)
         self.assert_started(process_per_host)
@@ -288,6 +289,8 @@ class TestControl(BaseProductTestCase):
                                                 % running_host)
         else:
             start_output = ''
+
+        start_output = start_output.splitlines()
 
         if not expected_stop:
             expected_stop = self.expected_stop()
