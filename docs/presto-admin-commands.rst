@@ -132,6 +132,7 @@ For workers: ::
     http-server.http.port=8080
     query.max-memory-per-node=1GB
     query.max-memory=50GB
+    task.max-memory=1GB
 
 For coordinator: ::
 
@@ -142,6 +143,7 @@ For coordinator: ::
     node.scheduler.include-coordinator=false
     query.max-memory-per-node=1GB
     query.max-memory=50GB
+    task.max-memory=1GB
 
     # if the coordinator is also a worker, it will have the following property instead
     node-scheduler.include-coordinator=true

@@ -46,6 +46,7 @@ DEFAULT_PROPERTIES = {'node.properties':
                           'coordinator': 'true',
                           'discovery-server.enabled': 'true',
                           'http-server.http.port': '8080',
+                          'task.max-memory': '1GB',
                           'node-scheduler.include-coordinator': 'false',
                           'query.max-memory': '50GB',
                           'query.max-memory-per-node': '1GB'}

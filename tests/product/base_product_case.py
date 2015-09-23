@@ -47,13 +47,15 @@ class BaseProductTestCase(BaseTestCase):
 discovery.uri=http://master:8080
 http-server.http.port=8080
 query.max-memory-per-node=1GB
-query.max-memory=50GB\n"""
+query.max-memory=50GB
+task.max-memory=1GB\n"""
 
     default_workers_test_config_ = """coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
 query.max-memory-per-node=512MB
-query.max-memory=50GB\n"""
+query.max-memory=50GB
+task.max-memory=1GB\n"""
 
     default_node_properties_ = """node.data-dir=/var/lib/presto/data
 node.environment=presto
@@ -76,7 +78,8 @@ discovery.uri=http://master:8080
 http-server.http.port=8080
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=1GB
-query.max-memory=50GB\n"""
+query.max-memory=50GB
+task.max-memory=1GB\n"""
 
     default_coordinator_test_config_ = """coordinator=true
 discovery-server.enabled=true
@@ -84,7 +87,8 @@ discovery.uri=http://master:8080
 http-server.http.port=8080
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
-query.max-memory=50GB\n"""
+query.max-memory=50GB
+task.max-memory=1GB\n"""
 
     down_node_connection_string = r'(\nWarning: (\[%(host)s\] )?Low level socket ' \
                                   r'error connecting to host %(host)s on ' \
