@@ -375,14 +375,14 @@ Example
 -------
 ::
 
-    sudo ./presto-admin server install /tmp/presto-0.101-1.0.x86_64.rpm
+    sudo ./presto-admin server install /tmp/presto.rpm
 
 **Standalone RPM Install**
 
 If you want to do a single node installation where coordinator and worker are co-located, you can just use:
 ::
 
-    rpm -i presto-0.101-1.0.x86_64.rpm
+    rpm -i presto.rpm
 
 This will deploy the necessary configurations for the presto-server to operate in single-node mode.
 
