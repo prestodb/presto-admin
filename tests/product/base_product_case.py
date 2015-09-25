@@ -469,6 +469,13 @@ query.max-memory=50GB\n"""
 
     def get_process_per_host(self, output_lines):
         process_per_host = []
+        # We found some places where we were incorrectly passing a string
+        # containing the output rather than an iterable collection of lines.
+        # Since strings don't have an __iter__ attribute, we can catch this
+        # error.
+        if not hasattr(output_lines, '__iter__'):
+            raise Exception('output_lines doesn\'t have an __iter__ ' +
+                            'attribute. Did you pass an unsplit string?')
         for line in output_lines:
             match = re.search(r'\[(?P<host>.*?)\] out: Started as (?P<pid>.*)',
                               line)

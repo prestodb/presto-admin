@@ -28,7 +28,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
     def start_and_assert_started(self):
         cmd_output = self.run_prestoadmin('server start')
-        process_per_host = self.get_process_per_host(cmd_output)
+        process_per_host = self.get_process_per_host(cmd_output.splitlines())
         self.assert_started(process_per_host)
 
     def assert_upgraded_to_dummy_rpm(self, hosts):
