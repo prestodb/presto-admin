@@ -25,6 +25,7 @@ from prestoadmin import config
 from prestoadmin import topology
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
+import prestoadmin.util.validators
 from tests.base_test_case import BaseTestCase
 
 
@@ -53,15 +54,15 @@ class TestTopologyConfig(BaseTestCase):
 
     def test_valid_ipv4(self):
         ipv4 = "10.14.1.10"
-        self.assertEqual(topology.validate_host(ipv4), ipv4)
+        self.assertEqual(prestoadmin.util.validators.validate_host(ipv4), ipv4)
 
     def test_valid_full_ipv6(self):
         ipv6 = "FE80:0000:0000:0000:0202:B3FF:FE1E:8329"
-        self.assertEqual(topology.validate_host(ipv6), ipv6)
+        self.assertEqual(prestoadmin.util.validators.validate_host(ipv6), ipv6)
 
     def test_valid_collapsed_ipv6(self):
         ipv6 = "FE80::0202:B3FF:FE1E:8329"
-        self.assertEqual(topology.validate_host(ipv6), ipv6)
+        self.assertEqual(prestoadmin.util.validators.validate_host(ipv6), ipv6)
 
     def test_empty_host(self):
         self.assertRaisesRegexp(ConfigurationError,
@@ -70,33 +71,33 @@ class TestTopologyConfig(BaseTestCase):
 
     def test_valid_hostname(self):
         host = "master"
-        self.assertEqual(topology.validate_host(host), host)
+        self.assertEqual(prestoadmin.util.validators.validate_host(host), host)
 
     def test_invalid_host(self):
         self.assertRaisesRegexp(ConfigurationError,
                                 "'.1234' is not a valid ip address "
                                 "or host name",
-                                topology.validate_host, (".1234"))
+                                prestoadmin.util.validators.validate_host, (".1234"))
 
     def test_invalid_host_type(self):
         self.assertRaisesRegexp(ConfigurationError,
                                 "Host must be of type string.  "
                                 "Found <type 'list'>",
-                                topology.validate_host, (["my", "list"]))
+                                prestoadmin.util.validators.validate_host, (["my", "list"]))
 
     def test_valid_port(self):
-        port = "1234"
-        self.assertEqual(topology.validate_port(port), port)
+        port = 1234
+        self.assertEqual(prestoadmin.util.validators.validate_port(port), port)
 
     def test_invalid_port(self):
         self.assertRaisesRegexp(ConfigurationError,
                                 "Invalid port number 99999999: port must be "
                                 "between 1 and 65535",
-                                topology.validate_port, ("99999999"))
+                                prestoadmin.util.validators.validate_port, ("99999999"))
 
     def test_invalid_port_type(self):
         self.assertRaises(ConfigurationError,
-                          topology.validate_port, (["123"]))
+                          prestoadmin.util.validators.validate_port, (["123"]))
 
     def test_valid_workers(self):
         workers = ["172.16.1.10", "myslave", "FE80::0202:B3FF:FE1E:8329"]

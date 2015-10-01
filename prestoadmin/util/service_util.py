@@ -19,6 +19,7 @@ from fabric.tasks import execute
 from prestoadmin import topology
 from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util import constants
+import prestoadmin.util.validators
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ def lookup_port(host):
         try:
             port = port.split('=', 1)[1]
             port = int(port)
-            topology.validate_port(str(port))
+            prestoadmin.util.validators.validate_port(str(port))
             _LOGGER.info('Looked up port ' + str(port) + ' on host '
                          + host)
             return port
