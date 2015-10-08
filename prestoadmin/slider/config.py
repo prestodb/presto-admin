@@ -37,41 +37,48 @@ SLIDER_CONFIG_LOADED = 'slider_config_loaded'
 SLIDER_CONFIG_PATH = '/etc/opt/prestoadmin/slider/config.json'
 SLIDER_MASTER = 'slider_master'
 
-_HOST = 'slider_master'
-_ADMIN_USER = 'admin'
-_SSH_PORT = 'ssh_port'
+HOST = 'slider_master'
+ADMIN_USER = 'admin'
+SSH_PORT = 'ssh_port'
 
-_DIR = 'slider_directory'
-_APPNAME = 'slider_appname'
-_SLIDER_USER = 'slider_user'
-_JAVA_HOME = 'JAVA_HOME'
-_HADOOP_CONF = 'HADOOP_CONF'
+DIR = 'slider_directory'
+APPNAME = 'slider_appname'
+INSTANCE_NAME = 'slider_instname'
+SLIDER_USER = 'slider_user'
+JAVA_HOME = 'JAVA_HOME'
+HADOOP_CONF = 'HADOOP_CONF'
+
+# This key comes from the server install step, NOT a user prompt. Accordingly,
+# there is no SliderConfigItem for it in _SLIDER_CONFIG
+PRESTO_PACKAGE = 'presto_slider_package'
 
 SliderConfigItem = namedtuple('SliderConfigItem',
                               ['text', 'default', 'validate'])
 _SLIDER_CONFIG = {
-    _HOST: SliderConfigItem('Enter the hostname for the slider master:',
+    HOST: SliderConfigItem('Enter the hostname for the slider master:',
                             None, validate_host),
-    _ADMIN_USER: SliderConfigItem('Enter the user name to use when ' +
+    ADMIN_USER: SliderConfigItem('Enter the user name to use when ' +
                                     'installing slider on the slider master:',
                                     'root', validate_username),
-    _SSH_PORT: SliderConfigItem('Enter the port number for SSH connections ' +
+    SSH_PORT: SliderConfigItem('Enter the port number for SSH connections ' +
                                 'to the slider master',
                                 22, validate_port),
-    _DIR: SliderConfigItem('Enter the directory to install slider into on ' +
+    DIR: SliderConfigItem('Enter the directory to install slider into on ' +
                            'the slider master:',
                            '/opt/slider', None),
-    _APPNAME: SliderConfigItem('Enter a name for the presto slider app',
-                               'presto', None),
-    _SLIDER_USER: SliderConfigItem('Enter a user name for conducting slider ' +
+    APPNAME: SliderConfigItem('Enter a name for the presto slider app',
+                               'PRESTO', None),
+    INSTANCE_NAME: SliderConfigItem('Enter a name for the presto application' +
+                                    ' instance', 'presto', None),
+    SLIDER_USER: SliderConfigItem('Enter a user name for conducting slider ' +
                             'operations on the slider master',
                             'yarn', None),
-    _JAVA_HOME: SliderConfigItem('Enter the value of JAVA_HOME to use when' +
+    JAVA_HOME: SliderConfigItem('Enter the value of JAVA_HOME to use when' +
                                  'running slider on the slider master:',
                                  '/usr/lib/jvm/java', None),
-    _HADOOP_CONF: SliderConfigItem('Enter the location of the Hadoop ' +
+    HADOOP_CONF: SliderConfigItem('Enter the location of the Hadoop ' +
                                    'configuration on the slider master:',
-                                   '/etc/hadoop', None)
+                                   '/etc/hadoop/conf', None)
 }
 
 
@@ -109,32 +116,33 @@ def store_conf(conf, path):
 
 def get_conf_interactive():
     conf = {}
-    prompt_related(conf, (_HOST, _SSH_PORT, _ADMIN_USER), _SLIDER_CONFIG,
+    prompt_related(conf, (HOST, SSH_PORT, ADMIN_USER), _SLIDER_CONFIG,
                    validate_can_connect,
                    'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. Re-enter ' +
                    'connection information.')
 
-    sci_prompt(conf, _DIR, _SLIDER_CONFIG)
-    sci_prompt(conf, _APPNAME, _SLIDER_CONFIG)
+    sci_prompt(conf, DIR, _SLIDER_CONFIG)
+    sci_prompt(conf, APPNAME, _SLIDER_CONFIG)
+    sci_prompt(conf, INSTANCE_NAME, _SLIDER_CONFIG)
 
-    prompt_related(conf, (_HOST, _SSH_PORT, _ADMIN_USER, _SLIDER_USER),
+    prompt_related(conf, (HOST, SSH_PORT, ADMIN_USER, SLIDER_USER),
                    _SLIDER_CONFIG, validate_can_sudo,
                    'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. Enter ' +
                    'a new username and try again.',
-                   fixed_keys=[_HOST, _SSH_PORT, _ADMIN_USER])
+                   fixed_keys=[HOST, SSH_PORT, ADMIN_USER])
 
-    sci_prompt(conf, _JAVA_HOME, _SLIDER_CONFIG)
-    sci_prompt(conf, _HADOOP_CONF, _SLIDER_CONFIG)
+    sci_prompt(conf, JAVA_HOME, _SLIDER_CONFIG)
+    sci_prompt(conf, HADOOP_CONF, _SLIDER_CONFIG)
     return conf
 
 
 def set_env_from_conf(conf):
-    env.user = conf[_ADMIN_USER]
-    env.port = conf[_SSH_PORT]
-    env.roledefs[SLIDER_MASTER] = [conf[_HOST]]
+    env.user = conf[ADMIN_USER]
+    env.port = conf[SSH_PORT]
+    env.roledefs[SLIDER_MASTER] = [conf[HOST]]
     env.roledefs['all'] = env.roledefs[SLIDER_MASTER]
 
-    env.slider_dir = conf[_DIR]
+    env.conf = conf
 
     # TODO: make this conditional once mode switching is done
     env.hosts = env.roledefs['all'][:]
