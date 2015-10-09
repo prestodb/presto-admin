@@ -17,11 +17,11 @@ Module for setting and validating the presto-admin config
 """
 from functools import wraps
 import pprint
-import re
-import socket
 
 import fabric
+
 from fabric.api import task, env, runs_once
+
 from fabric.context_managers import settings
 
 from prestoadmin import config
@@ -29,7 +29,8 @@ from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
 import prestoadmin.util.fabricapi as util
-
+from prestoadmin.util.validators import validate_username, validate_port, \
+    validate_host
 
 __all__ = ['show']
 
@@ -49,8 +50,8 @@ def requires_topology(func):
     def required(*args, **kwargs):
         if 'topology_config_not_found' in env \
                 and env.topology_config_not_found:
-            raise ConfigFileNotFoundError('Missing topology configuration in '
-                                          + constants.CONFIG_PATH + '.')
+            raise ConfigFileNotFoundError('Missing topology configuration ' +
+                                          'in ' + constants.CONFIG_PATH + '.')
         return func(*args, **kwargs)
     return required
 
@@ -176,12 +177,6 @@ def validate(conf):
     return conf
 
 
-def validate_username(username):
-    if not isinstance(username, basestring):
-        raise ConfigurationError('Username must be of type string.')
-    return username
-
-
 def validate_coordinator(coordinator):
     validate_host(coordinator)
     return coordinator
@@ -189,8 +184,8 @@ def validate_coordinator(coordinator):
 
 def validate_workers(workers):
     if not isinstance(workers, list):
-        raise ConfigurationError('Workers must be of type list.  Found '
-                                 + str(type(workers)) + '.')
+        raise ConfigurationError('Workers must be of type list.  Found ' +
+                                 str(type(workers)) + '.')
 
     if len(workers) < 1:
         raise ConfigurationError('Must specify at least one worker')
@@ -198,49 +193,6 @@ def validate_workers(workers):
     for worker in workers:
         validate_host(worker)
     return workers
-
-
-def validate_port(port):
-    try:
-        port_int = int(port)
-    except TypeError:
-        raise ConfigurationError('Port must be of type string, but '
-                                 'found ' + str(type(port)) + '.')
-    except ValueError:
-        raise ConfigurationError('Invalid value ' + port + ': '
-                                 'port must be a number between 1 and 65535.')
-    if not port_int > 0 or not port_int < 65535:
-        raise ConfigurationError('Invalid port number ' + port +
-                                 ': port must be between 1 and 65535')
-    return port
-
-
-def validate_host(host):
-    try:
-        socket.inet_pton(socket.AF_INET, host)
-        return host
-    except TypeError:
-        raise ConfigurationError('Host must be of type string.  Found '
-                                 + str(type(host)) + '.')
-    except socket.error:
-        pass
-
-    try:
-        socket.inet_pton(socket.AF_INET6, host)
-        return host
-    except socket.error:
-        pass
-
-    if not is_valid_hostname(host):
-        raise ConfigurationError(repr(host) + ' is not a valid '
-                                 'ip address or host name.')
-    return host
-
-
-def is_valid_hostname(hostname):
-    valid_name = '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*' \
-                 '([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
-    return re.match(valid_name, hostname)
 
 
 def dedup_list(host_list):
@@ -258,8 +210,9 @@ def set_env_from_conf():
     env.port = conf['port']
     env.roledefs['coordinator'] = [conf['coordinator']]
     env.roledefs['worker'] = conf['workers']
-    env.roledefs['all'] = dedup_list(util.get_coordinator_role()
-                                     + util.get_worker_role())
+    env.roledefs['all'] = dedup_list(util.get_coordinator_role() +
+                                     util.get_worker_role())
 
+    # This ensures that we honor a hosts list passed on the command line.
     if not env.hosts:
         env.hosts = env.roledefs['all'][:]
