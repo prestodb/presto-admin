@@ -41,6 +41,8 @@ PRESTO_VERSION = r'presto-main:.*'
 RETRY_TIMEOUT = 120
 RETRY_INTERVAL = 5
 
+DUMMY_RPM_NAME = 'dummy-rpm.rpm'
+
 
 class BaseProductTestCase(BaseTestCase):
     default_workers_config_ = """coordinator=false
@@ -287,28 +289,34 @@ query.max-memory=50GB\n"""
                         "workers": ["slave1", "slave2", "slave3"]}
         self.dump_and_cp_topology(topology, cluster)
 
-    def _check_if_corrupted_rpm(self, cluster):
+    def _check_if_corrupted_rpm(self, rpm_name, cluster):
         cluster.exec_cmd_on_host(
             cluster.master, 'rpm -K --nosignature '
-            + os.path.join(cluster.mount_dir, self.presto_rpm_filename)
+            + os.path.join(cluster.mount_dir, rpm_name)
         )
 
-    def copy_presto_rpm_to_master(self, cluster=None):
+    def copy_presto_rpm_to_master(self, rpm_dir=LOCAL_RESOURCES_DIR,
+                                  rpm_name=DUMMY_RPM_NAME, cluster=None):
         if not cluster:
             cluster = self.cluster
+
+        rpm_path = os.path.join(rpm_dir, rpm_name)
         try:
-            rpm_path = os.path.join(prestoadmin.main_dir,
-                                    self.presto_rpm_filename)
             cluster.copy_to_host(rpm_path, cluster.master)
-            self._check_if_corrupted_rpm(cluster)
+            self._check_if_corrupted_rpm(rpm_name, cluster)
         except OSError:
+            #
+            # Can't retry downloading the dummy rpm. It's a local resource.
+            # If we've gotten here, we've corrupted it somehow.
+            #
+            self.assert_not_equal(rpm_name, DUMMY_RPM_NAME, "Bad dummy rpm!")
+
             print 'Downloading RPM again'
             # try to download the RPM again if it's corrupt (but only once)
             self.download_rpm()
-            rpm_path = os.path.join(prestoadmin.main_dir,
-                                    self.presto_rpm_filename)
             cluster.copy_to_host(rpm_path, cluster.master)
-            self._check_if_corrupted_rpm(cluster)
+            self._check_if_corrupted_rpm(rpm_name, cluster)
+        return rpm_name
 
     @nottest
     def write_test_configs(self, cluster, extra_configs=None):
@@ -326,22 +334,33 @@ query.max-memory=50GB\n"""
             cluster.master
         )
 
-    def server_install(self, cluster=None, extra_configs=None):
+    def server_install(self, dummy=False, cluster=None, extra_configs=None):
+        if dummy:
+            rpm_dir = LOCAL_RESOURCES_DIR
+            rpm_name = DUMMY_RPM_NAME
+        else:
+            rpm_dir = prestoadmin.main_dir
+            rpm_name = self.presto_rpm_filename
+
         if not cluster:
             cluster = self.cluster
-        self.copy_presto_rpm_to_master(cluster)
+        rpm_name = self.copy_presto_rpm_to_master(rpm_dir=rpm_dir,
+                                                  rpm_name=rpm_name,
+                                                  cluster=cluster)
+
         self.write_test_configs(cluster, extra_configs)
         cmd_output = self.run_prestoadmin(
             'server install ' +
-            os.path.join(cluster.mount_dir, self.presto_rpm_filename),
+            os.path.join(cluster.mount_dir, rpm_name),
             cluster=cluster
         )
         return cmd_output
 
-    def run_prestoadmin(self, command, raise_error=True, cluster=None):
+    def run_prestoadmin(self, command, raise_error=True, cluster=None,
+                        **kwargs):
         if not cluster:
             cluster = self.cluster
-        command = self.replace_keywords(command, cluster=cluster)
+        command = self.replace_keywords(command, cluster=cluster, **kwargs)
         return cluster.exec_cmd_on_host(
             cluster.master,
             "/opt/prestoadmin/presto-admin %s" % command,

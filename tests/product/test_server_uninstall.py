@@ -127,7 +127,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.setup_cluster()
         self.install_presto_admin(self.cluster)
         self.upload_topology()
-        self.server_install()
+        self.server_install(dummy=True)
 
         script = './presto-admin server uninstall -u testuser -p testpass'
         output = self.run_prestoadmin_script(script)

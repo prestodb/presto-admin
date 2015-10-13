@@ -18,7 +18,7 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only
+    LOCAL_RESOURCES_DIR, DUMMY_RPM_NAME, docker_only
 
 
 install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
@@ -168,11 +168,11 @@ query.max-memory=50GB\n"""
                                            self.default_workers_config_regex_)
 
     @attr('smoketest')
-    def test_install(self):
+    def test_install(self, dummy=False):
         self.install_presto_admin(self.cluster)
         self.upload_topology()
 
-        cmd_output = self.server_install()
+        cmd_output = self.server_install(dummy)
         expected = installed_all_hosts_output
 
         actual = cmd_output.splitlines()
@@ -188,9 +188,8 @@ query.max-memory=50GB\n"""
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology)
-        self.copy_presto_rpm_to_master()
 
-        cmd_output = self.server_install()
+        cmd_output = self.server_install(dummy=True)
         expected = install_with_worker_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -207,9 +206,8 @@ query.max-memory=50GB\n"""
         topology = {"coordinator": "slave1",
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology)
-        self.copy_presto_rpm_to_master()
 
-        cmd_output = self.server_install()
+        cmd_output = self.server_install(dummy=True)
         expected = install_with_ext_host_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -230,9 +228,8 @@ query.max-memory=50GB\n"""
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.cluster.master
         )
-        self.copy_presto_rpm_to_master()
 
-        cmd_output = self.server_install()
+        cmd_output = self.server_install(dummy=True)
         expected = ['Deploying rpm on master...',
                     'Deploying rpm on slave1...',
                     'Package deployed successfully on: slave1',
@@ -267,9 +264,8 @@ query.max-memory=50GB\n"""
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.cluster.master
         )
-        self.copy_presto_rpm_to_master()
 
-        cmd_output = self.server_install().splitlines()
+        cmd_output = self.server_install(dummy=True).splitlines()
         expected = [
             r'Deploying rpm on %s...' % ips[self.cluster.master],
             r'Deploying rpm on %s...' % ips[self.cluster.slaves[0]],
@@ -310,12 +306,13 @@ query.max-memory=50GB\n"""
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.cluster.master
         )
-        self.copy_presto_rpm_to_master()
+        rpm_name = self.copy_presto_rpm_to_master(cluster=self.cluster)
         self.write_test_configs(self.cluster)
 
         cmd_output = self.run_prestoadmin_script(
             'echo -e "root\n22\n%(master)s\n%(slave1)s\n" | '
-            './presto-admin server install /mnt/presto-admin/%(rpm)s ')
+            './presto-admin server install /mnt/presto-admin/%(rpm)s ',
+            rpm=rpm_name)
 
         actual = cmd_output.splitlines()
         expected = [r'Enter user name for SSH connection to all nodes: '
@@ -359,10 +356,11 @@ query.max-memory=50GB\n"""
     def test_install_interactive_with_ips(self):
         self.install_presto_admin(self.cluster)
         ips = self.cluster.get_ip_address_dict()
-        self.copy_presto_rpm_to_master()
+        rpm_name = self.copy_presto_rpm_to_master(cluster=self.cluster)
         self.write_test_configs(self.cluster)
 
         additional_keywords = {
+            'rpm': rpm_name,
             'master_ip': ips[self.cluster.master],
             'slave1_ip': ips[self.cluster.slaves[0]]
         }
@@ -411,7 +409,7 @@ query.max-memory=50GB\n"""
 
     def test_install_with_wrong_topology(self):
         self.install_presto_admin(self.cluster)
-        self.copy_presto_rpm_to_master()
+        rpm_name = self.copy_presto_rpm_to_master(cluster=self.cluster)
         topology = {'coordinator': 'dummy_master', 'workers': ['slave1']}
         self.upload_topology(topology)
         expected = 'u\'dummy_master\' is not a valid ip address or' \
@@ -421,11 +419,12 @@ query.max-memory=50GB\n"""
         self.assertRaisesRegexp(OSError,
                                 expected,
                                 self.run_prestoadmin,
-                                'server install /mnt/presto-admin/%(rpm)s ')
+                                'server install /mnt/presto-admin/%(rpm)s ',
+                                rpm=rpm_name)
 
     def test_install_with_malformed_topology(self):
         self.install_presto_admin(self.cluster)
-        self.copy_presto_rpm_to_master()
+        rpm_name = self.copy_presto_rpm_to_master(cluster=self.cluster)
         topology = {'coordinator': 'master',
                     'workers': 'slave1' 'slave2'}
         self.upload_topology(topology)
@@ -436,18 +435,18 @@ query.max-memory=50GB\n"""
         self.assertRaisesRegexp(OSError,
                                 expected,
                                 self.run_prestoadmin,
-                                'server install /mnt/presto-admin/%(rpm)s ')
+                                'server install /mnt/presto-admin/%(rpm)s ',
+                                rpm=rpm_name)
 
     def test_install_with_malformed_connector(self):
         self.install_presto_admin(self.cluster)
-        self.copy_presto_rpm_to_master()
         self.upload_topology()
         self.cluster.write_content_to_host(
             'connectr.typo:invalid',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.cluster.master
         )
-        actual_out = self.server_install()
+        actual_out = self.server_install(dummy=True)
         expected = 'Underlying exception:\n    Catalog configuration ' \
                    'jmx.properties does not contain connector.name'
         self.assertRegexpMatches(actual_out, expected)
@@ -458,7 +457,6 @@ query.max-memory=50GB\n"""
 
     def test_connection_to_coord_lost(self):
         self.install_presto_admin(self.cluster)
-        self.copy_presto_rpm_to_master()
         down_node = self.cluster.internal_slaves[0]
         topology = {"coordinator": down_node,
                     "workers": [self.cluster.internal_master,
@@ -468,7 +466,7 @@ query.max-memory=50GB\n"""
         self.cluster.stop_host(
             self.cluster.slaves[0])
 
-        actual_out = self.server_install()
+        actual_out = self.server_install(dummy=True)
         self.assertRegexpMatches(
             actual_out,
             self.down_node_connection_error(down_node)
@@ -489,7 +487,7 @@ query.max-memory=50GB\n"""
     @docker_only
     def test_install_with_no_perm_to_local_path(self):
         self.install_presto_admin(self.cluster)
-        self.copy_presto_rpm_to_master()
+        rpm_name = self.copy_presto_rpm_to_master(cluster=self.cluster)
         self.upload_topology()
         self.run_prestoadmin("configuration deploy")
 
@@ -500,19 +498,21 @@ query.max-memory=50GB\n"""
                     'open failed: Permission denied\n\nAborting.\n'
         expected = ''
         for host in self.cluster.all_internal_hosts():
-            expected += error_msg % {'host': host,
-                                     'rpm': self.presto_rpm_filename}
-        actual = self.run_prestoadmin_script(script)
+            expected += error_msg % {'host': host, 'rpm': rpm_name}
+        actual = self.run_prestoadmin_script(script, rpm=rpm_name)
         self.assertEqualIgnoringOrder(actual, expected)
 
     def test_install_twice(self):
-        self.test_install()
-        output = self.server_install()
+        self.test_install(dummy=True)
+        output = self.server_install(dummy=True)
 
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
                 as f:
             expected = f.read()
-        expected = self.escape_for_regex(self.replace_keywords(expected))
+        expected = self.escape_for_regex(
+            self.replace_keywords(expected,
+                                  rpm=DUMMY_RPM_NAME))
+
         self.assertRegexpMatchesLineByLine(output.splitlines(),
                                            expected.splitlines())
         for container in self.cluster.all_hosts():

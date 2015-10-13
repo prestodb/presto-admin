@@ -17,7 +17,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only
+    LOCAL_RESOURCES_DIR, DUMMY_RPM_NAME, docker_only
 
 
 class TestServerUpgrade(BaseProductTestCase):
@@ -56,10 +56,10 @@ class TestServerUpgrade(BaseProductTestCase):
 
     def copy_upgrade_rpm_to_cluster(self):
         self.cluster.copy_to_host(
-            os.path.join(LOCAL_RESOURCES_DIR, 'dummy-rpm.rpm'),
+            os.path.join(LOCAL_RESOURCES_DIR, DUMMY_RPM_NAME),
             self.cluster.master)
         path_on_cluster = os.path.join(
-            self.cluster.mount_dir, 'dummy-rpm.rpm')
+            self.cluster.mount_dir, DUMMY_RPM_NAME)
         return path_on_cluster
 
     @attr('smoketest')
