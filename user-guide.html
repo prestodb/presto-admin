@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>User Guide &mdash; presto-admin 0.1.0 documentation</title>
+    <title>User Guide &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="index.html" />
     <link rel="next" title="Quick Start Guide" href="quick-start-guide.html" />
     <link rel="prev" title="Hardware Requirements" href="hardware-requirements.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="hardware-requirements.html" title="Hardware Requirements"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation/advanced-installation-options.html">Advanced Installation Options</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation/advanced-installation-options.html#online-vs-offline-installer">Online vs Offline Installer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation/advanced-installation-options.html#specifying-a-certificate-authority-for-the-online-installer">Specifying a Certificate Authority for the Online Installer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/advanced-installation-options.html#upgrading-presto-admin">Upgrading Presto-Admin</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ssh-configuration.html">SSH Configuration</a><ul>
@@ -78,22 +79,24 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="presto-admin-commands.html">Presto-Admin Commands</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-install">server install</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#package-install">package install</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-start">server start</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-stop">server stop</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-restart">server restart</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-status">server status</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#topology-show">topology show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-logs">collect logs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-query-info">collect query_info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-system-info">collect system_info</a></li>
 <li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#configuration-deploy">configuration deploy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#configuration-show">configuration show</a></li>
 <li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#connector-add">connector add</a></li>
 <li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#connector-remove">connector remove</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-logs">collect logs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-query-info">collect query_info</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#collect-system-info">collect system_info</a></li>
-<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-uninstall">server uninstall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#package-install">package install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#plugin-add-jar">plugin add_jar</a></li>
 <li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#script-run">script run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-install">server install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-restart">server restart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-start">server start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-status">server status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-stop">server stop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-uninstall">server uninstall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#server-upgrade">server upgrade</a></li>
+<li class="toctree-l2"><a class="reference internal" href="presto-admin-commands.html#topology-show">topology show</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="presto-admin-cli-options.html">Presto-Admin Command-Line Options</a></li>
@@ -152,7 +155,7 @@
         <li class="right" >
           <a href="hardware-requirements.html" title="Hardware Requirements"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

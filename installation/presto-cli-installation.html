@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Running Presto Queries &mdash; presto-admin 0.1.0 documentation</title>
+    <title>Running Presto Queries &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="../index.html" />
     <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
     <link rel="next" title="Troubleshooting" href="troubleshooting-installation.html" />
     <link rel="prev" title="Presto Server Installation" href="presto-server-installation.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="presto-server-installation.html" title="Presto Server Installation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
       </ul>
@@ -58,8 +58,8 @@
   <div class="section" id="running-presto-queries">
 <span id="presto-cli-installation-label"></span><h1>Running Presto Queries<a class="headerlink" href="#running-presto-queries" title="Permalink to this headline">¶</a></h1>
 <p>The Presto CLI provides a terminal-based interactive shell for running queries. The CLI is a self-executing JAR file, which means it acts like a normal UNIX executable.</p>
-<p>Download <a class="reference external" href="https://repo1.maven.org/maven2/com/facebook/presto/presto-cli/0.101/presto-cli-0.101-executable.jar">presto-cli-0.101-executable.jar</a> and copy it to the location you want to run it from. This location may be any node that has network access to the coordinator. Then rename it to presto and make it executable with chmod +x:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ mv presto-cli-0.102-executable.jar presto
+<p>Download the <a class="reference external" href="https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&amp;g=com.facebook.presto&amp;a=presto-cli&amp;v=RELEASE">presto-cli</a> and copy it to the location you want to run it from. This location may be any node that has network access to the coordinator. Then rename it to presto and make it executable with chmod +x:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mv presto-cli-0.115-executable.jar presto
 $ chmod +x presto
 </pre></div>
 </div>
@@ -130,7 +130,7 @@ $ select count(*) from lineitem;
         <li class="right" >
           <a href="presto-server-installation.html" title="Presto Server Installation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
       </ul>

@@ -7,8 +7,8 @@ Advanced Installation Options
 Online vs Offline Installer
 ---------------------------
 The installer has two different versions: the offline installer -- 
-``prestoadmin-0.1.0-offline.tar.bz2``-- and the online installer --
-``prestoadmin-0.1.0-online.tar.bz2``. The offline installer includes all of the
+``prestoadmin-1.1-offline.tar.bz2``-- and the online installer --
+``prestoadmin-1.1-online.tar.bz2``. The offline installer includes all of the
 dependencies for ``presto-admin``, so it can be used on a cluster without an 
 outside network connection. The offline installer is recommended because it is faster.
 
@@ -41,3 +41,13 @@ with your own certificates:
 
  sudo ./install-prestoadmin.sh <path_to_cert>/cacert.pem
 
+Upgrading Presto-Admin
+----------------------
+Upgrading to a newer version of ``presto-admin`` requires deleting the old
+installation and then installing the new version.  The recommended installation
+location is ``/opt/prestoadmin``, but you may have installed it in an
+alternative location.  After you've deleted the ``prestoadmin`` directory,
+install the newer version of ``presto-admin`` by following the instructions in
+the installation section (see :ref:`presto-admin-installation-label`). Your
+configuration files located in ``/etc/opt/prestoadmin`` will remain intact and
+continue to be used by the newer version of ``presto-admin``.

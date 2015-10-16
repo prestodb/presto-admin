@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.util.service_util &mdash; presto-admin 0.1.0 documentation</title>
+    <title>prestoadmin.util.service_util &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="../../../index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -64,6 +64,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hide</span>
 <span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">run</span>
+<span class="kn">from</span> <span class="nn">fabric.tasks</span> <span class="kn">import</span> <span class="n">execute</span>
 <span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">topology</span>
 <span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
@@ -82,9 +83,15 @@
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">config_file</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span> <span class="o">+</span> <span class="s">&#39;/config.properties&#39;</span>
-    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s">&#39;stdout&#39;</span><span class="p">,</span> <span class="s">&#39;warnings&#39;</span><span class="p">),</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">):</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="s">&quot;grep http-server.http.port= &quot;</span> <span class="o">+</span> <span class="n">config_file</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s">&#39;stdout&#39;</span><span class="p">,</span> <span class="s">&#39;warnings&#39;</span><span class="p">,</span> <span class="s">&#39;aborts&#39;</span><span class="p">)):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="s">&#39;grep http-server.http.port= &#39;</span> <span class="o">+</span> <span class="n">config_file</span><span class="p">,</span>
+                           <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)[</span><span class="n">host</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Configuration file </span><span class="si">%s</span><span class="s"> does not exist on &#39;</span>
+                                     <span class="s">&#39;host </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Configuration file </span><span class="si">%s</span><span class="s"> does not exist on &#39;</span>
                                  <span class="s">&#39;host </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
@@ -141,7 +148,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

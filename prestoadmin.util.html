@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.util package &mdash; presto-admin 0.1.0 documentation</title>
+    <title>prestoadmin.util package &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="index.html" />
     <link rel="up" title="prestoadmin package" href="prestoadmin.html" />
     <link rel="prev" title="prestoadmin package" href="prestoadmin.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="prestoadmin.html" title="prestoadmin package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="prestoadmin.html" accesskey="U">prestoadmin package</a> &raquo;</li> 
       </ul>
@@ -202,6 +202,11 @@ before exiting.</p>
 <span id="prestoadmin-util-filesystem-module"></span><h2>prestoadmin.util.filesystem module<a class="headerlink" href="#module-prestoadmin.util.filesystem" title="Permalink to this headline">¶</a></h2>
 <p>Filesystem tools.</p>
 <dl class="function">
+<dt id="prestoadmin.util.filesystem.ensure_directory_exists">
+<code class="descclassname">prestoadmin.util.filesystem.</code><code class="descname">ensure_directory_exists</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/filesystem.html#ensure_directory_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.filesystem.ensure_directory_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="prestoadmin.util.filesystem.ensure_parent_directories_exist">
 <code class="descclassname">prestoadmin.util.filesystem.</code><code class="descname">ensure_parent_directories_exist</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/filesystem.html#ensure_parent_directories_exist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.filesystem.ensure_parent_directories_exist" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -234,7 +239,7 @@ groups. This class allows you to suppress the help of groups.</p>
 <p>An extension to optparse for presto-admin which logs user parsing errors.</p>
 <dl class="class">
 <dt id="prestoadmin.util.parser.LoggingOptionParser">
-<em class="property">class </em><code class="descclassname">prestoadmin.util.parser.</code><code class="descname">LoggingOptionParser</code><span class="sig-paren">(</span><em>usage=None</em>, <em>option_list=None</em>, <em>option_class=&lt;class optparse.Option at 0x29c8dd0&gt;</em>, <em>version=None</em>, <em>conflict_handler='error'</em>, <em>description=None</em>, <em>formatter=None</em>, <em>add_help_option=True</em>, <em>prog=None</em>, <em>epilog=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/parser.html#LoggingOptionParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.parser.LoggingOptionParser" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">prestoadmin.util.parser.</code><code class="descname">LoggingOptionParser</code><span class="sig-paren">(</span><em>usage=None</em>, <em>option_list=None</em>, <em>option_class=&lt;class optparse.Option at 0x2482dd0&gt;</em>, <em>version=None</em>, <em>conflict_handler='error'</em>, <em>description=None</em>, <em>formatter=None</em>, <em>add_help_option=True</em>, <em>prog=None</em>, <em>epilog=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/parser.html#LoggingOptionParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.parser.LoggingOptionParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">optparse.OptionParser</span></code></p>
 <p>An extension to optparse which logs exceptions via the logging
 module in addition to writing the out to stderr.</p>
@@ -345,7 +350,7 @@ throw ConfigurationError
         <li class="right" >
           <a href="prestoadmin.html" title="prestoadmin package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="prestoadmin.html" >prestoadmin package</a> &raquo;</li> 
       </ul>

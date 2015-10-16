@@ -83,6 +83,14 @@ prestoadmin.package module
     :undoc-members:
     :show-inheritance:
 
+prestoadmin.plugin module
+-------------------------
+
+.. automodule:: prestoadmin.plugin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 prestoadmin.presto_conf module
 ------------------------------
 

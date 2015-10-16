@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin package &mdash; presto-admin 0.1.0 documentation</title>
+    <title>prestoadmin package &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="index.html" />
     <link rel="up" title="prestoadmin" href="modules.html" />
     <link rel="next" title="prestoadmin.util package" href="prestoadmin.util.html" />
     <link rel="prev" title="prestoadmin" href="modules.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">prestoadmin</a> &raquo;</li> 
       </ul>
     </div>  
@@ -515,6 +515,29 @@ to adding &#8211;nodeps flag to rpm -i.</li>
 </dd></dl>
 
 </div>
+<div class="section" id="module-prestoadmin.plugin">
+<span id="prestoadmin-plugin-module"></span><h2>prestoadmin.plugin module<a class="headerlink" href="#module-prestoadmin.plugin" title="Permalink to this headline">¶</a></h2>
+<p>module for tasks relating to presto plugins</p>
+<dl class="attribute">
+<dt id="prestoadmin.plugin.add_jar">
+<code class="descclassname">prestoadmin.plugin.</code><code class="descname">add_jar</code><a class="reference internal" href="_modules/prestoadmin/plugin.html#add_jar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.plugin.add_jar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deploy jar for the specified plugin to the plugin directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- Local path to the jar to be deployed</strong> (<em>local_path</em>) &#8211; </li>
+<li><strong>- Name of the plugin subdirectory to deploy jars to</strong> (<em>plugin_name</em>) &#8211; </li>
+<li><strong>- (Optional) The plugin directory.  If no directory is</strong> (<em>plugin_dir</em>) &#8211; given, &#8216;/usr/lib/presto/lib/plugin&#8217; is used by default.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="module-prestoadmin.presto_conf">
 <span id="prestoadmin-presto-conf-module"></span><h2>prestoadmin.presto_conf module<a class="headerlink" href="#module-prestoadmin.presto_conf" title="Permalink to this headline">¶</a></h2>
 <p>Module for processing presto configuration files</p>
@@ -683,6 +706,29 @@ jvm.config</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="prestoadmin.server.upgrade">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">upgrade</code><a class="reference internal" href="_modules/prestoadmin/server.html#upgrade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.upgrade" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy and upgrade a new presto-server rpm to all of the nodes in the
+cluster. Retains existing node configuration.</p>
+<p>The existing topology information is read from the config.json file.
+Unlike install, there is no provision to supply topology information
+interactively.</p>
+<p>The existing cluster configuration is collected from the nodes on the
+cluster and stored on the host running presto-admin. After the
+presto-server packages have been upgraded, presto-admin pushes the
+collected configuration back out to the hosts on the cluster.</p>
+<p>Note that the configuration files in /etc/opt/prestoadmin are not updated
+during upgrade.</p>
+<dl class="docutils">
+<dt>:param local_package_path - Absolute path to the presto rpm to be</dt>
+<dd>installed</dd>
+<dt>:param local_config_dir -   (optional) Directory to store the cluster</dt>
+<dd>configuration in. If not specified, a temp
+directory is used.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="prestoadmin.server.start">
 <code class="descclassname">prestoadmin.server.</code><code class="descname">start</code><a class="reference internal" href="_modules/prestoadmin/server.html#start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the Presto server on all nodes</p>
@@ -774,6 +820,7 @@ to deploy on the presto cluster</p>
 <li><a class="reference internal" href="#module-prestoadmin.fabric_patches">prestoadmin.fabric_patches module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.main">prestoadmin.main module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.package">prestoadmin.package module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.plugin">prestoadmin.plugin module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.presto_conf">prestoadmin.presto_conf module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.prestoclient">prestoadmin.prestoclient module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.script">prestoadmin.script module</a></li>
@@ -830,7 +877,7 @@ to deploy on the presto cluster</p>
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li> 
       </ul>
     </div>

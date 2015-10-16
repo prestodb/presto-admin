@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.connector &mdash; presto-admin 0.1.0 documentation</title>
+    <title>prestoadmin.connector &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -67,14 +67,16 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">errno</span>
 
-<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">env</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">abort</span>
 <span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">hide</span>
-<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">os</span><span class="p">,</span> <span class="n">put</span>
+<span class="kn">from</span> <span class="nn">fabric.contrib</span> <span class="kn">import</span> <span class="n">files</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">os</span><span class="p">,</span> <span class="n">put</span><span class="p">,</span> <span class="n">get</span>
 <span class="kn">import</span> <span class="nn">fabric.utils</span>
 
 <span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
 <span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigFileNotFoundError</span><span class="p">,</span> \
     <span class="n">ConfigurationError</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.filesystem</span> <span class="kn">import</span> <span class="n">ensure_directory_exists</span>
 
 <span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
@@ -87,6 +89,17 @@
     <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;mkdir -p &#39;</span> <span class="o">+</span> <span class="n">remote_dir</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
         <span class="n">put</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">remote_dir</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">gather_connectors</span><span class="p">(</span><span class="n">local_config_dir</span><span class="p">,</span> <span class="n">allow_overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">local_catalog_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_config_dir</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="s">&#39;catalog&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_overwrite</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">local_catalog_dir</span><span class="p">):</span>
+        <span class="n">abort</span><span class="p">(</span><span class="s">&quot;Refusing to overwrite </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">local_catalog_dir</span><span class="p">)</span>
+    <span class="n">ensure_directory_exists</span><span class="p">(</span><span class="n">local_catalog_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">files</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CATALOG_DIR</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">get</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CATALOG_DIR</span><span class="p">,</span> <span class="n">local_catalog_dir</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
 
 
 <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
@@ -234,7 +247,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

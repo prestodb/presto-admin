@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.presto_conf &mdash; presto-admin 0.1.0 documentation</title>
+    <title>prestoadmin.presto_conf &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -112,6 +112,14 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s">&quot;config.properties&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="n">expect_object_msg</span> <span class="o">%</span> <span class="s">&quot;config.properties&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s">&#39;discovery.uri&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;config.properties&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Must have discovery.uri defined in &#39;</span>
+                                 <span class="s">&#39;config.properties.&#39;</span><span class="p">)</span>
+    <span class="n">discovery_uri</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;config.properties&#39;</span><span class="p">][</span><span class="s">&#39;discovery.uri&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">discovery_uri</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;http://&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;discovery.uri must start with http://, &#39;</span>
+                                 <span class="s">&#39;current URI is: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">discovery_uri</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">conf</span></div>
 </pre></div>
 
@@ -146,7 +154,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.package &mdash; presto-admin 0.1.0 documentation</title>
+    <title>prestoadmin.package &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -110,9 +110,17 @@
 
 
 <span class="k">def</span> <span class="nf">deploy_install</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="n">deploy_action</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">rpm_install</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">deploy_upgrade</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="n">deploy_action</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">rpm_upgrade</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">deploy_action</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">rpm_action</span><span class="p">):</span>
     <span class="n">check_if_valid_rpm</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
     <span class="n">deploy</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
-    <span class="n">rpm_install</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">local_path</span><span class="p">))</span>
+    <span class="n">rpm_action</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">local_path</span><span class="p">))</span>
 
 
 <span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="n">local_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -135,9 +143,26 @@
         <span class="n">nodeps</span> <span class="o">=</span> <span class="s">&#39;--nodeps &#39;</span>
 
     <span class="n">ret</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -i </span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span>
-               <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span> <span class="o">+</span> <span class="n">rpm_name</span><span class="p">))</span>
+               <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span>
+                                     <span class="n">rpm_name</span><span class="p">)))</span>
     <span class="k">if</span> <span class="n">ret</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
         <span class="k">print</span><span class="p">(</span><span class="s">&quot;Package installed successfully on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">rpm_upgrade</span><span class="p">(</span><span class="n">rpm_name</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Upgrading the rpm&quot;</span><span class="p">)</span>
+    <span class="n">nodeps</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">nodeps</span><span class="p">:</span>
+        <span class="n">nodeps</span> <span class="o">=</span> <span class="s">&#39;--nodeps &#39;</span>
+
+    <span class="n">package_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span> <span class="n">rpm_name</span><span class="p">)</span>
+    <span class="n">package_name</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -qp --queryformat </span><span class="se">\&#39;</span><span class="si">%%</span><span class="s">{NAME}</span><span class="se">\&#39;</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span>
+                        <span class="o">%</span> <span class="n">package_path</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">ret_uninstall</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -e </span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">package_name</span><span class="p">))</span>
+    <span class="n">ret_install</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -i </span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">package_path</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">ret_uninstall</span><span class="o">.</span><span class="n">succeeded</span> <span class="ow">and</span> <span class="n">ret_install</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Package upgraded successfully on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -171,7 +196,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

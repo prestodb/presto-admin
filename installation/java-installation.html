@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Java 8 Installation &mdash; presto-admin 0.1.0 documentation</title>
+    <title>Java 8 Installation &mdash; presto-admin 1.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 0.1.0 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.1 documentation" href="../index.html" />
     <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
     <link rel="next" title="Presto Port Configuration" href="presto-port-configuration.html" />
     <link rel="prev" title="Presto-Admin Configuration" href="presto-admin-configuration.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="presto-admin-configuration.html" title="Presto-Admin Configuration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
       </ul>
@@ -66,6 +66,10 @@
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The <code class="docutils literal"><span class="pre">server-install-label</span></code> will look for your Oracle Java 1.8 installation at locations where Java is installed normally using the binary or the RPM based installer. Otherwise, you need to have an environment variable called <code class="docutils literal"><span class="pre">JAVA8_HOME</span></code> set with your Java 1.8 install path. If <code class="docutils literal"><span class="pre">JAVA8_HOME</span></code> is not set or is pointing to an incompatible version of Java, the installer will look for the <code class="docutils literal"><span class="pre">JAVA_HOME</span></code> environment variable for a compatible version of Java. If neither of these environmental variables is set with a compatible version, and <code class="docutils literal"><span class="pre">presto-admin</span></code> fails to find Java 8 at any of the normal install locations, then <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> will fail. After successfully running <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> you can find the Java being used by Presto at <code class="docutils literal"><span class="pre">/etc/presto/env.sh</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If installing Java on SLES, you may need to specify the <code class="docutils literal"><span class="pre">--nodeps</span></code> flag, so that the RPM is installed without checking or validating dependencies.</p>
 </div>
 </div>
 
@@ -120,7 +124,7 @@
         <li class="right" >
           <a href="presto-admin-configuration.html" title="Presto-Admin Configuration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 0.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
       </ul>
