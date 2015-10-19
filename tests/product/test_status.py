@@ -21,23 +21,23 @@ from nose.plugins.attrib import attr
 from tests.product.base_product_case import BaseProductTestCase, \
     PRESTO_VERSION, PrestoError
 
+from tests.product.presto_installer import PrestoInstaller
+
 
 class TestStatus(BaseProductTestCase):
 
     def setUp(self):
         super(TestStatus, self).setUp()
+        self.installer = PrestoInstaller(self)
 
     def test_status_uninstalled(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster('pa_only')
         self.upload_topology()
         status_output = self._server_status_with_retries()
         self.check_status(status_output, self.not_installed_status())
 
     def test_status_not_started(self):
         self.setup_cluster('presto')
-
-        self.server_install()
         status_output = self._server_status_with_retries()
         self.check_status(status_output, self.not_started_status())
 
@@ -77,12 +77,11 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, self.not_started_status())
 
     def test_connection_to_coordinator_lost(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster('pa_only')
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        self.server_install()
+        self.installer.install()
         self.run_prestoadmin('server start')
         self.cluster.stop_host(
             self.cluster.slaves[0])
@@ -95,12 +94,11 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, statuses)
 
     def test_connection_to_worker_lost(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster('pa_only')
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        self.server_install()
+        self.installer.install()
         self.run_prestoadmin('server start')
         self.cluster.stop_host(
             self.cluster.slaves[1])
@@ -113,14 +111,13 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, statuses)
 
     def test_status_port_not_8080(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster('pa_only')
         self.upload_topology()
 
         port_config = """discovery.uri=http://master:8090
 http-server.http.port=8090"""
 
-        self.server_install(extra_configs=port_config)
+        self.installer.install(extra_configs=port_config)
         self.run_prestoadmin('server start')
         status_output = self._server_status_with_retries()
 

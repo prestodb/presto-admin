@@ -16,8 +16,8 @@ import os
 
 from nose.plugins.attrib import attr
 
-from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, DUMMY_RPM_NAME, docker_only
+from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.presto_installer import PrestoInstaller
 
 
 class TestServerUpgrade(BaseProductTestCase):
@@ -25,6 +25,7 @@ class TestServerUpgrade(BaseProductTestCase):
     def setUp(self):
         super(TestServerUpgrade, self).setUp()
         self.setup_cluster('presto')
+        self.installer = PrestoInstaller(self)
 
     def start_and_assert_started(self):
         cmd_output = self.run_prestoadmin('server start')
@@ -34,7 +35,7 @@ class TestServerUpgrade(BaseProductTestCase):
     def assert_upgraded_to_dummy_rpm(self, hosts):
         for container in hosts:
             # Still should have the same configs
-            self.assert_installed(container)
+            self.installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
@@ -54,21 +55,13 @@ class TestServerUpgrade(BaseProductTestCase):
                 r'.*New line of text here.$'
             )
 
-    def copy_upgrade_rpm_to_cluster(self):
-        self.cluster.copy_to_host(
-            os.path.join(LOCAL_RESOURCES_DIR, DUMMY_RPM_NAME),
-            self.cluster.master)
-        path_on_cluster = os.path.join(
-            self.cluster.mount_dir, DUMMY_RPM_NAME)
-        return path_on_cluster
-
     @attr('smoketest')
     def test_upgrade(self):
         self.start_and_assert_started()
 
         self.run_prestoadmin('configuration deploy')
         for container in self.cluster.all_hosts():
-            self.assert_installed(container)
+            self.installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
@@ -93,3 +86,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
         self.cluster.start_host(self.cluster.slaves[0])
         self.retry(lambda: self.upgrade_and_assert_success(path_on_cluster))
+
+    def copy_upgrade_rpm_to_cluster(self):
+        rpm_name = self.installer.copy_presto_rpm_to_master()
+        return os.path.join(self.cluster.mount_dir, rpm_name)

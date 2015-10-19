@@ -19,6 +19,7 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.server import RETRY_TIMEOUT
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.presto_installer import PrestoInstaller
 
 
 class TestControl(BaseProductTestCase):
@@ -45,8 +46,7 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_topology('restart')
 
     def assert_service_fails_without_topology(self, service):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster('pa_only')
         # Start without topology added
         cmd_output = self.run_prestoadmin('server %s' % service,
                                           raise_error=False).splitlines()
@@ -65,8 +65,7 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_presto('restart')
 
     def assert_service_fails_without_presto(self, service):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster('pa_only')
         self.upload_topology()
         # Start without Presto installed
         start_output = self.run_prestoadmin('server %s' % service,
@@ -142,21 +141,23 @@ class TestControl(BaseProductTestCase):
             running_host=self.cluster.internal_slaves[0])
 
     def test_start_stop_restart_coordinator_down(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        installer = PrestoInstaller(self)
+        self.setup_cluster('pa_only')
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        self.server_install()
+        installer.install()
         self.assert_start_stop_restart_down_node(
             self.cluster.slaves[0],
             self.cluster.internal_slaves[0])
 
     def test_start_stop_restart_worker_down(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
-        self.upload_topology()
-        self.server_install()
+        installer = PrestoInstaller(self)
+        self.setup_cluster('pa_only')
+        topology = {"coordinator": "slave1",
+                    "workers": ["master", "slave2", "slave3"]}
+        self.upload_topology(topology=topology)
+        installer.install()
         self.assert_start_stop_restart_down_node(
             self.cluster.slaves[0],
             self.cluster.internal_slaves[0])

@@ -21,7 +21,9 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only, PrestoError
+    docker_only, PrestoError
+from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.presto_installer import PrestoInstaller
 
 
 class TestConnectors(BaseProductTestCase):
@@ -181,10 +183,10 @@ Aborting.
         return message % {'error': error}
 
     def test_connector_add_lost_host(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        installer = PrestoInstaller(self)
+        self.setup_cluster('pa_only')
         self.upload_topology()
-        self.server_install()
+        installer.install()
         self.run_prestoadmin('connector remove tpch')
 
         self.cluster.stop_host(

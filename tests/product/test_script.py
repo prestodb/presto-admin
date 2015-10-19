@@ -23,8 +23,7 @@ from tests.product.base_product_case import BaseProductTestCase
 class TestScript(BaseProductTestCase):
     def setUp(self):
         super(TestScript, self).setUp()
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster('pa_only')
         self.upload_topology()
 
     @attr('smoketest')

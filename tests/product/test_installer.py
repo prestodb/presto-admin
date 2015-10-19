@@ -22,10 +22,11 @@ import re
 from nose.plugins.attrib import attr
 
 from prestoadmin import main_dir
-from tests.docker_cluster import DockerCluster
-from tests.product.base_product_case import BaseProductTestCase, \
-    DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT, \
-    LOCAL_RESOURCES_DIR, docker_only
+from tests.docker_cluster import DockerCluster, DEFAULT_LOCAL_MOUNT_POINT, \
+    DEFAULT_DOCKER_MOUNT_POINT
+from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
 class TestInstaller(BaseProductTestCase):
@@ -34,6 +35,7 @@ class TestInstaller(BaseProductTestCase):
         super(TestInstaller, self).setUp()
         self.centos_container = \
             self.__create_and_start_single_centos_container()
+        self.pa_installer = PrestoadminInstaller(self)
 
     def tearDown(self):
         super(TestInstaller, self).tearDown()
@@ -42,30 +44,25 @@ class TestInstaller(BaseProductTestCase):
     @attr('smoketest')
     @docker_only
     def test_online_installer(self):
-        self.build_installer_in_docker(online_installer=True,
-                                       cluster=self.centos_container,
-                                       unique=True)
+        self.pa_installer._build_installer_in_docker(self.centos_container,
+                                                     online_installer=True,
+                                                     unique=True)
         self.__verify_third_party_dir(False)
-        self.install_presto_admin(
-            self.centos_container,
-            dist_dir=self.centos_container.get_dist_dir(unique=True)
-        )
+        self.pa_installer.install(
+            dist_dir=self.centos_container.get_dist_dir(unique=True))
         self.run_prestoadmin('--help', raise_error=True,
                              cluster=self.centos_container)
 
     @attr('smoketest')
     @docker_only
     def test_offline_installer(self):
-        self.build_installer_in_docker(online_installer=False,
-                                       cluster=self.centos_container,
-                                       unique=True)
+        self.pa_installer._build_installer_in_docker(
+            self.centos_container, online_installer=False, unique=True)
         self.__verify_third_party_dir(True)
         self.centos_container.exec_cmd_on_host(
             self.centos_container.master, 'ifdown eth0')
-        self.install_presto_admin(
-            self.centos_container,
-            dist_dir=self.centos_container.get_dist_dir(unique=True)
-        )
+        self.pa_installer.install(
+            dist_dir=self.centos_container.get_dist_dir(unique=True))
         self.run_prestoadmin('--help', raise_error=True,
                              cluster=self.centos_container)
 

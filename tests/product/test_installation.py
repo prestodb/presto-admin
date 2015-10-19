@@ -20,9 +20,10 @@ import os
 
 from nose.plugins.attrib import attr
 
-from tests.product.base_product_case import BaseProductTestCase, \
-    DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT, docker_only
-from tests.docker_cluster import DockerCluster
+from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.prestoadmin_installer import PrestoadminInstaller
+from tests.docker_cluster import DockerCluster, DEFAULT_DOCKER_MOUNT_POINT, \
+    DEFAULT_LOCAL_MOUNT_POINT
 
 install_py26_script = """\
 echo "deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main" \
@@ -39,9 +40,11 @@ class TestInstallation(BaseProductTestCase):
 
     def setUp(self):
         super(TestInstallation, self).setUp()
-        self.setup_cluster()
-        dist_dir = self.build_dist_if_necessary()
-        self.copy_dist_to_host(dist_dir, self.cluster.master)
+        self.pa_installer = PrestoadminInstaller(self)
+        self.setup_cluster('bare')
+        dist_dir = self.pa_installer._build_dist_if_necessary(self.cluster)
+        self.pa_installer._copy_dist_to_host(self.cluster, dist_dir,
+                                             self.cluster.master)
 
     @attr('smoketest')
     @docker_only
@@ -106,8 +109,8 @@ class TestInstallation(BaseProductTestCase):
                 OSError,
                 r'ERROR\n'
                 r'Paramiko could not be imported. This usually means that',
-                self.install_presto_admin,
-                ubuntu_container
+                self.pa_installer.install,
+                cluster=ubuntu_container
             )
         finally:
             ubuntu_container.tear_down()

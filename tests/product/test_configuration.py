@@ -21,20 +21,19 @@ import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
-from tests.product import base_product_case
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
 class TestConfiguration(BaseProductTestCase):
 
     def setUp(self):
         super(TestConfiguration, self).setUp()
-        self.setup_cluster()
+        self.setup_cluster('pa_only')
         self.write_test_configs(self.cluster)
 
     @attr('smoketest')
     def test_configuration_deploy_show(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
 
         # deploy a default configuration, no files in coordinator or workers
@@ -108,7 +107,6 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
                                 self.default_node_properties_)
 
     def test_lost_coordinator_connection(self):
-        self.install_presto_admin(self.cluster)
         internal_bad_host = self.cluster.internal_slaves[0]
         bad_host = self.cluster.slaves[0]
         good_hosts = [self.cluster.internal_master,
@@ -134,14 +132,13 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
             output,
             self.down_node_connection_error(internal_bad_host)
         )
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_down_node.txt'), 'r') as f:
             expected = f.read()
         self.assertRegexpMatches(str.join('\n', output.splitlines()[6:]),
                                  expected)
 
     def test_deploy_lost_worker_connection(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
         internal_bad_host = self.cluster.internal_slaves[0]
         bad_host = self.cluster.slaves[0]
@@ -158,12 +155,11 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.assertEqual(len(output.splitlines()), expected_length)
 
     def test_configuration_show(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
 
         # configuration show no configuration
         output = self.run_prestoadmin('configuration show')
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_none.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(expected, output)
@@ -172,35 +168,35 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
 
         # configuration show default configuration
         output = self.run_prestoadmin('configuration show')
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_default.txt'), 'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
 
         # configuration show node
         output = self.run_prestoadmin('configuration show node')
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_node.txt'), 'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
 
         # configuration show jvm
         output = self.run_prestoadmin('configuration show jvm')
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_jvm.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(output, expected)
 
         # configuration show config
         output = self.run_prestoadmin('configuration show config')
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_config.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(output, expected)
 
         # configuration show log no log.properties
         output = self.run_prestoadmin('configuration show log')
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_log_none.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(output, expected)
@@ -221,7 +217,7 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         self.run_prestoadmin('configuration deploy')
 
         output = self.run_prestoadmin('configuration show log')
-        with open(os.path.join(base_product_case.LOCAL_RESOURCES_DIR,
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_log.txt'), 'r') as f:
             expected = f.read()
         self.assertEqual(output, expected)
