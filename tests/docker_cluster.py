@@ -32,16 +32,19 @@ from docker.utils.utils import kwargs_from_env
 from nose.tools import nottest
 
 from prestoadmin import main_dir
+from tests.product.constants import LOCAL_RESOURCES_DIR
 
 INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
 INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
 DEFAULT_DOCKER_MOUNT_POINT = '/mnt/presto-admin'
 DEFAULT_LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
-LOCAL_RESOURCES_DIR = os.path.join(main_dir, 'tests/product/resources/')
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 
 
 class DockerCluster(object):
+    IMAGE_NAME_BASE = os.path.join('teradatalabs', 'pa_test')
+    BARE_CLUSTER_TYPE = 'bare'
+
     """Start/stop/control/query arbitrary clusters of docker containers.
 
     This class is aimed at product test writers to create docker containers
@@ -264,9 +267,8 @@ class DockerCluster(object):
             )
 
     def _ensure_docker_containers_started(self, image):
-        centos_based_images = ['teradatalabs/centos6-ssh-test',
-                               INSTALLED_PRESTO_TEST_MASTER_IMAGE,
-                               INSTALLED_PRESTO_TEST_SLAVE_IMAGE]
+        centos_based_images = ['teradatalabs/centos6-ssh-test']
+
         timeout = 0
         is_host_started = {}
         for host in self.all_hosts():
@@ -276,7 +278,8 @@ class DockerCluster(object):
                 atomic_is_started = True
                 atomic_is_started &= \
                     self.client.inspect_container(host)['State']['Running']
-                if image in centos_based_images:
+                if image in centos_based_images or \
+                        image.startswith(self.IMAGE_NAME_BASE):
                     atomic_is_started &= \
                         self._are_centos_container_services_up(host)
                 is_host_started[host] = atomic_is_started
@@ -334,66 +337,79 @@ class DockerCluster(object):
         return output
 
     @staticmethod
-    def start_presto_cluster(install_func):
-        if DockerCluster._check_for_presto_images():
-            presto_cluster = DockerCluster('master',
-                                           ['slave1', 'slave2', 'slave3'],
-                                           DEFAULT_LOCAL_MOUNT_POINT,
-                                           DEFAULT_DOCKER_MOUNT_POINT)
-            presto_cluster.start_containers(INSTALLED_PRESTO_TEST_MASTER_IMAGE,
-                                            INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
-            # replace the node uuid on all the workers
-            for worker in presto_cluster.slaves:
-                presto_cluster.run_script_on_host(
-                    'sed -i /node.id/d /etc/presto/node.properties; '
-                    'uuid=$(uuidgen); '
-                    'echo node.id=$uuid >> /etc/presto/node.properties',
-                    worker
-                )
-            return presto_cluster
-        else:
-            presto_cluster = DockerCluster.start_base_cluster()
-            install_func(presto_cluster)
-            presto_cluster.client.commit(
-                presto_cluster.master,
-                INSTALLED_PRESTO_TEST_MASTER_IMAGE
-            )
-            presto_cluster.client.commit(
-                presto_cluster.slaves[0],
-                INSTALLED_PRESTO_TEST_SLAVE_IMAGE
-            )
-            return presto_cluster
+    def _get_master_image_name(cluster_type):
+        return os.path.join(DockerCluster.IMAGE_NAME_BASE,
+                            '%s_master' % (cluster_type))
 
     @staticmethod
-    def start_base_cluster():
+    def _get_slave_image_name(cluster_type):
+        return os.path.join(DockerCluster.IMAGE_NAME_BASE,
+                            '%s_slave' % (cluster_type))
+
+    @staticmethod
+    def start_bare_cluster():
+        dc = DockerCluster
+        master_name = dc._get_master_image_name(dc.BARE_CLUSTER_TYPE)
+        slave_name = dc._get_slave_image_name(dc.BARE_CLUSTER_TYPE)
         centos_cluster = DockerCluster('master',
                                        ['slave1', 'slave2', 'slave3'],
                                        DEFAULT_LOCAL_MOUNT_POINT,
                                        DEFAULT_DOCKER_MOUNT_POINT)
-        centos_cluster.create_image(
-            os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
-            'teradatalabs/centos6-ssh-test',
-            'jdeathe/centos-ssh',
-            'centos-6-1.2.0'
-        )
-        centos_cluster.start_containers(
-            'teradatalabs/centos6-ssh-test',
-            'teradatalabs/centos6-ssh-test'
-        )
+
+        if not dc._check_for_images(master_name, slave_name):
+            centos_cluster.create_image(
+                os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
+                master_name,
+                'jdeathe/centos-ssh',
+                'centos-6-1.2.0'
+            )
+
+            centos_cluster.create_image(
+                os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
+                slave_name,
+                'jdeathe/centos-ssh',
+                'centos-6-1.2.0'
+            )
+
+        centos_cluster.start_containers(master_name, slave_name)
+
         return centos_cluster
 
     @staticmethod
-    def _check_for_presto_images():
+    def start_existing_images(cluster_type):
+        DC = DockerCluster
+        master_name = DC._get_master_image_name(cluster_type)
+        slave_name = DC._get_slave_image_name(cluster_type)
+
+        if not DC._check_for_images(master_name, slave_name):
+            return None
+
+        centos_cluster = DockerCluster('master',
+                                       ['slave1', 'slave2', 'slave3'],
+                                       DEFAULT_LOCAL_MOUNT_POINT,
+                                       DEFAULT_DOCKER_MOUNT_POINT)
+
+        centos_cluster.start_containers(master_name, slave_name)
+        return centos_cluster
+
+    @staticmethod
+    def _check_for_images(master_image_name, slave_image_name):
         client = Client(timeout=180)
         images = client.images()
         has_master_image = False
         has_slave_image = False
         for image in images:
-            if INSTALLED_PRESTO_TEST_MASTER_IMAGE in image['RepoTags'][0]:
+            if master_image_name in image['RepoTags'][0]:
                 has_master_image = True
-            if INSTALLED_PRESTO_TEST_SLAVE_IMAGE in image['RepoTags'][0]:
+            if slave_image_name in image['RepoTags'][0]:
                 has_slave_image = True
         return has_master_image and has_slave_image
+
+    def commit_images(self, cluster_type):
+        self.client.commit(self.master,
+                           self._get_master_image_name(cluster_type))
+        self.client.commit(self.slaves[0],
+                           self._get_slave_image_name(cluster_type))
 
     def run_script_on_host(self, script_contents, host):
         temp_script = '/tmp/tmp.sh'
@@ -436,6 +452,26 @@ class DockerCluster(object):
             ip_addresses[internal_host] = \
                 inspect['NetworkSettings']['IPAddress']
         return ip_addresses
+
+    def _post_presto_install(self):
+        for worker in self.slaves:
+            self.run_script_on_host(
+                'sed -i /node.id/d /etc/presto/node.properties; '
+                'uuid=$(uuidgen); '
+                'echo node.id=$uuid >> /etc/presto/node.properties',
+                worker
+            )
+
+    def postinstall(self, installer):
+        from tests.product.presto_installer import PrestoInstaller
+
+        _post_install_hooks = {
+            PrestoInstaller: DockerCluster._post_presto_install
+        }
+
+        hook = _post_install_hooks.get(installer, None)
+        if hook:
+            hook(self)
 
 
 class DockerClusterException(Exception):
