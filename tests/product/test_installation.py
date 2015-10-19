@@ -22,7 +22,8 @@ from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.prestoadmin_installer import PrestoadminInstaller
-from tests.docker_cluster import DockerCluster, DEFAULT_DOCKER_MOUNT_POINT, \
+from tests.docker_cluster import DockerCluster
+from tests.product.constants import DEFAULT_DOCKER_MOUNT_POINT, \
     DEFAULT_LOCAL_MOUNT_POINT
 
 install_py26_script = """\

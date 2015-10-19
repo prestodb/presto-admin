@@ -28,16 +28,15 @@ from time import sleep
 
 from docker import Client
 from docker.errors import APIError
+
 from docker.utils.utils import kwargs_from_env
-from nose.tools import nottest
 
 from prestoadmin import main_dir
-from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.constants import \
+    DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT, \
+    BASE_IMAGE_NAME, BASE_IMAGE_TAG, \
+    BASE_TD_DOCKERFILE_DIR, BASE_TD_IMAGE_NAME
 
-INSTALLED_PRESTO_TEST_MASTER_IMAGE = 'teradatalabs/centos-presto-test-master'
-INSTALLED_PRESTO_TEST_SLAVE_IMAGE = 'teradatalabs/centos-presto-test-slave'
-DEFAULT_DOCKER_MOUNT_POINT = '/mnt/presto-admin'
-DEFAULT_LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 
 
@@ -267,7 +266,7 @@ class DockerCluster(object):
             )
 
     def _ensure_docker_containers_started(self, image):
-        centos_based_images = ['teradatalabs/centos6-ssh-test']
+        centos_based_images = [BASE_TD_IMAGE_NAME]
 
         timeout = 0
         is_host_started = {}
@@ -358,17 +357,17 @@ class DockerCluster(object):
 
         if not dc._check_for_images(master_name, slave_name):
             centos_cluster.create_image(
-                os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
+                BASE_TD_DOCKERFILE_DIR,
                 master_name,
-                'jdeathe/centos-ssh',
-                'centos-6-1.2.0'
+                BASE_IMAGE_NAME,
+                BASE_IMAGE_TAG
             )
 
             centos_cluster.create_image(
-                os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
+                BASE_TD_DOCKERFILE_DIR,
                 slave_name,
-                'jdeathe/centos-ssh',
-                'centos-6-1.2.0'
+                BASE_IMAGE_NAME,
+                BASE_IMAGE_TAG
             )
 
         centos_cluster.start_containers(master_name, slave_name)
@@ -434,14 +433,6 @@ class DockerCluster(object):
 
     def copy_to_host(self, source_path, dest_host):
         shutil.copy(source_path, self.get_local_mount_dir(dest_host))
-
-    @nottest
-    def clean_up_presto_test_images(self):
-        try:
-            self.client.remove_image(INSTALLED_PRESTO_TEST_MASTER_IMAGE)
-            self.client.remove_image(INSTALLED_PRESTO_TEST_SLAVE_IMAGE)
-        except:
-            pass
 
     def get_ip_address_dict(self):
         ip_addresses = {}

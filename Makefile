@@ -45,7 +45,7 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr tmp
-	for image in $(docker images | awk '/teradatalabs\/pa_test/ {print $3}'); do docker rmi -f $image ; done
+	for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$3}'); do docker rmi -f $$image ; done
 	echo "Note: The above command is just cleaning up a Docker image that may not exist. If the command fails, it is not a problem."
 
 lint:

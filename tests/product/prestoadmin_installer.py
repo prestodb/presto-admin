@@ -23,7 +23,9 @@ import os
 
 import prestoadmin
 
-from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.constants import LOCAL_RESOURCES_DIR, \
+    BASE_TD_DOCKERFILE_DIR, BASE_IMAGE_NAME, BASE_TD_IMAGE_NAME
+
 from tests.docker_cluster import DockerCluster, DockerClusterException, \
     DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
 
@@ -82,14 +84,13 @@ class PrestoadminInstaller(object):
             container_name, [], DEFAULT_LOCAL_MOUNT_POINT,
             DEFAULT_DOCKER_MOUNT_POINT)
         try:
-            installer_container.clean_up_presto_test_images()
             installer_container.create_image(
-                os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
-                'teradatalabs/centos6-ssh-test',
-                'jdeathe/centos-ssh'
+                BASE_TD_DOCKERFILE_DIR,
+                BASE_TD_IMAGE_NAME,
+                BASE_IMAGE_NAME
             )
             installer_container.start_containers(
-                'teradatalabs/centos6-ssh-test'
+                BASE_TD_IMAGE_NAME
             )
         except DockerClusterException as e:
             installer_container.tear_down()

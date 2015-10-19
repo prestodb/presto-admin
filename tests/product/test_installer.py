@@ -22,10 +22,10 @@ import re
 from nose.plugins.attrib import attr
 
 from prestoadmin import main_dir
-from tests.docker_cluster import DockerCluster, DEFAULT_LOCAL_MOUNT_POINT, \
-    DEFAULT_DOCKER_MOUNT_POINT
+from tests.docker_cluster import DockerCluster
 from tests.product.base_product_case import BaseProductTestCase, docker_only
-from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.constants import BASE_TD_DOCKERFILE_DIR, BASE_IMAGE_NAME, \
+    BASE_TD_IMAGE_NAME, DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
@@ -72,12 +72,12 @@ class TestInstaller(BaseProductTestCase):
             DEFAULT_DOCKER_MOUNT_POINT)
         # we can't assume that another test has created the image
         centos_container.create_image(
-            os.path.join(LOCAL_RESOURCES_DIR, 'centos6-ssh-test'),
-            'teradatalabs/centos6-ssh-test',
-            'jdeathe/centos-ssh'
+            BASE_TD_DOCKERFILE_DIR,
+            BASE_TD_IMAGE_NAME,
+            BASE_IMAGE_NAME
         )
         centos_container.start_containers(
-            'teradatalabs/centos6-ssh-test',
+            BASE_TD_IMAGE_NAME,
             cap_add=['NET_ADMIN']
         )
         return centos_container
