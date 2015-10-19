@@ -26,7 +26,6 @@ import tempfile
 import yaml
 
 from prestoadmin import main_dir
-from tests.product import user_password
 
 CONFIG_FILE_GLOB = r'*.yaml'
 DEFAULT_MOUNT_POINT = '/mnt/presto-admin'
@@ -64,6 +63,7 @@ class ConfigurableCluster(object):
         self.internal_master = 'master'
         self.internal_slaves = ['slave1', 'slave2', 'slave3']
         self.user = config['user']
+        from tests.product import user_password
         self.password = user_password
         self.config = config
         self.mount_dir = DEFAULT_MOUNT_POINT
