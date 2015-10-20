@@ -112,7 +112,7 @@ class ConfigurableCluster(object):
         self.exec_cmd_on_host(
             self.master,
             'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
-            host_name, down_hostname
+            (host_name, down_hostname)
         )
         self.exec_cmd_on_host(
             self.master,
