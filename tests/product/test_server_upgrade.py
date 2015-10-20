@@ -24,7 +24,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
     def setUp(self):
         super(TestServerUpgrade, self).setUp()
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
         self.installer = PrestoInstaller(self)
 
     def start_and_assert_started(self):

@@ -26,7 +26,7 @@ import prestoadmin
 class TestPackageInstall(BaseProductTestCase):
     def setUp(self):
         super(TestPackageInstall, self).setUp()
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.upload_topology()
         self.installer = PrestoInstaller(self)
 

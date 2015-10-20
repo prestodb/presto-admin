@@ -138,7 +138,7 @@ query.max-memory=50GB\n"""
 
     def setUp(self):
         super(TestServerInstall, self).setUp()
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.installer = PrestoInstaller(self)
 
     def assert_common_configs(self, container):

@@ -376,11 +376,11 @@ class DockerCluster(object):
 
     @staticmethod
     def start_existing_images(cluster_type):
-        DC = DockerCluster
-        master_name = DC._get_master_image_name(cluster_type)
-        slave_name = DC._get_slave_image_name(cluster_type)
+        dc = DockerCluster
+        master_name = dc._get_master_image_name(cluster_type)
+        slave_name = dc._get_slave_image_name(cluster_type)
 
-        if not DC._check_for_images(master_name, slave_name):
+        if not dc._check_for_images(master_name, slave_name):
             return None
 
         centos_cluster = DockerCluster('master',

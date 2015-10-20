@@ -35,12 +35,15 @@ PRESTO_VERSION = r'presto-main:.*'
 RETRY_TIMEOUT = 120
 RETRY_INTERVAL = 5
 
-
 class BaseProductTestCase(BaseTestCase):
+    BARE_CLUSTER = 'bare'
+    PA_ONLY_CLUSTER = 'pa_only'
+    PRESTO_CLUSTER = 'presto'
+
     _cluster_types = {
-        'bare': [],
-        'pa_only': [PrestoadminInstaller],
-        'presto': [PrestoadminInstaller, TopologyInstaller, PrestoInstaller]
+        BARE_CLUSTER: [],
+        PA_ONLY_CLUSTER: [PrestoadminInstaller],
+        PRESTO_CLUSTER: [PrestoadminInstaller, TopologyInstaller, PrestoInstaller]
     }
 
     default_workers_config_ = """coordinator=false
@@ -137,7 +140,6 @@ query.max-memory=50GB\n"""
         config_filename = ConfigurableCluster.check_for_cluster_config()
 
         if config_filename:
-            # TODO: make this work for configurable cluster
             self.cluster = ConfigurableCluster.start_bare_cluster(
                 config_filename, self, PrestoInstaller.assert_installed)
         else:

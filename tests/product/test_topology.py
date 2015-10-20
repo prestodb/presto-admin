@@ -47,7 +47,7 @@ class TestTopologyShow(BaseProductTestCase):
 
     def setUp(self):
         super(TestTopologyShow, self).setUp()
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
 
     @attr('smoketest')
     def test_topology_show(self):

@@ -29,7 +29,7 @@ class TestConfiguration(BaseProductTestCase):
 
     def setUp(self):
         super(TestConfiguration, self).setUp()
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.write_test_configs(self.cluster)
 
     @attr('smoketest')

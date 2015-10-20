@@ -22,7 +22,7 @@ class TestErrorHandling(BaseProductTestCase):
 
     def setUp(self):
         super(TestErrorHandling, self).setUp()
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.upload_topology()
 
     def test_wrong_arguments_parallel(self):

@@ -26,13 +26,13 @@ class TestControl(BaseProductTestCase):
 
     @attr('smoketest')
     def test_server_start_stop_simple(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
         self.assert_simple_start_stop(self.expected_start(),
                                       self.expected_stop())
 
     @attr('smoketest')
     def test_server_restart_simple(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
         expected_output = self.expected_stop()[:] + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output)
 
@@ -46,7 +46,7 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_topology('restart')
 
     def assert_service_fails_without_topology(self, service):
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         # Start without topology added
         cmd_output = self.run_prestoadmin('server %s' % service,
                                           raise_error=False).splitlines()
@@ -65,7 +65,7 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_presto('restart')
 
     def assert_service_fails_without_presto(self, service):
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.upload_topology()
         # Start without Presto installed
         start_output = self.run_prestoadmin('server %s' % service,
@@ -75,7 +75,7 @@ class TestControl(BaseProductTestCase):
                                       '\n'.join(start_output))
 
     def test_server_start_various_states(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
 
         # Coordinator started, workers not; then server start
         process_per_host = \
@@ -98,7 +98,7 @@ class TestControl(BaseProductTestCase):
         self.assert_started(process_per_host)
 
     def test_server_stop_various_states(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
 
         # Stop with servers not started
         stop_output = self.run_prestoadmin('server stop').splitlines()
@@ -115,7 +115,7 @@ class TestControl(BaseProductTestCase):
         self.assert_one_host_stopped(self.cluster.internal_slaves[0])
 
     def test_server_restart_various_states(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
 
         # Restart when the servers aren't started
         expected_output = self.expected_stop(
@@ -142,7 +142,7 @@ class TestControl(BaseProductTestCase):
 
     def test_start_stop_restart_coordinator_down(self):
         installer = PrestoInstaller(self)
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -153,7 +153,7 @@ class TestControl(BaseProductTestCase):
 
     def test_start_stop_restart_worker_down(self):
         installer = PrestoInstaller(self)
-        self.setup_cluster('pa_only')
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -163,7 +163,7 @@ class TestControl(BaseProductTestCase):
             self.cluster.internal_slaves[0])
 
     def test_server_start_twice(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start').splitlines()
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
@@ -238,7 +238,7 @@ class TestControl(BaseProductTestCase):
             '\n'.join(expected_output).splitlines())
 
     def test_start_restart_config_file_error(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.PRESTO_CLUSTER)
 
         # Remove a required config file so that the server can't start
         self.cluster.exec_cmd_on_host(
