@@ -30,9 +30,10 @@ class TopologyInstaller:
         self.testcase.upload_topology(cluster=self.testcase.cluster)
 
     @staticmethod
-    def assert_installed(testcase, container, msg=None):
+    def assert_installed(testcase, msg=None):
         testcase.cluster.exec_cmd_on_host(
-            container, 'test -r /etc/opt/prestoadmin/config.json')
+            testcase.cluster.get_master(),
+            'test -r /etc/opt/prestoadmin/config.json')
 
     def get_keywords(self):
         return {}

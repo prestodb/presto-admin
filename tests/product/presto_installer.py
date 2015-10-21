@@ -75,11 +75,16 @@ class PrestoInstaller(object):
         }
 
     @staticmethod
-    def assert_installed(testcase, container, msg=None, cluster=None):
+    def assert_installed(testcase, container=None, msg=None, cluster=None):
         # cluster keyword arg supports configurable cluster, which needs to
         # assert that presto isn't installed before testcase.cluster is set.
         if not cluster:
             cluster = testcase.cluster
+
+        # container keyword arg supports test_package_install and a few other
+        # places where we need to check specific members of a cluster.
+        if not container:
+            container = cluster.get_master()
 
         try:
             check_rpm = cluster.exec_cmd_on_host(

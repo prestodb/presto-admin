@@ -61,9 +61,9 @@ class PrestoadminInstaller(object):
             cluster.master, cluster.mount_dir + "/install-admin.sh")
 
     @staticmethod
-    def assert_installed(testcase, container, msg=None):
+    def assert_installed(testcase, msg=None):
         cluster = testcase.cluster
-        cluster.exec_cmd_on_host(cluster.master,
+        cluster.exec_cmd_on_host(cluster.get_master(),
                                  'test -x /opt/prestoadmin/presto-admin')
 
     def get_keywords(self):

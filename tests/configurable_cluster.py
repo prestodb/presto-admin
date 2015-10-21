@@ -76,6 +76,9 @@ class ConfigurableCluster(object):
         else:
             return None
 
+    def get_master(self):
+        return self.master
+
     def all_hosts(self):
         return self.slaves + [self.master]
 

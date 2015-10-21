@@ -118,7 +118,7 @@ query.max-memory=50GB\n"""
             dependencies = installer.get_dependencies()
 
             for dependency in dependencies:
-                dependency.assert_installed(self, cluster.master)
+                dependency.assert_installed(self)
 
             installer_instance = installer(self)
             installer_instance.install()

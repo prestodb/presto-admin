@@ -76,6 +76,9 @@ class DockerCluster(object):
     def all_hosts(self):
         return self.slaves + [self.master]
 
+    def get_master(self):
+        return self.master
+
     def all_internal_hosts(self):
         """The difference between this method and all_hosts() is that
         all_hosts() returns the unique, "outside facing" hostnames that
