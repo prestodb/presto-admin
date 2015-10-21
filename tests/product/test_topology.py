@@ -16,8 +16,8 @@ import os
 
 from nose.plugins.attrib import attr
 
-from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only
+from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
 topology_with_slave1_coord = """{'coordinator': u'slave1',
@@ -47,8 +47,7 @@ class TestTopologyShow(BaseProductTestCase):
 
     def setUp(self):
         super(TestTopologyShow, self).setUp()
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
 
     @attr('smoketest')
     def test_topology_show(self):

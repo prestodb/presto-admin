@@ -26,7 +26,6 @@ import tempfile
 import yaml
 
 from prestoadmin import main_dir
-from tests.product import user_password
 
 CONFIG_FILE_GLOB = r'*.yaml'
 DEFAULT_MOUNT_POINT = '/mnt/presto-admin'
@@ -64,6 +63,7 @@ class ConfigurableCluster(object):
         self.internal_master = 'master'
         self.internal_slaves = ['slave1', 'slave2', 'slave3']
         self.user = config['user']
+        from tests.product import user_password
         self.password = user_password
         self.config = config
         self.mount_dir = DEFAULT_MOUNT_POINT
@@ -75,6 +75,9 @@ class ConfigurableCluster(object):
             return config_name[0]
         else:
             return None
+
+    def get_master(self):
+        return self.master
 
     def all_hosts(self):
         return self.slaves + [self.master]
@@ -112,7 +115,7 @@ class ConfigurableCluster(object):
         self.exec_cmd_on_host(
             self.master,
             'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
-            host_name, down_hostname
+            (host_name, down_hostname)
         )
         self.exec_cmd_on_host(
             self.master,
@@ -154,19 +157,12 @@ class ConfigurableCluster(object):
         return output
 
     @staticmethod
-    def start_presto_cluster(config_filename, install_func, assert_installed):
-        presto_cluster = ConfigurableCluster.start_base_cluster(
-            config_filename, assert_installed)
-        install_func(presto_cluster)
-        return presto_cluster
-
-    @staticmethod
-    def start_base_cluster(config_filename, assert_installed):
+    def start_bare_cluster(config_filename, testcase, assert_installed):
         centos_cluster = ConfigurableCluster(config_filename)
         if 'teardown_existing_cluster' in centos_cluster.config \
                 and centos_cluster.config['teardown_existing_cluster']:
             centos_cluster.tear_down()
-        elif centos_cluster._presto_is_installed(assert_installed):
+        elif centos_cluster._presto_is_installed(testcase, assert_installed):
             raise Exception('Cluster already has Presto installed, '
                             'either uninstall Presto or specify '
                             '\'teardown_existing_cluster: true\' in the '
@@ -222,10 +218,13 @@ class ConfigurableCluster(object):
                 return line.split(' ')[0]
         return None
 
-    def _presto_is_installed(self, assert_installed):
+    def _presto_is_installed(self, testcase, assert_installed):
         for host in self.all_hosts():
             try:
-                assert_installed(host, cluster=self)
+                assert_installed(testcase, host, cluster=self)
             except AssertionError:
                 return True
         return False
+
+    def postinstall(self, installer):
+        pass
