@@ -81,16 +81,23 @@ class BaseTestCase(unittest.TestCase):
     # This method is equivalent to Python 2.7's unittest.assertRaisesRegexp()
     def assertRaisesRegexp(self, expected_exception, expected_regexp,
                            callable_object, *args, **kwargs):
-        if 'msg' in kwargs and kwargs['msg']:
-            msg = '\n' + kwargs['msg']
-        else:
-            msg = ''
+        # Copy kwargs so we remove msg from the copy before passing it into
+        # callable_object. This lets us use this assertion with callables that
+        # don't expect to get an msg parameter.
+        callable_kwargs = kwargs.copy()
+        msg = ''
+
+        if 'msg' in kwargs:
+            del callable_kwargs['msg']
+            if kwargs['msg']:
+                msg = '\n' + kwargs['msg']
+
         try:
-            callable_object(*args)
+            callable_object(*args, **callable_kwargs)
         except expected_exception as e:
             self.assertTrue(re.search(expected_regexp, str(e)),
-                            repr(expected_regexp) + " not found in "
-                            + repr(str(e)) + msg)
+                            repr(expected_regexp) + " not found in " +
+                            repr(str(e)) + msg)
         else:
             self.fail("Expected exception " + str(expected_exception) +
                       " not raised" + msg)

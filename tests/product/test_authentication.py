@@ -21,14 +21,14 @@ import subprocess
 
 from nose.plugins.attrib import attr
 
-from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only
+from tests.product.base_product_case import BaseProductTestCase, docker_only
+from constants import LOCAL_RESOURCES_DIR
 
 
 class TestAuthentication(BaseProductTestCase):
     def setUp(self):
         super(TestAuthentication, self).setUp()
-        self.setup_cluster()
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
 
     success_output = (
         'Deploying tpch.properties connector configurations on: slave1 \n'
@@ -58,7 +58,6 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_incorrect_hostname(self):
-        self.install_presto_admin(self.cluster)
         topology = {'coordinator': 'dummy_master',
                     'workers': ['slave1', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
@@ -99,7 +98,6 @@ class TestAuthentication(BaseProductTestCase):
     @attr('smoketest')
     @docker_only
     def test_passwordless_ssh_authentication(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
@@ -154,7 +152,6 @@ class TestAuthentication(BaseProductTestCase):
     @attr('smoketest')
     @docker_only
     def test_no_passwordless_ssh_authentication(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
@@ -213,7 +210,6 @@ class TestAuthentication(BaseProductTestCase):
     @attr('smoketest')
     @docker_only
     def test_prestoadmin_no_sudo_popen(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
