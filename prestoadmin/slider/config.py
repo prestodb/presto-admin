@@ -19,6 +19,8 @@ Module for setting and validating the presto-admin slider config
 
 from functools import wraps
 
+import os
+
 from fabric.context_managers import settings
 from fabric.state import env
 from fabric.operations import prompt
@@ -26,11 +28,12 @@ from fabric.operations import prompt
 from prestoadmin import config
 from prestoadmin.config import ConfigFileNotFoundError
 
+from prestoadmin.util.constants import LOCAL_CONF_DIR
 from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_PATH = '/etc/opt/prestoadmin/slider/config.json'
+SLIDER_CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'slider', 'config.json')
 SLIDER_MASTER = 'slider_master'
 
 HOST = 'slider_master'
@@ -57,6 +60,9 @@ class SingleConfigItem(object):
                                 default=conf.get(self.key, self.default),
                                 validate=self.validate)
 
+    def collect_prompts(self, l):
+        l.append((self.prompt, self.key))
+
 
 class MultiConfigItem(object):
     def __init__(self, items, validate, validate_keys,
@@ -76,11 +82,15 @@ class MultiConfigItem(object):
                 break
             print (self.validate_failed_text % self.validate_keys) % conf
 
+    def collect_prompts(self, l):
+        for item in self.items:
+            item.collect_prompts(l)
+
 
 _SLIDER_CONFIG = [
     MultiConfigItem([
         SingleConfigItem(HOST, 'Enter the hostname for the slider master:',
-                         None, validate_host),
+                         'localhost', validate_host),
         SingleConfigItem(ADMIN_USER, 'Enter the user name to use when ' +
                          'installing slider on the slider master:',
                          'root', validate_username),

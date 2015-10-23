@@ -39,7 +39,6 @@ def slider_install(slider_tarball):
     local machine that contains the slider distribution.
 
     :param slider_tarball:
-    :return:
     """
     execute(deploy_install, slider_tarball, hosts=get_host_list())
 
@@ -64,4 +63,7 @@ def deploy_install(slider_tarball):
 @requires_conf
 @task_by_rolename(SLIDER_MASTER)
 def slider_uninstall():
+    """
+    Uninstall slider from the slider master.
+    """
     sudo('rm -r "%s"' % (env.conf[DIR]))

@@ -20,15 +20,16 @@ other utilities
 import json
 import os
 import re
-from nose.tools import nottest
 from time import sleep
+
+from nose.tools import nottest
 
 from prestoadmin.util import constants
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster, DockerClusterException
 from tests.product.prestoadmin_installer import PrestoadminInstaller
-from tests.product.presto_installer import PrestoInstaller
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.topology_installer import TopologyInstaller
 
 PRESTO_VERSION = r'presto-main:.*'
@@ -39,13 +40,13 @@ RETRY_INTERVAL = 5
 class BaseProductTestCase(BaseTestCase):
     BARE_CLUSTER = 'bare'
     PA_ONLY_CLUSTER = 'pa_only'
-    PRESTO_CLUSTER = 'presto'
+    STANDALONE_PRESTO_CLUSTER = 'presto'
 
     _cluster_types = {
         BARE_CLUSTER: [],
         PA_ONLY_CLUSTER: [PrestoadminInstaller],
-        PRESTO_CLUSTER: [PrestoadminInstaller, TopologyInstaller,
-                         PrestoInstaller]
+        STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller, TopologyInstaller,
+                                    StandalonePrestoInstaller]
     }
 
     default_workers_config_ = """coordinator=false
@@ -143,7 +144,8 @@ query.max-memory=50GB\n"""
 
         if config_filename:
             self.cluster = ConfigurableCluster.start_bare_cluster(
-                config_filename, self, PrestoInstaller.assert_installed)
+                config_filename, self,
+                StandalonePrestoInstaller.assert_installed)
         else:
             try:
                 self.cluster = DockerCluster.start_existing_images(
@@ -217,6 +219,19 @@ query.max-memory=50GB\n"""
         self.cluster.write_content_to_host(
             '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
             temp_script, self.cluster.master)
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master, 'chmod +x %s' % temp_script)
+        return self.cluster.exec_cmd_on_host(
+            self.cluster.master, temp_script)
+
+    def run_prestoadmin_expect(self, command, expect_statements):
+        temp_script = '/opt/prestoadmin/tmp.expect'
+        script_content = '#!/usr/bin/expect\n' + \
+                         'spawn /opt/prestoadmin/presto-admin %s\n%s' % \
+                         (command, expect_statements)
+
+        self.cluster.write_content_to_host(script_content, temp_script,
+                                           self.cluster.master)
         self.cluster.exec_cmd_on_host(
             self.cluster.master, 'chmod +x %s' % temp_script)
         return self.cluster.exec_cmd_on_host(
