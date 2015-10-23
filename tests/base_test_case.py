@@ -39,8 +39,9 @@ class BaseTestCase(unittest.TestCase):
     old_stderr = sys.__stderr__
     env_vars = None
 
-    def setUp(self):
-        self.capture_stdout_stderr()
+    def setUp(self, capture_output=False):
+        if capture_output:
+            self.capture_stdout_stderr()
         self.env_vars = copy.deepcopy(env)
         logging.disable(logging.CRITICAL)
         self.redirect_log_to_tmp()

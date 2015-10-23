@@ -29,6 +29,8 @@ from tests.base_test_case import BaseTestCase
 
 
 class TestTopologyConfig(BaseTestCase):
+    def setUp(self):
+        super(TestTopologyConfig, self).setUp(capture_output=True)
 
     @patch('prestoadmin.topology._get_conf_from_file')
     def test_fill_conf(self, get_conf_from_file_mock):

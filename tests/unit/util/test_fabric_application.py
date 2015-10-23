@@ -35,7 +35,7 @@ class FabricApplicationTest(BaseTestCase):
         for handler in logging.root.handlers:
             self.__old_log_handlers.append(handler)
             logging.root.removeHandler(handler)
-        BaseTestCase.setUp(self)
+        super(FabricApplicationTest, self).setUp(capture_output=True)
 
     def tearDown(self):
         # restore the old log handlers
