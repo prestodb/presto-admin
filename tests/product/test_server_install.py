@@ -19,7 +19,7 @@ from nose.plugins.attrib import attr
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
     docker_only
-from tests.product.presto_installer import PrestoInstaller
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
@@ -139,7 +139,7 @@ query.max-memory=50GB\n"""
     def setUp(self):
         super(TestServerInstall, self).setUp()
         self.setup_cluster(self.PA_ONLY_CLUSTER)
-        self.installer = PrestoInstaller(self)
+        self.installer = StandalonePrestoInstaller(self)
 
     def assert_common_configs(self, container):
         self.installer.assert_installed(self, container)

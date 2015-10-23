@@ -28,7 +28,6 @@ from time import sleep
 
 from docker import Client
 from docker.errors import APIError
-
 from docker.utils.utils import kwargs_from_env
 
 from prestoadmin import main_dir
@@ -457,10 +456,11 @@ class DockerCluster(object):
             )
 
     def postinstall(self, installer):
-        from tests.product.presto_installer import PrestoInstaller
+        from tests.product.standalone.presto_installer \
+            import StandalonePrestoInstaller
 
         _post_install_hooks = {
-            PrestoInstaller: DockerCluster._post_presto_install
+            StandalonePrestoInstaller: DockerCluster._post_presto_install
         }
 
         hook = _post_install_hooks.get(installer, None)

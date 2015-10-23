@@ -17,19 +17,20 @@ Product tests for presto-admin connector support.
 """
 import json
 import os
+
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.product.base_product_case import BaseProductTestCase, \
     docker_only, PrestoError
 from tests.product.constants import LOCAL_RESOURCES_DIR
-from tests.product.presto_installer import PrestoInstaller
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
 class TestConnectors(BaseProductTestCase):
     @attr('smoketest')
     def test_basic_connector_add_remove(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
@@ -60,7 +61,7 @@ class TestConnectors(BaseProductTestCase):
 
     @docker_only
     def test_connector_add_wrong_permissions(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
 
         # test add connector without read permissions on file
         script = 'chmod 600 /etc/opt/prestoadmin/connectors/tpch.properties;' \
@@ -95,7 +96,7 @@ class TestConnectors(BaseProductTestCase):
                                 self.run_prestoadmin_script, script)
 
     def test_connector_add(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
 
         # test add a connector that does not exist
         not_found_error = self.fatal_error(
@@ -183,7 +184,7 @@ Aborting.
         return message % {'error': error}
 
     def test_connector_add_lost_host(self):
-        installer = PrestoInstaller(self)
+        installer = StandalonePrestoInstaller(self)
         self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.upload_topology()
         installer.install()
@@ -219,7 +220,7 @@ Aborting.
         self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_remove(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
 
@@ -274,7 +275,7 @@ for the change to take effect
             output)
 
     def test_connector_name_not_found(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
 
         self.cluster.write_content_to_host(

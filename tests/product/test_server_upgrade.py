@@ -17,15 +17,15 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, docker_only
-from tests.product.presto_installer import PrestoInstaller
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
 class TestServerUpgrade(BaseProductTestCase):
 
     def setUp(self):
         super(TestServerUpgrade, self).setUp()
-        self.setup_cluster(self.PRESTO_CLUSTER)
-        self.installer = PrestoInstaller(self)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
+        self.installer = StandalonePrestoInstaller(self)
 
     def start_and_assert_started(self):
         cmd_output = self.run_prestoadmin('server start')
