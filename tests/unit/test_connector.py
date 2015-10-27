@@ -27,6 +27,9 @@ from tests.base_test_case import BaseTestCase
 
 
 class TestConnector(BaseTestCase):
+    def setUp(self):
+        super(TestConnector, self).setUp(capture_output=True)
+
     @patch('prestoadmin.connector.os.path.isfile')
     def test_add_not_exist(self, isfile_mock):
         isfile_mock.return_value = False

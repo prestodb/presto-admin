@@ -41,14 +41,14 @@ clean-pyc:
 	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test-containers:
-	 docker ps --format "{{.ID}} {{.Image}}" | awk '/teradatalabs\/pa_test/ { print $$1 }' | xargs docker kill
+	 for c in $$(docker ps --format "{{.ID}} {{.Image}}" | awk '/teradatalabs\/pa_test/ { print $$1 }'); do docker kill $$c; done
 
 clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr tmp
-	for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$3}'); do docker rmi -f $$image ; done
+	-for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$3}'); do docker rmi -f $$image ; done
 	@echo "\n\tYou can kill running containers that caused errors removing images by running \`make clean-test-containers'\n"
 
 lint:
