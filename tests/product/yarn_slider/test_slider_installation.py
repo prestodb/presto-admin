@@ -31,9 +31,6 @@ SLIDER_DIST_FILENAME = 'slider-assembly-0.80.0-incubating-all.tar.gz'
 class TestSliderInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestSliderInstallation, self).setUp()
-        # For the moment, we still need to topology loaded. This will change
-        # when we implement mode switching, and then these tests should be
-        # updated to run on a PA_ONLY_CLUSTER
         self.setup_cluster(self.PA_ONLY_CLUSTER)
 
     def get_config(self, override=None):
