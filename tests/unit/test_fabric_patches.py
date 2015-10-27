@@ -281,7 +281,7 @@ class TestExecute(BaseTestCase):
         should honor @roles on passed-in task objects
         """
         # Make two full copies of a host list
-        roledefs = {'role1': ['a', 'b', 'c']}
+        roledefs = {'role1': ['a', 'b', 'c'], 'role2': ['d', 'e']}
         role_copy = roledefs['role1'][:]
 
         @roles('role1')

@@ -18,8 +18,7 @@ from nose.plugins.attrib import attr
 from tests.product.base_product_case import BaseProductTestCase, \
     docker_only
 from tests.product.constants import LOCAL_RESOURCES_DIR
-from tests.product.presto_installer import PrestoInstaller
-
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 import prestoadmin
 
 
@@ -28,7 +27,7 @@ class TestPackageInstall(BaseProductTestCase):
         super(TestPackageInstall, self).setUp()
         self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.upload_topology()
-        self.installer = PrestoInstaller(self)
+        self.installer = StandalonePrestoInstaller(self)
 
     @attr('smoketest')
     def test_package_install(self):

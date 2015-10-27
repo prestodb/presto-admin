@@ -18,7 +18,7 @@ from nose.plugins.attrib import attr
 
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.constants import LOCAL_RESOURCES_DIR
-from tests.product.presto_installer import PrestoInstaller
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
@@ -31,11 +31,11 @@ uninstall_output = ['Package uninstalled successfully on: slave1',
 class TestServerUninstall(BaseProductTestCase):
     def setUp(self):
         super(TestServerUninstall, self).setUp()
-        self.installer = PrestoInstaller(self)
+        self.installer = StandalonePrestoInstaller(self)
 
     @attr('smoketest')
     def test_uninstall(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
@@ -57,7 +57,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.assert_path_removed(container, '/etc/init.d/presto')
 
     def test_uninstall_when_server_down(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
 
@@ -115,7 +115,7 @@ class TestServerUninstall(BaseProductTestCase):
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_with_dir_readonly(self):
-        self.setup_cluster(self.PRESTO_CLUSTER)
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)

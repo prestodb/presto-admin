@@ -23,7 +23,8 @@ from fabric.api import env
 
 
 __all__ = ['topology', 'configuration', 'server', 'connector',
-           'package', 'collect', 'fabric_patches', 'script', 'plugin']
+           'package', 'collect', 'fabric_patches', 'script', 'plugin',
+           'slider']
 
 env.roledefs = {
     'coordinator': [],
@@ -41,4 +42,5 @@ import plugin
 import package
 import script
 import server
+import slider.server as slider
 import topology

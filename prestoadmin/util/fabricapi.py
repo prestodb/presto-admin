@@ -15,7 +15,11 @@
 """
 Module to add extensions and helpers for fabric api methods
 """
+
+from functools import wraps
+
 from fabric.api import env
+from fabric.utils import abort
 
 
 def get_host_list():
@@ -28,3 +32,33 @@ def get_coordinator_role():
 
 def get_worker_role():
     return env.roledefs['worker']
+
+
+def task_by_rolename(rolename):
+    def inner_decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            by_rolename(env.host, rolename, f, *args, **kwargs)
+        return wrapper
+    return inner_decorator
+
+
+def by_rolename(host, rolename, f, *args, **kwargs):
+    if rolename is None:
+        f(*args, **kwargs)
+    else:
+        if rolename not in env.roledefs.keys():
+            abort("Invalid role name %s. Valid rolenames are %s" %
+                  (rolename, env.roledefs.keys()))
+        if host in env.roledefs[rolename]:
+            f(*args, **kwargs)
+
+
+def by_role_coordinator(host, f, *args, **kwargs):
+    if host in get_coordinator_role():
+        f(*args, **kwargs)
+
+
+def by_role_worker(host, f, *args, **kwargs):
+    if host in get_worker_role() and host not in get_coordinator_role():
+        f(*args, **kwargs)

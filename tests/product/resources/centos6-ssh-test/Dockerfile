@@ -26,6 +26,8 @@ RUN yum -y install bzip2 \
     python-devel \
     tar
 
+RUN yum -y install expect
+
 # Copy Vagrant insecure SSH keys for passwordless SSH between
 # containers and to localhost
 RUN curl -LsSO https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant && \
