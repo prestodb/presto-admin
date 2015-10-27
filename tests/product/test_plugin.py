@@ -24,8 +24,7 @@ STD_REMOTE_PATH = '/usr/lib/presto/lib/plugin/hive-cdh5/pretend.jar'
 class TestPlugin(BaseProductTestCase):
     def setUp(self):
         super(TestPlugin, self).setUp()
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
 
     def deploy_jar_to_master(self):
         self.cluster.write_content_to_host('A PRETEND JAR', TMP_JAR_PATH,

@@ -39,7 +39,7 @@ class TestInstall(BaseTestCase):
     def setUp(self):
         self.remove_runs_once_flag(server.status)
         self.maxDiff = None
-        super(TestInstall, self).setUp()
+        super(TestInstall, self).setUp(capture_output=True)
 
     @patch('prestoadmin.server.deploy_install_configure')
     def test_install_server(self, mock_install):

@@ -21,14 +21,14 @@ import subprocess
 
 from nose.plugins.attrib import attr
 
-from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only
+from tests.product.base_product_case import BaseProductTestCase, docker_only
+from constants import LOCAL_RESOURCES_DIR
 
 
 class TestAuthentication(BaseProductTestCase):
     def setUp(self):
         super(TestAuthentication, self).setUp()
-        self.setup_cluster()
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
 
     success_output = (
         'Deploying tpch.properties connector configurations on: slave1 \n'
@@ -58,7 +58,6 @@ class TestAuthentication(BaseProductTestCase):
 
     @attr('smoketest')
     def test_incorrect_hostname(self):
-        self.install_presto_admin(self.cluster)
         topology = {'coordinator': 'dummy_master',
                     'workers': ['slave1', 'slave2', 'slave3']}
         self.upload_topology(topology=topology)
@@ -99,14 +98,13 @@ class TestAuthentication(BaseProductTestCase):
     @attr('smoketest')
     @docker_only
     def test_passwordless_ssh_authentication(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
         # Passwordless SSH as root, but specify -I
         # We need to do it as a script because docker_py doesn't support
         # redirecting stdin.
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I')
 
         self.assertEqualIgnoringOrder(
@@ -120,7 +118,7 @@ class TestAuthentication(BaseProductTestCase):
         # Passwordless SSH as app-admin, specify -I
         non_root_sudo_warning = self.non_root_sudo_warning_message()
 
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
@@ -134,7 +132,7 @@ class TestAuthentication(BaseProductTestCase):
 
         # Passwordless SSH as app-admin, but specify wrong password with -I
         parallel_password_failure = self.parallel_password_failure_message()
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "asdf" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(parallel_password_failure +
                                       self.interactive_text, command_output)
@@ -146,7 +144,7 @@ class TestAuthentication(BaseProductTestCase):
                                       command_output)
 
         # Passwordless SSH as root, in serial mode
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             './presto-admin connector add --serial')
         self.assertEqualIgnoringOrder(
             self.success_output, command_output)
@@ -154,14 +152,13 @@ class TestAuthentication(BaseProductTestCase):
     @attr('smoketest')
     @docker_only
     def test_no_passwordless_ssh_authentication(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
         # This is needed because the test for
         # No passwordless SSH, -I correct -u app-admin,
         # was giving Device not a stream error in jenkins
-        self.run_prestoadmin_script(
+        self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I')
 
         for host in self.cluster.all_hosts():
@@ -185,7 +182,7 @@ class TestAuthentication(BaseProductTestCase):
 
         # No passwordless SSH, -I correct -u app-admin
         non_root_sudo_warning = self.non_root_sudo_warning_message()
-        command_output = self.run_prestoadmin_script(
+        command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
@@ -213,7 +210,6 @@ class TestAuthentication(BaseProductTestCase):
     @attr('smoketest')
     @docker_only
     def test_prestoadmin_no_sudo_popen(self):
-        self.install_presto_admin(self.cluster)
         self.upload_topology()
         self.setup_for_connector_add()
 
@@ -234,4 +230,4 @@ class TestAuthentication(BaseProductTestCase):
                            'echo \'connector.name=tpch\' ' \
                            '>> /etc/opt/prestoadmin/connectors/' \
                            'tpch.properties\n'
-        self.run_prestoadmin_script(connector_script)
+        self.run_script_from_prestoadmin_dir(connector_script)

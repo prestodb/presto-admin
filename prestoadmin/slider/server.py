@@ -35,13 +35,13 @@ from prestoadmin.slider.config import requires_conf, store_conf, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     INSTANCE_NAME, PRESTO_PACKAGE, SLIDER_CONFIG_PATH
 
-from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
-
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
            'status', 'test']
 
 
 SLIDER_PKG_DEFAULT_FILES = [APPCONFIG_DEFAULT, 'resources-default.json']
+
+from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
 
 
 @task
@@ -53,9 +53,7 @@ def slider_install(slider_tarball):
     local machine that contains the slider distribution.
 
     :param slider_tarball:
-    :return:
     """
-    #get_conf_if_missing()
     execute(deploy_install, slider_tarball, hosts=get_host_list())
 
 
@@ -148,7 +146,6 @@ def uninstall():
                             for f in SLIDER_PKG_DEFAULT_FILES])))
 
 
-
 @task
 @requires_conf
 @runs_once
@@ -167,5 +164,3 @@ def test(app_config_path):
 def start():
     conf = env.conf
     slider_command = '%s start %s'
-
-

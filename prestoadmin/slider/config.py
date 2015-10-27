@@ -17,24 +17,23 @@
 Module for setting and validating the presto-admin slider config
 """
 
-import errno
-
-from collections import namedtuple
 from functools import wraps
+
+import os
 
 from fabric.context_managers import settings
 from fabric.state import env
-from fabric.operations import prompt, run, sudo
+from fabric.operations import prompt
 
 from prestoadmin import config
 from prestoadmin.config import ConfigFileNotFoundError
 
-from prestoadmin.util.validators import validate_host
-from prestoadmin.util.validators import validate_port
-from prestoadmin.util.validators import validate_username
+from prestoadmin.util.constants import LOCAL_CONF_DIR
+from prestoadmin.util.validators import validate_host, validate_port, \
+    validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_PATH = '/etc/opt/prestoadmin/slider/config.json'
+SLIDER_CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'slider', 'config.json')
 SLIDER_MASTER = 'slider_master'
 
 HOST = 'slider_master'
@@ -52,34 +51,79 @@ HADOOP_CONF = 'HADOOP_CONF'
 # there is no SliderConfigItem for it in _SLIDER_CONFIG
 PRESTO_PACKAGE = 'presto_slider_package'
 
-SliderConfigItem = namedtuple('SliderConfigItem',
-                              ['text', 'default', 'validate'])
-_SLIDER_CONFIG = {
-    HOST: SliderConfigItem('Enter the hostname for the slider master:',
-                            None, validate_host),
-    ADMIN_USER: SliderConfigItem('Enter the user name to use when ' +
-                                    'installing slider on the slider master:',
-                                    'root', validate_username),
-    SSH_PORT: SliderConfigItem('Enter the port number for SSH connections ' +
-                                'to the slider master',
-                                22, validate_port),
-    DIR: SliderConfigItem('Enter the directory to install slider into on ' +
-                           'the slider master:',
-                           '/opt/slider', None),
-    APPNAME: SliderConfigItem('Enter a name for the presto slider app',
-                               'PRESTO', None),
-    INSTANCE_NAME: SliderConfigItem('Enter a name for the presto application' +
-                                    ' instance', 'presto', None),
-    SLIDER_USER: SliderConfigItem('Enter a user name for conducting slider ' +
-                            'operations on the slider master',
-                            'yarn', None),
-    JAVA_HOME: SliderConfigItem('Enter the value of JAVA_HOME to use when' +
-                                 'running slider on the slider master:',
-                                 '/usr/lib/jvm/java', None),
-    HADOOP_CONF: SliderConfigItem('Enter the location of the Hadoop ' +
-                                   'configuration on the slider master:',
-                                   '/etc/hadoop/conf', None)
-}
+
+class SingleConfigItem(object):
+    def __init__(self, key, prompt, default=None, validate=None):
+        self.key = key
+        self.prompt = prompt
+        self.default = default
+        self.validate = validate
+
+    def prompt_user(self, conf):
+        conf[self.key] = prompt(self.prompt,
+                                default=conf.get(self.key, self.default),
+                                validate=self.validate)
+
+    def collect_prompts(self, l):
+        l.append((self.prompt, self.key))
+
+
+class MultiConfigItem(object):
+    def __init__(self, items, validate, validate_keys,
+                 validate_failed_text):
+        self.items = items
+        self.validate = validate
+        self.validate_keys = validate_keys
+        self.validate_failed_text = validate_failed_text
+
+    def prompt_user(self, conf):
+        while True:
+            for item in self.items:
+                item.prompt_user(conf)
+
+            validate_args = [conf[k] for k in self.validate_keys]
+            if self.validate(*validate_args):
+                break
+            print (self.validate_failed_text % self.validate_keys) % conf
+
+    def collect_prompts(self, l):
+        for item in self.items:
+            item.collect_prompts(l)
+
+
+_SLIDER_CONFIG = [
+    MultiConfigItem([
+        SingleConfigItem(HOST, 'Enter the hostname for the slider master:',
+                         'localhost', validate_host),
+        SingleConfigItem(ADMIN_USER, 'Enter the user name to use when ' +
+                         'installing slider on the slider master:',
+                         'root', validate_username),
+        SingleConfigItem(SSH_PORT, 'Enter the port number for SSH ' +
+                         'connections to the slider master', 22,
+                         validate_port)],
+                    validate_can_connect, (ADMIN_USER, HOST, SSH_PORT),
+                    'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. ' +
+                    'Re-enter connection information.'),
+
+    SingleConfigItem(DIR, 'Enter the directory to install slider into on ' +
+                     'the slider master:', '/opt/slider', None),
+
+    MultiConfigItem([
+        SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting ' +
+                         'slider operations on the slider master ', 'yarn',
+                         validate_username)],
+                    validate_can_sudo,
+                    (SLIDER_USER, ADMIN_USER, HOST, SSH_PORT),
+                    'Failed to sudo to user %%(%s)s while connecting as ' +
+                    '%%(%s)s@%%(%s)s:%%(%s)d. Enter a new username and try' +
+                    'again.'),
+
+    SingleConfigItem(JAVA_HOME, 'Enter the value of JAVA_HOME to use when' +
+                     'running slider on the slider master:',
+                     '/usr/lib/jvm/java', None),
+    SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
+                     'configuration on the slider master:',
+                     '/etc/hadoop/conf', None)]
 
 
 def requires_conf(func):
@@ -116,25 +160,9 @@ def store_conf(conf, path):
 
 def get_conf_interactive():
     conf = {}
-    prompt_related(conf, (HOST, SSH_PORT, ADMIN_USER), _SLIDER_CONFIG,
-                   validate_can_connect,
-                   'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. Re-enter ' +
-                   'connection information.')
-
-    sci_prompt(conf, DIR, _SLIDER_CONFIG)
-    sci_prompt(conf, APPNAME, _SLIDER_CONFIG)
-    sci_prompt(conf, INSTANCE_NAME, _SLIDER_CONFIG)
-
-    prompt_related(conf, (HOST, SSH_PORT, ADMIN_USER, SLIDER_USER),
-                   _SLIDER_CONFIG, validate_can_sudo,
-                   'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. Enter ' +
-                   'a new username and try again.',
-                   fixed_keys=[HOST, SSH_PORT, ADMIN_USER])
-
-    sci_prompt(conf, JAVA_HOME, _SLIDER_CONFIG)
-    sci_prompt(conf, HADOOP_CONF, _SLIDER_CONFIG)
+    for item in _SLIDER_CONFIG:
+        item.prompt_user(conf)
     return conf
-
 
 def set_env_from_conf(conf):
     env.user = conf[ADMIN_USER]
@@ -146,39 +174,3 @@ def set_env_from_conf(conf):
 
     # TODO: make this conditional once mode switching is done
     env.hosts = env.roledefs['all'][:]
-
-
-def sci_prompt(conf, key, sci_map):
-    sci = sci_map[key]
-    conf[key] = prompt(sci.text, default=sci.default, validate=sci.validate)
-
-
-def prompt_related(conf, keys, sci_map, validate, validate_failed_text,
-                   fixed_keys=[]):
-    while True:
-        for key in keys:
-            if key in fixed_keys:
-                continue
-            sci = sci_map[key]
-            #
-            # The first time through the loop, the default is the program
-            # default. Subsequent times it is what the user has already entered.
-            #
-            conf[key] = prompt(sci.text, default=conf.get(key, sci.default),
-                                 validate=sci.validate)
-        if validate(conf, keys):
-            break
-        print (validate_failed_text % keys) % conf
-
-
-def validate_can_connect(conf, keys):
-    host, port, user = [conf[key] for key in keys]
-    with settings(host_string='%s@%s:%d' % (user, host, port), user=user):
-        return run('exit 0').succeeded
-
-def validate_can_sudo(conf, keys):
-    host, port, conn_user, sudo_user = [conf[key] for key in keys]
-    with settings(host_string='%s@%s:%d' % (conn_user, host, port),
-                  user=sudo_user):
-        return sudo('exit 0', user=sudo_user).succeeded
-

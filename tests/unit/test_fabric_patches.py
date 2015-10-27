@@ -46,8 +46,8 @@ class FabricPatchesTest(BaseTestCase):
         for handler in logging.root.handlers:
             self.__old_log_handlers.append(handler)
             logging.root.removeHandler(handler)
-        BaseTestCase.setUp(self)
         # Load prestoadmin so that the monkeypatching is in place
+        BaseTestCase.setUp(self, capture_output=True)
 
     def tearDown(self):
         # restore the old log handlers
@@ -184,7 +184,7 @@ class FabricPatchesTest(BaseTestCase):
 class TestExecute(BaseTestCase):
     def setUp(self):
         clear_expectations()
-        super(TestExecute, self).setUp()
+        super(TestExecute, self).setUp(capture_output=True)
 
     @with_fakes
     def test_calls_task_function_objects(self):

@@ -17,6 +17,10 @@ Module for validating configuration information supplied by the user.
 """
 import re
 import socket
+
+from fabric.context_managers import settings
+from fabric.operations import run, sudo
+
 from prestoadmin.util.exception import ConfigurationError
 
 
@@ -67,3 +71,14 @@ def is_valid_hostname(hostname):
     valid_name = '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*' \
                  '([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
     return re.match(valid_name, hostname)
+
+
+def validate_can_connect(user, host, port):
+    with settings(host_string='%s@%s:%d' % (user, host, port), user=user):
+        return run('exit 0').succeeded
+
+
+def validate_can_sudo(sudo_user, conn_user, host, port):
+    with settings(host_string='%s@%s:%d' % (conn_user, host, port),
+                  warn_only=True):
+        return sudo('exit 0', user=sudo_user).succeeded

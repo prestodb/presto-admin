@@ -36,6 +36,8 @@ from tests.base_test_case import BaseTestCase
 
 
 class TestMain(BaseTestCase):
+    def setUp(self):
+        super(TestMain, self).setUp(capture_output=True)
 
     def _run_command_compare_to_file(self, command, exit_status, filename):
         """

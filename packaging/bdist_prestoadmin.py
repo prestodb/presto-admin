@@ -146,7 +146,8 @@ class bdist_prestoadmin(Command):
         archive_file = os.path.join(dist_dir, archive_basename)
         self.mkpath(os.path.dirname(archive_file))
         self.make_archive(archive_file, 'bztar',
-                          root_dir=os.path.dirname(build_dir))
+                          root_dir=os.path.dirname(build_dir),
+                          base_dir=os.path.basename(build_dir))
         logger.info('created %s.tar.bz2', archive_file)
 
     def run(self):

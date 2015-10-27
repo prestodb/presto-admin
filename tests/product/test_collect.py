@@ -31,7 +31,7 @@ class TestCollect(BaseProductTestCase):
 
     def setUp(self):
         super(TestCollect, self).setUp()
-        self.setup_cluster('presto')
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
 
     @attr('smoketest')
     def test_collect_logs_basic(self):

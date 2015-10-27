@@ -50,8 +50,8 @@ def requires_topology(func):
     def required(*args, **kwargs):
         if 'topology_config_not_found' in env \
                 and env.topology_config_not_found:
-            raise ConfigFileNotFoundError('Missing topology configuration in '
-                                          + constants.CONFIG_PATH + '.')
+            raise ConfigFileNotFoundError('Missing topology configuration ' +
+                                          'in ' + constants.CONFIG_PATH + '.')
         return func(*args, **kwargs)
     return required
 
@@ -184,8 +184,8 @@ def validate_coordinator(coordinator):
 
 def validate_workers(workers):
     if not isinstance(workers, list):
-        raise ConfigurationError('Workers must be of type list.  Found '
-                                 + str(type(workers)) + '.')
+        raise ConfigurationError('Workers must be of type list.  Found ' +
+                                 str(type(workers)) + '.')
 
     if len(workers) < 1:
         raise ConfigurationError('Must specify at least one worker')
@@ -210,8 +210,8 @@ def set_env_from_conf():
     env.port = conf['port']
     env.roledefs['coordinator'] = [conf['coordinator']]
     env.roledefs['worker'] = conf['workers']
-    env.roledefs['all'] = dedup_list(util.get_coordinator_role()
-                                     + util.get_worker_role())
+    env.roledefs['all'] = dedup_list(util.get_coordinator_role() +
+                                     util.get_worker_role())
 
     # This ensures that we honor a hosts list passed on the command line.
     if not env.hosts:

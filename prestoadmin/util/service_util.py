@@ -16,7 +16,6 @@ import logging
 from fabric.context_managers import settings, hide
 from fabric.operations import run
 from fabric.tasks import execute
-from prestoadmin import topology
 from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util import constants
 import prestoadmin.util.validators

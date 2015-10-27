@@ -16,8 +16,10 @@ import os
 
 from nose.plugins.attrib import attr
 
-from tests.product.base_product_case import BaseProductTestCase, \
-    LOCAL_RESOURCES_DIR, docker_only
+from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
+from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
 uninstall_output = ['Package uninstalled successfully on: slave1',
@@ -27,9 +29,13 @@ uninstall_output = ['Package uninstalled successfully on: slave1',
 
 
 class TestServerUninstall(BaseProductTestCase):
+    def setUp(self):
+        super(TestServerUninstall, self).setUp()
+        self.installer = StandalonePrestoInstaller(self)
+
     @attr('smoketest')
     def test_uninstall(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
@@ -43,7 +49,7 @@ class TestServerUninstall(BaseProductTestCase):
             self.assert_uninstalled_dirs_removed(container)
 
     def assert_uninstalled_dirs_removed(self, container):
-        self.assert_uninstalled(container)
+        self.installer.assert_uninstalled(container)
         self.assert_path_removed(container, '/etc/presto')
         self.assert_path_removed(container, '/usr/lib/presto')
         self.assert_path_removed(container, '/var/lib/presto')
@@ -51,7 +57,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.assert_path_removed(container, '/etc/init.d/presto')
 
     def test_uninstall_when_server_down(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
 
@@ -77,14 +83,15 @@ class TestServerUninstall(BaseProductTestCase):
         self.assertEqualIgnoringOrder(expected, output)
 
     def test_uninstall_lost_host(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        pa_installer = PrestoadminInstaller(self)
+        pa_installer.install()
         topology = {"coordinator": self.cluster.internal_slaves[0],
                     "workers": [self.cluster.internal_master,
                                 self.cluster.internal_slaves[1],
                                 self.cluster.internal_slaves[2]]}
         self.upload_topology(topology)
-        self.server_install()
+        self.installer.install()
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
@@ -108,29 +115,40 @@ class TestServerUninstall(BaseProductTestCase):
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_with_dir_readonly(self):
-        self.setup_cluster('presto')
+        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
 
-        self.run_prestoadmin_script("chmod 500 -R /usr/lib/presto")
-        cmd_output = self.run_prestoadmin('server uninstall').splitlines()
-        self.assert_stopped(process_per_host)
-        expected = uninstall_output + self.expected_stop()[:]
-        self.assertRegexpMatchesLineByLine(cmd_output, expected)
+        self.run_script_from_prestoadmin_dir("chmod 500 -R /usr/lib/presto")
+        self.run_prestoadmin('server uninstall').splitlines()
 
-        for container in self.cluster.all_hosts():
+        # The master node was not able to be stopped or uninstalled because
+        # the permissions of the directory were changed such that the
+        # stop command can't run
+        pid_to_remove = None
+        for (host, pid) in process_per_host:
+            if host == self.cluster.internal_master:
+                pid_to_remove = pid
+        process_per_host.remove((self.cluster.internal_master, pid_to_remove))
+        self.assert_stopped(process_per_host)
+
+        uninstalled_hosts = self.cluster.all_hosts()[:]
+        uninstalled_hosts.remove(self.cluster.master)
+
+        for container in uninstalled_hosts:
             self.assert_uninstalled_dirs_removed(container)
+
+        self.installer.assert_installed(self, container=self.cluster.master)
 
     @docker_only
     def test_uninstall_as_non_sudo(self):
-        self.setup_cluster()
-        self.install_presto_admin(self.cluster)
+        self.setup_cluster(self.PA_ONLY_CLUSTER)
         self.upload_topology()
-        self.server_install()
+        self.installer.install(dummy=True)
 
         script = './presto-admin server uninstall -u testuser -p testpass'
-        output = self.run_prestoadmin_script(script)
+        output = self.run_script_from_prestoadmin_dir(script)
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'non_sudo_uninstall.txt'),
                   'r') as f:
             expected = f.read()

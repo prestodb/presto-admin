@@ -56,6 +56,10 @@ Commands:
     server uninstall
     server upgrade
     slider install
+    slider slider_install
+    slider slider_uninstall
+    slider status
+    slider test
     slider uninstall
     topology show
 
