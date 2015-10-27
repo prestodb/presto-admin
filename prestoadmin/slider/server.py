@@ -66,7 +66,7 @@ def deploy_install(slider_tarball):
 
     result = put(slider_tarball, os.path.join(slider_parent, slider_file))
     if result.failed:
-        abort('Failed to send slider tarball to directory %s on host %s' %
+        abort('Failed to send slider tarball %s to directory %s on host %s' %
               (slider_tarball, slider_dir, env.host))
 
     sudo('gunzip -c %s | tar -x -C %s --strip-components=1 && rm -f %s' %
@@ -88,6 +88,7 @@ def run_slider(slider_command, conf):
     with shell_env(JAVA_HOME=conf[JAVA_HOME],
                    HADOOP_CONF_DIR=conf[HADOOP_CONF]):
         sudo(slider_command, user=conf[SLIDER_USER])
+
 
 @task
 @requires_conf
@@ -143,7 +144,7 @@ def uninstall():
         pass
 
     local('rm %s' % (' '.join([os.path.join(SLIDER_PKG_DEFAULT_DEST, f)
-                            for f in SLIDER_PKG_DEFAULT_FILES])))
+                     for f in SLIDER_PKG_DEFAULT_FILES])))
 
 
 @task

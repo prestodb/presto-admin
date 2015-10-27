@@ -27,8 +27,8 @@ from prestoadmin.slider.config import SLIDER_USER, JAVA_HOME
 
 CONF_FILENAME = 'appConfig.json'
 DEFAULT_CONF_FILENAME = 'appConfig-default.json'
-CONF_FILE = os.path.join (CONF_DIR, CONF_FILENAME)
-DEFAULT_CONF_FILE = os.path.join (CONF_DIR, DEFAULT_CONF_FILENAME)
+CONF_FILE = os.path.join(CONF_DIR, CONF_FILENAME)
+DEFAULT_CONF_FILE = os.path.join(CONF_DIR, DEFAULT_CONF_FILENAME)
 
 
 def get_appConfig():
@@ -38,15 +38,15 @@ def get_appConfig():
         default_conf = get_conf_from_json_file(DEFAULT_CONF_FILE)
         return copy_default(default_conf, [])
     else:
-        abort('Config file %s missing. Default config file %s also missing. ' +
+        abort('Config file %s missing. Default config file %s also missing. '
               'Could not generate config' % (CONF_FILE, DEFAULT_CONF_FILE))
 
 
-def get_app_user(kpath, value):
+def _env_app_user(kpath, value):
     return env.conf[SLIDER_USER]
 
 
-def get_app_user(kpath, value):
+def _env_java_home(kpath, value):
     return env.conf[JAVA_HOME]
 
 
@@ -54,17 +54,18 @@ def purge(kpath, value):
     return None
 
 
-def get_data_dir(kpath, value):
+def _prompt_data_dir(kpath, value):
     prompt("Enter a directory for presto to use for data:", default=value)
+
 
 def _keyify(path):
     return '/'.join(path)
 
 
 APP_CONFIG_TRANSFORMS = {
-    _keyify(['global', 'site.global.app_user']): get_app_user,
+    _keyify(['global', 'site.global.app_user']): _env_app_user,
     _keyify(['global', 'site.global.presto_server_port']): purge,
-    _keyify(['global', 'site.global.data_dir']): get_data_dir
+    _keyify(['global', 'site.global.data_dir']): _prompt_data_dir
 }
 
 
@@ -90,7 +91,7 @@ def copy_default(default, path):
     elif type(default) is list:
         result = []
         for i in default:
-            result.append(copy_default(i))
+            result.append(copy_default(i, path))
         return result
     else:
         return default

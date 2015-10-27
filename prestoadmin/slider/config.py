@@ -151,6 +151,7 @@ def get_conf_if_missing():
             set_env_from_conf(conf)
             env.SLIDER_CONFIG_LOADED = True
 
+
 def load_conf(path):
     return config.get_conf_from_json_file(path)
 
@@ -158,11 +159,13 @@ def load_conf(path):
 def store_conf(conf, path):
     config.write(config.json_to_string(conf), path)
 
+
 def get_conf_interactive():
     conf = {}
     for item in _SLIDER_CONFIG:
         item.prompt_user(conf)
     return conf
+
 
 def set_env_from_conf(conf):
     env.user = conf[ADMIN_USER]
