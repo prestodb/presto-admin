@@ -26,13 +26,14 @@ import tempfile
 import yaml
 
 from prestoadmin import main_dir
+from tests.base_cluster import BaseCluster
 
 CONFIG_FILE_GLOB = r'*.yaml'
 DEFAULT_MOUNT_POINT = '/mnt/presto-admin'
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 
 
-class ConfigurableCluster(object):
+class ConfigurableCluster(BaseCluster):
     """Start/stop/control/query a cluster defined by a configuration file.
 
     This class allows you to run the presto-admin product tests on a real
