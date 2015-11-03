@@ -21,6 +21,7 @@ import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
     docker_only, PrestoError
 from tests.product.constants import LOCAL_RESOURCES_DIR
@@ -30,7 +31,8 @@ from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 class TestConnectors(BaseProductTestCase):
     @attr('smoketest')
     def test_basic_connector_add_remove(self):
-        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
@@ -61,7 +63,8 @@ class TestConnectors(BaseProductTestCase):
 
     @docker_only
     def test_connector_add_wrong_permissions(self):
-        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
 
         # test add connector without read permissions on file
         script = 'chmod 600 /etc/opt/prestoadmin/connectors/tpch.properties;' \
@@ -96,7 +99,8 @@ class TestConnectors(BaseProductTestCase):
                                 self.run_script_from_prestoadmin_dir, script)
 
     def test_connector_add(self):
-        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
 
         # test add a connector that does not exist
         not_found_error = self.fatal_error(
@@ -185,7 +189,7 @@ Aborting.
 
     def test_connector_add_lost_host(self):
         installer = StandalonePrestoInstaller(self)
-        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
         self.upload_topology()
         installer.install()
         self.run_prestoadmin('connector remove tpch')
@@ -220,7 +224,8 @@ Aborting.
         self._assert_connectors_loaded([['system'], ['tpch']])
 
     def test_connector_remove(self):
-        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
 
@@ -275,7 +280,8 @@ for the change to take effect
             output)
 
     def test_connector_name_not_found(self):
-        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
 
         self.cluster.write_content_to_host(

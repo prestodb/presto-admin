@@ -17,6 +17,7 @@ import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
     docker_only
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
@@ -138,7 +139,7 @@ query.max-memory=50GB\n"""
 
     def setUp(self):
         super(TestServerInstall, self).setUp()
-        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
         self.installer = StandalonePrestoInstaller(self)
 
     def assert_common_configs(self, container):

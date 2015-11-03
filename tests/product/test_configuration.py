@@ -21,6 +21,7 @@ import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
@@ -29,7 +30,7 @@ class TestConfiguration(BaseProductTestCase):
 
     def setUp(self):
         super(TestConfiguration, self).setUp()
-        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
         self.write_test_configs(self.cluster)
 
     @attr('smoketest')
