@@ -15,6 +15,8 @@
 """
 product tests for presto-admin plugin commands
 """
+
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 
 TMP_JAR_PATH = '/opt/prestoadmin/pretend.jar'
@@ -24,7 +26,7 @@ STD_REMOTE_PATH = '/usr/lib/presto/lib/plugin/hive-cdh5/pretend.jar'
 class TestPlugin(BaseProductTestCase):
     def setUp(self):
         super(TestPlugin, self).setUp()
-        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
 
     def deploy_jar_to_master(self):
         self.cluster.write_content_to_host('A PRETEND JAR', TMP_JAR_PATH,

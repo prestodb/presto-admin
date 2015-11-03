@@ -17,13 +17,14 @@ Test script run
 """
 from nose.plugins.attrib import attr
 
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 
 
 class TestScript(BaseProductTestCase):
     def setUp(self):
         super(TestScript, self).setUp()
-        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
         self.upload_topology()
 
     @attr('smoketest')

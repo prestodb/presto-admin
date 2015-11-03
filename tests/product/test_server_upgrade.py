@@ -16,6 +16,7 @@ import os
 
 from nose.plugins.attrib import attr
 
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
@@ -24,7 +25,8 @@ class TestServerUpgrade(BaseProductTestCase):
 
     def setUp(self):
         super(TestServerUpgrade, self).setUp()
-        self.setup_cluster(self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
         self.installer = StandalonePrestoInstaller(self)
 
     def start_and_assert_started(self):

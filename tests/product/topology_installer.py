@@ -17,8 +17,9 @@ Module for setting the topology on the presto-admin host prior to installing
 presto
 """
 
+from tests.base_installer import BaseInstaller
 
-class TopologyInstaller:
+class TopologyInstaller(BaseInstaller):
     def __init__(self, testcase):
         self.testcase = testcase
 

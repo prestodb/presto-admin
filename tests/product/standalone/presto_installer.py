@@ -23,6 +23,7 @@ import urllib
 import prestoadmin
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
+from tests.base_installer import BaseInstaller
 from tests.docker_cluster import DockerCluster
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.topology_installer import TopologyInstaller
@@ -33,7 +34,7 @@ PRESTO_RPM_GLOB = r'presto*.rpm'
 DUMMY_RPM_NAME = 'dummy-rpm.rpm'
 
 
-class StandalonePrestoInstaller(object):
+class StandalonePrestoInstaller(BaseInstaller):
 
     def __init__(self, testcase):
         self.presto_rpm_filename = self._detect_presto_rpm()

@@ -23,6 +23,7 @@ import os
 
 import prestoadmin
 
+from tests.base_installer import BaseInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR, \
     BASE_TD_DOCKERFILE_DIR, BASE_IMAGE_NAME, BASE_TD_IMAGE_NAME
 
@@ -30,7 +31,7 @@ from tests.docker_cluster import DockerCluster, DockerClusterException, \
     DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
 
 
-class PrestoadminInstaller(object):
+class PrestoadminInstaller(BaseInstaller):
     def __init__(self, testcase):
         self.testcase = testcase
 

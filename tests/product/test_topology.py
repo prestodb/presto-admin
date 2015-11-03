@@ -16,6 +16,7 @@ import os
 
 from nose.plugins.attrib import attr
 
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
@@ -47,7 +48,7 @@ class TestTopologyShow(BaseProductTestCase):
 
     def setUp(self):
         super(TestTopologyShow, self).setUp()
-        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
 
     @attr('smoketest')
     def test_topology_show(self):
