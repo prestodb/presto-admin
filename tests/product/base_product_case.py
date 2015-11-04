@@ -31,6 +31,7 @@ from tests.docker_cluster import DockerCluster, DockerClusterException
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.topology_installer import TopologyInstaller
+from tests.product.yarn_slider.slider_installer import SliderInstaller
 
 PRESTO_VERSION = r'presto-main:.*'
 RETRY_TIMEOUT = 120
@@ -38,15 +39,19 @@ RETRY_INTERVAL = 5
 
 
 class BaseProductTestCase(BaseTestCase):
+    STANDALONE_BARE_CLUSTER = 'bare'
     BARE_CLUSTER = 'bare'
     PA_ONLY_CLUSTER = 'pa_only'
     STANDALONE_PRESTO_CLUSTER = 'presto'
+
+    PA_SLIDER_CLUSTER = 'pa_slider'
 
     _cluster_types = {
         BARE_CLUSTER: [],
         PA_ONLY_CLUSTER: [PrestoadminInstaller],
         STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller, TopologyInstaller,
-                                    StandalonePrestoInstaller]
+                                    StandalonePrestoInstaller],
+        PA_SLIDER_CLUSTER: [PrestoadminInstaller, SliderInstaller]
     }
 
     default_workers_config_ = """coordinator=false
@@ -132,7 +137,7 @@ query.max-memory=50GB\n"""
         for installer in installers:
             self.cluster.postinstall(installer)
 
-    def setup_cluster(self, cluster_type):
+    def setup_cluster(self, bare_image_provider, cluster_type):
         try:
             installers = self._cluster_types[cluster_type]
         except KeyError:
@@ -149,18 +154,19 @@ query.max-memory=50GB\n"""
         else:
             try:
                 self.cluster = DockerCluster.start_existing_images(
-                    cluster_type)
+                    bare_image_provider, cluster_type)
                 if self.cluster:
                     self._apply_post_install_hooks(installers)
                     return
-                self.cluster = DockerCluster.start_bare_cluster()
+                self.cluster = DockerCluster.start_bare_cluster(
+                    bare_image_provider)
             except DockerClusterException as e:
                 self.fail(e.msg)
 
         self._run_installers(installers)
 
         if isinstance(self.cluster, DockerCluster):
-            self.cluster.commit_images(cluster_type)
+            self.cluster.commit_images(bare_image_provider, cluster_type)
 
     def tearDown(self):
         self.restore_stdout_stderr_keep_open()

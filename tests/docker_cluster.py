@@ -31,15 +31,15 @@ from docker.errors import APIError
 from docker.utils.utils import kwargs_from_env
 
 from prestoadmin import main_dir
+from tests.base_cluster import BaseCluster
 from tests.product.constants import \
     DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT, \
-    BASE_IMAGE_NAME, BASE_IMAGE_TAG, \
-    BASE_TD_DOCKERFILE_DIR, BASE_TD_IMAGE_NAME
+    BASE_TD_IMAGE_NAME
 
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 
 
-class DockerCluster(object):
+class DockerCluster(BaseCluster):
     IMAGE_NAME_BASE = os.path.join('teradatalabs', 'pa_test')
     BARE_CLUSTER_TYPE = 'bare'
 
@@ -79,17 +79,6 @@ class DockerCluster(object):
         return self.master
 
     def all_internal_hosts(self):
-        """The difference between this method and all_hosts() is that
-        all_hosts() returns the unique, "outside facing" hostnames that
-        docker uses. On the other hand all_internal_hosts() returns the
-        more human readable host aliases for the containers used internally
-        between containers. For example the unique master host will
-        look something like 'master-07d1774e-72d7-45da-bf84-081cfaa5da9a',
-        whereas the internal master host will be 'master'.
-
-        Returns:
-            List of all internal hosts with the random suffix stripped out.
-        """
         return [host.split('-')[0] for host in self.all_hosts()]
 
     def get_local_mount_dir(self, host):
@@ -338,49 +327,49 @@ class DockerCluster(object):
         return output
 
     @staticmethod
-    def _get_master_image_name(cluster_type):
-        return os.path.join(DockerCluster.IMAGE_NAME_BASE,
-                            '%s_master' % (cluster_type))
+    def _get_tag_basename(bare_image_provider, cluster_type, ms):
+        return '_'.join(
+            [bare_image_provider.get_tag_decoration(), cluster_type, ms])
 
     @staticmethod
-    def _get_slave_image_name(cluster_type):
+    def _get_master_image_name(bare_image_provider, cluster_type):
         return os.path.join(DockerCluster.IMAGE_NAME_BASE,
-                            '%s_slave' % (cluster_type))
+                            DockerCluster._get_tag_basename(
+                                bare_image_provider, cluster_type, 'master'))
 
     @staticmethod
-    def start_bare_cluster():
+    def _get_slave_image_name(bare_image_provider, cluster_type):
+        return os.path.join(DockerCluster.IMAGE_NAME_BASE,
+                            DockerCluster._get_tag_basename(
+                                bare_image_provider, cluster_type, 'slave'))
+
+    @staticmethod
+    def start_bare_cluster(bare_image_provider):
         dc = DockerCluster
-        master_name = dc._get_master_image_name(dc.BARE_CLUSTER_TYPE)
-        slave_name = dc._get_slave_image_name(dc.BARE_CLUSTER_TYPE)
+        master_name = dc._get_master_image_name(bare_image_provider,
+                                                dc.BARE_CLUSTER_TYPE)
+        slave_name = dc._get_slave_image_name(bare_image_provider,
+                                              dc.BARE_CLUSTER_TYPE)
         centos_cluster = DockerCluster('master',
                                        ['slave1', 'slave2', 'slave3'],
                                        DEFAULT_LOCAL_MOUNT_POINT,
                                        DEFAULT_DOCKER_MOUNT_POINT)
 
         if not dc._check_for_images(master_name, slave_name):
-            centos_cluster.create_image(
-                BASE_TD_DOCKERFILE_DIR,
-                master_name,
-                BASE_IMAGE_NAME,
-                BASE_IMAGE_TAG
-            )
-
-            centos_cluster.create_image(
-                BASE_TD_DOCKERFILE_DIR,
-                slave_name,
-                BASE_IMAGE_NAME,
-                BASE_IMAGE_TAG
-            )
+            bare_image_provider.create_bare_images(centos_cluster, master_name,
+                                                   slave_name)
 
         centos_cluster.start_containers(master_name, slave_name)
 
         return centos_cluster
 
     @staticmethod
-    def start_existing_images(cluster_type):
+    def start_existing_images(bare_image_provider, cluster_type):
         dc = DockerCluster
-        master_name = dc._get_master_image_name(cluster_type)
-        slave_name = dc._get_slave_image_name(cluster_type)
+        master_name = dc._get_master_image_name(bare_image_provider,
+                                                cluster_type)
+        slave_name = dc._get_slave_image_name(bare_image_provider,
+                                              cluster_type)
 
         if not dc._check_for_images(master_name, slave_name):
             return None
@@ -406,11 +395,13 @@ class DockerCluster(object):
                 has_slave_image = True
         return has_master_image and has_slave_image
 
-    def commit_images(self, cluster_type):
+    def commit_images(self, bare_image_provider, cluster_type):
         self.client.commit(self.master,
-                           self._get_master_image_name(cluster_type))
+                           self._get_master_image_name(bare_image_provider,
+                                                       cluster_type))
         self.client.commit(self.slaves[0],
-                           self._get_slave_image_name(cluster_type))
+                           self._get_slave_image_name(bare_image_provider,
+                                                      cluster_type))
 
     def run_script_on_host(self, script_contents, host):
         temp_script = '/tmp/tmp.sh'
@@ -433,7 +424,7 @@ class DockerCluster(object):
             host, 'cp %s %s' % (os.path.join(self.mount_dir, filename),
                                 dest_dir))
 
-    def copy_to_host(self, source_path, dest_host):
+    def copy_to_host(self, source_path, dest_host, **kwargs):
         shutil.copy(source_path, self.get_local_mount_dir(dest_host))
 
     def get_ip_address_dict(self):

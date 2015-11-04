@@ -19,6 +19,9 @@ Product tests for installing slider itself
 import json
 import os
 
+from nose.plugins.attrib import attr
+
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
@@ -31,9 +34,10 @@ SLIDER_DIST_FILENAME = 'slider-assembly-0.80.0-incubating-all.tar.gz'
 class TestSliderInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestSliderInstallation, self).setUp()
-        self.setup_cluster(self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
 
-    def get_config(self, override=None):
+    @staticmethod
+    def get_config(override=None):
         conf = {
             'slider_directory': '/opt/slider',
             'admin': 'root',
@@ -48,7 +52,8 @@ class TestSliderInstallation(BaseProductTestCase):
             conf.update(override)
         return conf
 
-    def pick_config(self, conf, pick):
+    @staticmethod
+    def pick_config(conf, pick):
         result = {}
         for key in conf:
             value = conf[key]
@@ -60,23 +65,29 @@ class TestSliderInstallation(BaseProductTestCase):
 
         return result
 
-    def cluster_config(self, conf):
+    @staticmethod
+    def cluster_config(conf):
         def pick(cluster_value, docker_value):
             return cluster_value
-        return self.pick_config(conf, pick)
+        return TestSliderInstallation.pick_config(conf, pick)
 
-    def docker_config(self, conf):
+    @staticmethod
+    def docker_config(conf):
         def pick(cluster_value, docker_value):
             return docker_value
-        return self.pick_config(conf, pick)
+        return TestSliderInstallation.pick_config(conf, pick)
 
-    def upload_config(self, conf):
-        self.cluster.write_content_to_host(
-            json.dumps(self.cluster_config(conf)), SLIDER_CONFIG_PATH,
-            self.cluster.master)
+    @staticmethod
+    def upload_config(cluster, conf):
+        cluster.write_content_to_host(
+            json.dumps(TestSliderInstallation.cluster_config(conf)),
+            SLIDER_CONFIG_PATH, cluster.master)
         return conf
 
-    def get_interactive_config(self, conf):
+    def _upload_config(self, conf):
+        return TestSliderInstallation.upload_config(self.cluster, conf)
+
+    def _get_interactive_config(self, conf):
         cluster_conf = self.cluster_config(conf)
         expect = ''
 
@@ -91,20 +102,28 @@ class TestSliderInstallation(BaseProductTestCase):
         expect += 'expect eof'
         return expect
 
-    def copy_slider_dist_to_cluster(self):
+    @staticmethod
+    def copy_slider_dist_to_cluster(testcase):
         slider_filename = SLIDER_DIST_FILENAME
         slider_path = os.path.join(LOCAL_RESOURCES_DIR, slider_filename)
-        self.cluster.copy_to_host(slider_path, self.cluster.master)
-        return os.path.join(self.cluster.mount_dir, slider_filename)
+        testcase.cluster.copy_to_host(slider_path, testcase.cluster.master)
+        return os.path.join(testcase.cluster.mount_dir, slider_filename)
+
+    @staticmethod
+    def install_slider_package(testcase, slider_path):
+        testcase.run_prestoadmin(
+            'slider slider_install %s' %
+            (os.path.join(testcase.cluster.mount_dir, slider_path)))
 
     def ensure_slider_user_exists(self, conf):
         self.cluster.run_script_on_host(
             'getent passwd %(user)s >/dev/null || adduser %(user)s'
             % ({'user': conf[SLIDER_USER]}), conf[HOST])
 
-    def assert_slider_not_installed(self, conf):
-        docker_conf = self.docker_config(conf)
-        self.assert_path_removed(docker_conf[HOST], docker_conf[DIR])
+    @staticmethod
+    def assert_slider_not_installed(testcase, conf):
+        docker_conf = testcase.docker_config(conf)
+        testcase.assert_path_removed(docker_conf[HOST], docker_conf[DIR])
 
     def assert_slider_installed(self, conf):
         docker_conf = self.docker_config(conf)
@@ -112,13 +131,11 @@ class TestSliderInstallation(BaseProductTestCase):
                                 os.path.join(docker_conf[DIR], 'LICENSE'))
 
     def run_with_config(self, conf):
-        conf = self.upload_config(conf)
-        self.assert_slider_not_installed(conf)
+        conf = self._upload_config(conf)
+        self.assert_slider_not_installed(self, conf)
 
-        slider_path = self.copy_slider_dist_to_cluster()
-        self.run_prestoadmin(
-            'slider slider_install %s' %
-            (os.path.join(self.cluster.mount_dir, slider_path)))
+        slider_path = self.copy_slider_dist_to_cluster(self)
+        self.install_slider_package(self, slider_path)
 
         self.assert_slider_installed(conf)
 
@@ -135,17 +152,18 @@ class TestSliderInstallation(BaseProductTestCase):
     problem entirely.
     """
     def run_interactive(self, conf):
-        expect = self.get_interactive_config(conf)
-        self.assert_slider_not_installed(conf)
+        expect = self._get_interactive_config(conf)
+        self.assert_slider_not_installed(self, conf)
 
         self.ensure_slider_user_exists(conf)
-        slider_path = self.copy_slider_dist_to_cluster()
+        slider_path = self.copy_slider_dist_to_cluster(self)
 
         self.run_prestoadmin_expect('slider slider_install %s' % (slider_path),
                                     expect)
 
         self.assert_slider_installed(conf)
 
+    @attr('smoketest')
     def test_slider_install(self):
         self.run_with_config(
             self.get_config())

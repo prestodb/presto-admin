@@ -48,7 +48,7 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr tmp
-	-for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$3}'); do docker rmi -f $$image ; done
+	-for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$1}'); do docker rmi -f $$image ; done
 	@echo "\n\tYou can kill running containers that caused errors removing images by running \`make clean-test-containers'\n"
 
 lint:
