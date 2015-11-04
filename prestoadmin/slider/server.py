@@ -52,7 +52,7 @@ def deploy_install(slider_tarball):
 
     result = put(slider_tarball, os.path.join(slider_parent, slider_file))
     if result.failed:
-        abort('Failed to send slider tarball to directory %s on host %s' %
+        abort('Failed to send slider tarball %s to directory %s on host %s' %
               (slider_tarball, slider_dir, env.host))
 
     sudo('gunzip -c %s | tar -x -C %s --strip-components=1 && rm -f %s' %
