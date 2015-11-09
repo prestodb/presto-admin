@@ -238,7 +238,7 @@ def execute(task, *args, **kwargs):
                     else abort
                 error(e.message, func=func, exception=e.wrapped)
             except SystemExit, e:
-                pass
+                results[host] = e
 
             # If requested, clear out connections here and not just at the end.
             if state.env.eagerly_disconnect:

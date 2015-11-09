@@ -240,7 +240,7 @@ def entry_point(name, version=None, log_file_path=None,
                     version=version,
                     log_file_path=log_file_path
             ):
-                method(*args, **kwargs)
+                return method(*args, **kwargs)
 
         return wrapped_application
 

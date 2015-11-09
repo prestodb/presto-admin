@@ -126,7 +126,7 @@ def requires_conf(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         get_conf_if_missing()
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 
