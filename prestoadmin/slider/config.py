@@ -18,12 +18,12 @@ Module for setting and validating the presto-admin slider config
 """
 
 from functools import wraps
-
 import os
 
 from fabric.context_managers import settings
 from fabric.state import env
 from fabric.operations import prompt
+from fabric.tasks import execute
 
 from prestoadmin import config
 from prestoadmin.config import ConfigFileNotFoundError
@@ -123,14 +123,22 @@ _SLIDER_CONFIG = [
                      '/usr/lib/jvm/java', None),
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
                      'configuration on the slider master:',
-                     '/etc/hadoop/conf', None)]
+                     '/etc/hadoop/conf', None),
+    SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
+                     'PRESTO', None)]
 
 
-def requires_conf(func):
-    @wraps(func)
+def requires_conf(task):
+    @wraps(task)
     def wrapper(*args, **kwargs):
-        get_conf_if_missing()
-        func(*args, **kwargs)
+        if get_conf_if_missing():
+            # If the config wasn't already loaded, we should execute() the task
+            # so that Fabric regenerates host lists, etc based on any changes
+            # to env that loading the config may have caused.
+            return execute(task, *args, **kwargs)
+        else:
+            # If the config was already loaded, we can call task() directly.
+            return task(*args, **kwargs)
     return wrapper
 
 
@@ -139,17 +147,23 @@ def write(conf):
 
 
 def get_conf_if_missing():
+    """ Loads the configuration if it hasn't already been loaded. Returns True
+    if the config was loaded for the first time, and False otherwise.
+    """
     with settings(parallel=False):
-        if SLIDER_CONFIG_LOADED not in env:
-            conf = {}
-            try:
-                conf = load_conf(SLIDER_CONFIG_PATH)
-            except ConfigFileNotFoundError:
-                conf = get_conf_interactive()
-                store_conf(conf, SLIDER_CONFIG_PATH)
+        if SLIDER_CONFIG_LOADED in env and env[SLIDER_CONFIG_LOADED]:
+            return False
 
-            set_env_from_conf(conf)
-            env.SLIDER_CONFIG_LOADED = True
+        conf = {}
+        try:
+            conf = load_conf(SLIDER_CONFIG_PATH)
+        except ConfigFileNotFoundError:
+            conf = get_conf_interactive()
+            store_conf(conf, SLIDER_CONFIG_PATH)
+
+        set_env_from_conf(conf)
+        env.SLIDER_CONFIG_LOADED = True
+        return True
 
 
 def load_conf(path):

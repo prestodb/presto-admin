@@ -22,7 +22,7 @@ the product tests.
 import abc
 
 
-class BareImageProvider:
+class BareImageProvider(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod

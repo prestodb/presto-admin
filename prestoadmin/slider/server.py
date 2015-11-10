@@ -33,7 +33,7 @@ from prestoadmin.slider.appConfig import copy_default
 
 from prestoadmin.slider.config import requires_conf, store_conf, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
-    INSTANCE_NAME, PRESTO_PACKAGE, SLIDER_CONFIG_PATH
+    PRESTO_PACKAGE, SLIDER_CONFIG_PATH
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
            'status', 'test']
@@ -87,16 +87,7 @@ def get_slider_bin():
 def run_slider(slider_command, conf):
     with shell_env(JAVA_HOME=conf[JAVA_HOME],
                    HADOOP_CONF_DIR=conf[HADOOP_CONF]):
-        sudo(slider_command, user=conf[SLIDER_USER])
-
-
-@task
-@requires_conf
-@task_by_rolename(SLIDER_MASTER)
-def status():
-    conf = env.conf
-    slider_command = '%s status %s' % (get_slider_bin(), conf[INSTANCE_NAME])
-    run_slider(slider_command, conf)
+        return sudo(slider_command, user=conf[SLIDER_USER])
 
 
 @task
@@ -116,12 +107,12 @@ def install(presto_slider_package):
                      (get_slider_bin(), package_file, conf[APPNAME])
 
     try:
-        run_slider(slider_command, conf)
+        output = run_slider(slider_command, conf)
 
         env.conf[PRESTO_PACKAGE] = package_filename
         store_conf(env.conf, SLIDER_CONFIG_PATH)
 
-        local('unzip %s %s -d %s' %
+        output = local('unzip %s %s -d %s' %
               (presto_slider_package, ' '.join(SLIDER_PKG_DEFAULT_FILES),
                SLIDER_PKG_DEFAULT_DEST))
     finally:

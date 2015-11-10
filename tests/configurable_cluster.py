@@ -138,14 +138,17 @@ class ConfigurableCluster(BaseCluster):
     def get_down_hostname(self, host_name):
         return '1.0.0.0'
 
-    def exec_cmd_on_host(self, host, cmd, raise_error=True, tty=False):
+    def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
+                         tty=False):
+        if user is None:
+            user = self.user
         # We need to execute the commands on the external, not internal, host.
         if host not in self.all_hosts():
             index = self.all_internal_hosts().index(host)
             host = self.all_hosts()[index]
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host, username=self.user, password=self.password,
+        ssh.connect(host, username=user, password=self.password,
                     timeout=180)
         stdin, stdout, stderr = ssh.exec_command(cmd, get_pty=True)
         stdin.close()
