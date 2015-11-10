@@ -559,7 +559,7 @@ def run_tasks(task_list):
                                  % name)
                 display_command(name, 2)
 
-            execute(
+            return execute(
                 name,
                 hosts=state.env.hosts,
                 roles=arg_roles,
@@ -775,6 +775,21 @@ def load_topology():
         pass
 
 
+def _exit_code(results):
+    """
+    results from run_tasks take the form of a dict with one or more entries
+    hostname: Exception | None
+
+    If every entry in the dict has a value of None, the exit code is 0.
+    If any entry has a value that is not None, something failed, and we should
+    exit with a non-zero exit code.
+    """
+    for v in results.values():
+        if v is not None:
+            return 1
+    return 0
+
+
 @entry_point('presto-admin', version=__version__,
              log_file_path="presto-admin.log",
              application_class=FabricApplication)
@@ -788,8 +803,8 @@ def main(args=sys.argv[1:]):
     _LOGGER.debug("Commands to run: %s" % names)
 
     # At this point all commands must exist, so execute them in order.
-    run_tasks(commands_to_run)
+    return _exit_code(run_tasks(commands_to_run))
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

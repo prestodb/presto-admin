@@ -44,7 +44,7 @@ class StandalonePrestoInstaller(BaseInstaller):
     def get_dependencies():
         return [PrestoadminInstaller, TopologyInstaller]
 
-    def install(self, dummy=False, extra_configs=None):
+    def install(self, dummy=False, extra_configs=None, pa_raise_error=True):
         cluster = self.testcase.cluster
         if dummy:
             rpm_dir = LOCAL_RESOURCES_DIR
@@ -59,9 +59,8 @@ class StandalonePrestoInstaller(BaseInstaller):
 
         self.testcase.write_test_configs(cluster, extra_configs)
         cmd_output = self.testcase.run_prestoadmin(
-            'server install ' +
-            os.path.join(cluster.mount_dir, rpm_name),
-            cluster=cluster
+            'server install ' + os.path.join(cluster.mount_dir, rpm_name),
+            cluster=cluster, raise_error=pa_raise_error
         )
 
         self.testcase.default_keywords.update(self.get_keywords(rpm_name))

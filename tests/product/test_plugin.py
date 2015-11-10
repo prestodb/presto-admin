@@ -65,7 +65,7 @@ class TestPlugin(BaseProductTestCase):
         self.cluster.stop_host(bad_host)
         self.deploy_jar_to_master()
         output = self.run_prestoadmin(
-            'plugin add_jar %s hive-cdh5' % TMP_JAR_PATH)
+            'plugin add_jar %s hive-cdh5' % TMP_JAR_PATH, raise_error=False)
         self.assertRegexpMatches(output, self.down_node_connection_error(
             internal_bad_host))
         self.assertEqual(len(output.splitlines()), self.len_down_node_error)
@@ -86,7 +86,7 @@ class TestPlugin(BaseProductTestCase):
         self.cluster.stop_host(bad_host)
         self.deploy_jar_to_master()
         output = self.run_prestoadmin(
-            'plugin add_jar %s hive-cdh5' % TMP_JAR_PATH)
+            'plugin add_jar %s hive-cdh5' % TMP_JAR_PATH, raise_error=False)
         self.assertRegexpMatches(output, self.down_node_connection_error(
             internal_bad_host))
         self.assertEqual(len(output.splitlines()), self.len_down_node_error)

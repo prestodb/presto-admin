@@ -42,7 +42,8 @@ class TestServerUninstall(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
 
-        cmd_output = self.run_prestoadmin('server uninstall').splitlines()
+        cmd_output = self.run_prestoadmin(
+            'server uninstall', raise_error=False).splitlines()
         self.assert_stopped(process_per_host)
         expected = uninstall_output + self.expected_stop()[:]
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
@@ -78,7 +79,7 @@ class TestServerUninstall(BaseProductTestCase):
     def test_uninstall_twice(self):
         self.test_uninstall()
 
-        output = self.run_prestoadmin('server uninstall')
+        output = self.run_prestoadmin('server uninstall', raise_error=False)
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'uninstall_twice.txt'),
                   'r') as f:
             expected = f.read()
@@ -104,7 +105,8 @@ class TestServerUninstall(BaseProductTestCase):
 
         expected = self.down_node_connection_error(
             self.cluster.internal_slaves[0])
-        cmd_output = self.run_prestoadmin('server uninstall')
+        cmd_output = self.run_prestoadmin('server uninstall',
+                                          raise_error=False)
         self.assertRegexpMatches(cmd_output, expected)
         process_per_active_host = []
         for host, pid in process_per_host:
@@ -125,7 +127,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.assert_started(process_per_host)
 
         self.run_script_from_prestoadmin_dir("chmod 500 -R /usr/lib/presto")
-        self.run_prestoadmin('server uninstall').splitlines()
+        self.run_prestoadmin('server uninstall', raise_error=False)
 
         # The master node was not able to be stopped or uninstalled because
         # the permissions of the directory were changed such that the

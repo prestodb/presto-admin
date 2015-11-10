@@ -134,13 +134,14 @@ class TestAuthentication(BaseProductTestCase):
         # Passwordless SSH as app-admin, but specify wrong password with -I
         parallel_password_failure = self.parallel_password_failure_message()
         command_output = self.run_script_from_prestoadmin_dir(
-            'echo "asdf" | ./presto-admin connector add -I -u app-admin')
+            'echo "asdf" | ./presto-admin connector add -I -u app-admin',
+            raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure +
                                       self.interactive_text, command_output)
 
         # Passwordless SSH as app-admin, but specify wrong password with -p
         command_output = self.run_prestoadmin(
-            'connector add --password asdf -u app-admin')
+            'connector add --password asdf -u app-admin', raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure,
                                       command_output)
 
@@ -171,13 +172,14 @@ class TestAuthentication(BaseProductTestCase):
         # No passwordless SSH, no -I or -p
         parallel_password_failure = self.parallel_password_failure_message(
             with_sudo_prompt=False)
-        command_output = self.run_prestoadmin('connector add')
+        command_output = self.run_prestoadmin(
+            'connector add', raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure,
                                       command_output)
 
         # No passwordless SSH, -p incorrect -u root
         command_output = self.run_prestoadmin(
-            'connector add --password password')
+            'connector add --password password', raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure,
                                       command_output)
 

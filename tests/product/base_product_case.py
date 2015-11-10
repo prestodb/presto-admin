@@ -219,7 +219,7 @@ query.max-memory=50GB\n"""
         )
 
     def run_script_from_prestoadmin_dir(self, script_contents, host='',
-                                        **kwargs):
+                                        raise_error=True, **kwargs):
         if not host:
             host = self.cluster.master
 
@@ -232,7 +232,7 @@ query.max-memory=50GB\n"""
         self.cluster.exec_cmd_on_host(
             host, 'chmod +x %s' % temp_script)
         return self.cluster.exec_cmd_on_host(
-            host, temp_script)
+            host, temp_script, raise_error=raise_error)
 
     def run_prestoadmin_expect(self, command, expect_statements):
         temp_script = '/opt/prestoadmin/tmp.expect'

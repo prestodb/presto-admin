@@ -81,7 +81,8 @@ class TestServerUpgrade(BaseProductTestCase):
 
         self.cluster.stop_host(self.cluster.slaves[0])
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
-        self.run_prestoadmin('server upgrade ' + path_on_cluster)
+        self.run_prestoadmin('server upgrade ' + path_on_cluster,
+                             raise_error=False)
         running_hosts = self.cluster.all_hosts()[:]
         running_hosts.remove(self.cluster.slaves[0])
         self.assert_upgraded_to_dummy_rpm(running_hosts)

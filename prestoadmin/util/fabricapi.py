@@ -38,7 +38,7 @@ def task_by_rolename(rolename):
     def inner_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            by_rolename(env.host, rolename, f, *args, **kwargs)
+            return by_rolename(env.host, rolename, f, *args, **kwargs)
         return wrapper
     return inner_decorator
 
@@ -51,14 +51,14 @@ def by_rolename(host, rolename, f, *args, **kwargs):
             abort("Invalid role name %s. Valid rolenames are %s" %
                   (rolename, env.roledefs.keys()))
         if host in env.roledefs[rolename]:
-            f(*args, **kwargs)
+            return f(*args, **kwargs)
 
 
 def by_role_coordinator(host, f, *args, **kwargs):
     if host in get_coordinator_role():
-        f(*args, **kwargs)
+        return f(*args, **kwargs)
 
 
 def by_role_worker(host, f, *args, **kwargs):
     if host in get_worker_role() and host not in get_coordinator_role():
-        f(*args, **kwargs)
+        return f(*args, **kwargs)
