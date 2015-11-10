@@ -306,8 +306,7 @@ class TestControl(BaseProductTestCase):
         self.assertRegexpMatchesLineByLine(cmd_output, expected_stop)
         self.assert_stopped(process_per_host)
 
-    def assert_simple_server_restart(self, expected_output,
-                                     running_host='all',
+    def assert_simple_server_restart(self, expected_output, running_host='all',
                                      expected_stop='', pa_raise_error=True):
         if running_host is 'all':
             start_output = self.run_prestoadmin(
