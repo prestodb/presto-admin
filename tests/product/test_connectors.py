@@ -201,7 +201,7 @@ Aborting.
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.cluster.master
         )
-        output = self.run_prestoadmin('connector add tpch')
+        output = self.run_prestoadmin('connector add tpch', raise_error=False)
         for host in self.cluster.all_internal_hosts():
             deploying_message = 'Deploying tpch.properties connector ' \
                                 'configurations on: %s'
@@ -215,7 +215,7 @@ Aborting.
         self.assertEqual(len(output.splitlines()),
                          len(self.cluster.all_hosts()) +
                          self.len_down_node_error)
-        self.run_prestoadmin('server start')
+        self.run_prestoadmin('server start', raise_error=False)
 
         for host in [self.cluster.master,
                      self.cluster.slaves[1],

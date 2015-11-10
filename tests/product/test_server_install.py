@@ -440,7 +440,7 @@ query.max-memory=50GB\n"""
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.cluster.master
         )
-        actual_out = self.installer.install(dummy=True)
+        actual_out = self.installer.install(dummy=True, pa_raise_error=False)
         expected = 'Underlying exception:\n    Catalog configuration ' \
                    'jmx.properties does not contain connector.name'
         self.assertRegexpMatches(actual_out, expected)
