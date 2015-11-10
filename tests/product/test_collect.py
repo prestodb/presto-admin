@@ -136,7 +136,8 @@ class TestCollect(BaseProductTestCase):
     def test_query_info_invalid_id(self):
         self.run_prestoadmin('server start')
         invalid_id = '1234_invalid'
-        actual = self.run_prestoadmin('collect query_info ' + invalid_id)
+        actual = self.run_prestoadmin('collect query_info ' + invalid_id,
+                                      raise_error=False)
         expected = '\nFatal error: [master] Unable to retrieve information. ' \
                    'Please check that the query_id is correct, or check ' \
                    'that server is up with command: server status\n\n' \

@@ -193,7 +193,7 @@ class TestControl(BaseProductTestCase):
         alive_hosts = self.cluster.all_internal_hosts()[:]
         alive_hosts.remove(self.cluster.get_down_hostname(down_internal_node))
 
-        start_output = self.run_prestoadmin('server start')
+        start_output = self.run_prestoadmin('server start', raise_error=False)
 
         self.assertRegexpMatches(
             start_output,
@@ -208,7 +208,7 @@ class TestControl(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
 
-        stop_output = self.run_prestoadmin('server stop')
+        stop_output = self.run_prestoadmin('server stop', raise_error=False)
         self.assertRegexpMatches(
             stop_output,
             self.down_node_connection_error(down_internal_node)
@@ -222,7 +222,8 @@ class TestControl(BaseProductTestCase):
                                            not_running=alive_hosts)
         self.assertEqual(len(stop_output.splitlines()),
                          self.expected_down_node_output_size(expected_stop))
-        restart_output = self.run_prestoadmin('server restart')
+        restart_output = self.run_prestoadmin(
+            'server restart', raise_error=False)
         self.assertRegexpMatches(
             restart_output,
             self.down_node_connection_error(down_internal_node)
@@ -273,10 +274,12 @@ class TestControl(BaseProductTestCase):
         expected_start += error_msg
         expected_stop = self.expected_stop(
             not_running=[self.cluster.internal_master])
-        self.assert_simple_start_stop(expected_start, expected_stop)
+        self.assert_simple_start_stop(expected_start, expected_stop,
+                                      pa_raise_error=False)
         expected_restart = expected_stop[:] + expected_start[:]
         self.assert_simple_server_restart(expected_restart,
-                                          expected_stop=expected_stop)
+                                          expected_stop=expected_stop,
+                                          pa_raise_error=False)
 
     def test_started_with_presto_user(self):
         # note, will only work with 0.115t RPM
@@ -291,8 +294,10 @@ class TestControl(BaseProductTestCase):
                 host)
             self.assertEqual(user_for_pid.strip(), 'presto')
 
-    def assert_simple_start_stop(self, expected_start, expected_stop):
-        cmd_output = self.run_prestoadmin('server start')
+    def assert_simple_start_stop(self, expected_start, expected_stop,
+                                 pa_raise_error=True):
+        cmd_output = self.run_prestoadmin(
+            'server start', raise_error=pa_raise_error)
         cmd_output = cmd_output.splitlines()
         self.assertRegexpMatchesLineByLine(cmd_output, expected_start)
         process_per_host = self.get_process_per_host(cmd_output)
@@ -303,9 +308,10 @@ class TestControl(BaseProductTestCase):
 
     def assert_simple_server_restart(self, expected_output,
                                      running_host='all',
-                                     expected_stop=''):
+                                     expected_stop='', pa_raise_error=True):
         if running_host is 'all':
-            start_output = self.run_prestoadmin('server start')
+            start_output = self.run_prestoadmin(
+                'server start', raise_error=pa_raise_error)
         elif running_host:
             start_output = self.run_prestoadmin('server start -H %s'
                                                 % running_host)
@@ -317,7 +323,8 @@ class TestControl(BaseProductTestCase):
         if not expected_stop:
             expected_stop = self.expected_stop()
 
-        restart_output = self.run_prestoadmin('server restart').splitlines()
+        restart_output = self.run_prestoadmin(
+            'server restart', raise_error=pa_raise_error).splitlines()
         self.assertRegexpMatchesLineByLine(restart_output, expected_output)
 
         if start_output:

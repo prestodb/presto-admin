@@ -117,7 +117,8 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
                     'workers': good_hosts}
         self.upload_topology(topology)
         self.cluster.stop_host(bad_host)
-        output = self.run_prestoadmin('configuration deploy')
+        output = self.run_prestoadmin('configuration deploy',
+                                      raise_error=False)
         self.assertRegexpMatches(
             output,
             self.down_node_connection_error(internal_bad_host)
@@ -128,7 +129,8 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
             len(self.cluster.all_hosts())
         self.assertEqual(len(output.splitlines()), expected_size)
 
-        output = self.run_prestoadmin('configuration show config')
+        output = self.run_prestoadmin('configuration show config',
+                                      raise_error=False)
         self.assertRegexpMatches(
             output,
             self.down_node_connection_error(internal_bad_host)
@@ -144,7 +146,8 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
         internal_bad_host = self.cluster.internal_slaves[0]
         bad_host = self.cluster.slaves[0]
         self.cluster.stop_host(bad_host)
-        output = self.run_prestoadmin('configuration deploy')
+        output = self.run_prestoadmin('configuration deploy',
+                                      raise_error=False)
         self.assertRegexpMatches(
             output,
             self.down_node_connection_error(internal_bad_host)

@@ -323,7 +323,7 @@ class DockerCluster(BaseCluster):
         output = self.client.exec_start(ex['Id'], tty=tty)
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
         if raise_error and exit_code:
-            raise OSError((exit_code, output))
+            raise OSError(exit_code, output)
         return output
 
     @staticmethod
