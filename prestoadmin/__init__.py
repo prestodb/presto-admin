@@ -15,7 +15,7 @@
 
 """Presto-Admin tool for deploying and managing Presto clusters"""
 
-__version__ = '1.1'  # Make sure to update setup.py too
+__version__ = '1.2'  # Make sure to update setup.py too
 
 import os
 
