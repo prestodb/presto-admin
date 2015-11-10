@@ -35,6 +35,7 @@ with open('HISTORY.rst') as history_file:
 # and in the requirements.txt. Unfortunately this is required by
 # tox which relies on the existence of both.
 requirements = [
+    'paramiko==1.15.3',
     'fabric==1.10.1',
     'requests==2.7.0'
 ]
