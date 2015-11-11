@@ -136,23 +136,3 @@ def uninstall():
 
     local('rm %s' % (' '.join([os.path.join(SLIDER_PKG_DEFAULT_DEST, f)
                      for f in SLIDER_PKG_DEFAULT_FILES])))
-
-
-@task
-@requires_conf
-@runs_once
-def test(app_config_path):
-    with settings(parallel=False):
-        app_config = conf.get_conf_from_json_file(app_config_path)
-        print app_config
-        copy = copy_default(app_config, [])
-        print
-        print copy
-
-
-@task
-@requires_conf
-@task_by_rolename(SLIDER_MASTER)
-def start():
-    conf = env.conf
-    slider_command = '%s start %s'
