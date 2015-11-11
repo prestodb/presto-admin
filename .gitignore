@@ -31,3 +31,6 @@ dist/
 
 #mvn targets
 presto-admin-test/target
+
+# presto yarn package for product tests
+presto-yarn-package.zip
