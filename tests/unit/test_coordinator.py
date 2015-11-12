@@ -27,7 +27,7 @@ class TestCoordinator(BaseTestCase):
     def test_build_defaults(self):
         env.roledefs['coordinator'] = 'a'
         env.roledefs['workers'] = ['b', 'c']
-        actual_default = coordinator.build_defaults()
+        actual_default = coordinator.Coordinator().build_defaults()
         expected = {'node.properties':
                     {'node.environment': 'presto',
                      'node.data-dir': '/var/lib/presto/data',
@@ -57,7 +57,7 @@ class TestCoordinator(BaseTestCase):
     def test_defaults_coord_is_worker(self):
         env.roledefs['coordinator'] = ['a']
         env.roledefs['worker'] = ['a', 'b', 'c']
-        actual_default = coordinator.build_defaults()
+        actual_default = coordinator.Coordinator().build_defaults()
         expected = {'node.properties': {
                     'node.environment': 'presto',
                     'node.data-dir': '/var/lib/presto/data',
@@ -89,19 +89,19 @@ class TestCoordinator(BaseTestCase):
                 'jvm.config': [],
                 'config.properties': {'coordinator': 'true',
                                       'discovery.uri': 'http://uri'}}
-        self.assertEqual(conf, coordinator.validate(conf))
+        self.assertEqual(conf, coordinator.Coordinator.validate(conf))
 
     def test_validate_default(self):
         env.roledefs['coordinator'] = 'localhost'
         env.roledefs['workers'] = ['localhost']
-        conf = coordinator.build_defaults()
-        self.assertEqual(conf, coordinator.validate(conf))
+        conf = coordinator.Coordinator().build_defaults()
+        self.assertEqual(conf, coordinator.Coordinator.validate(conf))
 
     def test_invalid_conf(self):
         conf = {'node.propoerties': {}}
         self.assertRaisesRegexp(ConfigurationError,
                                 'Missing configuration for required file: ',
-                                coordinator.validate, conf)
+                                coordinator.Coordinator.validate, conf)
 
     def test_invalid_conf_coordinator(self):
         conf = {'node.properties': {},
@@ -113,7 +113,7 @@ class TestCoordinator(BaseTestCase):
         self.assertRaisesRegexp(ConfigurationError,
                                 'Coordinator cannot be false in the '
                                 'coordinator\'s config.properties',
-                                coordinator.validate, conf)
+                                coordinator.Coordinator.validate, conf)
 
     def test_invalid_discovery_uri_coordinator(self):
         conf = {'node.properties': {},
@@ -124,21 +124,22 @@ class TestCoordinator(BaseTestCase):
         self.assertRaisesRegexp(ConfigurationError,
                                 'Must have discovery.uri defined in '
                                 'config.properties.',
-                                coordinator.validate, conf)
+                                coordinator.Coordinator.validate, conf)
         conf['config.properties']['discovery.uri'] = 'thrift://foo'
         self.assertRaisesRegexp(ConfigurationError,
                                 'discovery.uri must start with http://, '
                                 'current URI is: thrift://foo',
-                                coordinator.validate, conf)
+                                coordinator.Coordinator.validate, conf)
 
-    @patch('prestoadmin.coordinator._get_conf')
+    @patch('prestoadmin.node.get_presto_conf')
     def test_get_conf_empty_is_default(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = 'j'
         env.roledefs['workers'] = ['K', 'L']
         get_conf_from_file_mock.return_value = {}
-        self.assertEqual(coordinator.get_conf(), coordinator.build_defaults())
+        self.assertEqual(coordinator.Coordinator().get_conf(),
+                         coordinator.Coordinator().build_defaults())
 
-    @patch('prestoadmin.coordinator.get_presto_conf')
+    @patch('prestoadmin.node.get_presto_conf')
     def test_get_conf(self, get_conf_from_file_mock):
         env.roledefs['coordinator'] = 'j'
         env.roledefs['workers'] = ['K', 'L']
@@ -170,4 +171,4 @@ class TestCoordinator(BaseTestCase):
                         'query.max-memory-per-node': '1GB'}
                     }
 
-        self.assertEqual(coordinator.get_conf(), expected)
+        self.assertEqual(coordinator.Coordinator().get_conf(), expected)

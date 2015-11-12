@@ -23,8 +23,8 @@ import os
 from fabric.contrib import files
 from fabric.operations import sudo
 from fabric.api import env
-from prestoadmin.util import constants
 
+from prestoadmin.util import constants
 import coordinator as coord
 import prestoadmin.util.fabricapi as util
 import workers as w
@@ -38,7 +38,8 @@ def coordinator():
     """
     if env.host in util.get_coordinator_role():
         _LOGGER.info("Setting coordinator configuration for " + env.host)
-        configure_presto(coord.get_conf(), constants.REMOTE_CONF_DIR)
+        configure_presto(coord.Coordinator().get_conf(),
+                         constants.REMOTE_CONF_DIR)
 
 
 def workers():
@@ -49,7 +50,7 @@ def workers():
     if env.host in util.get_worker_role() and env.host \
             not in util.get_coordinator_role():
         _LOGGER.info("Setting worker configuration for " + env.host)
-        configure_presto(w.get_conf(), constants.REMOTE_CONF_DIR)
+        configure_presto(w.Worker().get_conf(), constants.REMOTE_CONF_DIR)
 
 
 def configure_presto(conf, remote_dir):
