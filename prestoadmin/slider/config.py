@@ -18,12 +18,12 @@ Module for setting and validating the presto-admin slider config
 """
 
 from functools import wraps
-
 import os
 
 from fabric.context_managers import settings
 from fabric.state import env
 from fabric.operations import prompt
+from fabric.tasks import execute
 
 from prestoadmin import config
 from prestoadmin.config import ConfigFileNotFoundError
@@ -33,7 +33,8 @@ from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'slider', 'config.json')
+SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
+SLIDER_CONFIG_PATH = os.path.join(SLIDER_CONFIG_DIR, 'config.json')
 SLIDER_MASTER = 'slider_master'
 
 HOST = 'slider_master'
@@ -46,6 +47,10 @@ INSTANCE_NAME = 'slider_instname'
 SLIDER_USER = 'slider_user'
 JAVA_HOME = 'JAVA_HOME'
 HADOOP_CONF = 'HADOOP_CONF'
+
+# This key comes from the server install step, NOT a user prompt. Accordingly,
+# there is no SliderConfigItem for it in _SLIDER_CONFIG
+PRESTO_PACKAGE = 'presto_slider_package'
 
 
 class SingleConfigItem(object):
@@ -119,14 +124,23 @@ _SLIDER_CONFIG = [
                      '/usr/lib/jvm/java', None),
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
                      'configuration on the slider master:',
-                     '/etc/hadoop/conf', None)]
+                     '/etc/hadoop/conf', None),
+    SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
+                     'PRESTO', None)]
 
 
-def requires_conf(func):
-    @wraps(func)
+def requires_conf(task):
+    @wraps(task)
     def wrapper(*args, **kwargs):
-        get_conf_if_missing()
-        return func(*args, **kwargs)
+        if get_conf_if_missing():
+            # If the config wasn't already loaded, we have to execute() the
+            # task so that Fabric regenerates the host list and other env stuff
+            # that govern execution based on the changes to env that loading
+            # the config caused.
+            return execute(task, *args, **kwargs)
+        else:
+            # If the config was already loaded, we can call task() directly.
+            return task(*args, **kwargs)
     return wrapper
 
 
@@ -135,17 +149,23 @@ def write(conf):
 
 
 def get_conf_if_missing():
+    """ Loads the configuration if it hasn't already been loaded. Returns True
+    if the config was loaded for the first time, and False otherwise.
+    """
     with settings(parallel=False):
-        if SLIDER_CONFIG_LOADED not in env:
-            conf = {}
-            try:
-                conf = load_conf(SLIDER_CONFIG_PATH)
-            except ConfigFileNotFoundError:
-                conf = get_conf_interactive()
-                store_conf(conf, SLIDER_CONFIG_PATH)
+        if SLIDER_CONFIG_LOADED in env and env[SLIDER_CONFIG_LOADED]:
+            return False
 
-            set_env_from_conf(conf)
-            env.SLIDER_CONFIG_LOADED = True
+        conf = {}
+        try:
+            conf = load_conf(SLIDER_CONFIG_PATH)
+        except ConfigFileNotFoundError:
+            conf = get_conf_interactive()
+            store_conf(conf, SLIDER_CONFIG_PATH)
+
+        set_env_from_conf(conf)
+        env.SLIDER_CONFIG_LOADED = True
+        return True
 
 
 def load_conf(path):
