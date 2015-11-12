@@ -33,7 +33,8 @@ from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'slider', 'config.json')
+SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
+SLIDER_CONFIG_PATH = os.path.join(SLIDER_CONFIG_DIR, 'config.json')
 SLIDER_MASTER = 'slider_master'
 
 HOST = 'slider_master'
@@ -132,9 +133,10 @@ def requires_conf(task):
     @wraps(task)
     def wrapper(*args, **kwargs):
         if get_conf_if_missing():
-            # If the config wasn't already loaded, we should execute() the task
-            # so that Fabric regenerates host lists, etc based on any changes
-            # to env that loading the config may have caused.
+            # If the config wasn't already loaded, we have to execute() the
+            # task so that Fabric regenerates the host list and other env stuff
+            # that govern execution based on the changes to env that loading
+            # the config caused.
             return execute(task, *args, **kwargs)
         else:
             # If the config was already loaded, we can call task() directly.

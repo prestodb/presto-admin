@@ -84,8 +84,8 @@ class SliderPrestoInstaller(BaseInstaller):
         keywords = si.get_keywords()
         hdfs_cmd = 'hdfs dfs -ls %s' % (
             os.path.join('/', 'user', keywords[SLIDER_USER], '.slider',
-            'package', keywords[APPNAME],
-            os.path.basename(package_filename))
+                         'package', keywords[APPNAME],
+                         os.path.basename(package_filename))
         )
         testcase.cluster.exec_cmd_on_host(
             SliderPrestoInstaller._get_slider_master(testcase), hdfs_cmd,

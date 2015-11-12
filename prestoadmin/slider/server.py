@@ -19,27 +19,19 @@ Module for managing presto/YARN integration.
 import os.path
 
 from fabric.api import env, task, abort
-from fabric.context_managers import shell_env, settings
+from fabric.context_managers import shell_env
 from fabric.decorators import runs_once
 from fabric.operations import put, sudo, local
 from fabric.tasks import execute
 
-from prestoadmin import config as conf
-
-SLIDER_PKG_DEFAULT_DEST = '/etc/opt/prestoadmin/slider'
-from prestoadmin.slider.appConfig import DEFAULT_CONF_FILENAME \
-    as APPCONFIG_DEFAULT
-from prestoadmin.slider.appConfig import copy_default
-
 from prestoadmin.slider.config import requires_conf, store_conf, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
-    PRESTO_PACKAGE, SLIDER_CONFIG_PATH
+    PRESTO_PACKAGE, SLIDER_CONFIG_PATH, SLIDER_CONFIG_DIR
 
-__all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
-           'status', 'test']
+__all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall']
 
 
-SLIDER_PKG_DEFAULT_FILES = [APPCONFIG_DEFAULT, 'resources-default.json']
+SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
 
 from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
 
@@ -52,7 +44,8 @@ def slider_install(slider_tarball):
     Install slider on the slider master. You must provide a tar file on the
     local machine that contains the slider distribution.
 
-    :param slider_tarball:
+    :param slider_tarball: The gzipped tar file containing the Apache slider
+    distribution
     """
     execute(deploy_install, slider_tarball, hosts=get_host_list())
 
@@ -77,6 +70,9 @@ def deploy_install(slider_tarball):
 @requires_conf
 @task_by_rolename(SLIDER_MASTER)
 def slider_uninstall():
+    """
+    Uninstall slider from the slider master.
+    """
     sudo('rm -r "%s"' % (env.conf[DIR]))
 
 
@@ -93,12 +89,24 @@ def run_slider(slider_command, conf):
 @task
 @requires_conf
 @task_by_rolename(SLIDER_MASTER)
-def install(presto_slider_package):
+def install(presto_yarn_package):
+    """
+    Install the presto-yarn package on the cluster using slider. The
+    presto-yarn package takes the form of a zip file that conforms to slider's
+    packaging requirements. After installing the presto-yarn package the presto
+    application is registered with slider.
+
+    The name of the presto application is arbitrary and set in the slider
+    configuration file. The default is PRESTO
+
+    :param presto_yarn_package: The zip file containing the presto-yarn
+    package as structured for slider.
+    """
     conf = env.conf
-    package_filename = os.path.basename(presto_slider_package)
+    package_filename = os.path.basename(presto_yarn_package)
     package_file = os.path.join('/tmp', package_filename)
 
-    result = put(presto_slider_package, package_file)
+    result = put(presto_yarn_package, package_file)
     if result.failed:
         abort('Failed to send slider application package to %s on host %s' %
               (package_file, env.host))
@@ -107,14 +115,14 @@ def install(presto_slider_package):
                      (get_slider_bin(), package_file, conf[APPNAME])
 
     try:
-        output = run_slider(slider_command, conf)
+        run_slider(slider_command, conf)
 
         env.conf[PRESTO_PACKAGE] = package_filename
         store_conf(env.conf, SLIDER_CONFIG_PATH)
 
-        output = local('unzip %s %s -d %s' %
-              (presto_slider_package, ' '.join(SLIDER_PKG_DEFAULT_FILES),
-               SLIDER_PKG_DEFAULT_DEST))
+        local('unzip %s %s -d %s' %
+              (presto_yarn_package, ' '.join(SLIDER_PKG_DEFAULT_FILES),
+               SLIDER_CONFIG_DIR))
     finally:
         sudo('rm -f %s' % (package_file))
 
@@ -123,6 +131,10 @@ def install(presto_slider_package):
 @requires_conf
 @task_by_rolename(SLIDER_MASTER)
 def uninstall():
+    """
+    Uninstall unregisters the presto application with slider and removes the
+    installed package.
+    """
     conf = env.conf
     slider_command = '%s package --delete --name %s' % \
                      (get_slider_bin(), conf[APPNAME])
@@ -134,5 +146,5 @@ def uninstall():
     except KeyError:
         pass
 
-    local('rm %s' % (' '.join([os.path.join(SLIDER_PKG_DEFAULT_DEST, f)
+    local('rm %s' % (' '.join([os.path.join(SLIDER_CONFIG_DIR, f)
                      for f in SLIDER_PKG_DEFAULT_FILES])))

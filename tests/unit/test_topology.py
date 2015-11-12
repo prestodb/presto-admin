@@ -25,7 +25,6 @@ from prestoadmin import config
 from prestoadmin import topology
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
-import prestoadmin.util.validators
 from tests.base_test_case import BaseTestCase
 
 

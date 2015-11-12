@@ -54,7 +54,6 @@ class TestServerInstall(BaseProductTestCase):
         duration = end - start
         print 'Waited %.3f seconds for hdfs' % (duration)
 
-
     def assert_uninstalled(self):
         self.assertRaisesRegexp(OSError, 'No such file or directory',
                                 self.installer.assert_installed, self)
@@ -83,7 +82,5 @@ class TestServerInstall(BaseProductTestCase):
         self.assertRaisesRegexp(OSError, "Package does not exist",
                                 self.uninstall)
 
-
     def uninstall(self):
         return self.run_prestoadmin(' slider uninstall')
-
