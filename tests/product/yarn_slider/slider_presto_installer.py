@@ -18,11 +18,14 @@ import fnmatch
 import os
 
 import prestoadmin
-from prestoadmin.slider.config import APPNAME, SLIDER_USER, HOST
+from prestoadmin.slider.config import APPNAME, SLIDER_USER, HOST, HADOOP_CONF
+from prestoadmin.slider.server import get_slider_bin, run_slider
 
 from tests.base_installer import BaseInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.yarn_slider.slider_installer import SliderInstaller
+from tests.product.yarn_slider.test_slider_installation import \
+    TestSliderInstallation
 
 PRESTO_YARN_PACKAGE_GLOB = 'presto-yarn-package*.zip'
 
@@ -76,6 +79,7 @@ class SliderPrestoInstaller(BaseInstaller):
 
     @staticmethod
     def assert_installed(testcase, package_filename=None):
+        # Verify that the package file exists
         if package_filename is None:
             _, package_filename = \
                 SliderPrestoInstaller._detect_presto_package(testcase)
@@ -90,6 +94,16 @@ class SliderPrestoInstaller(BaseInstaller):
         testcase.cluster.exec_cmd_on_host(
             SliderPrestoInstaller._get_slider_master(testcase), hdfs_cmd,
             SliderPrestoInstaller._get_slider_user(testcase))
+
+        # Verify that slider thinks the package is installed
+        conf = TestSliderInstallation.get_config()
+        slider_cmd = "bash -c 'export HADOOP_CONF_DIR=%s ; %s package --list'" % (
+            conf[HADOOP_CONF], get_slider_bin(conf))
+
+        output = testcase.cluster.exec_cmd_on_host(
+            SliderPrestoInstaller._get_slider_master(testcase), slider_cmd,
+            user=SliderPrestoInstaller._get_slider_user(testcase))
+        testcase.assertRegexpMatches(output, r'\b%s\b' % (conf[APPNAME]))
 
     def _copy_package_to_pa_host(self):
         package_path = os.path.join(self.package_dir, self.package_filename)

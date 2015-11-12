@@ -76,8 +76,8 @@ def slider_uninstall():
     sudo('rm -r "%s"' % (env.conf[DIR]))
 
 
-def get_slider_bin():
-    return os.path.join(env.conf[DIR], 'bin', 'slider')
+def get_slider_bin(conf):
+    return os.path.join(conf[DIR], 'bin', 'slider')
 
 
 def run_slider(slider_command, conf):
@@ -112,7 +112,7 @@ def install(presto_yarn_package):
               (package_file, env.host))
 
     slider_command = '%s package --install --package %s --name %s' % \
-                     (get_slider_bin(), package_file, conf[APPNAME])
+                     (get_slider_bin(conf), package_file, conf[APPNAME])
 
     try:
         run_slider(slider_command, conf)
@@ -137,7 +137,7 @@ def uninstall():
     """
     conf = env.conf
     slider_command = '%s package --delete --name %s' % \
-                     (get_slider_bin(), conf[APPNAME])
+                     (get_slider_bin(conf), conf[APPNAME])
     run_slider(slider_command, conf)
 
     try:
