@@ -63,11 +63,12 @@ class StandalonePrestoInstaller(BaseInstaller):
             cluster=cluster, raise_error=pa_raise_error
         )
 
-        self.testcase.default_keywords.update(self.get_keywords(rpm_name))
-
         return cmd_output
 
-    def get_keywords(self, rpm_name):
+    def get_keywords(self, rpm_name=None):
+        if rpm_name is None:
+            rpm_name = self.presto_rpm_filename
+
         return {
             'rpm': rpm_name,
             'rpm_basename': RPM_BASENAME,
