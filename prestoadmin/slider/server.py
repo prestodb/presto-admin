@@ -28,12 +28,12 @@ from prestoadmin.slider.config import requires_conf, store_conf, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     PRESTO_PACKAGE, SLIDER_CONFIG_PATH, SLIDER_CONFIG_DIR
 
+from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
+
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
-
-from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
 
 
 @task
@@ -91,10 +91,10 @@ def run_slider(slider_command, conf):
 @task_by_rolename(SLIDER_MASTER)
 def install(presto_yarn_package):
     """
-    Install the presto-yarn package on the cluster using slider. The
-    presto-yarn package takes the form of a zip file that conforms to slider's
+    Install the presto-yarn package on the cluster using Apache Slider. The
+    presto-yarn package takes the form of a zip file that conforms to Slider's
     packaging requirements. After installing the presto-yarn package the presto
-    application is registered with slider.
+    application is registered with Slider.
 
     The name of the presto application is arbitrary and set in the slider
     configuration file. The default is PRESTO
@@ -111,11 +111,12 @@ def install(presto_yarn_package):
         abort('Failed to send slider application package to %s on host %s' %
               (package_file, env.host))
 
-    slider_command = '%s package --install --package %s --name %s' % \
-                     (get_slider_bin(conf), package_file, conf[APPNAME])
+    package_install_command = \
+        '%s package --install --package %s --name %s' % \
+        (get_slider_bin(conf), package_file, conf[APPNAME])
 
     try:
-        run_slider(slider_command, conf)
+        run_slider(package_install_command, conf)
 
         env.conf[PRESTO_PACKAGE] = package_filename
         store_conf(env.conf, SLIDER_CONFIG_PATH)
@@ -136,9 +137,9 @@ def uninstall():
     installed package.
     """
     conf = env.conf
-    slider_command = '%s package --delete --name %s' % \
-                     (get_slider_bin(conf), conf[APPNAME])
-    run_slider(slider_command, conf)
+    package_delete_command = '%s package --delete --name %s' % \
+                             (get_slider_bin(conf), conf[APPNAME])
+    run_slider(package_delete_command, conf)
 
     try:
         del env.conf[PRESTO_PACKAGE]
