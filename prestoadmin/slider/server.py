@@ -111,8 +111,9 @@ def install(presto_yarn_package):
         abort('Failed to send slider application package to %s on host %s' %
               (package_file, env.host))
 
-    package_install_command = '%s package --install --package %s --name %s' % \
-                     (get_slider_bin(conf), package_file, conf[APPNAME])
+    package_install_command = \
+        '%s package --install --package %s --name %s' % \
+        (get_slider_bin(conf), package_file, conf[APPNAME])
 
     try:
         run_slider(package_install_command, conf)
@@ -137,7 +138,7 @@ def uninstall():
     """
     conf = env.conf
     package_delete_command = '%s package --delete --name %s' % \
-                     (get_slider_bin(conf), conf[APPNAME])
+                             (get_slider_bin(conf), conf[APPNAME])
     run_slider(package_delete_command, conf)
 
     try:
