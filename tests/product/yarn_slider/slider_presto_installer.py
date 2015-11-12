@@ -19,7 +19,7 @@ import os
 
 import prestoadmin
 from prestoadmin.slider.config import APPNAME, SLIDER_USER, HOST, HADOOP_CONF
-from prestoadmin.slider.server import get_slider_bin, run_slider
+from prestoadmin.slider.server import get_slider_bin
 
 from tests.base_installer import BaseInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
@@ -97,8 +97,9 @@ class SliderPrestoInstaller(BaseInstaller):
 
         # Verify that slider thinks the package is installed
         conf = TestSliderInstallation.get_config()
-        slider_cmd = "bash -c 'export HADOOP_CONF_DIR=%s ; %s package --list'" % (
-            conf[HADOOP_CONF], get_slider_bin(conf))
+        slider_cmd = \
+            "bash -c 'export HADOOP_CONF_DIR=%s ; %s package --list'" % (
+                conf[HADOOP_CONF], get_slider_bin(conf))
 
         output = testcase.cluster.exec_cmd_on_host(
             SliderPrestoInstaller._get_slider_master(testcase), slider_cmd,
