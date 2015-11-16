@@ -34,7 +34,8 @@ from prestoadmin.util.validators import validate_username, validate_port, \
 
 __all__ = ['show']
 
-PRESTO_ADMIN_PROPERTIES = ['username', 'port', 'coordinator', 'workers']
+PRESTO_ADMIN_PROPERTIES = ['username', 'port', 'coordinator', 'workers',
+                           'java8_home']
 DEFAULT_PROPERTIES = {'username': 'root',
                       'port': '22',
                       'coordinator': 'localhost',
@@ -138,6 +139,10 @@ def prompt_for_workers():
                                     validate=validate_workers_for_prompt)
 
 
+def validate_java8_home(java8_home):
+    return java8_home
+
+
 def validate_workers_for_prompt(workers):
     return validate_workers(workers.split())
 
@@ -153,6 +158,13 @@ def validate(conf):
         pass
     else:
         validate_username(username)
+
+    try:
+        java8_home = conf['java8_home']
+    except KeyError:
+        pass
+    else:
+        validate_java8_home(java8_home)
 
     try:
         coordinator = conf['coordinator']
@@ -208,6 +220,10 @@ def set_env_from_conf():
 
     env.user = conf['username']
     env.port = conf['port']
+    try:
+        env.java8_home = conf['java8_home']
+    except KeyError:
+        env.java8_home = None
     env.roledefs['coordinator'] = [conf['coordinator']]
     env.roledefs['worker'] = conf['workers']
     env.roledefs['all'] = dedup_list(util.get_coordinator_role() +

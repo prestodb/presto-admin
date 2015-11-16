@@ -165,9 +165,16 @@ class StandalonePrestoInstaller(BaseInstaller):
                             + os.path.join(cluster.mount_dir, rpm_name)
         )
 
-    def assert_uninstalled(self, container, msg=None):
+    def assert_uninstalled(self, container, dummy=False, msg=None):
+        if dummy:
+            rpm_name = os.path.splitext(DUMMY_RPM_NAME)[0]
+        else:
+            rpm_name = os.path.splittext(self.presto_rpm_filename)[0]
+        failure_msg = 'package %s is not installed' % rpm_name
+        rpm_cmd = 'rpm -q %s' % rpm_name
+
         self.testcase.assertRaisesRegexp(
             OSError,
-            'package presto-server-rpm is not installed',
+            failure_msg,
             self.testcase.cluster.exec_cmd_on_host, container,
-            'rpm -q presto-server-rpm', msg=msg)
+            rpm_cmd, msg=msg)
