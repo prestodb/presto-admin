@@ -19,6 +19,7 @@ to deploy on the presto cluster
 """
 from abc import abstractmethod, ABCMeta
 import logging
+import os
 
 import config
 import presto_conf
@@ -27,7 +28,7 @@ from prestoadmin.presto_conf import get_presto_conf
 _LOGGER = logging.getLogger(__name__)
 
 
-class Node:
+class Node():
     __metaclass__ = ABCMeta
 
     def __init__(self):
@@ -40,9 +41,11 @@ class Node:
                 _LOGGER.debug('%s configuration for %s not found.  '
                               'Default configuration will be deployed',
                               type(self).__name__, name)
+                conf_value = self.default_config(name)
+                conf[name] = conf_value
+                file_path = os.path.join(self._get_conf_dir(), name)
+                config.write_conf_to_file(conf_value, file_path)
 
-        defaults = self.build_defaults()
-        config.fill_defaults(conf, defaults)
         self.validate(conf)
         return conf
 
@@ -51,10 +54,16 @@ class Node:
         pass
 
     @abstractmethod
-    def build_defaults(self):
+    def default_config(self, filename):
         pass
 
     @staticmethod
     @abstractmethod
     def validate(conf):
         pass
+
+    def build_all_defaults(self):
+        conf = {}
+        for name in presto_conf.REQUIRED_FILES:
+            conf[name] = self.default_config(name)
+        return conf

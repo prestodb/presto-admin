@@ -229,7 +229,7 @@ query.max-memory=50GB\n"""
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology)
 
-        cmd_output = self.installer.install(dummy=True)
+        cmd_output = self.installer.install(dummy=True, coordinator='slave1')
         expected = install_with_worker_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -246,7 +246,7 @@ query.max-memory=50GB\n"""
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology)
 
-        cmd_output = self.installer.install(dummy=True)
+        cmd_output = self.installer.install(dummy=True, coordinator='slave1')
         expected = install_with_ext_host_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -497,7 +497,7 @@ query.max-memory=50GB\n"""
         self.cluster.stop_host(
             self.cluster.slaves[0])
 
-        actual_out = self.installer.install(dummy=True)
+        actual_out = self.installer.install(dummy=True, coordinator=down_node)
         self.assertRegexpMatches(
             actual_out,
             self.down_node_connection_error(down_node)

@@ -59,11 +59,16 @@ class Worker(Node):
     def _get_conf_dir(self):
         return constants.WORKERS_DIR
 
-    def build_defaults(self):
-        conf = copy.deepcopy(self.DEFAULT_PROPERTIES)
-        coordinator = util.get_coordinator_role()[0]
-        conf['config.properties']['discovery.uri'] = 'http://' + coordinator \
-                                                     + ':8080'
+    def default_config(self, filename):
+        conf = copy.deepcopy(self.DEFAULT_PROPERTIES[filename])
+        try:
+            conf = copy.deepcopy(self.DEFAULT_PROPERTIES[filename])
+        except KeyError:
+            raise ConfigurationError('Invalid configuration file name: %s' %
+                                     filename)
+        if filename == 'config.properties':
+            coordinator = util.get_coordinator_role()[0]
+            conf['discovery.uri'] = 'http://%s:8080' % coordinator
         return conf
 
     @staticmethod
@@ -73,6 +78,9 @@ class Worker(Node):
     @staticmethod
     def validate(conf):
         validate_presto_conf(conf)
+        if 'coordinator' not in conf['config.properties']:
+            raise ConfigurationError('Must specify coordinator=false in '
+                                     'worker\'s config.properties')
         if conf['config.properties']['coordinator'] != 'false':
             raise ConfigurationError('Coordinator must be false in the '
                                      'worker\'s config.properties')

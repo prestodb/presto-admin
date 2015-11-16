@@ -98,8 +98,7 @@ The deployed configuration files will overwrite the existing configurations on
 the cluster. However, the node.id from the
 node.properties file will be preserved. If no node.id exists, a new id will be
 generated. If any required files are absent when you run configuration deploy,
-a default configuration will be deployed. If any required properties from those
-files are missing, they will be filled in with defaults. Below are the default
+a default configuration will be deployed. Below are the default
 configurations:
 
 *node.properties* ::
