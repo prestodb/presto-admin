@@ -29,10 +29,48 @@ from fabric.state import env
 from mock import patch
 
 import prestoadmin
-from prestoadmin import main
+from prestoadmin import main, topology
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
 from tests.base_test_case import BaseTestCase
+
+
+'''
+
+'''
+def mock_load_topology():
+    @patch('tests.unit.test_main.topology._get_conf_from_file')
+    def loader(get_conf_mock):
+        get_conf_mock.return_value = {'username': 'user',
+                                      'port': '1234',
+                                      'coordinator': 'master',
+                                      'workers': ['slave1', 'slave2']}
+        return main._load_topology()
+    return loader
+
+
+def mock_empty_topology():
+    @patch('tests.unit.test_main.topology._get_conf_from_file')
+    def loader(get_conf_mock):
+        get_conf_mock.return_value = {}
+        return main._load_topology()
+    return loader
+
+
+def mock_error_topology():
+    @patch('tests.unit.test_main.topology.get_conf')
+    def loader(get_conf_mock):
+        get_conf_mock.side_effect = ConfigurationError()
+        return main._load_topology()
+    return loader
+
+
+def mock_absent_topology():
+    @patch('tests.unit.test_main.topology._get_conf_from_file')
+    def loader(get_conf_mock):
+        get_conf_mock.side_effect = ConfigFileNotFoundError()
+        return main._load_topology()
+    return loader
 
 
 class TestMain(BaseTestCase):
@@ -119,54 +157,47 @@ class TestMain(BaseTestCase):
         )
         self.assertTrue("Commands:" in self.test_stdout.getvalue())
 
-    @patch('prestoadmin.main.topology.get_conf')
-    def test_load_topology(self, get_conf_mock):
-        get_conf_mock.return_value = {'username': 'user',
-                                      'port': '1234',
-                                      'coordinator': 'hello',
-                                      'workers': ['a', 'b']}
-        main.load_topology()
+    def assertDefaultRoledefs(self):
         self.assertEqual(main.state.env.roledefs,
-                         {'coordinator': ['hello'], 'worker': ['a', 'b'],
-                          'all': ['hello', 'a', 'b']})
+                         {'coordinator': ['master'],
+                          'worker': ['slave1', 'slave2'],
+                          'all': ['master', 'slave1', 'slave2']})
+
+    def assertDefaultHosts(self):
+        self.assertEqual(main.state.env.hosts, ['master', 'slave1', 'slave2'])
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_load_topology(self, unused_mock_load):
+        main.load_topology()
+        self.assertDefaultRoledefs()
         self.assertEqual(main.state.env.port, '1234')
         self.assertEqual(main.state.env.user, 'user')
-        self.assertEqual(main.state.env.hosts, ['hello', 'a', 'b'])
+        self.assertDefaultHosts()
 
-    @patch('prestoadmin.main.topology.get_conf')
-    def test_load_topology_not_exists(self, get_conf_mock):
-        e = ConfigFileNotFoundError()
-
-        get_conf_mock.side_effect = e
+    @patch('prestoadmin.main.load_topology', side_effect=mock_absent_topology())
+    def test_load_topology_not_exists(self, unused_mock_load):
         main.load_topology()
         self.assertEqual(main.state.env.roledefs,
                          {'coordinator': [], 'worker': [], 'all': []})
         self.assertEqual(main.state.env.port, '22')
         self.assertNotEqual(main.state.env.user, 'user')
-        self.assertEqual(main.state.env.topology_config_not_found, e)
+        self.assertTrue(type(main.state.env.topology_config_not_found),
+                        ConfigFileNotFoundError)
 
-    @patch('prestoadmin.topology.get_conf')
+    @patch('prestoadmin.main.load_topology', side_effect=mock_error_topology())
     def test_load_topology_failure(self, get_conf_mock):
-        e = ConfigurationError()
-
-        get_conf_mock.side_effect = e
         self.assertRaises(ConfigurationError, main.load_topology)
 
-    @patch('prestoadmin.main.topology.get_conf')
-    def test_hosts_on_cli_overrides_topology(self, get_conf_mock):
-        get_conf_mock.return_value = {'username': 'root', 'port': '22',
-                                      'coordinator': 'hello',
-                                      'workers': ['a', 'b']}
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_hosts_on_cli_overrides_topology(self, unused_mock_load):
         try:
-            main.main(['--hosts', 'hello,a', 'topology', 'show'])
+            main.main(['--hosts', 'master,slave1', 'topology', 'show'])
         except SystemExit as e:
             self.assertEqual(e.code, 0)
 
-        self.assertEqual(main.state.env.roledefs,
-                         {'coordinator': ['hello'], 'worker': ['a', 'b'],
-                          'all': ['hello', 'a', 'b']})
-        self.assertEqual(main.state.env.hosts, ['hello', 'a'])
-        self.assertEqual(main.api.env.hosts, ['hello', 'a'])
+        self.assertDefaultRoledefs()
+        self.assertEqual(main.state.env.hosts, ['master', 'slave1'])
+        self.assertEqual(main.api.env.hosts, ['master', 'slave1'])
 
     def test_describe(self):
         self._run_command_compare_to_string(
@@ -196,21 +227,17 @@ class TestMain(BaseTestCase):
             self.assertEqual(0, e.code)
         pass_mock.assert_called_once_with('Initial value for env.password: ')
 
-    @patch('prestoadmin.main.topology.get_conf')
-    def test_env_vars_persisted(self, get_conf_mock):
-        get_conf_mock.return_value = {'username': 'user', 'port': '1234',
-                                      'coordinator': 'hello',
-                                      'workers': ['a', 'b']}
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_env_vars_persisted(self, unused_mock_load):
         try:
             main.main(['topology', 'show'])
         except SystemExit as e:
             self.assertEqual(e.code, 0)
-        self.assertEqual(['hello', 'a', 'b'], main.state.env.hosts)
+        self.assertDefaultHosts()
 
-    @patch('prestoadmin.topology._get_conf_from_file')
+    @patch('prestoadmin.main.load_topology', side_effect=mock_empty_topology())
     def test_topology_defaults_override_fabric_defaults(self, get_conf_mock):
         self.remove_runs_once_flag(main.topology.show)
-        get_conf_mock.return_value = {}
         try:
             main.main(['topology', 'show'])
         except SystemExit as e:
@@ -331,27 +358,6 @@ class TestMain(BaseTestCase):
                          '\'my task\':\n\n    This is my task\n\n',
                          self.test_stdout.getvalue())
 
-    @patch('prestoadmin.main.topology.get_conf')
-    def test_hosts_no_topology_raises_error(self, conf_mock):
-        conf_mock.side_effect = ConfigFileNotFoundError
-        self.assertRaisesRegexp(ConfigurationError,
-                                "Hosts defined in --hosts/-H must be in the "
-                                "topology file",
-                                main._update_env,
-                                Values(), Values({'hosts': 'master'}))
-
-    @patch('prestoadmin.main.topology.get_conf')
-    def test_hosts_not_in_topology_raises_error(self, conf_mock):
-        conf_mock.return_value = {'username': 'root',
-                                  'port': '22',
-                                  'coordinator': 'master',
-                                  'workers': ['slave']}
-        self.assertRaisesRegexp(ConfigurationError,
-                                "Hosts defined in --hosts/-H must be in the "
-                                "topology file",
-                                main._update_env,
-                                Values(), Values({'hosts': 'bob'}))
-
     def test_env_parallel(self):
         main.parse_and_validate_commands(['server', 'install',
                                           "local_path", "--serial"])
@@ -391,6 +397,72 @@ class TestMain(BaseTestCase):
                                           "local_path"])
         self.assertEqual(env.skip_bad_hosts, True)
 
+    def test_get_default_options(self):
+        options = Values({'k1': 'dv1', 'k2': 'dv2'})
+        non_default_options = Values({'k2': 'V2', 'k3': 'V3'})
+        default_options = main.get_default_options(options,
+                                                   non_default_options)
+        self.assertEqual(default_options, Values({'k1': 'dv1'}))
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_unchanged_hosts(self, unused_mock_load):
+        """
+        Possible alternate name for the test: test_does_my_magic_work
+        """
+        main.parse_and_validate_commands(
+            args=['server', 'uninstall'])
+        self.assertEqual(env.hosts, ['master', 'slave1', 'slave2'])
+        self.assertNotIn('conf_hosts', env)
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_specific_hosts_long_option(self, unused_mock_load):
+        main.parse_and_validate_commands(
+            args=['--hosts', 'master', 'server', 'uninstall'])
+        self.assertEqual(env.hosts, ['master'])
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_specific_hosts_short_option(self, unused_mock_load):
+        main.parse_and_validate_commands(
+            args=['-H', 'master,slave2', 'server', 'uninstall'])
+        self.assertEqual(env.hosts, ['master', 'slave2'])
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_generic_set_hosts(self, unused_mock_load):
+        main.parse_and_validate_commands(
+            args=['--set', 'hosts=master\,slave2', 'server', 'uninstall'])
+        self.assertEqual(env.hosts, ['master', 'slave2'])
+        self.assertNotIn('env_settings', env)
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_specific_overrides_generic(self, unused_mock_load):
+        main.parse_and_validate_commands(
+            args=['-H', 'master,slave1', '--set', 'hosts=master,slave2',
+                  'server', 'uninstall'])
+        self.assertEqual(env.hosts, ['master', 'slave1'])
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
+    def test_host_not_in_conf(self, unused_mock_load):
+        self.assertRaises(
+            ConfigurationError, main.parse_and_validate_commands,
+            args=['--hosts', 'non_conf_host', 'server', 'uninstall'])
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_absent_topology())
+    def test_host_absent_conf(self, unused_mock_load):
+        self.assertRaises(
+            ConfigurationError, main.parse_and_validate_commands,
+            args=['--hosts', 'non_conf_host', 'server', 'uninstall'])
+
+    @patch('prestoadmin.main.load_topology', side_effect=mock_absent_topology())
+    def test_specific_overrides_generic_shell(self, unused_mock_load):
+        '''
+        Lots of extra stuff happens when we're parsing hosts. Make sure that
+        the specific option overrides generic option behavior works for
+        something with less going on.
+        '''
+        main.parse_and_validate_commands(
+            args=['--shell', 'bash', '--set', 'shell=csh', 'server',
+                  'uninstall'])
+        self.assertEqual(env.shell, 'bash')
 
 if __name__ == '__main__':
     unittest.main()

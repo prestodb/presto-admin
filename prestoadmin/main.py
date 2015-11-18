@@ -627,7 +627,7 @@ def _to_boolean(string):
 
 def _set_arbitrary_env_vars(non_default_options):
     if not hasattr(non_default_options, 'env_settings'):
-        return
+        return non_default_options
 
     # Allow setting of arbitrary env keys.
     # This comes *before* the "specific" env_options so that those may
@@ -648,6 +648,10 @@ def _set_arbitrary_env_vars(non_default_options):
                 value = pair[1]
         state.env[key] = value
 
+    non_default_options_dict = vars(non_default_options)
+    del non_default_options_dict['env_settings']
+    return Values(non_default_options_dict)
+
 
 def _update_env(default_options, non_default_options):
     # Fill in the state with the default values
@@ -657,7 +661,10 @@ def _update_env(default_options, non_default_options):
     # Load the values from the topology file, if it exists
     load_topology()
 
-    _set_arbitrary_env_vars(non_default_options)
+    if state.env.hosts:
+        state.env.conf_hosts = state.env.hosts
+
+    non_default_options = _set_arbitrary_env_vars(non_default_options)
 
     # Go back through and add the non-default values (e.g. the values that
     # were set on the CLI)
@@ -665,8 +672,8 @@ def _update_env(default_options, non_default_options):
         # raise error if hosts not in topology
         if opt == 'hosts':
             command_hosts = set(value.split(','))
-            topology_hosts = set(state.env.hosts)
-            if not command_hosts.issubset(topology_hosts):
+            if 'conf_hosts' not in state.env or \
+               not command_hosts.issubset(set(state.env.conf_hosts)):
                 raise ConfigurationError('Hosts defined in --hosts/-H must be '
                                          'in the topology file.')
 
@@ -683,8 +690,26 @@ def _update_env(default_options, non_default_options):
     update_output_levels(show=state.env.show, hide=state.env.hide)
     state.env.skip_bad_hosts = True
 
+    # env.conf_hosts is an implementation detail of the option parsing and
+    # validation. Hide it from the world.
+    if 'conf_hosts' in state.env:
+        del state.env['conf_hosts']
+
 
 def get_default_options(options, non_default_options):
+    """
+    Given a dictionary of options containing the defaults optparse has filled
+    in, and a dictionary of options containing only options parsed from the
+    command line, returns a dictionary containing the default options that
+    remain after removing the default options that were overridden by the
+    options passed on the command line.
+
+    Mathematically, this returns a dictionary with
+    default_options.keys = options.keys() \ non_default_options.keys()
+    where \ is the set difference operator.
+    The value of a key present in default_options is the value of the same key
+    in options.
+    """
     options_dict = vars(options)
     non_default_options_dict = vars(non_default_options)
     default_options = Values(dict((k, options_dict[k]) for k in options_dict
@@ -762,7 +787,7 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     return commands_to_run
 
 
-def load_topology():
+def _load_topology():
     try:
         topology.set_env_from_conf()
     except ConfigFileNotFoundError as e:
@@ -772,7 +797,15 @@ def load_topology():
         # user to interactively enter the config vars. Else, we will error
         # out at a later point.
         state.env['topology_config_not_found'] = e
-        pass
+
+
+def load_topology():
+    """
+    This provides a patch point for the unit tests so that individual test
+    cases don't need to know the internal details of what happens in
+    _load_topology. See test_main.py for examples.
+    """
+    return _load_topology()
 
 
 def _exit_code(results):
