@@ -171,6 +171,44 @@ query.max-memory=50GB\n"""
                                            '/etc/presto/config.properties',
                                            self.default_workers_config_regex_)
 
+    def test_install_with_java8_home(self, dummy=True):
+        for container in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(container,
+                                          "mv /usr/java/jdk1.8.0_40 /usr/")
+        topology = {"coordinator": "master",
+                    "workers": ["slave1", "slave2", "slave3"],
+                    "java8_home": "/usr/jdk1.8.0_40/jre"}
+        self.upload_topology(topology)
+
+        cmd_output = self.installer.install(dummy)
+        expected = installed_all_hosts_output
+
+        actual = cmd_output.splitlines()
+        self.assertEqual(sorted(expected), sorted(actual))
+
+        for container in self.cluster.all_hosts():
+            self.installer.assert_installed(self, container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
+
+    def test_install_failure_without_java8_home(self, dummy=True):
+        for container in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(container,
+                                          "mv /usr/java/jdk1.8.0_40 /usr/")
+        self.upload_topology()
+        cmd_output = self.installer.install(dummy)
+        actual = cmd_output.splitlines()
+        num_failures = 0
+        for line in enumerate(actual):
+            if str(line).find("Error: Required Java version"
+                              " could not be found") != -1:
+                num_failures += 1
+
+        self.assertEqual(4, num_failures)
+
+        for container in self.cluster.all_hosts():
+            self.installer.assert_uninstalled(container, dummy=True)
+
     @attr('smoketest')
     def test_install(self, dummy=False):
         self.upload_topology()

@@ -17,7 +17,7 @@ Module for rpm package deploy and install using presto-admin
 """
 import logging
 
-from fabric.context_managers import settings, hide
+from fabric.context_managers import settings, hide, shell_env
 from fabric.decorators import task, runs_once
 from fabric.operations import sudo, put, os, local
 from fabric.state import env
@@ -93,9 +93,15 @@ def rpm_install(rpm_name):
     if env.nodeps:
         nodeps = '--nodeps '
 
-    ret = sudo('rpm -i %s%s' %
-               (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH,
-                                     rpm_name)))
+    if 'java8_home' not in env or env.java8_home is None:
+        ret = sudo('rpm -i %s%s' %
+                   (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH,
+                                         rpm_name)))
+    else:
+        with shell_env(JAVA8_HOME='%s' % env.java8_home):
+            ret = sudo('rpm -i %s%s' %
+                       (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH,
+                                             rpm_name)))
     if ret.succeeded:
         print("Package installed successfully on: " + env.host)
 
