@@ -107,7 +107,7 @@ configurations:
     node.environment=presto
     node.data-dir=/var/lib/presto/data
     plugin.config-dir=/etc/presto/catalog
-    plugin.dir=/urs/lib/presto/lib/plugin
+    plugin.dir=/usr/lib/presto/lib/plugin
 
 .. NOTE:: Do not change the value of plugin.config-dir=/etc/presto/catalog as it is necessary for presto to be able to find the catalog directory when Presto has been installed by RPM.
 
@@ -139,7 +139,7 @@ For coordinator: ::
     discovery-server.enabled=true
     discovery.uri=http://<coordinator>:8080
     http-server.http.port=8080
-    node.scheduler.include-coordinator=false
+    node-scheduler.include-coordinator=false
     query.max-memory-per-node=1GB
     query.max-memory=50GB
 
