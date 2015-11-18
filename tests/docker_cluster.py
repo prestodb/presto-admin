@@ -236,6 +236,7 @@ class DockerCluster(BaseCluster):
 
     def _create_container(self, image, container_name, hostname=None,
                           cmd=None):
+        host_config = self.client.create_host_config(mem_limit='2g')
         self._execute_and_wait(self.client.create_container,
                                image,
                                detach=True,
@@ -243,7 +244,7 @@ class DockerCluster(BaseCluster):
                                hostname=hostname,
                                volumes=self.local_mount_dir,
                                command=cmd,
-                               mem_limit='2g')
+                               host_config=host_config)
 
     def _add_hostnames_to_slaves(self):
         ips = self.get_ip_address_dict()
