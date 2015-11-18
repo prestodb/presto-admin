@@ -27,26 +27,28 @@ from tests.base_test_case import BaseTestCase
 
 class TestPrestoClient(BaseTestCase):
     def test_no_sql(self):
-        client = PrestoClient('any_host', 'any_user', 8080)
+        client = PrestoClient('any_host', 'any_user')
         self.assertRaisesRegexp(InvalidArgumentError,
                                 "SQL query missing",
                                 client.execute_query, "", )
 
     def test_no_server(self):
-        client = PrestoClient("", 'any_user', 8080)
+        client = PrestoClient("", 'any_user')
         self.assertRaisesRegexp(InvalidArgumentError,
                                 "Server IP missing",
                                 client.execute_query, "any_sql")
 
     def test_no_user(self):
-        client = PrestoClient('any_host', "", 8080)
+        client = PrestoClient('any_host', "")
         self.assertRaisesRegexp(InvalidArgumentError,
                                 "Username missing",
                                 client.execute_query, "any_sql")
 
+    @patch('prestoadmin.prestoclient.lookup_port')
     @patch('prestoadmin.prestoclient.HTTPConnection')
-    def test_default_request_called(self, mock_conn):
-        client = PrestoClient('any_host', 'any_user', 8080)
+    def test_default_request_called(self, mock_conn, mock_port):
+        mock_port.return_value = 8080
+        client = PrestoClient('any_host', 'any_user')
         headers = {"X-Presto-Catalog": "hive", "X-Presto-Schema": "default",
                    "X-Presto-User": 'any_user'}
 
@@ -56,46 +58,57 @@ class TestPrestoClient(BaseTestCase):
                                                "any_sql", headers)
         self.assertTrue(mock_conn().getresponse.called)
 
+    @patch('prestoadmin.prestoclient.lookup_port')
     @patch('prestoadmin.prestoclient.HTTPConnection')
-    def test_connection_failed(self, mock_conn):
-        client = PrestoClient('any_host', 'any_user', 8080)
+    def test_connection_failed(self, mock_conn, mock_port):
+        mock_port.return_value = 8080
+        client = PrestoClient('any_host', 'any_user')
         client.execute_query("any_sql")
 
         self.assertTrue(mock_conn().close.called)
         self.assertFalse(client.execute_query("any_sql"))
 
+    @patch('prestoadmin.prestoclient.lookup_port')
     @patch('prestoadmin.prestoclient.HTTPConnection')
-    def test_http_call_failed(self, mock_conn):
-        client = PrestoClient('any_host', 'any_user', 8080)
+    def test_http_call_failed(self, mock_conn, mock_port):
+        mock_port.return_value = 8080
+        client = PrestoClient('any_host', 'any_user')
         mock_conn.side_effect = HTTPException("Error")
         self.assertFalse(client.execute_query("any_sql"))
 
         mock_conn.side_effect = socket.error("Error")
         self.assertFalse(client.execute_query("any_sql"))
 
+    @patch('prestoadmin.prestoclient.lookup_port')
     @patch.object(HTTPConnection, 'request')
     @patch.object(HTTPConnection, 'getresponse')
-    def test_http_answer_valid(self, mock_response, mock_request):
-        client = PrestoClient('any_host', 'any_user', 8080)
+    def test_http_answer_valid(self, mock_response, mock_request, mock_port):
+        mock_port.return_value = 8080
+        client = PrestoClient('any_host', 'any_user')
         mock_response.return_value.read.return_value = '{}'
         type(mock_response.return_value).status = \
             PropertyMock(return_value=200)
         self.assertTrue(client.execute_query('any_sql'))
 
+    @patch('prestoadmin.prestoclient.lookup_port')
     @patch.object(HTTPConnection, 'request')
     @patch.object(HTTPConnection, 'getresponse')
-    def test_http_answer_not_json(self, mock_response, mock_request):
-        client = PrestoClient('any_host', 'any_user', 8080)
+    def test_http_answer_not_json(self, mock_response,
+                                  mock_request, mock_port):
+        mock_port.return_value = 8080
+        client = PrestoClient('any_host', 'any_user')
         mock_response.return_value.read.return_value = 'NOT JSON!'
         type(mock_response.return_value).status =\
             PropertyMock(return_value=200)
         self.assertRaisesRegexp(ValueError, 'No JSON object could be decoded',
                                 client.execute_query, 'any_sql')
 
+    @patch('prestoadmin.prestoclient.lookup_port')
     @patch.object(PrestoClient, 'get_response_from')
     @patch.object(PrestoClient, 'get_next_uri')
-    def test_retrieve_rows(self, mock_uri, mock_get_from_uri):
-        client = PrestoClient('any_host', 'any_user', 8080)
+    def test_retrieve_rows(self, mock_uri, mock_get_from_uri, mock_port):
+        mock_port.return_value = 8080
+        client = PrestoClient('any_host', 'any_user')
         dir = os.path.abspath(os.path.dirname(__file__))
 
         with open(dir + '/resources/valid_rest_response_level1.txt') \
@@ -124,10 +137,12 @@ class TestPrestoClient(BaseTestCase):
         self.assertEqual(client.get_rows(), expected_row)
         self.assertEqual(client.next_uri, "")
 
+    @patch('prestoadmin.prestoclient.lookup_port')
     @patch.object(PrestoClient, 'get_response_from')
     @patch.object(PrestoClient, 'get_next_uri')
-    def test_append_rows(self, mock_uri, mock_get_from_uri):
-        client = PrestoClient('any_host', 'any_user', 8080)
+    def test_append_rows(self, mock_uri, mock_get_from_uri, mock_port):
+        mock_port.return_value = 8080
+        client = PrestoClient('any_host', 'any_user')
         dir = os.path.abspath(os.path.dirname(__file__))
 
         with open(dir + '/resources/valid_rest_response_level2.txt') \
@@ -148,7 +163,7 @@ class TestPrestoClient(BaseTestCase):
     @patch.object(PrestoClient, 'get_response_from')
     @patch.object(PrestoClient, 'get_next_uri')
     def test_limit_rows(self, mock_uri, mock_get_from_uri):
-        client = PrestoClient('any_host', 'any_user', 8080)
+        client = PrestoClient('any_host', 'any_user')
         dir = os.path.abspath(os.path.dirname(__file__))
         with open(dir + '/resources/valid_rest_response_level2.txt') \
                 as json_file:
@@ -161,7 +176,7 @@ class TestPrestoClient(BaseTestCase):
     @patch('prestoadmin.prestoclient.urlopen')
     @patch('httplib.HTTPResponse')
     def test_get_response(self, mock_resp, mock_urlopen):
-        client = PrestoClient('any_host', 'any_user', 8080)
+        client = PrestoClient('any_host', 'any_user')
         mock_urlopen.return_value = mock_resp
         mock_resp.read.return_value = '{"message": "ok!"}'
 
