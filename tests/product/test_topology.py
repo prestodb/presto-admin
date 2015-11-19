@@ -22,7 +22,7 @@ from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
 topology_with_slave1_coord = """{'coordinator': u'slave1',
- 'port': '22',
+ 'port': 22,
  'username': 'root',
  'workers': [u'master',
              u'slave2',
@@ -30,7 +30,7 @@ topology_with_slave1_coord = """{'coordinator': u'slave1',
 """
 
 normal_topology = """{'coordinator': u'master',
- 'port': '22',
+ 'port': 22,
  'username': 'root',
  'workers': [u'slave1',
              u'slave2',
@@ -38,7 +38,7 @@ normal_topology = """{'coordinator': u'master',
 """
 
 local_topology = """{'coordinator': 'localhost',
- 'port': '22',
+ 'port': 22,
  'username': 'root',
  'workers': ['localhost']}
 """

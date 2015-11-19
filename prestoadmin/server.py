@@ -183,7 +183,7 @@ def service(control=None):
 
 
 def check_status_for_control_commands():
-    client = PrestoClient(env.host, env.user, env.port)
+    client = PrestoClient(env.host, env.user)
     print('Waiting to make sure we can connect to the Presto server on %s, '
           'please wait. This check will time out after %d minutes if the '
           'server does not respond.'
