@@ -40,10 +40,10 @@ class PrestoClient:
     rows = []
     next_uri = ""
 
-    def __init__(self, server, user):
+    def __init__(self, server, user, port=None):
         self.server = server
         self.user = user
-        self.port = None
+        self.port = port
 
     def clear_old_results(self):
         if self.rows:

@@ -169,7 +169,7 @@ class StandalonePrestoInstaller(BaseInstaller):
         if dummy:
             rpm_name = os.path.splitext(DUMMY_RPM_NAME)[0]
         else:
-            rpm_name = os.path.splittext(self.presto_rpm_filename)[0]
+            rpm_name = os.path.splitext(self.presto_rpm_filename)[0]
         failure_msg = 'package %s is not installed' % rpm_name
         rpm_cmd = 'rpm -q %s' % rpm_name
 
