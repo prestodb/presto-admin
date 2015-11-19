@@ -653,29 +653,47 @@ def _set_arbitrary_env_vars(non_default_options):
     return Values(non_default_options_dict)
 
 
+def validate_hosts(cli_hosts, config_path):
+    # At this point, state.env.conf_hosts contains the hosts that we loaded
+    # from the configuration, if any.
+    cli_host_set = set(cli_hosts.split(','))
+    if 'conf_hosts' in state.env:
+        conf_hosts = set(state.env.conf_hosts)
+        if not cli_host_set.issubset(conf_hosts):
+            raise ConfigurationError('Hosts defined in --hosts/-H must be '
+                                     'present in %s' % (config_path))
+    else:
+        raise ConfigurationError(
+            'Hosts cannot be defined with --hosts/-H when no hosts are listed '
+            'in the configuration file %s. Correct the configuration file or '
+            'go through the interactive configuration process by running the '
+            'command again without the --hosts or -H option.' % config_path)
+
+
 def _update_env(default_options, non_default_options):
     # Fill in the state with the default values
     for opt, value in default_options.__dict__.items():
         state.env[opt] = value
 
     # Load the values from the topology file, if it exists
-    load_topology()
+    config_path = load_topology()
 
     if state.env.hosts:
         state.env.conf_hosts = state.env.hosts
 
     non_default_options = _set_arbitrary_env_vars(non_default_options)
 
+    if isinstance(state.env.hosts, basestring):
+        # Take advantage of the fact that if there was a generic --set option
+        # for hosts, it's still an unsplit, comma separated string.
+        validate_hosts(state.env.hosts, config_path)
+
     # Go back through and add the non-default values (e.g. the values that
     # were set on the CLI)
     for opt, value in non_default_options.__dict__.items():
         # raise error if hosts not in topology
         if opt == 'hosts':
-            command_hosts = set(value.split(','))
-            if 'conf_hosts' not in state.env or \
-               not command_hosts.issubset(set(state.env.conf_hosts)):
-                raise ConfigurationError('Hosts defined in --hosts/-H must be '
-                                         'in the topology file.')
+            validate_hosts(value, config_path)
 
         state.env[opt] = value
 
@@ -743,8 +761,6 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     # Handle regular args vs -- args
     arguments = parser.largs
 
-    _update_env(default_options, non_default_options)
-
     if len(parser.rargs) > 0:
         warn("Arbitrary remote shell commands not supported.")
         show_commands(None, 'normal', 2)
@@ -772,6 +788,8 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     if options.display:
         display_command(commands_to_run[0][0])
 
+    _update_env(default_options, non_default_options)
+
     if not options.serial:
         state.env.parallel = True
 
@@ -789,7 +807,7 @@ def parse_and_validate_commands(args=sys.argv[1:]):
 
 def _load_topology():
     try:
-        topology.set_env_from_conf()
+        return topology.set_env_from_conf()
     except ConfigFileNotFoundError as e:
         # If there is no topology file, just store empty
         # roledefs for now and save the error in the environment variables.
@@ -797,6 +815,7 @@ def _load_topology():
         # user to interactively enter the config vars. Else, we will error
         # out at a later point.
         state.env['topology_config_not_found'] = e
+        return e.config_path
 
 
 def load_topology():

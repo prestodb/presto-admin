@@ -26,8 +26,7 @@ from fabric.context_managers import settings
 
 from prestoadmin import config
 from prestoadmin.util import constants
-from prestoadmin.util.exception import ConfigurationError,\
-    ConfigFileNotFoundError
+from prestoadmin.util.exception import ConfigurationError
 import prestoadmin.util.fabricapi as util
 from prestoadmin.util.validators import validate_username, validate_port, \
     validate_host
@@ -51,8 +50,7 @@ def requires_topology(func):
     def required(*args, **kwargs):
         if 'topology_config_not_found' in env \
                 and env.topology_config_not_found:
-            raise ConfigFileNotFoundError('Missing topology configuration ' +
-                                          'in ' + constants.CONFIG_PATH + '.')
+            raise env.topology_config_not_found
         return func(*args, **kwargs)
     return required
 
@@ -86,14 +84,15 @@ def get_conf_from_fabric():
 
 
 def get_conf():
-    conf = _get_conf_from_file()
+    conf, config_path = _get_conf_from_file()
     config.fill_defaults(conf, DEFAULT_PROPERTIES)
     validate(conf)
-    return conf
+    return conf, config_path
 
 
 def _get_conf_from_file():
-    return config.get_conf_from_json_file(constants.CONFIG_PATH)
+    config_path = constants.CONFIG_PATH
+    return config.get_conf_from_json_file(config_path), config_path
 
 
 def set_conf_interactive():
@@ -216,7 +215,7 @@ def dedup_list(host_list):
 
 
 def set_env_from_conf():
-    conf = get_conf()
+    conf, config_path = get_conf()
 
     env.user = conf['username']
     env.port = conf['port']
@@ -229,6 +228,6 @@ def set_env_from_conf():
     env.roledefs['all'] = dedup_list(util.get_coordinator_role() +
                                      util.get_worker_role())
 
-    # This ensures that we honor a hosts list passed on the command line.
-    if not env.hosts:
-        env.hosts = env.roledefs['all'][:]
+    env.hosts = env.roledefs['all'][:]
+
+    return config_path

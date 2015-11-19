@@ -58,7 +58,9 @@ class ConfigurationError(ExceptionWithCause):
 
 
 class ConfigFileNotFoundError(ConfigurationError):
-    pass
+    def __init__(self, config_path, message=''):
+        super(ConfigFileNotFoundError, self).__init__(message)
+        self.config_path = config_path
 
 
 def is_arguments_error(exception):

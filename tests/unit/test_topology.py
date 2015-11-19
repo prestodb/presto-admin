@@ -33,8 +33,8 @@ class TestTopologyConfig(BaseTestCase):
     @patch('prestoadmin.topology._get_conf_from_file')
     def test_fill_conf(self, get_conf_from_file_mock):
         get_conf_from_file_mock.return_value = \
-            {"username": "john", "port": "100"}
-        conf = topology.get_conf()
+            ({"username": "john", "port": "100"}, 'config_path')
+        conf, unused = topology.get_conf()
         self.assertEqual(conf, {"username": "john", "port": 100,
                                 "coordinator": "localhost",
                                 "workers": ["localhost"]})
@@ -113,21 +113,19 @@ class TestTopologyConfig(BaseTestCase):
 
     @patch('prestoadmin.main.topology.get_conf')
     def test_hosts_set(self, conf_mock):
-        conf_mock.return_value = {"username": "root", "port": "22",
-                                  "coordinator": "hello",
-                                  "workers": ["a", "b"]}
+        conf_mock.return_value = ({"username": "root", "port": "22",
+                                   "coordinator": "hello",
+                                   "workers": ["a", "b"]}, 'config_path')
         topology.set_env_from_conf()
         self.assertEqual(topology.env.hosts, ['hello', 'a', 'b'])
 
     def test_decorator_no_topology(self):
-        env.topology_config_not_found = True
+        env.topology_config_not_found = ConfigFileNotFoundError('config_path')
 
         @topology.requires_topology
         def func():
             pass
-        self.assertRaisesRegexp(ConfigFileNotFoundError,
-                                "Missing topology configuration",
-                                func)
+        self.assertRaises(ConfigFileNotFoundError, func)
 
     def test_decorator_has_topology(self):
         env.topology_config_not_found = False
@@ -160,9 +158,10 @@ class TestTopologyConfig(BaseTestCase):
     def test_interactive_install(self,  get_conf_mock,
                                  mock_set_interactive):
         env.topology_config_not_found = ConfigurationError()
-        get_conf_mock.return_value = {'username': 'bob', 'port': '225',
-                                      'coordinator': 'master',
-                                      'workers': ['slave1', 'slave2']}
+        get_conf_mock.return_value = ({'username': 'bob', 'port': '225',
+                                       'coordinator': 'master',
+                                       'workers': ['slave1', 'slave2']},
+                                      'config_path')
         topology.set_topology_if_missing()
 
         self.assertEqual(env.user, 'bob'),

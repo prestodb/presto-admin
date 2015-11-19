@@ -92,13 +92,14 @@ def add(name=None):
         filename = name + '.properties'
         if not os.path.isfile(
                 os.path.join(constants.CONNECTORS_DIR, filename)):
-            raise ConfigFileNotFoundError(
-                'Configuration for connector ' + name + ' not found')
+            raise ConfigFileNotFoundError(name,
+                message='Configuration for connector ' + name + ' not found')
         filenames = [filename]
     elif not os.path.isdir(constants.CONNECTORS_DIR):
         message = ('Cannot add connectors because directory %s does not exist'
                    % constants.CONNECTORS_DIR)
-        raise ConfigFileNotFoundError(message)
+        raise ConfigFileNotFoundError(constants.CONNECTORS_DIR,
+                                      message=message)
     else:
         try:
             filenames = os.listdir(constants.CONNECTORS_DIR)
