@@ -35,14 +35,11 @@ from prestoadmin.util.exception import ConfigurationError,\
 from tests.base_test_case import BaseTestCase
 
 
-'''
-
-'''
 def mock_load_topology():
     @patch('tests.unit.test_main.topology._get_conf_from_file')
     def loader(get_conf_mock):
         get_conf_mock.return_value = ({'username': 'user',
-                                       'port': '1234',
+                                       'port': 1234,
                                        'coordinator': 'master',
                                        'workers': ['slave1', 'slave2']},
                                       'config_path')
@@ -69,7 +66,8 @@ def mock_error_topology():
 def mock_absent_topology():
     @patch('tests.unit.test_main.topology._get_conf_from_file')
     def loader(get_conf_mock):
-        get_conf_mock.side_effect = ConfigFileNotFoundError('config_path')
+        get_conf_mock.side_effect = ConfigFileNotFoundError(
+            message='uh oh', config_path='config_path')
         return main._load_topology()
     return loader
 
@@ -175,7 +173,8 @@ class TestMain(BaseTestCase):
         self.assertEqual(main.state.env.user, 'user')
         self.assertDefaultHosts()
 
-    @patch('prestoadmin.main.load_topology', side_effect=mock_absent_topology())
+    @patch('prestoadmin.main.load_topology',
+           side_effect=mock_absent_topology())
     def test_load_topology_not_exists(self, unused_mock_load):
         main.load_topology()
         self.assertEqual(main.state.env.roledefs,
@@ -406,6 +405,26 @@ class TestMain(BaseTestCase):
                                                    non_default_options)
         self.assertEqual(default_options, Values({'k1': 'dv1'}))
 
+    #
+    # The env.port situation is currently a special kind of hell. There are a
+    # bunch of different ways for port to get set:
+    # 1) Topology exists, port in it: port is an int.
+    # 2) Topology exists, port is NOT in it: port is an int.
+    # 3) Topology does not exist: port is a string.
+    # 4) --port CLI option: port is a string
+    # 5) Interactive config: port is an int.
+    #
+    # What should it be? Probably an int being as it's a port *number* and all.
+    # What should we likely settle on? Probably string, because that's what
+    #   fabric sets the default to in env.
+    # Is this a terrible situation? Yes; we need to clean it up.
+    #
+    # Note that interactive config isn't tested here. because getting input fed
+    # into main.main()'s stdin seems problematic with all the magic the tests
+    # are already doing.
+    #
+
+    # PORT CASE 1
     @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
     def test_unchanged_hosts(self, unused_mock_load):
         """
@@ -414,6 +433,8 @@ class TestMain(BaseTestCase):
         main.parse_and_validate_commands(
             args=['server', 'uninstall'])
         self.assertEqual(env.hosts, ['master', 'slave1', 'slave2'])
+        self.assertEqual(env.port, 1234)
+        self.assertEqual(env.user, 'user')
         self.assertNotIn('conf_hosts', env)
 
     @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
@@ -455,6 +476,7 @@ class TestMain(BaseTestCase):
             ConfigurationError, main.parse_and_validate_commands,
             args=['--hosts', 'non_conf_host', 'server', 'uninstall'])
 
+    # PORT CASE 4
     @patch('prestoadmin.main.load_topology', side_effect=mock_load_topology())
     def test_cli_overrides_config(self, unused_mock_load):
         main.parse_and_validate_commands(
@@ -464,13 +486,24 @@ class TestMain(BaseTestCase):
         self.assertEqual(env.user, 'other_user')
         self.assertEqual(env.port, '2179')
 
-    @patch('prestoadmin.main.load_topology', side_effect=mock_absent_topology())
+    # PORT CASE 2
+    @patch('prestoadmin.main.load_topology', side_effect=mock_empty_topology())
+    def test_default_topology(self, unused_mock_load):
+        main.parse_and_validate_commands(args=['server', 'uninstall'])
+        self.assertEqual(env.port, 22)
+        self.assertEqual(env.user, 'root')
+        self.assertEqual(env.hosts, ['localhost'])
+
+    @patch('prestoadmin.main.load_topology',
+           side_effect=mock_absent_topology())
     def test_host_absent_conf(self, unused_mock_load):
         self.assertRaises(
             ConfigurationError, main.parse_and_validate_commands,
             args=['--hosts', 'non_conf_host', 'server', 'uninstall'])
 
-    @patch('prestoadmin.main.load_topology', side_effect=mock_absent_topology())
+    # PORT CASE 3
+    @patch('prestoadmin.main.load_topology',
+           side_effect=mock_absent_topology())
     def test_specific_overrides_generic_shell(self, unused_mock_load):
         '''
         Lots of extra stuff happens when we're parsing hosts. Make sure that
@@ -481,6 +514,7 @@ class TestMain(BaseTestCase):
             args=['--shell', 'bash', '--set', 'shell=csh', 'server',
                   'uninstall'])
         self.assertEqual(env.shell, 'bash')
+        self.assertEqual(env.port, '22')
 
 if __name__ == '__main__':
     unittest.main()

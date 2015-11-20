@@ -22,6 +22,8 @@ import sys
 import traceback
 
 
+# Beware the nuances of pickling Exceptions:
+# http://bugs.python.org/issue1692335
 class ExceptionWithCause(Exception):
 
     def __init__(self, message=''):
@@ -58,7 +60,7 @@ class ConfigurationError(ExceptionWithCause):
 
 
 class ConfigFileNotFoundError(ConfigurationError):
-    def __init__(self, config_path, message=''):
+    def __init__(self, message='', config_path=''):
         super(ConfigFileNotFoundError, self).__init__(message)
         self.config_path = config_path
 

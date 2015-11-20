@@ -120,7 +120,9 @@ class TestTopologyConfig(BaseTestCase):
         self.assertEqual(topology.env.hosts, ['hello', 'a', 'b'])
 
     def test_decorator_no_topology(self):
-        env.topology_config_not_found = ConfigFileNotFoundError('config_path')
+        env.topology_config_not_found = ConfigFileNotFoundError(
+            message='I got 99 problems but type safety ain\'t one',
+            config_path='config_path')
 
         @topology.requires_topology
         def func():

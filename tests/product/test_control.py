@@ -53,9 +53,9 @@ class TestControl(BaseProductTestCase):
         # Start without topology added
         cmd_output = self.run_prestoadmin('server %s' % service,
                                           raise_error=False).splitlines()
-        self.assertEqual(['Missing topology configuration in /etc/opt/'
-                          'prestoadmin/config.json.  More detailed information'
-                          ' can be found in /var/log/prestoadmin/'
+        self.assertEqual(['Missing configuration file \'/etc/opt/'
+                          'prestoadmin/config.json\'. More detailed '
+                          'information can be found in /var/log/prestoadmin/'
                           'presto-admin.log'], cmd_output)
 
     def test_server_start_without_presto(self):

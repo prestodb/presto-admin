@@ -209,7 +209,8 @@ class TestInstall(BaseTestCase):
     @patch('prestoadmin.server.util.filesystem.os.open')
     def test_update_config(self, mock_open, mock_fdopen, mock_makedir,
                            mock_path_exists, mock_config, mock_connector):
-        e = ConfigFileNotFoundError('config_path')
+        e = ConfigFileNotFoundError(
+            message='problems', config_path='config_path')
         mock_connector.add.side_effect = e
         mock_path_exists.side_effect = [False, False]
 

@@ -35,7 +35,8 @@ def get_conf_from_json_file(path):
             return json.load(conf_file)
     except IOError:
         raise ConfigFileNotFoundError(
-            path, message="Missing configuration file at " + repr(path))
+            config_path=path, message="Missing configuration file %s." %
+            (repr(path)))
     except ValueError as e:
         raise ConfigurationError(e)
 
