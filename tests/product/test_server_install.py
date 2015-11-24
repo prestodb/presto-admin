@@ -191,12 +191,12 @@ query.max-memory=50GB\n"""
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
-    def test_install_failure_without_java8_home(self, dummy=True):
+    def test_install_failure_without_java8_home(self):
         for container in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(container,
                                           "mv /usr/java/jdk1.8.0_40 /usr/")
         self.upload_topology()
-        cmd_output = self.installer.install(dummy)
+        cmd_output = self.installer.install(dummy=True, pa_raise_error=False)
         actual = cmd_output.splitlines()
         num_failures = 0
         for line in enumerate(actual):
@@ -355,7 +355,7 @@ query.max-memory=50GB\n"""
                     r'\[root\] '
                     r'Enter port number for SSH connections to all nodes: '
                     r'\[22\] '
-                    r'Enter host name or IP address for coordinator node.  '
+                    r'Enter host name or IP address for coordinator node. '
                     r'Enter an external host name or ip address if this is a '
                     r'multi-node cluster: \[localhost\] '
                     r'Enter host names or IP addresses for worker nodes '
@@ -407,7 +407,7 @@ query.max-memory=50GB\n"""
                     r'\[root\] '
                     r'Enter port number for SSH connections to all nodes: '
                     r'\[22\] '
-                    r'Enter host name or IP address for coordinator node.  '
+                    r'Enter host name or IP address for coordinator node. '
                     r'Enter an external host name or ip address if this is a '
                     r'multi-node cluster: \[localhost\] '
                     r'Enter host names or IP addresses for worker nodes '
@@ -497,7 +497,7 @@ query.max-memory=50GB\n"""
         self.cluster.stop_host(
             self.cluster.slaves[0])
 
-        actual_out = self.installer.install(dummy=True)
+        actual_out = self.installer.install(dummy=True, pa_raise_error=False)
         self.assertRegexpMatches(
             actual_out,
             self.down_node_connection_error(down_node)
@@ -519,7 +519,7 @@ query.max-memory=50GB\n"""
     def test_install_with_no_perm_to_local_path(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.upload_topology()
-        self.run_prestoadmin("configuration deploy")
+        self.run_prestoadmin("configuration deploy", raise_error=False)
 
         script = 'chmod 600 /mnt/presto-admin/%(rpm)s; su app-admin -c ' \
                  '"./presto-admin server install /mnt/presto-admin/%(rpm)s "'
@@ -534,7 +534,7 @@ query.max-memory=50GB\n"""
 
     def test_install_twice(self):
         self.test_install(dummy=True)
-        output = self.installer.install(dummy=True)
+        output = self.installer.install(dummy=True, pa_raise_error=False)
 
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
                 as f:

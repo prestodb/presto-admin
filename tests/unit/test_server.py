@@ -28,10 +28,10 @@ from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
-from tests.base_test_case import BaseTestCase
+from tests.unit.base_unit_case import BaseUnitCase
 
 
-class TestInstall(BaseTestCase):
+class TestInstall(BaseUnitCase):
     SERVER_FAIL_MSG = 'Server failed to start on: failed_node1' \
                       '\nPlease check ' \
                       + constants.REMOTE_PRESTO_LOG_DIR + '/server.log'
@@ -41,18 +41,11 @@ class TestInstall(BaseTestCase):
         self.maxDiff = None
         super(TestInstall, self).setUp(capture_output=True)
 
-    @patch('prestoadmin.server.deploy_install_configure')
-    def test_install_server(self, mock_install):
-        local_path = os.path.join("/any/path/rpm")
-        server.install(local_path)
-        mock_install.assert_called_with(local_path)
-
     @patch('prestoadmin.server.package.deploy_install')
     @patch('prestoadmin.server.update_configs')
     def test_deploy_install_configure(self, mock_update, mock_install):
         local_path = "/any/path/rpm"
-        env.hosts = []
-        server.deploy_install_configure(local_path)
+        server.install(local_path)
         mock_install.assert_called_with(local_path)
         mock_update.assert_called_with()
 

@@ -28,10 +28,11 @@ from prestoadmin.collect import TMP_PRESTO_DEBUG, \
     REMOTE_PRESTO_LOG_DIR, OUTPUT_FILENAME_FOR_LOGS, \
     OUTPUT_FILENAME_FOR_SYS_INFO
 import prestoadmin
-from tests.base_test_case import BaseTestCase
+from tests.unit.base_unit_case import BaseUnitCase
 
 
-class TestCollect(BaseTestCase):
+class TestCollect(BaseUnitCase):
+
     @patch('prestoadmin.collect.execute')
     @patch("prestoadmin.collect.tarfile.open")
     @patch("prestoadmin.collect.shutil.copy")
