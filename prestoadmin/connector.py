@@ -24,7 +24,9 @@ from fabric.contrib import files
 from fabric.operations import sudo, os, put, get
 import fabric.utils
 
+from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util import constants
+from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
 from prestoadmin.util.filesystem import ensure_directory_exists
@@ -74,6 +76,7 @@ def validate(filenames):
 
 
 @task
+@requires_config(StandaloneConfig)
 def add(name=None):
     """
     Deploy configuration for a connector onto a cluster.
@@ -125,6 +128,7 @@ def add(name=None):
 
 
 @task
+@requires_config(StandaloneConfig)
 def remove(name):
     """
     Remove a connector from the cluster.

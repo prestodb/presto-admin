@@ -17,17 +17,12 @@
 Module for setting and validating the presto-admin slider config
 """
 
-from functools import wraps
-
 import os
 
-from fabric.context_managers import settings
 from fabric.state import env
-from fabric.operations import prompt
 
-from prestoadmin import config
-from prestoadmin.config import ConfigFileNotFoundError
-
+from prestoadmin.util.base_config import BaseConfig, SingleConfigItem, \
+    MultiConfigItem
 from prestoadmin.util.constants import LOCAL_CONF_DIR
 from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
@@ -46,45 +41,6 @@ INSTANCE_NAME = 'slider_instname'
 SLIDER_USER = 'slider_user'
 JAVA_HOME = 'JAVA_HOME'
 HADOOP_CONF = 'HADOOP_CONF'
-
-
-class SingleConfigItem(object):
-    def __init__(self, key, prompt, default=None, validate=None):
-        self.key = key
-        self.prompt = prompt
-        self.default = default
-        self.validate = validate
-
-    def prompt_user(self, conf):
-        conf[self.key] = prompt(self.prompt,
-                                default=conf.get(self.key, self.default),
-                                validate=self.validate)
-
-    def collect_prompts(self, l):
-        l.append((self.prompt, self.key))
-
-
-class MultiConfigItem(object):
-    def __init__(self, items, validate, validate_keys,
-                 validate_failed_text):
-        self.items = items
-        self.validate = validate
-        self.validate_keys = validate_keys
-        self.validate_failed_text = validate_failed_text
-
-    def prompt_user(self, conf):
-        while True:
-            for item in self.items:
-                item.prompt_user(conf)
-
-            validate_args = [conf[k] for k in self.validate_keys]
-            if self.validate(*validate_args):
-                break
-            print (self.validate_failed_text % self.validate_keys) % conf
-
-    def collect_prompts(self, l):
-        for item in self.items:
-            item.collect_prompts(l)
 
 
 _SLIDER_CONFIG = [
@@ -122,54 +78,23 @@ _SLIDER_CONFIG = [
                      '/etc/hadoop/conf', None)]
 
 
-def requires_conf(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        get_conf_if_missing()
-        return func(*args, **kwargs)
-    return wrapper
+class SliderConfig(BaseConfig):
 
+    def __init__(self):
+        super(SliderConfig, self).__init__(SLIDER_CONFIG_PATH, _SLIDER_CONFIG)
 
-def write(conf):
-    config.write(config.json_to_string(conf), SLIDER_CONFIG_PATH)
+    def is_config_loaded(self):
+        return SLIDER_CONFIG_LOADED in env and env[SLIDER_CONFIG_LOADED]
 
+    def set_config_loaded(self):
+        env[SLIDER_CONFIG_LOADED] = True
 
-def get_conf_if_missing():
-    with settings(parallel=False):
-        if SLIDER_CONFIG_LOADED not in env:
-            conf = {}
-            try:
-                conf = load_conf(SLIDER_CONFIG_PATH)
-            except ConfigFileNotFoundError:
-                conf = get_conf_interactive()
-                store_conf(conf, SLIDER_CONFIG_PATH)
+    def set_env_from_conf(self, conf):
+        env.user = conf[ADMIN_USER]
+        env.port = conf[SSH_PORT]
+        env.roledefs[SLIDER_MASTER] = [conf[HOST]]
+        env.roledefs['all'] = env.roledefs[SLIDER_MASTER]
 
-            set_env_from_conf(conf)
-            env.SLIDER_CONFIG_LOADED = True
+        env.conf = conf
 
-
-def load_conf(path):
-    return config.get_conf_from_json_file(path)
-
-
-def store_conf(conf, path):
-    config.write(config.json_to_string(conf), path)
-
-
-def get_conf_interactive():
-    conf = {}
-    for item in _SLIDER_CONFIG:
-        item.prompt_user(conf)
-    return conf
-
-
-def set_env_from_conf(conf):
-    env.user = conf[ADMIN_USER]
-    env.port = conf[SSH_PORT]
-    env.roledefs[SLIDER_MASTER] = [conf[HOST]]
-    env.roledefs['all'] = env.roledefs[SLIDER_MASTER]
-
-    env.conf = conf
-
-    # TODO: make this conditional once mode switching is done
-    env.hosts = env.roledefs['all'][:]
+        env.hosts = env.roledefs['all'][:]

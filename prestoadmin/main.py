@@ -61,9 +61,7 @@ from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
-import prestoadmin.topology as topology
-from prestoadmin.util.exception import ConfigurationError,\
-    ConfigFileNotFoundError, is_arguments_error
+from prestoadmin.util.exception import ConfigurationError, is_arguments_error
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
 from prestoadmin.util.fabric_application import FabricApplication
@@ -654,6 +652,10 @@ def _set_arbitrary_env_vars(non_default_options):
 
 
 def validate_hosts(cli_hosts, config_path):
+    # If there's no config file to validate against, don't.
+    if config_path is None:
+        return
+
     # At this point, state.env.conf_hosts contains the hosts that we loaded
     # from the configuration, if any.
     cli_host_set = set(cli_hosts.split(','))
@@ -670,13 +672,15 @@ def validate_hosts(cli_hosts, config_path):
             'command again without the --hosts or -H option.' % config_path)
 
 
-def _update_env(default_options, non_default_options):
+def _update_env(default_options, non_default_options, load_config_callback):
     # Fill in the state with the default values
     for opt, value in default_options.__dict__.items():
         state.env[opt] = value
 
-    # Load the values from the topology file, if it exists
-    config_path = load_topology()
+    if load_config_callback:
+        config_path = load_config(load_config_callback)
+    else:
+        config_path = None
 
     if state.env.hosts:
         state.env.conf_hosts = state.env.hosts
@@ -735,6 +739,25 @@ def get_default_options(options, non_default_options):
     return default_options
 
 
+def _get_config_callback(commands_to_run):
+    config_callback = None
+    if len(commands_to_run) != 1:
+        raise Exception('Multiple commands are not supported')
+
+    c = commands_to_run[0][0]
+    module, command = c.split('.')
+
+    module_dict = state.commands[module]
+    command_callable = module_dict[command]
+
+    try:
+        config_callback = command_callable.pa_config_callback
+    except AttributeError:
+        pass
+
+    return config_callback
+
+
 def parse_and_validate_commands(args=sys.argv[1:]):
     # Find local fabfile path or abort
     fabfile = "prestoadmin"
@@ -788,7 +811,8 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     if options.display:
         display_command(commands_to_run[0][0])
 
-    _update_env(default_options, non_default_options)
+    load_config_callback = _get_config_callback(commands_to_run)
+    _update_env(default_options, non_default_options, load_config_callback)
 
     if not options.serial:
         state.env.parallel = True
@@ -805,26 +829,13 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     return commands_to_run
 
 
-def _load_topology():
-    try:
-        return topology.set_env_from_conf()
-    except ConfigFileNotFoundError as e:
-        # If there is no topology file, just store empty
-        # roledefs for now and save the error in the environment variables.
-        # If the task is an install task, we will set up a prompt for the
-        # user to interactively enter the config vars. Else, we will error
-        # out at a later point.
-        state.env['topology_config_not_found'] = e
-        return e.config_path
-
-
-def load_topology():
+def load_config(load_config_callback):
     """
     This provides a patch point for the unit tests so that individual test
     cases don't need to know the internal details of what happens in
     _load_topology. See test_main.py for examples.
     """
-    return _load_topology()
+    return load_config_callback()
 
 
 def _exit_code(results):
