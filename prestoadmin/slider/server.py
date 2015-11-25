@@ -19,14 +19,12 @@ Module for managing presto/YARN integration.
 import os.path
 
 from fabric.api import env, task, abort
-from fabric.decorators import runs_once
 from fabric.operations import put, sudo
-from fabric.tasks import execute
 
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.slider.config import DIR, SLIDER_MASTER, SliderConfig
 
-from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
+from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall']
 
