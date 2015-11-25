@@ -15,13 +15,11 @@
 """
 Tests the presto topology config
 """
-import os
 import unittest
 
 from mock import patch
 from fabric.state import env
 
-from prestoadmin import config
 from prestoadmin import topology
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
@@ -37,21 +35,34 @@ class TestTopologyConfig(BaseTestCase):
         get_conf_from_file_mock.return_value = \
             {"username": "john", "port": "100"}
         conf = topology.get_conf()
-        self.assertEqual(conf, {"username": "john", "port": "100",
+        self.assertEqual(conf, {"username": "john", "port": 100,
                                 "coordinator": "localhost",
                                 "workers": ["localhost"]})
 
     def test_invalid_property(self):
-        conf = config.get_conf_from_json_file(os.path.dirname(__file__) +
-                                              "/resources/invalid_conf.json")
+        conf = {"username": "me",
+                "port": "1234",
+                "coordinator": "coordinator",
+                "workers": ["node1", "node2"],
+                "invalid property": "fake"}
         self.assertRaisesRegexp(ConfigurationError,
                                 "Invalid property: invalid property",
                                 topology.validate, conf)
 
-    def test_valid_conf(self):
-        conf = config.get_conf_from_json_file(os.path.dirname(__file__) +
-                                              "/resources/valid_conf.json")
-        self.assertEqual(topology.validate(conf), conf)
+    def test_basic_valid_conf(self):
+        conf = {"username": "user",
+                "port": 1234,
+                "coordinator": "my.coordinator",
+                "workers": ["my.worker1", "my.worker2", "my.worker3"]}
+        self.assertEqual(topology.validate(conf.copy()), conf)
+
+    def test_valid_string_port_to_int(self):
+        conf = {'username': 'john',
+                'port': '123',
+                'coordinator': 'master',
+                'workers': ['worker1', 'worker2']}
+        validated_conf = topology.validate(conf.copy())
+        self.assertEqual(validated_conf['port'], 123)
 
     def test_empty_host(self):
         self.assertRaisesRegexp(ConfigurationError,

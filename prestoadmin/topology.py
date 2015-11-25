@@ -34,9 +34,10 @@ from prestoadmin.util.validators import validate_username, validate_port, \
 
 __all__ = ['show']
 
-PRESTO_ADMIN_PROPERTIES = ['username', 'port', 'coordinator', 'workers']
+PRESTO_ADMIN_PROPERTIES = ['username', 'port', 'coordinator', 'workers',
+                           'java8_home']
 DEFAULT_PROPERTIES = {'username': 'root',
-                      'port': '22',
+                      'port': 22,
                       'coordinator': 'localhost',
                       'workers': ['localhost']}
 
@@ -86,8 +87,8 @@ def get_conf_from_fabric():
 
 def get_conf():
     conf = _get_conf_from_file()
-    validate(conf)
     config.fill_defaults(conf, DEFAULT_PROPERTIES)
+    validate(conf)
     return conf
 
 
@@ -138,6 +139,10 @@ def prompt_for_workers():
                                     validate=validate_workers_for_prompt)
 
 
+def validate_java8_home(java8_home):
+    return java8_home
+
+
 def validate_workers_for_prompt(workers):
     return validate_workers(workers.split())
 
@@ -152,28 +157,35 @@ def validate(conf):
     except KeyError:
         pass
     else:
-        validate_username(username)
+        conf['username'] = validate_username(username)
+
+    try:
+        java8_home = conf['java8_home']
+    except KeyError:
+        pass
+    else:
+        conf['java8_home'] = validate_java8_home(java8_home)
 
     try:
         coordinator = conf['coordinator']
     except KeyError:
         pass
     else:
-        validate_coordinator(coordinator)
+        conf['coordinator'] = validate_coordinator(coordinator)
 
     try:
         workers = conf['workers']
     except KeyError:
         pass
     else:
-        validate_workers(workers)
+        conf['workers'] = validate_workers(workers)
 
     try:
-        ssh_port = conf['ssh-port']
+        port = conf['port']
     except KeyError:
         pass
     else:
-        validate_port(ssh_port)
+        conf['port'] = validate_port(port)
     return conf
 
 
@@ -208,6 +220,10 @@ def set_env_from_conf():
 
     env.user = conf['username']
     env.port = conf['port']
+    try:
+        env.java8_home = conf['java8_home']
+    except KeyError:
+        env.java8_home = None
     env.roledefs['coordinator'] = [conf['coordinator']]
     env.roledefs['worker'] = conf['workers']
     env.roledefs['all'] = dedup_list(util.get_coordinator_role() +

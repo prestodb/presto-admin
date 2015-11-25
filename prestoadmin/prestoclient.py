@@ -43,7 +43,7 @@ class PrestoClient:
     def __init__(self, server, user, port=None):
         self.server = server
         self.user = user
-        self.port = port if port else None
+        self.port = port
 
     def clear_old_results(self):
         if self.rows:

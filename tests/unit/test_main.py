@@ -219,7 +219,7 @@ class TestMain(BaseTestCase):
         self.assertEqual({'coordinator': ['localhost'],
                           'worker': ['localhost'], 'all': ['localhost']},
                          main.state.env.roledefs)
-        self.assertEqual('22', main.state.env.port)
+        self.assertEqual(22, main.state.env.port)
         self.assertEqual('root', main.state.env.user)
 
     def test_fabfile_option_not_present(self):
