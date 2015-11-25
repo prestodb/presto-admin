@@ -20,11 +20,15 @@ from fabric.operations import put, sudo
 from fabric.decorators import task
 from os import path
 
+from prestoadmin.standalone.config import StandaloneConfig
+from prestoadmin.util.base_config import requires_config
+
 _LOGGER = logging.getLogger(__name__)
 __all__ = ['run']
 
 
 @task
+@requires_config(StandaloneConfig)
 def run(script, remote_dir='/tmp'):
     """
     Run an arbitrary script on all nodes in the cluster.

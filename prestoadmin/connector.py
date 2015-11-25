@@ -24,7 +24,9 @@ from fabric.contrib import files
 from fabric.operations import sudo, os, put, get
 import fabric.utils
 
+from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util import constants
+from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
 from prestoadmin.util.filesystem import ensure_directory_exists
@@ -74,6 +76,7 @@ def validate(filenames):
 
 
 @task
+@requires_config(StandaloneConfig)
 def add(name=None):
     """
     Deploy configuration for a connector onto a cluster.
@@ -90,15 +93,17 @@ def add(name=None):
     """
     if name:
         filename = name + '.properties'
-        if not os.path.isfile(
-                os.path.join(constants.CONNECTORS_DIR, filename)):
+        config_path = os.path.join(constants.CONNECTORS_DIR, filename)
+        if not os.path.isfile(config_path):
             raise ConfigFileNotFoundError(
-                'Configuration for connector ' + name + ' not found')
+                config_path=config_path,
+                message='Configuration for connector ' + name + ' not found')
         filenames = [filename]
     elif not os.path.isdir(constants.CONNECTORS_DIR):
         message = ('Cannot add connectors because directory %s does not exist'
                    % constants.CONNECTORS_DIR)
-        raise ConfigFileNotFoundError(message)
+        raise ConfigFileNotFoundError(config_path=constants.CONNECTORS_DIR,
+                                      message=message)
     else:
         try:
             filenames = os.listdir(constants.CONNECTORS_DIR)
@@ -123,6 +128,7 @@ def add(name=None):
 
 
 @task
+@requires_config(StandaloneConfig)
 def remove(name):
     """
     Remove a connector from the cluster.

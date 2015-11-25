@@ -39,25 +39,6 @@ class TestControl(BaseProductTestCase):
         expected_output = self.expected_stop()[:] + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output)
 
-    def test_server_start_without_topology(self):
-        self.assert_service_fails_without_topology('start')
-
-    def test_server_stop_without_topology(self):
-        self.assert_service_fails_without_topology('stop')
-
-    def test_server_restart_without_topology(self):
-        self.assert_service_fails_without_topology('restart')
-
-    def assert_service_fails_without_topology(self, service):
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
-        # Start without topology added
-        cmd_output = self.run_prestoadmin('server %s' % service,
-                                          raise_error=False).splitlines()
-        self.assertEqual(['Missing topology configuration in /etc/opt/'
-                          'prestoadmin/config.json.  More detailed information'
-                          ' can be found in /var/log/prestoadmin/'
-                          'presto-admin.log'], cmd_output)
-
     def test_server_start_without_presto(self):
         self.assert_service_fails_without_presto('start')
 

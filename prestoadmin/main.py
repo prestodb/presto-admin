@@ -61,9 +61,7 @@ from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
-import prestoadmin.topology as topology
-from prestoadmin.util.exception import ConfigurationError,\
-    ConfigFileNotFoundError, is_arguments_error
+from prestoadmin.util.exception import ConfigurationError, is_arguments_error
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
 from prestoadmin.util.fabric_application import FabricApplication
@@ -625,9 +623,9 @@ def _to_boolean(string):
     raise ValueError("invalid boolean string: %s" % string)
 
 
-def _set_arbitrary_env_vars(non_default_options):
+def _handle_generic_set_env_vars(non_default_options):
     if not hasattr(non_default_options, 'env_settings'):
-        return
+        return non_default_options
 
     # Allow setting of arbitrary env keys.
     # This comes *before* the "specific" env_options so that those may
@@ -648,27 +646,64 @@ def _set_arbitrary_env_vars(non_default_options):
                 value = pair[1]
         state.env[key] = value
 
+    non_default_options_dict = vars(non_default_options)
+    del non_default_options_dict['env_settings']
+    return Values(non_default_options_dict)
 
-def _update_env(default_options, non_default_options):
+
+def validate_hosts(cli_hosts, config_path):
+    # If there's no config file to validate against, don't. This would happen
+    # in the case of a task that doesn't define a callback that loads config.
+    if config_path is None:
+        return
+
+    # At this point, state.env.conf_hosts contains the hosts that we loaded
+    # from the configuration, if any.
+    cli_host_set = set(cli_hosts.split(','))
+    if 'conf_hosts' in state.env:
+        conf_hosts = set(state.env.conf_hosts)
+        if not cli_host_set.issubset(conf_hosts):
+            raise ConfigurationError('Hosts defined in --hosts/-H must be '
+                                     'present in %s' % (config_path))
+    else:
+        raise ConfigurationError(
+            'Hosts cannot be defined with --hosts/-H when no hosts are listed '
+            'in the configuration file %s. Correct the configuration file or '
+            'run the command again without the --hosts or -H option.' %
+            config_path)
+
+
+def _update_env(default_options, non_default_options, load_config_callback):
     # Fill in the state with the default values
     for opt, value in default_options.__dict__.items():
         state.env[opt] = value
 
-    # Load the values from the topology file, if it exists
-    load_topology()
+    if load_config_callback:
+        config_path = load_config(load_config_callback)
+    else:
+        config_path = None
 
-    _set_arbitrary_env_vars(non_default_options)
+    # Save env.hosts from the config into another env variable for validation.
+    # _handle_generic_set_env_vars will overwrite it if --set hosts=...
+    # is present.
+    if state.env.hosts:
+        state.env.conf_hosts = state.env.hosts
+
+    non_default_options = _handle_generic_set_env_vars(non_default_options)
+
+    if isinstance(state.env.hosts, basestring):
+        # Take advantage of the fact that if there was a generic --set option
+        # for hosts, it's still an unsplit, comma separated string rather than
+        # a list, which is what it would be after loading hosts from a config
+        # file.
+        validate_hosts(state.env.hosts, config_path)
 
     # Go back through and add the non-default values (e.g. the values that
     # were set on the CLI)
     for opt, value in non_default_options.__dict__.items():
         # raise error if hosts not in topology
         if opt == 'hosts':
-            command_hosts = set(value.split(','))
-            topology_hosts = set(state.env.hosts)
-            if not command_hosts.issubset(topology_hosts):
-                raise ConfigurationError('Hosts defined in --hosts/-H must be '
-                                         'in the topology file.')
+            validate_hosts(value, config_path)
 
         state.env[opt] = value
 
@@ -683,13 +718,50 @@ def _update_env(default_options, non_default_options):
     update_output_levels(show=state.env.show, hide=state.env.hide)
     state.env.skip_bad_hosts = True
 
+    # env.conf_hosts is an implementation detail of the option parsing and
+    # validation. Hide it from the world.
+    if 'conf_hosts' in state.env:
+        del state.env['conf_hosts']
+
 
 def get_default_options(options, non_default_options):
+    """
+    Given a dictionary of options containing the defaults optparse has filled
+    in, and a dictionary of options containing only options parsed from the
+    command line, returns a dictionary containing the default options that
+    remain after removing the default options that were overridden by the
+    options passed on the command line.
+
+    Mathematically, this returns a dictionary with
+    default_options.keys = options.keys() \ non_default_options.keys()
+    where \ is the set difference operator.
+    The value of a key present in default_options is the value of the same key
+    in options.
+    """
     options_dict = vars(options)
     non_default_options_dict = vars(non_default_options)
     default_options = Values(dict((k, options_dict[k]) for k in options_dict
                                   if k not in non_default_options_dict))
     return default_options
+
+
+def _get_config_callback(commands_to_run):
+    config_callback = None
+    if len(commands_to_run) != 1:
+        raise Exception('Multiple commands are not supported')
+
+    c = commands_to_run[0][0]
+    module, command = c.split('.')
+
+    module_dict = state.commands[module]
+    command_callable = module_dict[command]
+
+    try:
+        config_callback = command_callable.pa_config_callback
+    except AttributeError:
+        pass
+
+    return config_callback
 
 
 def parse_and_validate_commands(args=sys.argv[1:]):
@@ -718,8 +790,6 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     # Handle regular args vs -- args
     arguments = parser.largs
 
-    _update_env(default_options, non_default_options)
-
     if len(parser.rargs) > 0:
         warn("Arbitrary remote shell commands not supported.")
         show_commands(None, 'normal', 2)
@@ -747,6 +817,9 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     if options.display:
         display_command(commands_to_run[0][0])
 
+    load_config_callback = _get_config_callback(commands_to_run)
+    _update_env(default_options, non_default_options, load_config_callback)
+
     if not options.serial:
         state.env.parallel = True
 
@@ -762,17 +835,13 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     return commands_to_run
 
 
-def load_topology():
-    try:
-        topology.set_env_from_conf()
-    except ConfigFileNotFoundError as e:
-        # If there is no topology file, just store empty
-        # roledefs for now and save the error in the environment variables.
-        # If the task is an install task, we will set up a prompt for the
-        # user to interactively enter the config vars. Else, we will error
-        # out at a later point.
-        state.env['topology_config_not_found'] = e
-        pass
+def load_config(load_config_callback):
+    """
+    This provides a patch point for the unit tests so that individual test
+    cases don't need to know the internal details of what happens in
+    _load_topology. See test_main.py for examples.
+    """
+    return load_config_callback()
 
 
 def _exit_code(results):

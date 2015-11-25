@@ -26,9 +26,12 @@ from fabric.operations import put
 from fabric.state import env
 from fabric.utils import abort, warn
 import prestoadmin.deploy
-from prestoadmin.topology import requires_topology
+from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util import constants
+from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.filesystem import ensure_parent_directories_exist
+
+__all__ = ['show']
 
 
 CONFIG_PROPERTIES = "config.properties"
@@ -44,7 +47,7 @@ __all__ = ['deploy', 'show']
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def deploy(rolename=None):
     """
     Deploy configuration on the remote hosts.
@@ -127,6 +130,7 @@ def configuration_show(file_name, should_warn=True):
 
 
 @task
+@requires_config(StandaloneConfig)
 @serial
 def show(config_type=None):
     """

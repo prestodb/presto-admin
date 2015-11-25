@@ -23,7 +23,8 @@ from fabric.decorators import runs_once
 from fabric.operations import put, sudo
 from fabric.tasks import execute
 
-from prestoadmin.slider.config import requires_conf, DIR, SLIDER_MASTER
+from prestoadmin.util.base_config import requires_config
+from prestoadmin.slider.config import DIR, SLIDER_MASTER, SliderConfig
 
 from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
 
@@ -31,8 +32,7 @@ __all__ = ['slider_install', 'slider_uninstall']
 
 
 @task
-@requires_conf
-@runs_once
+@requires_config(SliderConfig)
 def slider_install(slider_tarball):
     """
     Install slider on the slider master. You must provide a tar file on the
@@ -40,7 +40,7 @@ def slider_install(slider_tarball):
 
     :param slider_tarball:
     """
-    execute(deploy_install, slider_tarball, hosts=get_host_list())
+    deploy_install(slider_tarball)
 
 
 def deploy_install(slider_tarball):
@@ -60,7 +60,7 @@ def deploy_install(slider_tarball):
 
 
 @task
-@requires_conf
+@requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def slider_uninstall():
     """
