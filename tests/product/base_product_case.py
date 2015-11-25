@@ -138,7 +138,7 @@ query.max-memory=50GB\n"""
         for installer in installers:
             self.cluster.postinstall(installer)
 
-    def _update_keywords(self, installers):
+    def _update_replacement_keywords(self, installers):
         for installer in installers:
             installer_instance = installer(self)
             self.default_keywords.update(installer_instance.get_keywords())
@@ -163,7 +163,7 @@ query.max-memory=50GB\n"""
                     bare_image_provider, cluster_type)
                 if self.cluster:
                     self._apply_post_install_hooks(installers)
-                    self._update_keywords(installers)
+                    self._update_replacement_keywords(installers)
                     return
                 self.cluster = DockerCluster.start_bare_cluster(
                     bare_image_provider)
