@@ -33,7 +33,6 @@ __all__ = ['slider_install', 'slider_uninstall']
 
 @task
 @requires_config(SliderConfig)
-@runs_once
 def slider_install(slider_tarball):
     """
     Install slider on the slider master. You must provide a tar file on the
@@ -41,7 +40,7 @@ def slider_install(slider_tarball):
 
     :param slider_tarball:
     """
-    execute(deploy_install, slider_tarball, hosts=get_host_list())
+    deploy_install(slider_tarball)
 
 
 def deploy_install(slider_tarball):

@@ -110,7 +110,7 @@ class TestPackageInstall(BaseProductTestCase):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         cmd_output = self.run_prestoadmin('package install /mnt/presto-admin'
                                           '/invalid-path/presto.rpm',
-                                          rpm=rpm_name)
+                                          rpm=rpm_name, raise_error=False)
         error = '\nFatal error: [%s] error: ' \
                 '/mnt/presto-admin/invalid-path/presto.rpm: open failed: ' \
                 'No such file or directory\n\nAborting.\n'
@@ -144,7 +144,7 @@ class TestPackageInstall(BaseProductTestCase):
         self.installer.assert_installed(self, self.cluster.master)
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%(rpm)s -H %(master)s',
-            rpm=rpm_name)
+            rpm=rpm_name, raise_error=False)
         expected = self.escape_for_regex(self.replace_keywords("""
 Fatal error: [%(master)s] sudo() received nonzero return code 1 while \
 executing!
@@ -165,7 +165,8 @@ Package deployed successfully on: %(master)s
 
     def test_install_not_an_rpm(self):
         cmd_output = self.run_prestoadmin('package install '
-                                          '/etc/opt/prestoadmin/config.json')
+                                          '/etc/opt/prestoadmin/config.json',
+                                          raise_error=False)
 
         error = """
 Fatal error: \[%s\] error: (/etc/opt/prestoadmin/config.json: )?not an rpm \
@@ -196,8 +197,7 @@ Aborting.
 
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%(rpm)s -H %(master)s',
-            rpm=rpm_name
-        )
+            rpm=rpm_name, raise_error=False)
         self.assertRegexpMatchesLineByLine(
             cmd_output.splitlines(),
             self.jdk_not_found_error_message(rpm_name).splitlines()
@@ -223,7 +223,7 @@ Aborting.
 
         cmd_output = self.run_prestoadmin(
             'package install /mnt/presto-admin/%(rpm)s -H %(master)s',
-            rpm=rpm_name)
+            rpm=rpm_name, raise_error=False)
         expected = self.replace_keywords("""
 Fatal error: [%(master)s] sudo() received nonzero return code 1 while \
 executing!

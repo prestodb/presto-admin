@@ -623,7 +623,7 @@ def _to_boolean(string):
     raise ValueError("invalid boolean string: %s" % string)
 
 
-def _set_arbitrary_env_vars(non_default_options):
+def _handle_generic_set_env_vars(non_default_options):
     if not hasattr(non_default_options, 'env_settings'):
         return non_default_options
 
@@ -684,11 +684,12 @@ def _update_env(default_options, non_default_options, load_config_callback):
         config_path = None
 
     # Save env.hosts from the config into another env variable for validation.
-    # _set_arbitrary_env_vars will overwrite it if --set hosts=... is present.
+    # _handle_generic_set_env_vars will overwrite it if --set hosts=...
+    # is present.
     if state.env.hosts:
         state.env.conf_hosts = state.env.hosts
 
-    non_default_options = _set_arbitrary_env_vars(non_default_options)
+    non_default_options = _handle_generic_set_env_vars(non_default_options)
 
     if isinstance(state.env.hosts, basestring):
         # Take advantage of the fact that if there was a generic --set option

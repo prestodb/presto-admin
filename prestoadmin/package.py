@@ -36,7 +36,6 @@ __all__ = ['install']
 
 @task
 @requires_config(StandaloneConfig)
-@runs_once
 def install(local_path):
     """
     Install the rpm package on the cluster
@@ -47,8 +46,7 @@ def install(local_path):
             should ignore checking package dependencies. Equivalent
             to adding --nodeps flag to rpm -i.
     """
-    execute(deploy_install, local_path,
-            hosts=get_host_list())
+    deploy_install(local_path)
 
 
 def check_if_valid_rpm(local_path):
