@@ -519,7 +519,7 @@ query.max-memory=50GB\n"""
     def test_install_with_no_perm_to_local_path(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.upload_topology()
-        self.run_prestoadmin("configuration deploy", raise_error=False)
+        self.run_prestoadmin("configuration deploy")
 
         script = 'chmod 600 /mnt/presto-admin/%(rpm)s; su app-admin -c ' \
                  '"./presto-admin server install /mnt/presto-admin/%(rpm)s "'
@@ -529,7 +529,8 @@ query.max-memory=50GB\n"""
         expected = ''
         for host in self.cluster.all_internal_hosts():
             expected += error_msg % {'host': host, 'rpm': rpm_name}
-        actual = self.run_script_from_prestoadmin_dir(script, rpm=rpm_name)
+        actual = self.run_script_from_prestoadmin_dir(script, rpm=rpm_name,
+                                                      raise_error=False)
         self.assertEqualIgnoringOrder(actual, expected)
 
     def test_install_twice(self):
