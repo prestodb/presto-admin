@@ -133,7 +133,7 @@ class TestControl(BaseProductTestCase):
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        installer.install()
+        installer.install(coordinator='slave1')
         self.assert_start_stop_restart_down_node(
             self.cluster.slaves[0],
             self.cluster.internal_slaves[0])
@@ -144,7 +144,7 @@ class TestControl(BaseProductTestCase):
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        installer.install()
+        installer.install(coordinator='slave1')
         self.assert_start_stop_restart_down_node(
             self.cluster.slaves[0],
             self.cluster.internal_slaves[0])

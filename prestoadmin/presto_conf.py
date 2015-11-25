@@ -64,11 +64,4 @@ def validate_presto_conf(conf):
     if not isinstance(conf["config.properties"], dict):
         raise ConfigurationError(expect_object_msg % "config.properties")
 
-    if 'discovery.uri' not in conf['config.properties']:
-        raise ConfigurationError('Must have discovery.uri defined in '
-                                 'config.properties.')
-    discovery_uri = conf['config.properties']['discovery.uri']
-    if not discovery_uri.startswith('http://'):
-        raise ConfigurationError('discovery.uri must start with http://, '
-                                 'current URI is: %s' % discovery_uri)
     return conf

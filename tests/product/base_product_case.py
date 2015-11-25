@@ -192,17 +192,28 @@ query.max-memory=50GB\n"""
         self.dump_and_cp_topology(topology, cluster)
 
     @nottest
-    def write_test_configs(self, cluster, extra_configs=None):
-        config = 'query.max-memory-per-node=512MB'
+    def write_test_configs(self, cluster, extra_configs=None,
+                           coordinator=None):
+        if not coordinator:
+            coordinator = self.cluster.internal_master
+        config = 'http-server.http.port=8080\n' \
+                 'query.max-memory=50GB\n' \
+                 'query.max-memory-per-node=512MB\n' \
+                 'discovery.uri=http://%s:8080' % coordinator
         if extra_configs:
             config += '\n' + extra_configs
+        coordinator_config = '%s\n' \
+                             'coordinator=true\n' \
+                             'node-scheduler.include-coordinator=false\n' \
+                             'discovery-server.enabled=true' % config
+        workers_config = '%s\ncoordinator=false' % config
         cluster.write_content_to_host(
-            config,
+            coordinator_config,
             os.path.join(constants.COORDINATOR_DIR, 'config.properties'),
             cluster.master
         )
         cluster.write_content_to_host(
-            config,
+            workers_config,
             os.path.join(constants.WORKERS_DIR, 'config.properties'),
             cluster.master
         )

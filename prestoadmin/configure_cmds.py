@@ -59,7 +59,8 @@ def deploy(rolename=None):
         not deploy configuration for a coordinator that is also a worker
 
     If no rolename is specified, then configuration for all roles will be
-    deployed
+    deployed.  If there is no presto configuration file found in the
+    configuration directory, default files will be deployed
 
     Parameters:
         rolename - [coordinator|workers]

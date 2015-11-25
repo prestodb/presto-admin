@@ -57,22 +57,26 @@ class Coordinator(Node):
     def _get_conf_dir(self):
         return constants.COORDINATOR_DIR
 
-    def build_defaults(self):
-        conf = copy.deepcopy(self.DEFAULT_PROPERTIES)
-        coordinator = env.roledefs['coordinator'][0]
-        workers = env.roledefs['worker']
-        if coordinator in workers:
-            conf['config.properties']['node-scheduler.'
-                                      'include-coordinator'] = 'true'
-        conf['config.properties']['discovery.uri'] = 'http://' + coordinator \
-                                                     + ':8080'
-
-        self.validate(conf)
+    def default_config(self, filename):
+        try:
+            conf = copy.deepcopy(self.DEFAULT_PROPERTIES[filename])
+        except KeyError:
+            raise ConfigurationError('Invalid configuration file name: %s' %
+                                     filename)
+        if filename == 'config.properties':
+            coordinator = env.roledefs['coordinator'][0]
+            workers = env.roledefs['worker']
+            if coordinator in workers:
+                conf['node-scheduler.include-coordinator'] = 'true'
+            conf['discovery.uri'] = 'http://%s:8080' % coordinator
         return conf
 
     @staticmethod
     def validate(conf):
         validate_presto_conf(conf)
+        if 'coordinator' not in conf['config.properties']:
+            raise ConfigurationError('Must specify coordinator=true in '
+                                     'coordinator\'s config.properties')
         if conf['config.properties']['coordinator'] != 'true':
             raise ConfigurationError('Coordinator cannot be false in the '
                                      'coordinator\'s config.properties.')

@@ -85,7 +85,7 @@ class TestStatus(BaseProductTestCase):
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        self.installer.install()
+        self.installer.install(coordinator='slave1')
         self.run_prestoadmin('server start')
         self.cluster.stop_host(
             self.cluster.slaves[0])
@@ -102,7 +102,7 @@ class TestStatus(BaseProductTestCase):
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
-        self.installer.install()
+        self.installer.install(coordinator='slave1')
         self.run_prestoadmin('server start')
         self.cluster.stop_host(
             self.cluster.slaves[1])

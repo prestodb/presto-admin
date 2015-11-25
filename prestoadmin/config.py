@@ -72,6 +72,28 @@ def json_to_string(conf):
     return json.dumps(conf, indent=4, separators=(',', ':'))
 
 
+def write_conf_to_file(conf, path):
+    # Note: this function expects conf to be flat
+    # either a dict for .properties file or a list for .config
+    ext = os.path.splitext(path)[1]
+    if ext == ".properties":
+        write_properties_file(conf, path)
+    elif ext == ".config":
+        write_config_file(conf, path)
+
+
+def write_properties_file(conf, path):
+    output = ''
+    for key, value in conf.iteritems():
+        output += '%s=%s\n' % (key, value)
+    write(output, path)
+
+
+def write_config_file(conf, path):
+    output = '\n'.join(conf)
+    write(output, path)
+
+
 def write(output, path):
     conf_directory = os.path.dirname(path)
     try:
