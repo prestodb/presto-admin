@@ -652,7 +652,8 @@ def _set_arbitrary_env_vars(non_default_options):
 
 
 def validate_hosts(cli_hosts, config_path):
-    # If there's no config file to validate against, don't.
+    # If there's no config file to validate against, don't. This would happen
+    # in the case of a task that doesn't define a callback that loads config.
     if config_path is None:
         return
 
@@ -668,8 +669,8 @@ def validate_hosts(cli_hosts, config_path):
         raise ConfigurationError(
             'Hosts cannot be defined with --hosts/-H when no hosts are listed '
             'in the configuration file %s. Correct the configuration file or '
-            'go through the interactive configuration process by running the '
-            'command again without the --hosts or -H option.' % config_path)
+            'run the command again without the --hosts or -H option.' %
+            config_path)
 
 
 def _update_env(default_options, non_default_options, load_config_callback):
@@ -682,6 +683,8 @@ def _update_env(default_options, non_default_options, load_config_callback):
     else:
         config_path = None
 
+    # Save env.hosts from the config into another env variable for validation.
+    # _set_arbitrary_env_vars will overwrite it if --set hosts=... is present.
     if state.env.hosts:
         state.env.conf_hosts = state.env.hosts
 
@@ -689,7 +692,9 @@ def _update_env(default_options, non_default_options, load_config_callback):
 
     if isinstance(state.env.hosts, basestring):
         # Take advantage of the fact that if there was a generic --set option
-        # for hosts, it's still an unsplit, comma separated string.
+        # for hosts, it's still an unsplit, comma separated string rather than
+        # a list, which is what it would be after loading hosts from a config
+        # file.
         validate_hosts(state.env.hosts, config_path)
 
     # Go back through and add the non-default values (e.g. the values that

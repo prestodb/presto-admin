@@ -31,11 +31,31 @@ from mock import patch
 import prestoadmin
 from prestoadmin import main
 from prestoadmin import topology
+
+# LINTED: the @patch decorators in mock_load_topology and mock_empty_topology
+# require that this import be here in order to work properly.
 from prestoadmin.standalone.config import StandaloneConfig  # noqa
 from prestoadmin.util.exception import ConfigurationError
 from tests.unit.base_unit_case import BaseUnitCase
 
 
+#
+# There is a certain amount of magic happening here.
+#
+# Most of the tests in test_main require that there's configuration information
+# loaded in order to validate the argument parsing logic. In order to avoid
+# every test in here having to know about the internals of how that
+# configuration gets loaded, main.py provides load_config as a patch point.
+#
+# The tests that need config loaded can patch that with one of the following
+# functions as a side-effect. Instead of main.load_config being called, the
+# function returned by e.g. mock_load_topology gets called, and it patches
+# the config load implementation to achieve the desired result.
+#
+# The downside of this approach is that any tests function that uses this ends
+# up getting an unused mock as a parameter. The upside is that when config load
+# inevitably changes, there will be 3 places to change instead of every test.
+#
 def mock_load_topology():
     @patch('tests.unit.test_main.StandaloneConfig._get_conf_from_file')
     def loader(load_config_callback, get_conf_mock):

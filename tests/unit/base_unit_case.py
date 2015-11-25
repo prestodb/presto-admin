@@ -20,16 +20,22 @@ from tests.base_test_case import BaseTestCase
 
 
 class BaseUnitCase(BaseTestCase):
+    '''
+    Tasks generally require that the configuration they need to run has been
+    loaded. This takes care of loading the config without going to the
+    filesystem. For cases where you want to test the configuration load process
+    itself, you should pass load_config=False to setUp.
+    '''
     def setUp(self, capture_output=False, load_config=True):
         super(BaseUnitCase, self).setUp(capture_output=capture_output)
         if load_config:
             @patch('tests.unit.base_unit_case.StandaloneConfig.'
                    '_get_conf_from_file')
-            def loader(mgc):
-                mgc.return_value = {'username': 'user',
-                                    'port': 1234,
-                                    'coordinator': 'master',
-                                    'workers': ['slave1', 'slave2']}
+            def loader(mock_get_conf):
+                mock_get_conf.return_value = {'username': 'user',
+                                              'port': 1234,
+                                              'coordinator': 'master',
+                                              'workers': ['slave1', 'slave2']}
 
                 config = StandaloneConfig()
                 config.get_config()

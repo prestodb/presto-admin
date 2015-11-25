@@ -84,6 +84,20 @@ def requires_config(config_class):
 
 
 class BaseConfig(object):
+    '''
+    BaseConfig provides the common config functionality for loading
+    configuration files for presto-admin and going through the interactive
+    config process if a config file isn't present.
+
+    Instances of classes that subclass BaseConfig are intended to be used with
+    the @requires_config decorator, which is responsible for adding an
+    attribute to the task that tells main() how to load the configuration
+    and subsequently for enforcing that the configuration has been loaded at
+    the time the task is actually run.
+
+    In order to be compatible with @requires_config, subclasses must define
+    a no-arguments constructor.
+    '''
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config_path, config_items):
