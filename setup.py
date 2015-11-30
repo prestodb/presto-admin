@@ -37,7 +37,8 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'paramiko==1.15.3',
     'fabric==1.10.1',
-    'requests==2.7.0'
+    'requests==2.7.0',
+    'overrides==0.5'
 ]
 
 test_requirements = [

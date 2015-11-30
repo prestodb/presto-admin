@@ -19,6 +19,8 @@ Module for setting and validating the presto-admin Apache Slider config
 
 import os
 
+from overrides import overrides
+
 from fabric.state import env
 
 from prestoadmin.util.base_config import BaseConfig, SingleConfigItem, \
@@ -100,12 +102,15 @@ class SliderConfig(BaseConfig):
     def __delitem__(self, key):
         del self.config[key]
 
+    @overrides
     def is_config_loaded(self):
         return SLIDER_CONFIG_LOADED in env and env[SLIDER_CONFIG_LOADED]
 
+    @overrides
     def set_config_loaded(self):
         env[SLIDER_CONFIG_LOADED] = True
 
+    @overrides
     def set_env_from_conf(self, conf):
         self.config.update(conf)
         env.user = conf[ADMIN_USER]
