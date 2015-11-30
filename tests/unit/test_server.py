@@ -21,13 +21,15 @@ from fabric.api import env
 from fabric.operations import _AttributeString
 from mock import patch, call, MagicMock
 
-from prestoadmin.prestoclient import PrestoClient
 from prestoadmin import server
+from prestoadmin.util.fabricapi import get_host_list
+from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL, \
     PRESTO_RPM_MIN_REQUIRED_VERSION
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
+
 from tests.unit.base_unit_case import BaseUnitCase
 
 
@@ -41,11 +43,20 @@ class TestInstall(BaseUnitCase):
         self.maxDiff = None
         super(TestInstall, self).setUp(capture_output=True)
 
+    @patch('prestoadmin.server.package.check_if_valid_rpm')
+    @patch('prestoadmin.server.execute')
+    def test_install_server(self, mock_execute, mock_check_rpm):
+        local_path = "/any/path/rpm"
+        server.install(local_path)
+        mock_check_rpm.assert_called_with(local_path)
+        mock_execute.assert_called_with(server.deploy_install_configure,
+                                        local_path, hosts=get_host_list())
+
     @patch('prestoadmin.server.package.deploy_install')
     @patch('prestoadmin.server.update_configs')
     def test_deploy_install_configure(self, mock_update, mock_install):
         local_path = "/any/path/rpm"
-        server.install(local_path)
+        server.deploy_install_configure(local_path)
         mock_install.assert_called_with(local_path)
         mock_update.assert_called_with()
 
