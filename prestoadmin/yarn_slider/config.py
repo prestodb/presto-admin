@@ -14,7 +14,7 @@
 
 
 """
-Module for setting and validating the presto-admin slider config
+Module for setting and validating the presto-admin yarn_slider config
 """
 
 import os
@@ -28,7 +28,7 @@ from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
+SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'yarn_slider')
 SLIDER_CONFIG_PATH = os.path.join(SLIDER_CONFIG_DIR, 'config.json')
 SLIDER_MASTER = 'slider_master'
 
@@ -50,24 +50,24 @@ PRESTO_PACKAGE = 'presto_slider_package'
 
 _SLIDER_CONFIG = [
     MultiConfigItem([
-        SingleConfigItem(HOST, 'Enter the hostname for the slider master:',
+        SingleConfigItem(HOST, 'Enter the hostname for the yarn_slider master:',
                          'localhost', validate_host),
         SingleConfigItem(ADMIN_USER, 'Enter the user name to use when ' +
-                         'installing slider on the slider master:',
+                         'installing yarn_slider on the yarn_slider master:',
                          'root', validate_username),
         SingleConfigItem(SSH_PORT, 'Enter the port number for SSH ' +
-                         'connections to the slider master', 22,
+                         'connections to the yarn_slider master', 22,
                          validate_port)],
                     validate_can_connect, (ADMIN_USER, HOST, SSH_PORT),
                     'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. ' +
                     'Re-enter connection information.'),
 
-    SingleConfigItem(DIR, 'Enter the directory to install slider into on ' +
-                     'the slider master:', '/opt/slider', None),
+    SingleConfigItem(DIR, 'Enter the directory to install yarn_slider into on ' +
+                     'the yarn_slider master:', '/opt/yarn_slider', None),
 
     MultiConfigItem([
         SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting ' +
-                         'slider operations on the slider master ', 'yarn',
+                         'yarn_slider operations on the yarn_slider master ', 'yarn',
                          validate_username)],
                     validate_can_sudo,
                     (SLIDER_USER, ADMIN_USER, HOST, SSH_PORT),
@@ -76,12 +76,12 @@ _SLIDER_CONFIG = [
                     'again.'),
 
     SingleConfigItem(JAVA_HOME, 'Enter the value of JAVA_HOME to use when' +
-                     'running slider on the slider master:',
+                     'running yarn_slider on the yarn_slider master:',
                      '/usr/lib/jvm/java', None),
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
-                     'configuration on the slider master:',
+                     'configuration on the yarn_slider master:',
                      '/etc/hadoop/conf', None),
-    SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
+    SingleConfigItem(APPNAME, 'Enter a name for the presto yarn_slider application',
                      'PRESTO', None)]
 
 
@@ -89,6 +89,16 @@ class SliderConfig(BaseConfig):
 
     def __init__(self):
         super(SliderConfig, self).__init__(SLIDER_CONFIG_PATH, _SLIDER_CONFIG)
+        self.config = {}
+
+    def __getitem__(self, key):
+        return self.config[key]
+
+    def __setitem__(self, key, value):
+        self.config[key] = value
+
+    def __delitem__(self, key):
+        del self.config[key]
 
     def is_config_loaded(self):
         return SLIDER_CONFIG_LOADED in env and env[SLIDER_CONFIG_LOADED]
@@ -97,6 +107,7 @@ class SliderConfig(BaseConfig):
         env[SLIDER_CONFIG_LOADED] = True
 
     def set_env_from_conf(self, conf):
+        self.config.update(conf)
         env.user = conf[ADMIN_USER]
         env.port = conf[SSH_PORT]
         env.roledefs[SLIDER_MASTER] = [conf[HOST]]
@@ -105,3 +116,6 @@ class SliderConfig(BaseConfig):
         env.conf = self
 
         env.hosts = env.roledefs['all'][:]
+
+    def store_conf(self):
+        super(SliderConfig, self).store_conf(self.config)

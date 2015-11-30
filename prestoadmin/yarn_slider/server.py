@@ -22,7 +22,7 @@ from fabric.api import env, task, abort
 from fabric.context_managers import shell_env
 from fabric.operations import put, sudo, local
 
-from prestoadmin.slider.config import SliderConfig, \
+from prestoadmin.yarn_slider.config import SliderConfig, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     PRESTO_PACKAGE, SLIDER_CONFIG_PATH, SLIDER_CONFIG_DIR
 from prestoadmin.util.base_config import requires_config
@@ -37,12 +37,13 @@ SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
 
 @task
 @requires_config(SliderConfig)
+@task_by_rolename(SLIDER_MASTER)
 def slider_install(slider_tarball):
     """
-    Install slider on the slider master. You must provide a tar file on the
-    local machine that contains the slider distribution.
+    Install yarn_slider on the yarn_slider master. You must provide a tar file on the
+    local machine that contains the yarn_slider distribution.
 
-    :param slider_tarball: The gzipped tar file containing the Apache slider
+    :param slider_tarball: The gzipped tar file containing the Apache yarn_slider
     distribution
     """
     deploy_install(slider_tarball)
@@ -57,7 +58,7 @@ def deploy_install(slider_tarball):
 
     result = put(slider_tarball, os.path.join(slider_parent, slider_file))
     if result.failed:
-        abort('Failed to send slider tarball %s to directory %s on host %s' %
+        abort('Failed to send yarn_slider tarball %s to directory %s on host %s' %
               (slider_tarball, slider_dir, env.host))
 
     sudo('gunzip -c %s | tar -x -C %s --strip-components=1 && rm -f %s' %
@@ -69,13 +70,13 @@ def deploy_install(slider_tarball):
 @task_by_rolename(SLIDER_MASTER)
 def slider_uninstall():
     """
-    Uninstall slider from the slider master.
+    Uninstall yarn_slider from the yarn_slider master.
     """
     sudo('rm -r "%s"' % (env.conf[DIR]))
 
 
 def get_slider_bin(conf):
-    return os.path.join(conf[DIR], 'bin', 'slider')
+    return os.path.join(conf[DIR], 'bin', 'yarn_slider')
 
 
 def run_slider(slider_command, conf):
@@ -94,11 +95,11 @@ def install(presto_yarn_package):
     packaging requirements. After installing the presto-yarn package the presto
     application is registered with Slider.
 
-    The name of the presto application is arbitrary and set in the slider
+    The name of the presto application is arbitrary and set in the yarn_slider
     configuration file. The default is PRESTO
 
     :param presto_yarn_package: The zip file containing the presto-yarn
-    package as structured for slider.
+    package as structured for yarn_slider.
     """
     conf = env.conf
     package_filename = os.path.basename(presto_yarn_package)
@@ -106,7 +107,7 @@ def install(presto_yarn_package):
 
     result = put(presto_yarn_package, package_file)
     if result.failed:
-        abort('Failed to send slider application package to %s on host %s' %
+        abort('Failed to send yarn_slider application package to %s on host %s' %
               (package_file, env.host))
 
     package_install_command = \
@@ -116,8 +117,8 @@ def install(presto_yarn_package):
     try:
         run_slider(package_install_command, conf)
 
-        env.conf[PRESTO_PACKAGE] = package_filename
-        store_conf(env.conf, SLIDER_CONFIG_PATH)
+        conf[PRESTO_PACKAGE] = package_filename
+        conf.store_conf()
 
         local('unzip %s %s -d %s' %
               (presto_yarn_package, ' '.join(SLIDER_PKG_DEFAULT_FILES),
@@ -131,7 +132,7 @@ def install(presto_yarn_package):
 @task_by_rolename(SLIDER_MASTER)
 def uninstall():
     """
-    Uninstall unregisters the presto application with slider and removes the
+    Uninstall unregisters the presto application with yarn_slider and removes the
     installed package.
     """
     conf = env.conf
@@ -140,8 +141,8 @@ def uninstall():
     run_slider(package_delete_command, conf)
 
     try:
-        del env.conf[PRESTO_PACKAGE]
-        store_conf(env.conf, SLIDER_CONFIG_PATH)
+        del conf[PRESTO_PACKAGE]
+        conf.store_conf()
     except KeyError:
         pass
 

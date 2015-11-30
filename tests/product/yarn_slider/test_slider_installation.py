@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Product tests for installing slider itself
+Product tests for installing yarn_slider itself
 """
 
 import json
@@ -25,11 +25,11 @@ from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
-from prestoadmin.slider.config import SLIDER_CONFIG_PATH, HOST, DIR, \
+from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, HOST, DIR, \
     SLIDER_USER, _SLIDER_CONFIG, ADMIN_USER, HADOOP_CONF, SSH_PORT, \
     JAVA_HOME, APPNAME
 
-SLIDER_DIST_FILENAME = 'slider-assembly-0.80.0-incubating-all.tar.gz'
+SLIDER_DIST_FILENAME = 'yarn_slider-assembly-0.80.0-incubating-all.tar.gz'
 
 
 class TestSliderInstallation(BaseProductTestCase):
@@ -40,7 +40,7 @@ class TestSliderInstallation(BaseProductTestCase):
     @staticmethod
     def get_config(override=None):
         conf = {
-            DIR: '/opt/slider',
+            DIR: '/opt/yarn_slider',
             ADMIN_USER: 'root',
             HADOOP_CONF: '/etc/hadoop/conf',
             SSH_PORT: 22,
@@ -114,7 +114,7 @@ class TestSliderInstallation(BaseProductTestCase):
     @staticmethod
     def install_slider_package(testcase, slider_path):
         testcase.run_prestoadmin(
-            'slider slider_install %s' %
+            'yarn_slider slider_install %s' %
             (os.path.join(testcase.cluster.mount_dir, slider_path)))
 
     def ensure_slider_user_exists(self, conf):
@@ -160,7 +160,7 @@ class TestSliderInstallation(BaseProductTestCase):
         self.ensure_slider_user_exists(conf)
         slider_path = self.copy_slider_dist_to_cluster(self)
 
-        self.run_prestoadmin_expect('slider slider_install %s' % (slider_path),
+        self.run_prestoadmin_expect('yarn_slider slider_install %s' % (slider_path),
                                     expect)
 
         self.assert_slider_installed(conf)

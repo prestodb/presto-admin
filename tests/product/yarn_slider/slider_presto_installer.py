@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 """
-Installer for presto using slider
+Installer for presto using yarn_slider
 """
 import fnmatch
 import os
 import urllib
 
 import prestoadmin
-from prestoadmin.slider.config import APPNAME, SLIDER_USER, HOST, HADOOP_CONF
-from prestoadmin.slider.server import get_slider_bin
+from prestoadmin.yarn_slider.config import APPNAME, SLIDER_USER, HOST, HADOOP_CONF
+from prestoadmin.yarn_slider.server import get_slider_bin
 
 from tests.base_installer import BaseInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
@@ -59,7 +59,7 @@ class SliderPrestoInstaller(BaseInstaller):
         package_name = self._copy_package_to_pa_host()
 
         cmd_output = self.testcase.run_prestoadmin(
-            ' slider install ' +
+            ' yarn_slider install ' +
             os.path.join(cluster.mount_dir, package_name),
             cluster=cluster)
 
@@ -107,7 +107,7 @@ class SliderPrestoInstaller(BaseInstaller):
         si = SliderInstaller(testcase)
         keywords = si.get_keywords()
         hdfs_cmd = 'hdfs dfs -ls %s' % (
-            os.path.join('/', 'user', keywords[SLIDER_USER], '.slider',
+            os.path.join('/', 'user', keywords[SLIDER_USER], '.yarn_slider',
                          'package', keywords[APPNAME],
                          os.path.basename(package_filename))
         )
@@ -115,7 +115,7 @@ class SliderPrestoInstaller(BaseInstaller):
             SliderPrestoInstaller._get_slider_master(testcase), hdfs_cmd,
             SliderPrestoInstaller._get_slider_user(testcase))
 
-        # Verify that slider thinks the package is installed
+        # Verify that yarn_slider thinks the package is installed
         conf = TestSliderInstallation.get_config()
         slider_cmd = \
             "bash -c 'export HADOOP_CONF_DIR=%s ; %s package --list'" % (

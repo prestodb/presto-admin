@@ -269,14 +269,15 @@ query.max-memory=50GB\n"""
         self.cluster.exec_cmd_on_host(
             host, ' [ -e %s ] ' % file_path)
 
+    def get_file_content(self, host, filepath):
+        return self.cluster.exec_cmd_on_host(host, 'cat %s' % (filepath))
+
     def assert_file_content(self, host, filepath, expected):
-        config = self.cluster.exec_cmd_on_host(
-            host, 'cat %s' % filepath)
+        config = self.get_file_content(host, filepath)
         self.assertEqual(config, expected)
 
     def assert_file_content_regex(self, host, filepath, expected):
-        config = self.cluster.exec_cmd_on_host(
-            host, 'cat %s' % filepath)
+        config = self.get_file_content(host, filepath)
         self.assertRegexpMatches(config, expected)
 
     def assert_has_default_connector(self, container):

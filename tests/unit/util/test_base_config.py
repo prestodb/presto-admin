@@ -16,7 +16,7 @@
 Tests for the base_config module.
 '''
 
-from prestoadmin.slider.config import SliderConfig
+from prestoadmin.yarn_slider.config import SliderConfig
 from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
