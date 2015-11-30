@@ -42,5 +42,5 @@ import plugin
 import package
 import script
 import server
-import slider.server as slider
+import yarn_slider.server as slider
 import topology

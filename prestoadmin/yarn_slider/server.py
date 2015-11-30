@@ -20,15 +20,14 @@ import os.path
 
 from fabric.api import env, task, abort
 from fabric.context_managers import shell_env
-from fabric.decorators import runs_once
 from fabric.operations import put, sudo, local
-from fabric.tasks import execute
 
-from prestoadmin.slider.config import requires_conf, store_conf, \
+from prestoadmin.yarn_slider.config import SliderConfig, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
-    PRESTO_PACKAGE, SLIDER_CONFIG_PATH, SLIDER_CONFIG_DIR
+    PRESTO_PACKAGE, SLIDER_CONFIG_DIR
+from prestoadmin.util.base_config import requires_config
 
-from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
+from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall']
 
@@ -37,17 +36,17 @@ SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
 
 
 @task
-@requires_conf
-@runs_once
+@requires_config(SliderConfig)
+@task_by_rolename(SLIDER_MASTER)
 def slider_install(slider_tarball):
     """
     Install slider on the slider master. You must provide a tar file on the
     local machine that contains the slider distribution.
 
-    :param slider_tarball: The gzipped tar file containing the Apache slider
+    :param slider_tarball: The gzipped tar file containing the Apache Slider
     distribution
     """
-    execute(deploy_install, slider_tarball, hosts=get_host_list())
+    deploy_install(slider_tarball)
 
 
 def deploy_install(slider_tarball):
@@ -67,7 +66,7 @@ def deploy_install(slider_tarball):
 
 
 @task
-@requires_conf
+@requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def slider_uninstall():
     """
@@ -87,7 +86,7 @@ def run_slider(slider_command, conf):
 
 
 @task
-@requires_conf
+@requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def install(presto_yarn_package):
     """
@@ -100,7 +99,7 @@ def install(presto_yarn_package):
     configuration file. The default is PRESTO
 
     :param presto_yarn_package: The zip file containing the presto-yarn
-    package as structured for slider.
+    package as structured for Slider.
     """
     conf = env.conf
     package_filename = os.path.basename(presto_yarn_package)
@@ -118,8 +117,8 @@ def install(presto_yarn_package):
     try:
         run_slider(package_install_command, conf)
 
-        env.conf[PRESTO_PACKAGE] = package_filename
-        store_conf(env.conf, SLIDER_CONFIG_PATH)
+        conf[PRESTO_PACKAGE] = package_filename
+        conf.store_conf()
 
         local('unzip %s %s -d %s' %
               (presto_yarn_package, ' '.join(SLIDER_PKG_DEFAULT_FILES),
@@ -129,7 +128,7 @@ def install(presto_yarn_package):
 
 
 @task
-@requires_conf
+@requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def uninstall():
     """
@@ -142,8 +141,8 @@ def uninstall():
     run_slider(package_delete_command, conf)
 
     try:
-        del env.conf[PRESTO_PACKAGE]
-        store_conf(env.conf, SLIDER_CONFIG_PATH)
+        del conf[PRESTO_PACKAGE]
+        conf.store_conf()
     except KeyError:
         pass
 

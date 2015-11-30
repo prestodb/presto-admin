@@ -57,16 +57,6 @@ class TestTopologyShow(BaseProductTestCase):
         expected = normal_topology
         self.assertEqual(expected, actual)
 
-    def test_topology_show_not_exists(self):
-        self.assertRaisesRegexp(OSError,
-                                'Missing topology configuration in '
-                                '/etc/opt/prestoadmin/config.json.  '
-                                'More detailed information can be found in'
-                                ' /var/log/prestoadmin/presto-admin.log',
-                                self.run_prestoadmin,
-                                'topology show'
-                                )
-
     @docker_only
     def test_topology_show_coord_down(self):
         topology = {'coordinator': 'slave1',

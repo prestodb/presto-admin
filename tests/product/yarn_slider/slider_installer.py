@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Installer for slider
+Installer for Apache Slider
 """
 
 from tests.base_installer import BaseInstaller
@@ -43,7 +43,7 @@ class SliderInstaller(BaseInstaller):
     def get_keywords(self):
         from tests.product.yarn_slider.test_slider_installation import \
             TestSliderInstallation
-        # The docker config has the external hostname,for the slider master,
+        # The docker config has the external hostname for the slider master,
         # which is the one we need to run stuff on clusters.
         return TestSliderInstallation.docker_config(self.conf)
 

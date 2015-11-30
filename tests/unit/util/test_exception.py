@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from prestoadmin.util.exception import ExceptionWithCause
+from prestoadmin.util.exception import ExceptionWithCause, \
+    ConfigFileNotFoundError
 
+import pickle
 import re
 from unittest import TestCase
 
@@ -38,3 +40,14 @@ class ExceptionTest(TestCase):
             self.assertTrue(m is not None)
         else:
             self.fail('ExceptionWithCause should have been raised')
+
+    def test_can_pickle_ConfigFileNotFound(self):
+        config_path = '/usa/georgia/macon'
+        message = 'I woke up this morning, I had them Statesboro Blues'
+        e = ConfigFileNotFoundError(config_path=config_path, message=message)
+
+        ps = pickle.dumps(e, pickle.HIGHEST_PROTOCOL)
+        a = pickle.loads(ps)
+
+        self.assertEquals(message, a.message)
+        self.assertEquals(config_path, a.config_path)

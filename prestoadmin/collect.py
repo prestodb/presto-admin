@@ -32,8 +32,9 @@ from fabric.api import env, runs_once, task
 from fabric.utils import abort, warn
 
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.topology import requires_topology
 from prestoadmin.server import get_presto_version, get_connector_info_from
+from prestoadmin.util.base_config import requires_config
+from prestoadmin.standalone.config import StandaloneConfig
 import prestoadmin.util.fabricapi as fabricapi
 import prestoadmin
 from util.constants import REMOTE_PRESTO_LOG_DIR, PRESTOADMIN_LOG_DIR
@@ -52,6 +53,7 @@ __all__ = ['logs', 'query_info', 'system_info']
 
 @task
 @runs_once
+@requires_config(StandaloneConfig)
 def logs():
     """
     Gather all the server logs and presto-admin log and create a tar file.
@@ -106,7 +108,7 @@ def file_get(remote_path, local_path):
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def query_info(query_id):
     """
     Gather information about the query identified by the given
@@ -124,7 +126,6 @@ def query_info(query_id):
               'command: server status'
 
     req = get_request(QUERY_REQUEST_URL + query_id, err_msg)
-
     query_info_file_name = os.path.join(TMP_PRESTO_DEBUG,
                                         'query_info_' + query_id + '.json')
 
@@ -150,6 +151,7 @@ def get_request(url, err_msg):
 
 
 @task
+@requires_config(StandaloneConfig)
 @runs_once
 def system_info():
     """

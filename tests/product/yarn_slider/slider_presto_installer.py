@@ -16,10 +16,12 @@ Installer for presto using slider
 """
 import fnmatch
 import os
+import urllib
 
 import prestoadmin
-from prestoadmin.slider.config import APPNAME, SLIDER_USER, HOST, HADOOP_CONF
-from prestoadmin.slider.server import get_slider_bin
+from prestoadmin.yarn_slider.config import APPNAME, SLIDER_USER, HOST, \
+    HADOOP_CONF
+from prestoadmin.yarn_slider.server import get_slider_bin
 
 from tests.base_installer import BaseInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
@@ -28,6 +30,10 @@ from tests.product.yarn_slider.test_slider_installation import \
     TestSliderInstallation
 
 PRESTO_YARN_PACKAGE_GLOB = 'presto-yarn-package*.zip'
+PRESTO_YARN_PACKAGE_URL = \
+    'https://oss.sonatype.org/content/groups/public/com/teradata/presto-yarn' \
+    '/presto-yarn-package/1.0.0-SNAPSHOT/' \
+    'presto-yarn-package-1.0.0-20151125.174831-31.zip'
 
 
 class SliderPrestoInstaller(BaseInstaller):
@@ -66,16 +72,31 @@ class SliderPrestoInstaller(BaseInstaller):
     @staticmethod
     def _detect_presto_package(testcase):
         search_dir = prestoadmin.main_dir
-        package_names = fnmatch.filter(os.listdir(search_dir),
-                                       PRESTO_YARN_PACKAGE_GLOB)
+        dl_tries = 0
+        while dl_tries == 0:
+            package_names = fnmatch.filter(os.listdir(search_dir),
+                                           PRESTO_YARN_PACKAGE_GLOB)
 
-        testcase.assertNotEqual(0, len(package_names),
-                                'No presto-yarn package found in %s' %
-                                (search_dir))
-        testcase.assertEqual(1, len(package_names),
-                             'Multiple presto-yarn packages found in %s:\n%s'
-                             % (search_dir, '\n'.join(package_names)))
-        return search_dir, package_names[0]
+            if len(package_names) == 0:
+                dl_tries += 1
+                print 'No presto-yarn package found in %s. Downloading' % \
+                      (search_dir)
+                SliderPrestoInstaller._download_package(testcase)
+
+            testcase.assertEqual(
+                1, len(package_names),
+                'Multiple presto-yarn packages found in %s:\n%s'
+                % (search_dir, '\n'.join(package_names)))
+
+            return search_dir, package_names[0]
+
+    @staticmethod
+    def _download_package(testcase):
+        package_filename = 'presto-yarn-package.zip'
+        package_path = os.path.join(prestoadmin.main_dir, package_filename)
+
+        urllib.urlretrieve(PRESTO_YARN_PACKAGE_URL, package_path)
+        return package_filename
 
     @staticmethod
     def assert_installed(testcase, package_filename=None):

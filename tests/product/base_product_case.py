@@ -138,7 +138,7 @@ query.max-memory=50GB\n"""
         for installer in installers:
             self.cluster.postinstall(installer)
 
-    def _update_keywords(self, installers):
+    def _update_replacement_keywords(self, installers):
         for installer in installers:
             installer_instance = installer(self)
             self.default_keywords.update(installer_instance.get_keywords())
@@ -163,7 +163,7 @@ query.max-memory=50GB\n"""
                     bare_image_provider, cluster_type)
                 if self.cluster:
                     self._apply_post_install_hooks(installers)
-                    self._update_keywords(installers)
+                    self._update_replacement_keywords(installers)
                     return
                 self.cluster = DockerCluster.start_bare_cluster(
                     bare_image_provider)
@@ -199,17 +199,28 @@ query.max-memory=50GB\n"""
         self.dump_and_cp_topology(topology, cluster)
 
     @nottest
-    def write_test_configs(self, cluster, extra_configs=None):
-        config = 'query.max-memory-per-node=512MB'
+    def write_test_configs(self, cluster, extra_configs=None,
+                           coordinator=None):
+        if not coordinator:
+            coordinator = self.cluster.internal_master
+        config = 'http-server.http.port=8080\n' \
+                 'query.max-memory=50GB\n' \
+                 'query.max-memory-per-node=512MB\n' \
+                 'discovery.uri=http://%s:8080' % coordinator
         if extra_configs:
             config += '\n' + extra_configs
+        coordinator_config = '%s\n' \
+                             'coordinator=true\n' \
+                             'node-scheduler.include-coordinator=false\n' \
+                             'discovery-server.enabled=true' % config
+        workers_config = '%s\ncoordinator=false' % config
         cluster.write_content_to_host(
-            config,
+            coordinator_config,
             os.path.join(constants.COORDINATOR_DIR, 'config.properties'),
             cluster.master
         )
         cluster.write_content_to_host(
-            config,
+            workers_config,
             os.path.join(constants.WORKERS_DIR, 'config.properties'),
             cluster.master
         )
@@ -258,14 +269,15 @@ query.max-memory=50GB\n"""
         self.cluster.exec_cmd_on_host(
             host, ' [ -e %s ] ' % file_path)
 
+    def get_file_content(self, host, filepath):
+        return self.cluster.exec_cmd_on_host(host, 'cat %s' % (filepath))
+
     def assert_file_content(self, host, filepath, expected):
-        config = self.cluster.exec_cmd_on_host(
-            host, 'cat %s' % filepath)
+        config = self.get_file_content(host, filepath)
         self.assertEqual(config, expected)
 
     def assert_file_content_regex(self, host, filepath, expected):
-        config = self.cluster.exec_cmd_on_host(
-            host, 'cat %s' % filepath)
+        config = self.get_file_content(host, filepath)
         self.assertRegexpMatches(config, expected)
 
     def assert_has_default_connector(self, container):

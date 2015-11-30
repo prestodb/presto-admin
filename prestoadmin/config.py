@@ -27,17 +27,23 @@ COMMENT_CHARS = ['!', '#']
 _LOGGER = logging.getLogger(__name__)
 
 
+def get_conf_from_json(conf_file):
+    try:
+        return json.load(conf_file)
+    except ValueError as e:
+        raise ConfigurationError(e)
+
+
 def get_conf_from_json_file(path):
     try:
         with open(path, 'r') as conf_file:
             if os.path.getsize(conf_file.name) == 0:
                 return {}
-            return json.load(conf_file)
+            return get_conf_from_json(conf_file)
     except IOError:
-        raise ConfigFileNotFoundError("Missing configuration file at " +
-                                      repr(path))
-    except ValueError as e:
-        raise ConfigurationError(e)
+        raise ConfigFileNotFoundError(
+            config_path=path, message="Missing configuration file %s." %
+            (repr(path)))
 
 
 def get_conf_from_properties_file(path):
@@ -69,6 +75,28 @@ def get_conf_from_config_file(path):
 
 def json_to_string(conf):
     return json.dumps(conf, indent=4, separators=(',', ':'))
+
+
+def write_conf_to_file(conf, path):
+    # Note: this function expects conf to be flat
+    # either a dict for .properties file or a list for .config
+    ext = os.path.splitext(path)[1]
+    if ext == ".properties":
+        write_properties_file(conf, path)
+    elif ext == ".config":
+        write_config_file(conf, path)
+
+
+def write_properties_file(conf, path):
+    output = ''
+    for key, value in conf.iteritems():
+        output += '%s=%s\n' % (key, value)
+    write(output, path)
+
+
+def write_config_file(conf, path):
+    output = '\n'.join(conf)
+    write(output, path)
 
 
 def write(output, path):

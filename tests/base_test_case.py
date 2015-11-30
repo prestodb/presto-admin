@@ -79,6 +79,10 @@ class BaseTestCase(unittest.TestCase):
         sys.stdout = self.old_stdout
         sys.stderr = self.old_stderr
 
+    # This method is equivalent to Python 2.7's unittest.assertNotIn()
+    def assertNotIn(self, member, container, msg=None):
+        self.assertTrue(member not in container, msg=msg)
+
     # This method is equivalent to Python 2.7's unittest.assertRaisesRegexp()
     def assertRaisesRegexp(self, expected_exception, expected_regexp,
                            callable_object, *args, **kwargs):

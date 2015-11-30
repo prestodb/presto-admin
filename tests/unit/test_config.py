@@ -28,7 +28,7 @@ DIR = os.path.abspath(os.path.dirname(__file__))
 class TestConfiguration(BaseTestCase):
     def test_file_does_not_exist_json(self):
         self.assertRaisesRegexp(ConfigFileNotFoundError,
-                                'Missing configuration file at',
+                                'Missing configuration file ',
                                 config.get_conf_from_json_file,
                                 'does/not/exist/conf.json')
 

@@ -57,18 +57,6 @@ class TestAuthentication(BaseProductTestCase):
         '[slave3] out: \n'
     )
 
-    @attr('smoketest')
-    def test_incorrect_hostname(self):
-        topology = {'coordinator': 'dummy_master',
-                    'workers': ['slave1', 'slave2', 'slave3']}
-        self.upload_topology(topology=topology)
-        command_output = self.run_prestoadmin('--extended-help',
-                                              raise_error=False)
-        self.assertEqual('u\'dummy_master\' is not a valid ip address or host '
-                         'name.  More detailed information can be found in '
-                         '/var/log/prestoadmin/presto-admin.log\n',
-                         command_output)
-
     def parallel_password_failure_message(self, with_sudo_prompt=True):
         with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'parallel_password_failure.txt')) as f:

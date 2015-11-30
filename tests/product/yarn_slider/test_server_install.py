@@ -17,7 +17,11 @@ Tests for the server install sub command.
 
 from errno import ECONNREFUSED
 from socket import socket
+from StringIO import StringIO
 import time
+
+from prestoadmin.config import get_conf_from_json
+from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, PRESTO_PACKAGE
 
 from tests.product.base_product_case import BaseProductTestCase
 from tests.hdp_bare_image_provider import HdpBareImageProvider
@@ -58,10 +62,25 @@ class TestServerInstall(BaseProductTestCase):
         self.assertRaisesRegexp(OSError, 'No such file or directory',
                                 self.installer.assert_installed, self)
 
+    def get_config(self):
+        slider_master = self.installer._get_slider_master(self)
+        conf = self.get_file_content(slider_master, SLIDER_CONFIG_PATH)
+        conf_file = StringIO(conf)
+        return get_conf_from_json(conf_file)
+
+    def assert_config_has_package(self):
+        conf_dict = self.get_config()
+        self.assertIn(PRESTO_PACKAGE, conf_dict)
+
+    def assert_config_no_package(self):
+        conf_dict = self.get_config()
+        self.assertNotIn(PRESTO_PACKAGE, conf_dict)
+
     def test_install(self):
         self.assert_uninstalled()
         self.installer.install()
         self.installer.assert_installed(self)
+        self.assert_config_has_package()
 
     def test_install_twice(self):
         self.assert_uninstalled()
@@ -74,8 +93,10 @@ class TestServerInstall(BaseProductTestCase):
         self.assert_uninstalled()
         self.installer.install()
         self.installer.assert_installed(self)
+        self.assert_config_has_package()
         self.uninstall()
         self.assert_uninstalled()
+        self.assert_config_no_package()
 
     def test_uninstall_not_installed(self):
         self.assert_uninstalled()

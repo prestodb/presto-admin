@@ -49,20 +49,23 @@ class TestConfiguration(BaseProductTestCase):
 
         self.assertEqualIgnoringOrder(output, expected)
 
+        # redeploy configuration to test the default files that we wrote out
+        output = self.run_prestoadmin('configuration deploy')
+        deploy_template = 'Deploying configuration on: %s\n'
+
+        for host in self.cluster.all_hosts():
+            self.assert_has_default_config(host)
+
+        self.assertEqualIgnoringOrder(output, expected)
+
+        # deploy coordinator configuration only.  Has a non-default file
         filename = 'config.properties'
-        path = os.path.join(constants.COORDINATOR_DIR, filename)
         dummy_prop1 = 'a.dummy.property:\'single-quoted\''
         conf_dummy_prop1 = 'a.dummy.property=\'single-quoted\''
         dummy_prop2 = 'another.dummy=value'
-        conf_to_write = '%s\n%s' % (dummy_prop1, dummy_prop2)
-        self.cluster.write_content_to_host(
-            conf_to_write, path, self.cluster.master)
+        extra_configs = '%s\n%s' % (dummy_prop1, dummy_prop2)
+        self.write_test_configs(self.cluster, extra_configs)
 
-        path = os.path.join(constants.WORKERS_DIR, filename)
-        self.cluster.write_content_to_host(
-            conf_to_write, path, self.cluster.master)
-
-        # deploy coordinator configuration only.  Has a non-default file
         output = self.run_prestoadmin('configuration deploy coordinator')
         self.assertEqual(output,
                          deploy_template % self.cluster.internal_master)
@@ -74,8 +77,9 @@ class TestConfiguration(BaseProductTestCase):
                                               'config.properties'),
                                  conf_dummy_prop1 + '\n' +
                                  dummy_prop2 + '\n' +
-                                 self.default_coordinator_config_)
+                                 self.default_coordinator_test_config_)
 
+        # deploy workers configuration only has non-default file
         filename = 'node.properties'
         path = os.path.join(constants.WORKERS_DIR, filename)
         self.cluster.write_content_to_host(
@@ -84,7 +88,6 @@ class TestConfiguration(BaseProductTestCase):
         self.cluster.write_content_to_host(
             'node.environment test', path, self.cluster.master)
 
-        # deploy workers configuration only has non-default file
         output = self.run_prestoadmin('configuration deploy workers')
         expected = ''
         for host in self.cluster.internal_slaves:
@@ -97,11 +100,8 @@ class TestConfiguration(BaseProductTestCase):
                                                   'config.properties'),
                                      conf_dummy_prop1 + '\n' +
                                      dummy_prop2 + '\n' +
-                                     self.default_workers_config_)
-            expected = """node.data-dir=/var/lib/presto/data
-node.environment=test
-plugin.config-dir=/etc/presto/catalog
-plugin.dir=/usr/lib/presto/lib/plugin\n"""
+                                     self.default_workers_test_config_)
+            expected = 'node.environment=test\n'
             self.assert_node_config(container, expected)
 
         self.assert_node_config(self.cluster.master,

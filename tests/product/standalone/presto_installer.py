@@ -35,7 +35,6 @@ DUMMY_RPM_NAME = 'dummy-rpm.rpm'
 
 
 class StandalonePrestoInstaller(BaseInstaller):
-
     def __init__(self, testcase):
         self.presto_rpm_filename = self._detect_presto_rpm()
         self.testcase = testcase
@@ -44,7 +43,8 @@ class StandalonePrestoInstaller(BaseInstaller):
     def get_dependencies():
         return [PrestoadminInstaller, TopologyInstaller]
 
-    def install(self, dummy=False, extra_configs=None, pa_raise_error=True):
+    def install(self, dummy=False, extra_configs=None, coordinator=None,
+                pa_raise_error=True):
         cluster = self.testcase.cluster
         if dummy:
             rpm_dir = LOCAL_RESOURCES_DIR
@@ -57,7 +57,7 @@ class StandalonePrestoInstaller(BaseInstaller):
                                                   rpm_name=rpm_name,
                                                   cluster=cluster)
 
-        self.testcase.write_test_configs(cluster, extra_configs)
+        self.testcase.write_test_configs(cluster, extra_configs, coordinator)
         cmd_output = self.testcase.run_prestoadmin(
             'server install ' + os.path.join(cluster.mount_dir, rpm_name),
             cluster=cluster, raise_error=pa_raise_error
