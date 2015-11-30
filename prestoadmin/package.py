@@ -18,16 +18,14 @@ Module for rpm package deploy and install using presto-admin
 import logging
 
 from fabric.context_managers import settings, hide, shell_env
-from fabric.decorators import task, runs_once
+from fabric.decorators import task
 from fabric.operations import sudo, put, os, local
 from fabric.state import env
-from fabric.tasks import execute
 from fabric.utils import abort
 
 from prestoadmin.util import constants
 from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util.base_config import requires_config
-from prestoadmin.util.fabricapi import get_host_list
 
 
 _LOGGER = logging.getLogger(__name__)

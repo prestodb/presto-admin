@@ -20,17 +20,14 @@ import os.path
 
 from fabric.api import env, task, abort
 from fabric.context_managers import shell_env
-from fabric.decorators import runs_once
 from fabric.operations import put, sudo, local
-from fabric.tasks import execute
 
-from prestoadmin.slider.config import \
+from prestoadmin.slider.config import SliderConfig, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     PRESTO_PACKAGE, SLIDER_CONFIG_PATH, SLIDER_CONFIG_DIR
 from prestoadmin.util.base_config import requires_config
-from prestoadmin.slider.config import DIR, SLIDER_MASTER, SliderConfig
 
-from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
+from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall']
 
