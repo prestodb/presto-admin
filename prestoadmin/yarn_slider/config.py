@@ -118,4 +118,4 @@ class SliderConfig(BaseConfig):
         env.hosts = env.roledefs['all'][:]
 
     def store_conf(self):
-        super(SliderConfig, self).store_conf(self.config)
+        super(SliderConfig, self).write_conf(self.config)
