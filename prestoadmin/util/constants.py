@@ -32,7 +32,7 @@ LOGGING_CONFIG_FILE_DIRECTORIES = [
 
 # local configuration
 LOCAL_CONF_DIR = '/etc/opt/prestoadmin'
-CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'config.json')
+TOPOLOGY_CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'config.json')
 COORDINATOR_DIR = os.path.join(LOCAL_CONF_DIR, 'coordinator')
 WORKERS_DIR = os.path.join(LOCAL_CONF_DIR, 'workers')
 CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, 'connectors')

@@ -1,6 +1,0 @@
-{
-    "username":"user",
-    "port": "1234",
-    "coordinator" : "my.coordinator",
-    "workers" : ["my.worker1", "my.worker2", "my.worker3"]
-}

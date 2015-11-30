@@ -29,10 +29,10 @@ from fabric.utils import warn
 from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import package
-from prestoadmin import topology
 from prestoadmin.util.constants import REMOTE_PRESTO_LOG_DIR
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.topology import requires_topology
+from prestoadmin.standalone.config import StandaloneConfig
+from prestoadmin.util.base_config import requires_config
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError
 from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
@@ -60,7 +60,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @task
-@runs_once
+@requires_config(StandaloneConfig)
 def install(local_path):
     """
     Copy and install the presto-server rpm to all the nodes in the cluster and
@@ -81,12 +81,6 @@ def install(local_path):
     Parameters:
         local_path - Absolute path to the presto rpm to be installed
     """
-
-    topology.set_topology_if_missing()
-    execute(deploy_install_configure, local_path, hosts=get_host_list())
-
-
-def deploy_install_configure(local_path):
     package.deploy_install(local_path)
     update_configs()
 
@@ -109,7 +103,7 @@ def update_configs():
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def uninstall():
     """
     Uninstall Presto after stopping the services on all nodes
@@ -129,7 +123,7 @@ def uninstall():
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def upgrade(local_package_path, local_config_dir=None):
     """
     Copy and upgrade a new presto-server rpm to all of the nodes in the
@@ -183,7 +177,7 @@ def service(control=None):
 
 
 def check_status_for_control_commands():
-    client = PrestoClient(env.host, env.port)
+    client = PrestoClient(env.host, env.user)
     print('Waiting to make sure we can connect to the Presto server on %s, '
           'please wait. This check will time out after %d minutes if the '
           'server does not respond.'
@@ -214,7 +208,7 @@ def is_port_in_use(host):
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def start():
     """
     Start the Presto server on all nodes
@@ -227,7 +221,7 @@ def start():
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def stop():
     """
     Stop the Presto server on all nodes
@@ -247,7 +241,7 @@ def stop_and_start():
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def restart():
     """
     Restart the Presto server on all nodes.
@@ -529,7 +523,7 @@ def get_status_from_coordinator():
 
 @task
 @runs_once
-@requires_topology
+@requires_config(StandaloneConfig)
 @with_settings(hide('warnings'))
 def status():
     """

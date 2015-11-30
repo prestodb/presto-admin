@@ -17,10 +17,10 @@ unit tests for plugin module
 """
 from mock import patch
 from prestoadmin import plugin
-from tests.base_test_case import BaseTestCase
+from tests.unit.base_unit_case import BaseUnitCase
 
 
-class TestPlugin(BaseTestCase):
+class TestPlugin(BaseUnitCase):
     @patch('prestoadmin.plugin.write')
     def test_add_jar(self, write_mock):
         plugin.add_jar('/my/local/path.jar', 'hive-hadoop2')

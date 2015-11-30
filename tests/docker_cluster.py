@@ -137,7 +137,6 @@ class DockerCluster(BaseCluster):
 
     def start_containers(self, master_image, slave_image=None,
                          cmd=None, **kwargs):
-        self.tear_down()
         self._create_host_mount_dirs()
 
         self._create_and_start_containers(master_image, slave_image,
@@ -148,6 +147,9 @@ class DockerCluster(BaseCluster):
         for container_name in self.all_hosts():
             self._tear_down_container(container_name)
         self._remove_host_mount_dirs()
+        if self.client:
+            self.client.close()
+            self.client = None
 
     def _tear_down_container(self, container_name):
         try:
@@ -385,8 +387,8 @@ class DockerCluster(BaseCluster):
 
     @staticmethod
     def _check_for_images(master_image_name, slave_image_name):
-        client = Client(timeout=180)
-        images = client.images()
+        with Client(timeout=180) as client:
+            images = client.images()
         has_master_image = False
         has_slave_image = False
         for image in images:

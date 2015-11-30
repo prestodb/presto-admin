@@ -98,8 +98,7 @@ The deployed configuration files will overwrite the existing configurations on
 the cluster. However, the node.id from the
 node.properties file will be preserved. If no node.id exists, a new id will be
 generated. If any required files are absent when you run configuration deploy,
-a default configuration will be deployed. If any required properties from those
-files are missing, they will be filled in with defaults. Below are the default
+a default configuration will be deployed. Below are the default
 configurations:
 
 *node.properties* ::
@@ -107,7 +106,7 @@ configurations:
     node.environment=presto
     node.data-dir=/var/lib/presto/data
     plugin.config-dir=/etc/presto/catalog
-    plugin.dir=/urs/lib/presto/lib/plugin
+    plugin.dir=/usr/lib/presto/lib/plugin
 
 .. NOTE:: Do not change the value of plugin.config-dir=/etc/presto/catalog as it is necessary for presto to be able to find the catalog directory when Presto has been installed by RPM.
 
@@ -139,7 +138,7 @@ For coordinator: ::
     discovery-server.enabled=true
     discovery.uri=http://<coordinator>:8080
     http-server.http.port=8080
-    node.scheduler.include-coordinator=false
+    node-scheduler.include-coordinator=false
     query.max-memory-per-node=1GB
     query.max-memory=50GB
 

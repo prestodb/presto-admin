@@ -35,7 +35,6 @@ DUMMY_RPM_NAME = 'dummy-rpm.rpm'
 
 
 class StandalonePrestoInstaller(BaseInstaller):
-
     def __init__(self, testcase):
         self.presto_rpm_filename = self._detect_presto_rpm()
         self.testcase = testcase
@@ -44,7 +43,8 @@ class StandalonePrestoInstaller(BaseInstaller):
     def get_dependencies():
         return [PrestoadminInstaller, TopologyInstaller]
 
-    def install(self, dummy=False, extra_configs=None, pa_raise_error=True):
+    def install(self, dummy=False, extra_configs=None, coordinator=None,
+                pa_raise_error=True):
         cluster = self.testcase.cluster
         if dummy:
             rpm_dir = LOCAL_RESOURCES_DIR
@@ -57,7 +57,7 @@ class StandalonePrestoInstaller(BaseInstaller):
                                                   rpm_name=rpm_name,
                                                   cluster=cluster)
 
-        self.testcase.write_test_configs(cluster, extra_configs)
+        self.testcase.write_test_configs(cluster, extra_configs, coordinator)
         cmd_output = self.testcase.run_prestoadmin(
             'server install ' + os.path.join(cluster.mount_dir, rpm_name),
             cluster=cluster, raise_error=pa_raise_error
@@ -166,9 +166,16 @@ class StandalonePrestoInstaller(BaseInstaller):
                             + os.path.join(cluster.mount_dir, rpm_name)
         )
 
-    def assert_uninstalled(self, container, msg=None):
+    def assert_uninstalled(self, container, dummy=False, msg=None):
+        if dummy:
+            rpm_name = os.path.splitext(DUMMY_RPM_NAME)[0]
+        else:
+            rpm_name = os.path.splitext(self.presto_rpm_filename)[0]
+        failure_msg = 'package %s is not installed' % rpm_name
+        rpm_cmd = 'rpm -q %s' % rpm_name
+
         self.testcase.assertRaisesRegexp(
             OSError,
-            'package presto-server-rpm is not installed',
+            failure_msg,
             self.testcase.cluster.exec_cmd_on_host, container,
-            'rpm -q presto-server-rpm', msg=msg)
+            rpm_cmd, msg=msg)

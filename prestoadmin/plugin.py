@@ -20,7 +20,8 @@ from fabric.decorators import task
 from fabric.operations import sudo, put
 import os
 from fabric.api import env
-from prestoadmin.topology import requires_topology
+from prestoadmin.standalone.config import StandaloneConfig
+from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.constants import REMOTE_PLUGIN_DIR
 
 __all__ = ['add_jar']
@@ -33,7 +34,7 @@ def write(local_path, remote_dir):
 
 
 @task
-@requires_topology
+@requires_config(StandaloneConfig)
 def add_jar(local_path, plugin_name, plugin_dir=REMOTE_PLUGIN_DIR):
     """
     Deploy jar for the specified plugin to the plugin directory.

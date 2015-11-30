@@ -22,71 +22,62 @@ import logging
 
 from fabric.api import env
 
-import config
-import presto_conf
-from prestoadmin.presto_conf import validate_presto_conf, get_presto_conf
+from prestoadmin.node import Node
+from prestoadmin.presto_conf import validate_presto_conf
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError
-
-DEFAULT_PROPERTIES = {'node.properties':
-                      {'node.environment': 'presto',
-                       'node.data-dir': '/var/lib/presto/data',
-                       'plugin.config-dir': '/etc/presto/catalog',
-                       'plugin.dir': '/usr/lib/presto/lib/plugin'},
-                      'jvm.config': ['-server',
-                                     '-Xmx2G',
-                                     '-XX:-UseBiasedLocking',
-                                     '-XX:+UseG1GC',
-                                     '-XX:+ExplicitGCInvokesConcurrent',
-                                     '-XX:+HeapDumpOnOutOfMemoryError',
-                                     '-XX:+UseGCOverheadLimit',
-                                     '-XX:OnOutOfMemoryError=kill -9 %p',
-                                     '-DHADOOP_USER_NAME=hive'],
-                      'config.properties': {
-                          'coordinator': 'true',
-                          'discovery-server.enabled': 'true',
-                          'http-server.http.port': '8080',
-                          'node-scheduler.include-coordinator': 'false',
-                          'query.max-memory': '50GB',
-                          'query.max-memory-per-node': '1GB'}
-                      }
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_conf():
-    conf = _get_conf()
-    for name in presto_conf.REQUIRED_FILES:
-        if name not in conf:
-            _LOGGER.debug('Coordinator configuration for %s not found.  '
-                          'Default configuration will be deployed', name)
-    defaults = build_defaults()
-    config.fill_defaults(conf, defaults)
-    validate(conf)
-    return conf
+class Coordinator(Node):
+    DEFAULT_PROPERTIES = {'node.properties':
+                          {'node.environment': 'presto',
+                           'node.data-dir': '/var/lib/presto/data',
+                           'plugin.config-dir': '/etc/presto/catalog',
+                           'plugin.dir': '/usr/lib/presto/lib/plugin'},
+                          'jvm.config': ['-server',
+                                         '-Xmx2G',
+                                         '-XX:-UseBiasedLocking',
+                                         '-XX:+UseG1GC',
+                                         '-XX:+ExplicitGCInvokesConcurrent',
+                                         '-XX:+HeapDumpOnOutOfMemoryError',
+                                         '-XX:+UseGCOverheadLimit',
+                                         '-XX:OnOutOfMemoryError=kill -9 %p',
+                                         '-DHADOOP_USER_NAME=hive'],
+                          'config.properties': {
+                              'coordinator': 'true',
+                              'discovery-server.enabled': 'true',
+                              'http-server.http.port': '8080',
+                              'node-scheduler.include-coordinator': 'false',
+                              'query.max-memory': '50GB',
+                              'query.max-memory-per-node': '1GB'}
+                          }
 
+    def _get_conf_dir(self):
+        return constants.COORDINATOR_DIR
 
-def _get_conf():
-    return get_presto_conf(constants.COORDINATOR_DIR)
+    def default_config(self, filename):
+        try:
+            conf = copy.deepcopy(self.DEFAULT_PROPERTIES[filename])
+        except KeyError:
+            raise ConfigurationError('Invalid configuration file name: %s' %
+                                     filename)
+        if filename == 'config.properties':
+            coordinator = env.roledefs['coordinator'][0]
+            workers = env.roledefs['worker']
+            if coordinator in workers:
+                conf['node-scheduler.include-coordinator'] = 'true'
+            conf['discovery.uri'] = 'http://%s:8080' % coordinator
+        return conf
 
-
-def build_defaults():
-    conf = copy.deepcopy(DEFAULT_PROPERTIES)
-    coordinator = env.roledefs['coordinator'][0]
-    workers = env.roledefs['worker']
-    if coordinator in workers:
-        conf['config.properties']['node-scheduler.'
-                                  'include-coordinator'] = 'true'
-    conf['config.properties']['discovery.uri'] = 'http://' + coordinator \
-                                                 + ':8080'
-
-    validate(conf)
-    return conf
-
-
-def validate(conf):
-    validate_presto_conf(conf)
-    if conf['config.properties']['coordinator'] != 'true':
-        raise ConfigurationError('Coordinator cannot be false in the '
-                                 'coordinator\'s config.properties.')
-    return conf
+    @staticmethod
+    def validate(conf):
+        validate_presto_conf(conf)
+        if 'coordinator' not in conf['config.properties']:
+            raise ConfigurationError('Must specify coordinator=true in '
+                                     'coordinator\'s config.properties')
+        if conf['config.properties']['coordinator'] != 'true':
+            raise ConfigurationError('Coordinator cannot be false in the '
+                                     'coordinator\'s config.properties.')
+        return conf

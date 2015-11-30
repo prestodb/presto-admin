@@ -23,10 +23,10 @@ from prestoadmin import connector
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError,\
     ConfigFileNotFoundError
-from tests.base_test_case import BaseTestCase
+from tests.unit.base_unit_case import BaseUnitCase
 
 
-class TestConnector(BaseTestCase):
+class TestConnector(BaseUnitCase):
     def setUp(self):
         super(TestConnector, self).setUp(capture_output=True)
 

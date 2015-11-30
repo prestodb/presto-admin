@@ -7,14 +7,14 @@ Presto Admin Installation
 
 
 To install ``presto-admin``, first copy the  installer
-``prestoadmin-1.1-offline.tar.bz2`` to the location where you want
+``prestoadmin-1.2-offline.tar.bz2`` to the location where you want
 ``presto-admin`` to run. The recommended installation location is ``/opt``.
 Note that ``presto-admin`` does not have to be on same node(s) where Presto
 will run, though it does need to have SSH access to all of them. Next, extract
 and sudo run the installation script from within the ``prestoadmin`` directory.
 ::
 
- $ tar xvf prestoadmin-1.1-offline.tar.bz2
+ $ tar xvf prestoadmin-1.2-offline.tar.bz2
  $ cd prestoadmin
  $ sudo ./install-prestoadmin.sh
 

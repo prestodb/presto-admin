@@ -49,7 +49,7 @@ class TestDeploy(BaseTestCase):
         deploy.workers()
         assert not configure_mock.called
 
-    @patch('prestoadmin.deploy.w.get_conf')
+    @patch('prestoadmin.deploy.w.Worker')
     @patch('prestoadmin.deploy.configure_presto')
     def test_worker_not_coordinator(self,  configure_mock, get_conf_mock):
         env.host = "my.host1"
@@ -59,11 +59,10 @@ class TestDeploy(BaseTestCase):
         assert configure_mock.called
 
     @patch('prestoadmin.deploy.configure_presto')
-    @patch('prestoadmin.deploy.coord.get_conf')
+    @patch('prestoadmin.deploy.coord.Coordinator')
     def test_coordinator(self, coord_mock, configure_mock):
         env.roledefs['coordinator'] = ['master']
         env.host = 'master'
-        coord_mock.return_value = {}
         deploy.coordinator()
         assert configure_mock.called
 

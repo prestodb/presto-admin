@@ -24,9 +24,11 @@ from fabric.decorators import runs_once
 from fabric.operations import put, sudo, local
 from fabric.tasks import execute
 
-from prestoadmin.slider.config import requires_conf, store_conf, \
+from prestoadmin.slider.config import \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     PRESTO_PACKAGE, SLIDER_CONFIG_PATH, SLIDER_CONFIG_DIR
+from prestoadmin.util.base_config import requires_config
+from prestoadmin.slider.config import DIR, SLIDER_MASTER, SliderConfig
 
 from prestoadmin.util.fabricapi import get_host_list, task_by_rolename
 
@@ -37,8 +39,7 @@ SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
 
 
 @task
-@requires_conf
-@runs_once
+@requires_config(SliderConfig)
 def slider_install(slider_tarball):
     """
     Install slider on the slider master. You must provide a tar file on the
@@ -47,7 +48,7 @@ def slider_install(slider_tarball):
     :param slider_tarball: The gzipped tar file containing the Apache slider
     distribution
     """
-    execute(deploy_install, slider_tarball, hosts=get_host_list())
+    deploy_install(slider_tarball)
 
 
 def deploy_install(slider_tarball):
@@ -67,7 +68,7 @@ def deploy_install(slider_tarball):
 
 
 @task
-@requires_conf
+@requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def slider_uninstall():
     """
@@ -87,7 +88,7 @@ def run_slider(slider_command, conf):
 
 
 @task
-@requires_conf
+@requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def install(presto_yarn_package):
     """
@@ -129,7 +130,7 @@ def install(presto_yarn_package):
 
 
 @task
-@requires_conf
+@requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def uninstall():
     """

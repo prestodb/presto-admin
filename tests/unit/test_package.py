@@ -17,10 +17,10 @@ from fabric.operations import _AttributeString
 from mock import patch
 from prestoadmin import package
 from prestoadmin.util import constants
-from tests.base_test_case import BaseTestCase
+from tests.unit.base_unit_case import BaseUnitCase
 
 
-class TestPackage(BaseTestCase):
+class TestPackage(BaseUnitCase):
 
     @patch('prestoadmin.package.sudo')
     @patch('prestoadmin.package.put')

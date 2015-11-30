@@ -19,10 +19,10 @@ Tests the script module
 from mock import patch, call
 from prestoadmin import script
 
-from tests.base_test_case import BaseTestCase
+from tests.unit.base_unit_case import BaseUnitCase
 
 
-class TestInstall(BaseTestCase):
+class TestInstall(BaseUnitCase):
 
     @patch('prestoadmin.script.sudo')
     @patch('prestoadmin.script.put')

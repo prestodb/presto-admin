@@ -171,6 +171,44 @@ query.max-memory=50GB\n"""
                                            '/etc/presto/config.properties',
                                            self.default_workers_config_regex_)
 
+    def test_install_with_java8_home(self, dummy=True):
+        for container in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(container,
+                                          "mv /usr/java/jdk1.8.0_40 /usr/")
+        topology = {"coordinator": "master",
+                    "workers": ["slave1", "slave2", "slave3"],
+                    "java8_home": "/usr/jdk1.8.0_40/jre"}
+        self.upload_topology(topology)
+
+        cmd_output = self.installer.install(dummy)
+        expected = installed_all_hosts_output
+
+        actual = cmd_output.splitlines()
+        self.assertEqual(sorted(expected), sorted(actual))
+
+        for container in self.cluster.all_hosts():
+            self.installer.assert_installed(self, container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
+
+    def test_install_failure_without_java8_home(self):
+        for container in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(container,
+                                          "mv /usr/java/jdk1.8.0_40 /usr/")
+        self.upload_topology()
+        cmd_output = self.installer.install(dummy=True, pa_raise_error=False)
+        actual = cmd_output.splitlines()
+        num_failures = 0
+        for line in enumerate(actual):
+            if str(line).find("Error: Required Java version"
+                              " could not be found") != -1:
+                num_failures += 1
+
+        self.assertEqual(4, num_failures)
+
+        for container in self.cluster.all_hosts():
+            self.installer.assert_uninstalled(container, dummy=True)
+
     @attr('smoketest')
     def test_install(self, dummy=False):
         self.upload_topology()
@@ -191,7 +229,7 @@ query.max-memory=50GB\n"""
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology)
 
-        cmd_output = self.installer.install(dummy=True)
+        cmd_output = self.installer.install(dummy=True, coordinator='slave1')
         expected = install_with_worker_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -208,7 +246,7 @@ query.max-memory=50GB\n"""
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology)
 
-        cmd_output = self.installer.install(dummy=True)
+        cmd_output = self.installer.install(dummy=True, coordinator='slave1')
         expected = install_with_ext_host_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -317,7 +355,7 @@ query.max-memory=50GB\n"""
                     r'\[root\] '
                     r'Enter port number for SSH connections to all nodes: '
                     r'\[22\] '
-                    r'Enter host name or IP address for coordinator node.  '
+                    r'Enter host name or IP address for coordinator node. '
                     r'Enter an external host name or ip address if this is a '
                     r'multi-node cluster: \[localhost\] '
                     r'Enter host names or IP addresses for worker nodes '
@@ -369,7 +407,7 @@ query.max-memory=50GB\n"""
                     r'\[root\] '
                     r'Enter port number for SSH connections to all nodes: '
                     r'\[22\] '
-                    r'Enter host name or IP address for coordinator node.  '
+                    r'Enter host name or IP address for coordinator node. '
                     r'Enter an external host name or ip address if this is a '
                     r'multi-node cluster: \[localhost\] '
                     r'Enter host names or IP addresses for worker nodes '
@@ -459,7 +497,9 @@ query.max-memory=50GB\n"""
         self.cluster.stop_host(
             self.cluster.slaves[0])
 
-        actual_out = self.installer.install(dummy=True)
+        actual_out = self.installer.install(
+            dummy=True, coordinator=down_node, pa_raise_error=False)
+
         self.assertRegexpMatches(
             actual_out,
             self.down_node_connection_error(down_node)
@@ -491,12 +531,13 @@ query.max-memory=50GB\n"""
         expected = ''
         for host in self.cluster.all_internal_hosts():
             expected += error_msg % {'host': host, 'rpm': rpm_name}
-        actual = self.run_script_from_prestoadmin_dir(script, rpm=rpm_name)
+        actual = self.run_script_from_prestoadmin_dir(script, rpm=rpm_name,
+                                                      raise_error=False)
         self.assertEqualIgnoringOrder(actual, expected)
 
     def test_install_twice(self):
         self.test_install(dummy=True)
-        output = self.installer.install(dummy=True)
+        output = self.installer.install(dummy=True, pa_raise_error=False)
 
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
                 as f:
