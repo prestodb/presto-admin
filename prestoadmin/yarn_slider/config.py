@@ -14,7 +14,7 @@
 
 
 """
-Module for setting and validating the presto-admin yarn_slider config
+Module for setting and validating the presto-admin Apache Slider config
 """
 
 import os
@@ -28,7 +28,7 @@ from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'yarn_slider')
+SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
 SLIDER_CONFIG_PATH = os.path.join(SLIDER_CONFIG_DIR, 'config.json')
 SLIDER_MASTER = 'slider_master'
 
@@ -50,24 +50,24 @@ PRESTO_PACKAGE = 'presto_slider_package'
 
 _SLIDER_CONFIG = [
     MultiConfigItem([
-        SingleConfigItem(HOST, 'Enter the hostname for the yarn_slider master:',
+        SingleConfigItem(HOST, 'Enter the hostname for the slider master:',
                          'localhost', validate_host),
         SingleConfigItem(ADMIN_USER, 'Enter the user name to use when ' +
-                         'installing yarn_slider on the yarn_slider master:',
-                         'root', validate_username),
+                         'installing slider on the slider master:', 'root',
+                         validate_username),
         SingleConfigItem(SSH_PORT, 'Enter the port number for SSH ' +
-                         'connections to the yarn_slider master', 22,
+                         'connections to the slider master', 22,
                          validate_port)],
                     validate_can_connect, (ADMIN_USER, HOST, SSH_PORT),
                     'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. ' +
                     'Re-enter connection information.'),
 
-    SingleConfigItem(DIR, 'Enter the directory to install yarn_slider into on ' +
-                     'the yarn_slider master:', '/opt/yarn_slider', None),
+    SingleConfigItem(DIR, 'Enter the directory to install slider into on the' +
+                     'slider master:', '/opt/slider', None),
 
     MultiConfigItem([
-        SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting ' +
-                         'yarn_slider operations on the yarn_slider master ', 'yarn',
+        SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting slider'
+                         'operations on the slider master ', 'yarn',
                          validate_username)],
                     validate_can_sudo,
                     (SLIDER_USER, ADMIN_USER, HOST, SSH_PORT),
@@ -76,12 +76,12 @@ _SLIDER_CONFIG = [
                     'again.'),
 
     SingleConfigItem(JAVA_HOME, 'Enter the value of JAVA_HOME to use when' +
-                     'running yarn_slider on the yarn_slider master:',
+                     'running slider on the slider master:',
                      '/usr/lib/jvm/java', None),
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
-                     'configuration on the yarn_slider master:',
-                     '/etc/hadoop/conf', None),
-    SingleConfigItem(APPNAME, 'Enter a name for the presto yarn_slider application',
+                     'configuration on the slider master:', '/etc/hadoop/conf',
+                     None),
+    SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
                      'PRESTO', None)]
 
 

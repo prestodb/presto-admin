@@ -104,4 +104,4 @@ class TestServerInstall(BaseProductTestCase):
                                 self.uninstall)
 
     def uninstall(self):
-        return self.run_prestoadmin(' yarn_slider uninstall')
+        return self.run_prestoadmin(' slider uninstall')

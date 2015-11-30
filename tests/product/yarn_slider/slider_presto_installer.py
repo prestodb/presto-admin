@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 """
-Installer for presto using yarn_slider
+Installer for presto using slider
 """
 import fnmatch
 import os
 import urllib
 
 import prestoadmin
-from prestoadmin.yarn_slider.config import APPNAME, SLIDER_USER, HOST, HADOOP_CONF
+from prestoadmin.yarn_slider.config import APPNAME, SLIDER_USER, HOST, \
+    HADOOP_CONF
 from prestoadmin.yarn_slider.server import get_slider_bin
 
 from tests.base_installer import BaseInstaller
@@ -59,7 +60,7 @@ class SliderPrestoInstaller(BaseInstaller):
         package_name = self._copy_package_to_pa_host()
 
         cmd_output = self.testcase.run_prestoadmin(
-            ' yarn_slider install ' +
+            ' slider install ' +
             os.path.join(cluster.mount_dir, package_name),
             cluster=cluster)
 
@@ -85,7 +86,7 @@ class SliderPrestoInstaller(BaseInstaller):
             testcase.assertEqual(
                 1, len(package_names),
                 'Multiple presto-yarn packages found in %s:\n%s'
-                 % (search_dir, '\n'.join(package_names)))
+                % (search_dir, '\n'.join(package_names)))
 
             return search_dir, package_names[0]
 
@@ -107,7 +108,7 @@ class SliderPrestoInstaller(BaseInstaller):
         si = SliderInstaller(testcase)
         keywords = si.get_keywords()
         hdfs_cmd = 'hdfs dfs -ls %s' % (
-            os.path.join('/', 'user', keywords[SLIDER_USER], '.yarn_slider',
+            os.path.join('/', 'user', keywords[SLIDER_USER], '.slider',
                          'package', keywords[APPNAME],
                          os.path.basename(package_filename))
         )
@@ -115,7 +116,7 @@ class SliderPrestoInstaller(BaseInstaller):
             SliderPrestoInstaller._get_slider_master(testcase), hdfs_cmd,
             SliderPrestoInstaller._get_slider_user(testcase))
 
-        # Verify that yarn_slider thinks the package is installed
+        # Verify that slider thinks the package is installed
         conf = TestSliderInstallation.get_config()
         slider_cmd = \
             "bash -c 'export HADOOP_CONF_DIR=%s ; %s package --list'" % (
