@@ -20,7 +20,6 @@ from tests.product.base_product_case import BaseProductTestCase, \
     docker_only
 from tests.product.constants import LOCAL_RESOURCES_DIR
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
-import prestoadmin
 
 
 class TestPackageInstall(BaseProductTestCase):
