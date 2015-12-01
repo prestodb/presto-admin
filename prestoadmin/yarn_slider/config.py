@@ -55,8 +55,8 @@ _SLIDER_CONFIG = [
         SingleConfigItem(HOST, 'Enter the hostname for the slider master:',
                          'localhost', validate_host),
         SingleConfigItem(ADMIN_USER, 'Enter the user name to use when ' +
-                         'installing slider on the slider master:', 'root',
-                         validate_username),
+                         'installing slider on the slider master:',
+                         'root', validate_username),
         SingleConfigItem(SSH_PORT, 'Enter the port number for SSH ' +
                          'connections to the slider master', 22,
                          validate_port)],
@@ -64,12 +64,12 @@ _SLIDER_CONFIG = [
                     'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. ' +
                     'Re-enter connection information.'),
 
-    SingleConfigItem(DIR, 'Enter the directory to install slider into on the' +
-                     'slider master:', '/opt/slider', None),
+    SingleConfigItem(DIR, 'Enter the directory to install slider into on '
+                     'the slider master:', '/opt/slider', None),
 
     MultiConfigItem([
-        SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting slider'
-                         'operations on the slider master ', 'yarn',
+        SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting '
+                         'slider operations on the slider master ', 'yarn',
                          validate_username)],
                     validate_can_sudo,
                     (SLIDER_USER, ADMIN_USER, HOST, SSH_PORT),
@@ -81,13 +81,22 @@ _SLIDER_CONFIG = [
                      'running slider on the slider master:',
                      '/usr/lib/jvm/java', None),
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
-                     'configuration on the slider master:', '/etc/hadoop/conf',
-                     None),
+                     'configuration on the slider master:',
+                     '/etc/hadoop/conf', None),
     SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
                      'PRESTO', None)]
 
 
 class SliderConfig(BaseConfig):
+    '''
+    presto-admin needs to update the slider config other than through the
+    interactive config process because it needs to keep track of the name
+    of the presto-yarn-package we install.
+
+    As a result, SliderConfig acts a little funny; it acts like enough of a
+    dict to allow env.conf[NAME] lookups and modifications, and it also exposes
+    the ability to store the config after it's been modified.
+    '''
 
     def __init__(self):
         super(SliderConfig, self).__init__(SLIDER_CONFIG_PATH, _SLIDER_CONFIG)
