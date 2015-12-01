@@ -37,7 +37,7 @@ class TestTopologyConfig(BaseUnitCase):
             {"username": "john", "port": "100"}
 
         config = StandaloneConfig()
-        conf = config.load_conf()
+        conf = config.read_conf()
 
         self.assertEqual(conf, {"username": "john", "port": 100,
                                 "coordinator": "localhost",
