@@ -28,7 +28,7 @@ class TestPackageInstall(BaseProductTestCase):
         super(TestPackageInstall, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
         self.upload_topology()
-        self.installer = StandalonePrestoInstaller(self)
+        self.installer = StandalonePrestoInstaller(self, dummy=True)
 
     @attr('smoketest')
     def test_package_install(self):
@@ -157,7 +157,7 @@ Aborting.
 Deploying rpm on %(master)s...
 Package deployed successfully on: %(master)s
 [%(master)s] out: 	package %(rpm_basename)s is already installed
-[%(master)s] out: """, **self.installer.get_keywords(rpm_name)))
+[%(master)s] out: """, **self.installer.get_keywords()))
         self.assertRegexpMatchesLineByLine(
             cmd_output.splitlines(),
             expected.splitlines()
@@ -183,9 +183,7 @@ Aborting.
 
     @docker_only
     def test_install_rpm_with_missing_jdk(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master(
-            rpm_dir=prestoadmin.main_dir,
-            rpm_name=self.installer.presto_rpm_filename)
+        rpm_name = self.installer.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
             self.cluster.master, 'rpm -e jdk1.8.0_40-1.8.0_40-fcs')
         self.assertRaisesRegexp(OSError,
@@ -208,7 +206,7 @@ Aborting.
             jdk_not_found_error = f.read()
         return self.escape_for_regex(
             self.replace_keywords(jdk_not_found_error,
-                                  **self.installer.get_keywords(rpm_name)))
+                                  **self.installer.get_keywords()))
 
     @docker_only
     def test_install_rpm_missing_dependency(self):
@@ -237,7 +235,7 @@ Deploying rpm on %(master)s...
 Package deployed successfully on: %(master)s
 [%(master)s] out: error: Failed dependencies:
 [%(master)s] out: 	python >= 2.4 is needed by %(rpm_basename)s
-[%(master)s] out: """, **self.installer.get_keywords(rpm_name))
+[%(master)s] out: """, **self.installer.get_keywords())
         self.assertRegexpMatchesLineByLine(
             cmd_output.splitlines(),
             self.escape_for_regex(expected).splitlines()

@@ -94,23 +94,23 @@ class SliderPrestoInstaller(BaseInstaller):
     @staticmethod
     def _detect_presto_package(testcase):
         search_dir = prestoadmin.main_dir
-        dl_tries = 0
-        while dl_tries == 0:
+
+        package_names = fnmatch.filter(os.listdir(search_dir),
+                                       PRESTO_YARN_PACKAGE_GLOB)
+
+        if len(package_names) == 0:
+            print 'No presto-yarn package found in %s. Downloading' % \
+                  (search_dir)
+            SliderPrestoInstaller._download_package(testcase)
             package_names = fnmatch.filter(os.listdir(search_dir),
                                            PRESTO_YARN_PACKAGE_GLOB)
 
-            if len(package_names) == 0:
-                dl_tries += 1
-                print 'No presto-yarn package found in %s. Downloading' % \
-                      (search_dir)
-                SliderPrestoInstaller._download_package(testcase)
+        testcase.assertEqual(
+            1, len(package_names),
+            'Found %s presto-yarn packages in %s. Expected exactly 1:\n%s'
+            % (len(package_names), search_dir, '\n'.join(package_names)))
 
-            testcase.assertEqual(
-                1, len(package_names),
-                'Multiple presto-yarn packages found in %s:\n%s'
-                % (search_dir, '\n'.join(package_names)))
-
-            return search_dir, package_names[0]
+        return search_dir, package_names[0]
 
     @staticmethod
     def _download_package(testcase):
