@@ -29,11 +29,33 @@ from tests.product.yarn_slider.slider_installer import SliderInstaller
 from tests.product.yarn_slider.test_slider_installation import \
     TestSliderInstallation
 
+# If you have the misfortune of having to fix the download link in the future,
+# be aware that you're in for a treat.
+#
+# A couple of hard-learned lessons:
+# repository.sonatype.org and oss.sonatype.org have different groups. To get a
+# listing, go to https://oss.sonatype.org/content/groups/public/com/
+# Make sure teradata is listed there; if it isn't, you're barking up the wrong
+# tree
+# The complete group is com.teradata.presto-yarn
+# The complete package is presto-yarn-package
+#
+# You should be able to browse to
+# https://oss.sonatype.org/content/groups/public/com/teradata/presto-yarn
+# and follow links to verify that the presto-yarn-package exists and that there
+# are builds.
+#
+# Other places to try to get a toehold:
+# https://oss.sonatype.org will get you a web GUI, with which you can search
+# for the presto-yarn-package
+#
+# Documentation for the REST API:
+# https://oss.sonatype.org/nexus-restlet1x-plugin/default/docs/index.html
 PRESTO_YARN_PACKAGE_GLOB = 'presto-yarn-package*.zip'
 PRESTO_YARN_PACKAGE_URL = \
-    'https://oss.sonatype.org/content/groups/public/com/teradata/presto-yarn' \
-    '/presto-yarn-package/1.0.0-SNAPSHOT/' \
-    'presto-yarn-package-1.0.0-20151125.174831-31.zip'
+    'https://oss.sonatype.org/service/local/artifact/maven/redirect' \
+    '?r=snapshots&g=com.teradata.presto-yarn' \
+    '&a=presto-yarn-package&e=zip&v=LATEST'
 
 
 class SliderPrestoInstaller(BaseInstaller):
