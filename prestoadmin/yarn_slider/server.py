@@ -95,6 +95,11 @@ def install(presto_yarn_package):
     packaging requirements. After installing the presto-yarn package the presto
     application is registered with Slider.
 
+    Before Slider can install the presto-yarn package, the slider user's hdfs
+    home directory needs to be created. This needs to be done by a user that
+    has write access to the hdfs /user directory, typically the user hdfs or a
+    member of the superuser group.
+
     The name of the presto application is arbitrary and set in the slider
     configuration file. The default is PRESTO
 
