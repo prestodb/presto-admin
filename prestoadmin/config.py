@@ -27,23 +27,18 @@ COMMENT_CHARS = ['!', '#']
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_conf_from_json(conf_file):
-    try:
-        return json.load(conf_file)
-    except ValueError as e:
-        raise ConfigurationError(e)
-
-
 def get_conf_from_json_file(path):
     try:
         with open(path, 'r') as conf_file:
             if os.path.getsize(conf_file.name) == 0:
                 return {}
-            return get_conf_from_json(conf_file)
+            return json.load(conf_file)
     except IOError:
         raise ConfigFileNotFoundError(
             config_path=path, message="Missing configuration file %s." %
             (repr(path)))
+    except ValueError as e:
+        raise ConfigurationError(e)
 
 
 def get_conf_from_properties_file(path):

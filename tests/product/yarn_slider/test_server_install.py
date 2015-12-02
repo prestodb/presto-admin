@@ -16,11 +16,10 @@ Tests for the server install sub command.
 """
 
 from errno import ECONNREFUSED
+import json
 from socket import socket
-from StringIO import StringIO
 import time
 
-from prestoadmin.config import get_conf_from_json
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, PRESTO_PACKAGE
 
 from tests.product.base_product_case import BaseProductTestCase
@@ -65,8 +64,7 @@ class TestServerInstall(BaseProductTestCase):
     def get_config(self):
         slider_master = self.installer._get_slider_master(self)
         conf = self.get_file_content(slider_master, SLIDER_CONFIG_PATH)
-        conf_file = StringIO(conf)
-        return get_conf_from_json(conf_file)
+        return json.loads(conf)
 
     def assert_config_has_package(self):
         conf_dict = self.get_config()
