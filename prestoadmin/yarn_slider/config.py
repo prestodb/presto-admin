@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+
 """
 Module for setting and validating the presto-admin Apache Slider config
 """
@@ -23,8 +24,8 @@ from overrides import overrides
 
 from fabric.state import env
 
-from prestoadmin.util.base_config import BaseConfig, SingleConfigItem, \
-    MultiConfigItem
+from prestoadmin.util.base_config import FabricEnvConfig, SingleConfigItem, \
+    MultiConfigItem, set_env_hosts
 from prestoadmin.util.constants import LOCAL_CONF_DIR
 from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
@@ -87,7 +88,7 @@ _SLIDER_CONFIG = [
                      'PRESTO', None)]
 
 
-class SliderConfig(BaseConfig):
+class SliderConfig(FabricEnvConfig):
     '''
     presto-admin needs to update the slider config other than through the
     interactive config process because it needs to keep track of the name
@@ -129,7 +130,7 @@ class SliderConfig(BaseConfig):
 
         env.conf = self
 
-        env.hosts = env.roledefs['all'][:]
+        set_env_hosts(env.roledefs['all'][:], self.config_path)
 
     def store_conf(self):
         super(SliderConfig, self).write_conf(self.config)

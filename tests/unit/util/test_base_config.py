@@ -17,6 +17,8 @@ Tests for the base_config module.
 '''
 
 from prestoadmin.yarn_slider.config import SliderConfig
+from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
+    ResourcesJson
 from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
@@ -75,7 +77,7 @@ class TestBaseConfig(BaseTestCase):
         self.assertTrue(config.is_config_loaded())
 
     @patch('tests.unit.util.test_base_config.SliderConfig.is_config_loaded')
-    def test_decorator_has_topology(self, mock_is_config_loaded):
+    def test_decorator_has_config(self, mock_is_config_loaded):
         mock_is_config_loaded.return_value = True
 
         @requires_config(SliderConfig)
@@ -83,10 +85,11 @@ class TestBaseConfig(BaseTestCase):
             return 'runs'
 
         self.assertEquals(func(), 'runs')
+        self.assertTrue(mock_is_config_loaded.called)
 
     @patch('tests.unit.util.test_base_config.StandaloneConfig.'
            'is_config_loaded')
-    def test_decorator_no_topology(self, mock_is_config_loaded):
+    def test_decorator_no_config(self, mock_is_config_loaded):
         mock_is_config_loaded.return_value = False
 
         @requires_config(StandaloneConfig)
@@ -94,3 +97,69 @@ class TestBaseConfig(BaseTestCase):
             return 'runs'
 
         self.assertRaises(ConfigurationError, func)
+
+    @patch('tests.unit.util.test_base_config.SliderConfig.is_config_loaded')
+    @patch('tests.unit.util.test_base_config.AppConfigJson.is_config_loaded')
+    @patch('tests.unit.util.test_base_config.ResourcesJson.is_config_loaded')
+    def test_decorator_multi_has_config(
+            self, mock_resources_icl, mock_app_config_icl,
+            mock_slider_icl):
+        mock_slider_icl.return_value = True
+        mock_app_config_icl.return_value = True
+        mock_resources_icl.return_value = True
+
+        @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
+        def func():
+            return 'runs'
+
+        self.assertEquals(func(), 'runs')
+        self.assertTrue(mock_app_config_icl.called)
+        self.assertTrue(mock_resources_icl.called)
+        self.assertTrue(mock_slider_icl.called)
+
+    @patch('tests.unit.util.test_base_config.SliderConfig.is_config_loaded')
+    @patch('tests.unit.util.test_base_config.AppConfigJson.is_config_loaded')
+    @patch('tests.unit.util.test_base_config.ResourcesJson.is_config_loaded')
+    def test_decorator_multi_missing_config(
+            self, mock_resources_icl, mock_app_config_icl,
+            mock_slider_icl):
+        mock_slider_icl.return_value = True
+        mock_app_config_icl.return_value = False
+        mock_resources_icl.return_value = True
+
+        @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
+        def func():
+            return 'runs'
+
+        self.assertRaises(ConfigurationError, func)
+        # Don't care who was or wasn't called. That's an implementation detail.
+
+    @patch('tests.unit.util.test_base_config.SliderConfig.read_conf')
+    @patch('tests.unit.util.test_base_config.StandaloneConfig.'
+           '_get_conf_from_file')
+    def test_multi_set_hosts(self, mock_standalone_conf, mock_slider_conf):
+        mock_standalone_conf.return_value = \
+            {'username': 'user',
+             'port': 1234,
+             'coordinator': 'master',
+             'workers': ['slave1', 'slave2']}
+
+        mock_slider_conf.return_value = \
+            {'slider_directory':'/opt/slider',
+             'admin':'root',
+             'HADOOP_CONF':'/etc/hadoop/conf',
+             'ssh_port':22,
+             'slider_user':'yarn',
+             'slider_master':'localhost',
+             'JAVA_HOME':'/usr/lib/jvm/java'}
+
+
+        @requires_config(StandaloneConfig, SliderConfig)
+        def func():
+            return 'runs'
+
+        callbacks = func.pa_config_callbacks
+
+        self.assertEqual(len(callbacks), 2)
+        callbacks[0]()
+        self.assertRaises(ConfigurationError, callbacks[1])
