@@ -44,7 +44,7 @@ def slider_install(slider_tarball):
     local machine that contains the slider distribution.
 
     :param slider_tarball: The gzipped tar file containing the Apache Slider
-    distribution
+                           distribution
     """
     deploy_install(slider_tarball)
 
@@ -104,7 +104,7 @@ def install(presto_yarn_package):
     configuration file. The default is PRESTO
 
     :param presto_yarn_package: The zip file containing the presto-yarn
-    package as structured for Slider.
+                                package as structured for Slider.
     """
     conf = env.conf
     package_filename = os.path.basename(presto_yarn_package)
