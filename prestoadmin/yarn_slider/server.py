@@ -22,6 +22,8 @@ from fabric.api import env, task, abort
 from fabric.context_managers import shell_env
 from fabric.operations import put, sudo, local
 
+from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
+    ResourcesJson
 from prestoadmin.yarn_slider.config import SliderConfig, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     PRESTO_PACKAGE, SLIDER_CONFIG_DIR
@@ -29,7 +31,8 @@ from prestoadmin.util.base_config import requires_config
 
 from prestoadmin.util.fabricapi import task_by_rolename
 
-__all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall']
+__all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
+           'start', 'stop']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
@@ -153,3 +156,26 @@ def uninstall():
 
     local('rm %s' % (' '.join([os.path.join(SLIDER_CONFIG_DIR, f)
                      for f in SLIDER_PKG_DEFAULT_FILES])))
+
+
+def _start_server(conf):
+    start_command = '%s start %s' % (get_slider_bin(conf), conf[APPNAME])
+    return run_slider(start_command, conf)
+
+
+def _stop_server(conf):
+    stop_command = '%s stop %s' % (get_slider_bin(conf), conf[APPNAME])
+    return run_slider(stop_command, conf)
+
+@task
+@requires_config(SliderConfig, AppConfigJson, ResourcesJson)
+@task_by_rolename(SLIDER_MASTER)
+def start():
+    start_output = _start_server(env.conf)
+
+
+@task
+@requires_config(SliderConfig)
+@task_by_rolename(SLIDER_MASTER)
+def stop():
+    stop_output = _stop_server(env.conf)
