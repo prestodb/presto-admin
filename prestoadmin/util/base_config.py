@@ -142,8 +142,8 @@ class PresentFileConfig(RequireableConfig):
     def get_config(self):
         if not self.is_config_loaded():
             raise ConfigFileNotFoundError(
-                message='The required configuration file %s is missing. Create '
-                        'it and try again' % (self.config_path),
+                message='The required configuration file %s is missing. '
+                        'Create it and try again' % (self.config_path),
                         config_path=self.config_path)
 
     def is_config_loaded(self):

@@ -145,14 +145,13 @@ class TestBaseConfig(BaseTestCase):
              'workers': ['slave1', 'slave2']}
 
         mock_slider_conf.return_value = \
-            {'slider_directory':'/opt/slider',
-             'admin':'root',
-             'HADOOP_CONF':'/etc/hadoop/conf',
-             'ssh_port':22,
-             'slider_user':'yarn',
-             'slider_master':'localhost',
-             'JAVA_HOME':'/usr/lib/jvm/java'}
-
+            {'slider_directory': '/opt/slider',
+             'admin': 'root',
+             'HADOOP_CONF': '/etc/hadoop/conf',
+             'ssh_port': 22,
+             'slider_user': 'yarn',
+             'slider_master': 'localhost',
+             'JAVA_HOME': '/usr/lib/jvm/java'}
 
         @requires_config(StandaloneConfig, SliderConfig)
         def func():

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-
 """
 Module for setting and validating the presto-admin Apache Slider config
 """
