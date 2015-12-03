@@ -69,8 +69,8 @@ _SLIDER_CONFIG = [
                      'the slider master:', '/opt/slider', None),
 
     MultiConfigItem([
-        SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting '
-                         'slider operations on the slider master ', 'yarn',
+        SingleConfigItem(SLIDER_USER, 'Enter a user name for running slider '
+                         'on the slider master ', 'yarn',
                          validate_username)],
                     validate_can_sudo,
                     (SLIDER_USER, ADMIN_USER, HOST, SSH_PORT),
