@@ -104,10 +104,10 @@ class BaseConfig(object):
         self.config_path = config_path
         self.config_items = config_items
 
-    def load_conf(self):
+    def read_conf(self):
         return config.get_conf_from_json_file(self.config_path)
 
-    def store_conf(self, conf):
+    def write_conf(self, conf):
         config.write(config.json_to_string(conf), self.config_path)
         return self.config_path
 
@@ -122,10 +122,10 @@ class BaseConfig(object):
             if not self.is_config_loaded():
                 conf = {}
                 try:
-                    conf = self.load_conf()
+                    conf = self.read_conf()
                 except ConfigFileNotFoundError:
                     conf = self.get_conf_interactive()
-                    self.store_conf(conf)
+                    self.write_conf(conf)
 
                 self.set_env_from_conf(conf)
                 self.set_config_loaded()

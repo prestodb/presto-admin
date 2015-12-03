@@ -17,6 +17,8 @@ Module for setting and validating the presto-admin config
 """
 from fabric.api import env
 
+from overrides import overrides
+
 from prestoadmin import config
 from prestoadmin.util import constants
 from prestoadmin.util.base_config import BaseConfig, SingleConfigItem
@@ -135,7 +137,8 @@ class StandaloneConfig(BaseConfig):
         super(StandaloneConfig, self).__init__(constants.TOPOLOGY_CONFIG_PATH,
                                                _TOPOLOGY_CONFIG)
 
-    def load_conf(self):
+    @overrides
+    def read_conf(self):
         conf = self._get_conf_from_file()
         config.fill_defaults(conf, DEFAULT_PROPERTIES)
         validate(conf)
@@ -144,13 +147,16 @@ class StandaloneConfig(BaseConfig):
     def _get_conf_from_file(self):
         return config.get_conf_from_json_file(self.config_path)
 
+    @overrides
     def is_config_loaded(self):
         return STANDALONE_CONFIG_LOADED in env and \
             env[STANDALONE_CONFIG_LOADED]
 
+    @overrides
     def set_config_loaded(self):
         env[STANDALONE_CONFIG_LOADED] = True
 
+    @overrides
     def set_env_from_conf(self, conf):
         env.user = conf['username']
         env.port = conf['port']

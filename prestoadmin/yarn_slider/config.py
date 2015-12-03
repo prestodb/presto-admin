@@ -14,10 +14,12 @@
 
 
 """
-Module for setting and validating the presto-admin slider config
+Module for setting and validating the presto-admin Apache Slider config
 """
 
 import os
+
+from overrides import overrides
 
 from fabric.state import env
 
@@ -28,7 +30,8 @@ from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'slider', 'config.json')
+SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
+SLIDER_CONFIG_PATH = os.path.join(SLIDER_CONFIG_DIR, 'config.json')
 SLIDER_MASTER = 'slider_master'
 
 HOST = 'slider_master'
@@ -41,6 +44,10 @@ INSTANCE_NAME = 'slider_instname'
 SLIDER_USER = 'slider_user'
 JAVA_HOME = 'JAVA_HOME'
 HADOOP_CONF = 'HADOOP_CONF'
+
+# This key comes from the server install step, NOT a user prompt. Accordingly,
+# there is no SliderConfigItem for it in _SLIDER_CONFIG
+PRESTO_PACKAGE = 'presto_slider_package'
 
 
 _SLIDER_CONFIG = [
@@ -57,12 +64,12 @@ _SLIDER_CONFIG = [
                     'Connection failed for %%(%s)s@%%(%s)s:%%(%s)d. ' +
                     'Re-enter connection information.'),
 
-    SingleConfigItem(DIR, 'Enter the directory to install slider into on ' +
+    SingleConfigItem(DIR, 'Enter the directory to install slider into on '
                      'the slider master:', '/opt/slider', None),
 
     MultiConfigItem([
-        SingleConfigItem(SLIDER_USER, 'Enter a user name for conducting ' +
-                         'slider operations on the slider master ', 'yarn',
+        SingleConfigItem(SLIDER_USER, 'Enter a user name for running slider '
+                         'on the slider master ', 'yarn',
                          validate_username)],
                     validate_can_sudo,
                     (SLIDER_USER, ADMIN_USER, HOST, SSH_PORT),
@@ -75,26 +82,54 @@ _SLIDER_CONFIG = [
                      '/usr/lib/jvm/java', None),
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
                      'configuration on the slider master:',
-                     '/etc/hadoop/conf', None)]
+                     '/etc/hadoop/conf', None),
+    SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
+                     'PRESTO', None)]
 
 
 class SliderConfig(BaseConfig):
+    '''
+    presto-admin needs to update the slider config other than through the
+    interactive config process because it needs to keep track of the name
+    of the presto-yarn-package we install.
+
+    As a result, SliderConfig acts a little funny; it acts like enough of a
+    dict to allow env.conf[NAME] lookups and modifications, and it also exposes
+    the ability to store the config after it's been modified.
+    '''
 
     def __init__(self):
         super(SliderConfig, self).__init__(SLIDER_CONFIG_PATH, _SLIDER_CONFIG)
+        self.config = {}
 
+    def __getitem__(self, key):
+        return self.config[key]
+
+    def __setitem__(self, key, value):
+        self.config[key] = value
+
+    def __delitem__(self, key):
+        del self.config[key]
+
+    @overrides
     def is_config_loaded(self):
         return SLIDER_CONFIG_LOADED in env and env[SLIDER_CONFIG_LOADED]
 
+    @overrides
     def set_config_loaded(self):
         env[SLIDER_CONFIG_LOADED] = True
 
+    @overrides
     def set_env_from_conf(self, conf):
+        self.config.update(conf)
         env.user = conf[ADMIN_USER]
         env.port = conf[SSH_PORT]
         env.roledefs[SLIDER_MASTER] = [conf[HOST]]
         env.roledefs['all'] = env.roledefs[SLIDER_MASTER]
 
-        env.conf = conf
+        env.conf = self
 
         env.hosts = env.roledefs['all'][:]
+
+    def store_conf(self):
+        super(SliderConfig, self).write_conf(self.config)

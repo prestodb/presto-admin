@@ -16,7 +16,7 @@
 Tests for the base_config module.
 '''
 
-from prestoadmin.slider.config import SliderConfig
+from prestoadmin.yarn_slider.config import SliderConfig
 from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
@@ -30,7 +30,7 @@ from tests.base_test_case import BaseTestCase
 class TestBaseConfig(BaseTestCase):
     @patch('tests.unit.util.test_base_config.SliderConfig.'
            'get_conf_interactive')
-    @patch('tests.unit.util.test_base_config.SliderConfig.load_conf')
+    @patch('tests.unit.util.test_base_config.SliderConfig.read_conf')
     @patch('tests.unit.util.test_base_config.SliderConfig.set_env_from_conf')
     def test_get_config_already_loaded(
             self, set_env_mock, file_conf_mock, interactive_conf_mock):
@@ -43,7 +43,7 @@ class TestBaseConfig(BaseTestCase):
 
     @patch('tests.unit.util.test_base_config.StandaloneConfig.'
            'get_conf_interactive')
-    @patch('tests.unit.util.test_base_config.StandaloneConfig.load_conf')
+    @patch('tests.unit.util.test_base_config.StandaloneConfig.read_conf')
     @patch('tests.unit.util.test_base_config.StandaloneConfig.'
            'set_env_from_conf')
     def test_get_config_load_file(
@@ -57,8 +57,8 @@ class TestBaseConfig(BaseTestCase):
 
     @patch('tests.unit.util.test_base_config.StandaloneConfig.'
            'get_conf_interactive')
-    @patch('tests.unit.util.test_base_config.StandaloneConfig.load_conf')
-    @patch('tests.unit.util.test_base_config.StandaloneConfig.store_conf')
+    @patch('tests.unit.util.test_base_config.StandaloneConfig.read_conf')
+    @patch('tests.unit.util.test_base_config.StandaloneConfig.write_conf')
     @patch('tests.unit.util.test_base_config.StandaloneConfig.'
            'set_env_from_conf')
     def test_get_config_load_interactive(

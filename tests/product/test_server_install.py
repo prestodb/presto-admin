@@ -140,10 +140,10 @@ query.max-memory=50GB\n"""
     def setUp(self):
         super(TestServerInstall, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
-        self.installer = StandalonePrestoInstaller(self)
 
     def assert_common_configs(self, container):
-        self.installer.assert_installed(self, container)
+        installer = StandalonePrestoInstaller(self)
+        installer.assert_installed(self, container)
         self.assert_file_content(container, '/etc/presto/jvm.config',
                                  self.default_jvm_config_)
         self.assert_node_config(container, self.default_node_properties_)
@@ -171,7 +171,8 @@ query.max-memory=50GB\n"""
                                            '/etc/presto/config.properties',
                                            self.default_workers_config_regex_)
 
-    def test_install_with_java8_home(self, dummy=True):
+    def test_install_with_java8_home(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         for container in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(container,
                                           "mv /usr/java/jdk1.8.0_40 /usr/")
@@ -180,23 +181,24 @@ query.max-memory=50GB\n"""
                     "java8_home": "/usr/jdk1.8.0_40/jre"}
         self.upload_topology(topology)
 
-        cmd_output = self.installer.install(dummy)
+        cmd_output = installer.install()
         expected = installed_all_hosts_output
 
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
 
         for container in self.cluster.all_hosts():
-            self.installer.assert_installed(self, container)
+            installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
     def test_install_failure_without_java8_home(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         for container in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(container,
                                           "mv /usr/java/jdk1.8.0_40 /usr/")
         self.upload_topology()
-        cmd_output = self.installer.install(dummy=True, pa_raise_error=False)
+        cmd_output = installer.install(pa_raise_error=False)
         actual = cmd_output.splitlines()
         num_failures = 0
         for line in enumerate(actual):
@@ -207,29 +209,33 @@ query.max-memory=50GB\n"""
         self.assertEqual(4, num_failures)
 
         for container in self.cluster.all_hosts():
-            self.installer.assert_uninstalled(container, dummy=True)
+            installer.assert_uninstalled(container, dummy=True)
 
     @attr('smoketest')
-    def test_install(self, dummy=False):
+    def test_install(self, installer=None):
+        if installer is None:
+            installer = StandalonePrestoInstaller(self)
+
         self.upload_topology()
 
-        cmd_output = self.installer.install(dummy)
+        cmd_output = installer.install()
         expected = installed_all_hosts_output
 
         actual = cmd_output.splitlines()
         self.assertEqual(sorted(expected), sorted(actual))
 
         for container in self.cluster.all_hosts():
-            self.installer.assert_installed(self, container)
+            installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
     def test_install_worker_is_pa_master(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology)
 
-        cmd_output = self.installer.install(dummy=True, coordinator='slave1')
+        cmd_output = installer.install(coordinator='slave1')
         expected = install_with_worker_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -242,11 +248,12 @@ query.max-memory=50GB\n"""
              self.cluster.master])
 
     def test_install_ext_host_is_pa_master(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         topology = {"coordinator": "slave1",
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology)
 
-        cmd_output = self.installer.install(dummy=True, coordinator='slave1')
+        cmd_output = installer.install(coordinator='slave1')
         expected = install_with_ext_host_pa_master_out
 
         actual = cmd_output.splitlines()
@@ -258,6 +265,7 @@ query.max-memory=50GB\n"""
              self.cluster.slaves[2]])
 
     def test_install_when_connector_json_exists(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         topology = {"coordinator": "master",
                     "workers": ["slave1"]}
         self.upload_topology(topology)
@@ -267,7 +275,7 @@ query.max-memory=50GB\n"""
             self.cluster.master
         )
 
-        cmd_output = self.installer.install(dummy=True)
+        cmd_output = installer.install()
         expected = ['Deploying rpm on master...',
                     'Deploying rpm on slave1...',
                     'Package deployed successfully on: slave1',
@@ -286,12 +294,13 @@ query.max-memory=50GB\n"""
 
         for container in [self.cluster.master,
                           self.cluster.slaves[0]]:
-            self.installer.assert_installed(self, container)
+            installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
             self.assert_has_jmx_connector(container)
 
     def test_install_when_topology_has_ips(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         ips = self.cluster.get_ip_address_dict()
         topology = {"coordinator": ips[self.cluster.master],
                     "workers": [ips[self.cluster.slaves[0]]]}
@@ -302,7 +311,7 @@ query.max-memory=50GB\n"""
             self.cluster.master
         )
 
-        cmd_output = self.installer.install(dummy=True).splitlines()
+        cmd_output = installer.install().splitlines()
         expected = [
             r'Deploying rpm on %s...' % ips[self.cluster.master],
             r'Deploying rpm on %s...' % ips[self.cluster.slaves[0]],
@@ -337,12 +346,13 @@ query.max-memory=50GB\n"""
             self.assert_has_jmx_connector(container)
 
     def test_install_interactive_with_hostnames(self):
+        installer = StandalonePrestoInstaller(self)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.cluster.master
         )
-        rpm_name = self.installer.copy_presto_rpm_to_master()
+        rpm_name = installer.copy_presto_rpm_to_master()
         self.write_test_configs(self.cluster)
 
         cmd_output = self.run_script_from_prestoadmin_dir(
@@ -384,14 +394,15 @@ query.max-memory=50GB\n"""
         self.assertRegexpMatchesLineByLine(actual, expected)
         for container in [self.cluster.master,
                           self.cluster.slaves[0]]:
-            self.installer.assert_installed(self, container)
+            installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
             self.assert_has_jmx_connector(container)
 
     def test_install_interactive_with_ips(self):
+        installer = StandalonePrestoInstaller(self)
         ips = self.cluster.get_ip_address_dict()
-        rpm_name = self.installer.copy_presto_rpm_to_master()
+        rpm_name = installer.copy_presto_rpm_to_master()
         self.write_test_configs(self.cluster)
 
         additional_keywords = {
@@ -443,7 +454,8 @@ query.max-memory=50GB\n"""
             [self.cluster.slaves[0]])
 
     def test_install_with_wrong_topology(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
+        installer = StandalonePrestoInstaller(self)
+        rpm_name = installer.copy_presto_rpm_to_master()
         topology = {'coordinator': 'dummy_master', 'workers': ['slave1']}
         self.upload_topology(topology)
         expected = 'u\'dummy_master\' is not a valid ip address or' \
@@ -457,7 +469,8 @@ query.max-memory=50GB\n"""
                                 rpm=rpm_name)
 
     def test_install_with_malformed_topology(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
+        installer = StandalonePrestoInstaller(self)
+        rpm_name = installer.copy_presto_rpm_to_master()
         topology = {'coordinator': 'master',
                     'workers': 'slave1' 'slave2'}
         self.upload_topology(topology)
@@ -472,22 +485,24 @@ query.max-memory=50GB\n"""
                                 rpm=rpm_name)
 
     def test_install_with_malformed_connector(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         self.upload_topology()
         self.cluster.write_content_to_host(
             'connectr.typo:invalid',
             os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
             self.cluster.master
         )
-        actual_out = self.installer.install(dummy=True, pa_raise_error=False)
+        actual_out = installer.install(pa_raise_error=False)
         expected = 'Underlying exception:\n    Catalog configuration ' \
                    'jmx.properties does not contain connector.name'
         self.assertRegexpMatches(actual_out, expected)
 
         for container in self.cluster.all_hosts():
-            self.installer.assert_installed(self, container)
+            installer.assert_installed(self, container)
             self.assert_has_default_config(container)
 
     def test_connection_to_coord_lost(self):
+        installer = StandalonePrestoInstaller(self, dummy=True)
         down_node = self.cluster.internal_slaves[0]
         topology = {"coordinator": down_node,
                     "workers": [self.cluster.internal_master,
@@ -497,8 +512,8 @@ query.max-memory=50GB\n"""
         self.cluster.stop_host(
             self.cluster.slaves[0])
 
-        actual_out = self.installer.install(
-            dummy=True, coordinator=down_node, pa_raise_error=False)
+        actual_out = installer.install(
+            coordinator=down_node, pa_raise_error=False)
 
         self.assertRegexpMatches(
             actual_out,
@@ -519,7 +534,8 @@ query.max-memory=50GB\n"""
 
     @docker_only
     def test_install_with_no_perm_to_local_path(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
+        installer = StandalonePrestoInstaller(self)
+        rpm_name = installer.copy_presto_rpm_to_master()
         self.upload_topology()
         self.run_prestoadmin("configuration deploy")
 
@@ -536,8 +552,11 @@ query.max-memory=50GB\n"""
         self.assertEqualIgnoringOrder(actual, expected)
 
     def test_install_twice(self):
-        self.test_install(dummy=True)
-        output = self.installer.install(dummy=True, pa_raise_error=False)
+        installer = StandalonePrestoInstaller(self, dummy=True)
+        self.test_install(installer=installer)
+        output = installer.install(pa_raise_error=False)
+
+        self.default_keywords.update(installer.get_keywords())
 
         with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
                 as f:
@@ -548,6 +567,6 @@ query.max-memory=50GB\n"""
         self.assertRegexpMatchesLineByLine(output.splitlines(),
                                            expected.splitlines())
         for container in self.cluster.all_hosts():
-            self.installer.assert_installed(self, container)
+            installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)

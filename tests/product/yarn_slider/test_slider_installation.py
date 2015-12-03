@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Product tests for installing slider itself
+Product tests for installing Apache Slider
 """
 
 import json
@@ -25,8 +25,9 @@ from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
-from prestoadmin.slider.config import SLIDER_CONFIG_PATH, HOST, DIR, \
-    SLIDER_USER, _SLIDER_CONFIG
+from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, HOST, DIR, \
+    SLIDER_USER, _SLIDER_CONFIG, ADMIN_USER, HADOOP_CONF, SSH_PORT, \
+    JAVA_HOME, APPNAME
 
 SLIDER_DIST_FILENAME = 'slider-assembly-0.80.0-incubating-all.tar.gz'
 
@@ -39,13 +40,14 @@ class TestSliderInstallation(BaseProductTestCase):
     @staticmethod
     def get_config(override=None):
         conf = {
-            'slider_directory': '/opt/slider',
-            'admin': 'root',
-            'HADOOP_CONF': '/etc/hadoop/conf',
-            'ssh_port': 22,
-            'slider_user': 'yarn',
-            'slider_master': 'master',
-            'JAVA_HOME': '/usr/lib/jvm/java'
+            DIR: '/opt/slider',
+            ADMIN_USER: 'root',
+            HADOOP_CONF: '/etc/hadoop/conf',
+            SSH_PORT: 22,
+            SLIDER_USER: 'yarn',
+            HOST: 'master',
+            JAVA_HOME: '/usr/java/jdk1.8.0_40/jre/',
+            APPNAME: 'PRESTO'
         }
 
         if override:
@@ -158,8 +160,8 @@ class TestSliderInstallation(BaseProductTestCase):
         self.ensure_slider_user_exists(conf)
         slider_path = self.copy_slider_dist_to_cluster(self)
 
-        self.run_prestoadmin_expect('slider slider_install %s' % (slider_path),
-                                    expect)
+        self.run_prestoadmin_expect('slider slider_install %s' %
+                                    (slider_path), expect)
 
         self.assert_slider_installed(conf)
 

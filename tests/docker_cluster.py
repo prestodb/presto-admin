@@ -243,7 +243,7 @@ class DockerCluster(BaseCluster):
                                hostname=hostname,
                                volumes=self.local_mount_dir,
                                command=cmd,
-                               mem_limit='2g')
+                               host_config={'mem_limit': '2g'})
 
     def _add_hostnames_to_slaves(self):
         ips = self.get_ip_address_dict()
@@ -319,9 +319,10 @@ class DockerCluster(BaseCluster):
             return False
         return True
 
-    def exec_cmd_on_host(self, host, cmd, raise_error=True, tty=False):
+    def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
+                         tty=False):
         ex = self.client.exec_create(self.__get_unique_host(host), cmd,
-                                     tty=tty)
+                                     tty=tty, user=user)
         output = self.client.exec_start(ex['Id'], tty=tty)
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
         if raise_error and exit_code:

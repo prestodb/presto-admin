@@ -852,10 +852,29 @@ def _exit_code(results):
     If every entry in the dict has a value of None, the exit code is 0.
     If any entry has a value that is not None, something failed, and we should
     exit with a non-zero exit code.
+
+    That isn't really the whole story: Any task that calls tasks.execute() and
+    returns that as the result will have an item in the dictionary of the form
+    hostname: {hostname: Exception | None}. This means that we need to
+    recursively check any values in the map that are of type dict following the
+    above scheme.
     """
     for v in results.values():
-        if v is not None:
-            return 1
+        # No exception, inspect the next value.
+        if v is None:
+            continue
+
+        # The value is a dict resulting from calling fabric.tasks.execute.
+        # Check the results recursively
+        if type(v) is dict:
+            exit_code = _exit_code(v)
+            if exit_code != 0:
+                return exit_code
+            continue
+
+        # In any case where things were OK above, we've continued the loop. At
+        # this point, we know something failed.
+        return 1
     return 0
 
 

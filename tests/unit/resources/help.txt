@@ -29,7 +29,9 @@ Commands:
     server stop
     server uninstall
     server upgrade
+    slider install
     slider slider_install
     slider slider_uninstall
+    slider uninstall
     topology show
 
