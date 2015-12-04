@@ -79,6 +79,14 @@ class BaseTestCase(unittest.TestCase):
         sys.stdout = self.old_stdout
         sys.stderr = self.old_stderr
 
+    # This method is equivalent to Python 2.7's unittest.assertIn()
+    def assertIsNone(self, foo, msg=None):
+        self.assertTrue(foo is None, msg=msg)
+
+    # This method is equivalent to Python 2.7's unittest.assertIn()
+    def assertIn(self, member, container, msg=None):
+        self.assertTrue(member in container, msg=msg)
+
     # This method is equivalent to Python 2.7's unittest.assertNotIn()
     def assertNotIn(self, member, container, msg=None):
         self.assertTrue(member not in container, msg=msg)
