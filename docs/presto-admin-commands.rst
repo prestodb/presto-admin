@@ -253,7 +253,7 @@ added to the Presto plugin location using the ``plugin add_jar`` command before
 running the ``connector add`` command.
 
 Example: ::
-   
+
    sudo ./presto-admin plugin add_jar my_connector.jar my_connector
    sudo ./presto-admin connector add my_connector
    sudo ./presto-admin server restart
@@ -327,12 +327,12 @@ Example
 -------
 ::
 
-    sudo ./presto-admin plugin add_jar program.jar hive-cdh5
-    sudo ./presto-admin plugin add_jar program.jar hive-cdh5 /my/plugin/dir
+    sudo ./presto-admin plugin add_jar connector.jar my_connector
+    sudo ./presto-admin plugin add_jar connector.jar my_connector /my/plugin/dir
 
-The first example will deploy program.jar to
-``/usr/lib/presto/lib/plugin/hive-cdh5/program.jar``
-The second example will deploy it to ``/my/plugin/dir/hive-cdh5/program.jar``.
+The first example will deploy connector.jar to
+``/usr/lib/presto/lib/plugin/my_connector/connector.jar``
+The second example will deploy it to ``/my/plugin/dir/my_connector/program.jar``.
 
 **********
 script run
