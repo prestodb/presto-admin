@@ -234,13 +234,17 @@ class TestInstall(BaseUnitCase):
 
     @patch('prestoadmin.server.execute')
     @patch('prestoadmin.server.run_sql')
-    def test_status_from_each_node(self, mock_run_sql, mock_execute):
+    @patch('prestoadmin.server.get_presto_version')
+    def test_status_from_each_node(
+            self, mock_get_presto_version, mock_run_sql, mock_execute):
         env.roledefs = {
             'coordinator': ['Node1'],
             'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
             'all': ['Node1', 'Node2', 'Node3', 'Node4']
         }
         env.hosts = env.roledefs['all']
+
+        mock_get_presto_version.return_value = '0.97-SNAPSHOT'
         mock_run_sql.side_effect = [
             [['select * from system.runtime.nodes']],
             [['hive'], ['system'], ['tpch']],
