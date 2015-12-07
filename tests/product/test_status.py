@@ -202,7 +202,7 @@ http-server.http.port=8090"""
                     ['\tNode URI\(http\): http://%s:%s' % (status['ip'],
                                                            str(port)),
                      '\tPresto Version: ' + PRESTO_VERSION,
-                     '\tNode is active: True',
+                     '\tNode status:    active',
                      '\tConnectors:     system, tpch']
 
         self.assertRegexpMatches(cmd_output, '\n'.join(expected_output))

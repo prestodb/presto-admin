@@ -18,6 +18,7 @@ using presto-admin
 """
 import logging
 import re
+import sys
 
 from fabric.api import task, sudo, env, quiet
 from fabric.context_managers import settings, hide
@@ -30,6 +31,8 @@ from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import package
 from prestoadmin.util.constants import REMOTE_PRESTO_LOG_DIR
+from prestoadmin.util.version_util import VersionRange, VersionRangeList, \
+    split_version, strip_tag
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util.base_config import requires_config
@@ -48,9 +51,32 @@ INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 120
 SLEEP_INTERVAL = 10
 SYSTEM_RUNTIME_NODES = 'select * from system.runtime.nodes'
-NODE_INFO_PER_URI_SQL = 'select http_uri, node_version, active from ' \
-                        'system.runtime.nodes where ' \
-                        'url_extract_host(http_uri) = \'%s\''
+
+
+def old_sysnode_processor(node_info_rows):
+    def old_transform(node_is_active):
+        return 'active' if node_is_active else 'inactive'
+    return get_sysnode_info_from(node_info_rows, old_transform)
+
+
+def new_sysnode_processor(node_info_rows):
+    return get_sysnode_info_from(node_info_rows, lambda x: x)
+
+
+NODE_INFO_PER_URI_SQL = VersionRangeList(
+    VersionRange((0, 0), (0, 128),
+                 ('select http_uri, node_version, active from '
+                  'system.runtime.nodes where '
+                  'url_extract_host(http_uri) = \'%s\'',
+                 old_sysnode_processor)),
+    VersionRange((0, 128), (sys.maxsize,),
+                 ('select http_uri, node_version, state from '
+                  'system.runtime.nodes where '
+                  'url_extract_host(http_uri) = \'%s\'',
+                 new_sysnode_processor))
+
+)
+
 EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from system.runtime.nodes' \
                   ' WHERE node_id = \'%s\''
 CONNECTOR_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
@@ -364,7 +390,7 @@ def execute_external_ip_sql(client, uuid):
     return run_sql(client, EXTERNAL_IP_SQL % uuid)
 
 
-def get_sysnode_info_from(node_info_row):
+def get_sysnode_info_from(node_info_row, state_transform):
     """
     Returns system node info dict from node info row for a node
 
@@ -378,7 +404,7 @@ def get_sysnode_info_from(node_info_row):
     output = {}
     for row in node_info_row:
         if row:
-            output[row[0]] = [row[1], row[2]]
+            output[row[0]] = [row[1], state_transform(row[2])]
 
     _LOGGER.info('Node info: %s ', output)
     return output
@@ -421,7 +447,7 @@ def print_node_info(node_status, connector_status):
     for k in node_status:
         print('\tNode URI(http): ' + str(k) +
               '\n\tPresto Version: ' + str(node_status[k][0]) +
-              '\n\tNode is active: ' + str(node_status[k][1]))
+              '\n\tNode status:    ' + str(node_status[k][1]))
         if connector_status:
             print('\tConnectors:     ' + connector_status)
 
@@ -510,10 +536,12 @@ def get_status_from_coordinator():
         elif not is_running:
             print('\tNo information available')
         else:
+            version_string = get_presto_version()
+            version = strip_tag(split_version(version_string))
+            query, processor = NODE_INFO_PER_URI_SQL.for_version(version)
             # just get the node_info row for the host if server is up
-            node_info_row = run_sql(client, NODE_INFO_PER_URI_SQL
-                                    % external_ip)
-            node_status = get_sysnode_info_from(node_info_row)
+            node_info_row = run_sql(client, query % external_ip)
+            node_status = processor(node_info_row)
             if node_status:
                 print_node_info(node_status, connector_status)
             else:
