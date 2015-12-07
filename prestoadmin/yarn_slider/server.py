@@ -16,11 +16,12 @@
 Module for managing presto/YARN integration.
 """
 
+from contextlib import contextmanager
 import os.path
 
 from fabric.api import env, task, abort
-from fabric.context_managers import shell_env
-from fabric.operations import put, sudo, local
+from fabric.context_managers import shell_env, quiet
+from fabric.operations import put, sudo, local, run
 
 from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
     ResourcesJson
@@ -32,7 +33,7 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
-           'start', 'stop']
+           'start', 'stop', 'create_app']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
@@ -158,20 +159,57 @@ def uninstall():
                      for f in SLIDER_PKG_DEFAULT_FILES])))
 
 
-def _start_server(conf):
-    start_command = '%s start %s' % (get_slider_bin(conf), conf[APPNAME])
-    return run_slider(start_command, conf)
-
 
 def _stop_server(conf):
     stop_command = '%s stop %s' % (get_slider_bin(conf), conf[APPNAME])
     return run_slider(stop_command, conf)
 
+@contextmanager
+def remote_temp_file(local_path, remote_path):
+    result = []
+    try:
+        result = put(local_path, remote_path)
+        if len(result) == 1:
+            yield result[0]
+        else:
+            yield result
+    finally:
+        for remote_path in result:
+            run('/bin/rm', remote_path, shell=False)
+
+
+def start_app():
+    start_cmd=('%s/bin/slider start %s' %
+        (get_slider_bin(env.conf), env.conf[APPNAME]))
+    with quiet():
+        return run_slider(start_cmd, env.conf)
+
+
+@task
+@requires_config(SliderConfig, AppConfigJson, ResourcesJson)
+@task_by_rolename(SLIDER_MASTER)
+def create_app():
+    appConfig = AppConfigJson()
+    resources = ResourcesJson()
+
+    with remote_temp_file(appConfig.config_path, '/tmp') as remote_appConfig:
+        with remote_temp_file(resources.config_path, '/tmp') as \
+                remote_resources:
+            print remote_appConfig
+            print remote_resources
+
+
 @task
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
 def start():
-    start_output = _start_server(env.conf)
+    start_result = start_app()
+    if start_result.result_code == 0:
+        print 'Started %s application' % (env.conf[APPNAME])
+    elif start_result.result_code == 69:
+        create_app()
+    else:
+        abort('Failed to start %s application\n%s' % (start_result.stdout))
 
 
 @task
