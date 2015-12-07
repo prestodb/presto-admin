@@ -108,8 +108,7 @@ class VersionRange(object):
     Represents a range of version numbers [min_version, max_version).
     The interval is right-open so that you can construct a numerically
     continuous list of versions like so:
-    l = [VersionRange((0, 0), (0, 5)),
-         VersionRange((0, 5), (1, 0))]
+    l = [VersionRange((0, 0), (0, 5)), VersionRange((0, 5), (1, 0))]
     and for all versions v where 0.0 <= v < 1.0 is contained in exactly one
     VersionRange in l.
 
