@@ -33,7 +33,7 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
-           'start', 'stop', 'build_app']
+           'start', 'stop', 'build', 'destroy']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
@@ -184,7 +184,7 @@ def start_app():
 @task
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
-def build_app():
+def build():
     appConfig = AppConfigJson()
     resources = ResourcesJson()
 
@@ -216,3 +216,11 @@ def start():
 def stop():
     stop_command = '%s stop %s' % (get_slider_bin(env.conf), env.conf[APPNAME])
     return run_slider(stop_command, env.conf)
+
+@task
+@requires_config(SliderConfig)
+@task_by_rolename(SLIDER_MASTER)
+def destroy():
+    destroy_command = \
+        '%s destroy %s' % (get_slider_bin(env.conf), env.conf[APPNAME])
+    return run_slider(destroy_command, env.conf)
