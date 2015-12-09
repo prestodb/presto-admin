@@ -29,6 +29,8 @@ from prestoadmin.util.constants import LOCAL_CONF_DIR
 from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
+SLIDER_PKG_NAME = 'PRESTO'
+
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
 SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
 SLIDER_CONFIG_PATH = os.path.join(SLIDER_CONFIG_DIR, 'config.json')
@@ -83,8 +85,9 @@ _SLIDER_CONFIG = [
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
                      'configuration on the slider master:',
                      '/etc/hadoop/conf', None),
-    SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
-                     'PRESTO', None)]
+    SingleConfigItem(APPNAME, 'Enter a name for the presto slider ' +
+                     'application',
+                     'presto', None)]
 
 
 class SliderConfig(FabricEnvConfig):

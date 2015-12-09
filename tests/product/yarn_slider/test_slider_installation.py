@@ -47,7 +47,7 @@ class TestSliderInstallation(BaseProductTestCase):
             SLIDER_USER: 'yarn',
             HOST: 'master',
             JAVA_HOME: '/usr/java/jdk1.8.0_40/jre/',
-            APPNAME: 'PRESTO'
+            APPNAME: 'presto'
         }
 
         if override:

@@ -27,13 +27,13 @@ from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
     ResourcesJson
 from prestoadmin.yarn_slider.config import SliderConfig, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
-    PRESTO_PACKAGE, SLIDER_CONFIG_DIR
+    PRESTO_PACKAGE, SLIDER_CONFIG_DIR, SLIDER_PKG_NAME
 from prestoadmin.util.base_config import requires_config
 
 from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
-           'start', 'stop', 'create_app']
+           'start', 'stop', 'build_app']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
@@ -121,7 +121,7 @@ def install(presto_yarn_package):
 
     package_install_command = \
         '%s package --install --package %s --name %s' % \
-        (get_slider_bin(conf), package_file, conf[APPNAME])
+        (get_slider_bin(conf), package_file, SLIDER_PKG_NAME)
 
     try:
         run_slider(package_install_command, conf)
@@ -146,7 +146,7 @@ def uninstall():
     """
     conf = env.conf
     package_delete_command = '%s package --delete --name %s' % \
-                             (get_slider_bin(conf), conf[APPNAME])
+                             (get_slider_bin(conf), SLIDER_PKG_NAME)
     run_slider(package_delete_command, conf)
 
     try:
@@ -155,14 +155,10 @@ def uninstall():
     except KeyError:
         pass
 
-    local('rm %s' % (' '.join([os.path.join(SLIDER_CONFIG_DIR, f)
-                     for f in SLIDER_PKG_DEFAULT_FILES])))
+    with quiet():
+        local('rm %s' % (' '.join([os.path.join(SLIDER_CONFIG_DIR, f)
+                         for f in SLIDER_PKG_DEFAULT_FILES])))
 
-
-
-def _stop_server(conf):
-    stop_command = '%s stop %s' % (get_slider_bin(conf), conf[APPNAME])
-    return run_slider(stop_command, conf)
 
 @contextmanager
 def remote_temp_file(local_path, remote_path):
@@ -175,12 +171,12 @@ def remote_temp_file(local_path, remote_path):
             yield result
     finally:
         for remote_path in result:
-            run('/bin/rm', remote_path, shell=False)
+            run('/bin/rm "%s"' % remote_path)
 
 
 def start_app():
-    start_cmd=('%s/bin/slider start %s' %
-        (get_slider_bin(env.conf), env.conf[APPNAME]))
+    start_cmd = (
+        '%s start %s' % (get_slider_bin(env.conf), env.conf[APPNAME]))
     with quiet():
         return run_slider(start_cmd, env.conf)
 
@@ -188,32 +184,35 @@ def start_app():
 @task
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
-def create_app():
+def build_app():
     appConfig = AppConfigJson()
     resources = ResourcesJson()
 
-    with remote_temp_file(appConfig.config_path, '/tmp') as remote_appConfig:
-        with remote_temp_file(resources.config_path, '/tmp') as \
+    with remote_temp_file(appConfig.get_config_path(), '/tmp') as \
+            remote_appConfig:
+        with remote_temp_file(resources.get_config_path(), '/tmp') as \
                 remote_resources:
-            print remote_appConfig
-            print remote_resources
+            slider_cmd = '%s build %s --template %s --resources %s' % (
+                get_slider_bin(env.conf), env.conf[APPNAME], remote_appConfig,
+                remote_resources)
+            run_slider(slider_cmd, env.conf)
 
 
+# Doesn't actually require AppConfig and Resources to start server, but if the
+# app doesn't exist and we have to fall back to creating it, it's too late to
+# prompt the user for anything we don't have a default for when we go to
+# execute build_app.
 @task
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
 def start():
     start_result = start_app()
-    if start_result.result_code == 0:
-        print 'Started %s application' % (env.conf[APPNAME])
-    elif start_result.result_code == 69:
-        create_app()
-    else:
-        abort('Failed to start %s application\n%s' % (start_result.stdout))
+    return start_result
 
 
 @task
 @requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def stop():
-    stop_output = _stop_server(env.conf)
+    stop_command = '%s stop %s' % (get_slider_bin(env.conf), env.conf[APPNAME])
+    return run_slider(stop_command, env.conf)

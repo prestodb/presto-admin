@@ -22,13 +22,16 @@ import os
 
 from functools import wraps
 
+from overrides import overrides
+
 from fabric.context_managers import settings
-from fabric.operations import prompt
+from fabric.operations import abort, prompt
 from fabric.state import env
 
 from prestoadmin import config
 from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.util.exception import ConfigurationError
+from prestoadmin.util.json_tranform import transform
 
 
 def set_env_hosts(hosts_list, hosts_source):
@@ -134,11 +137,39 @@ class RequireableConfig(object):
         pass
 
 
+class JsonFileFromDefaultFile(RequireableConfig):
+    def __init__(self, config_path, default_config_path, transformations):
+        super(JsonFileFromDefaultFile, self).__init__()
+        self.config_path = config_path
+        self.default_config_path = default_config_path
+        self.transformations = transformations
+
+    @overrides
+    def get_config(self):
+        if os.path.exists(self.config_path):
+            return
+        elif os.path.exists(self.default_config_path):
+            default_json = config.get_conf_from_json_file(
+                self.default_config_path)
+            transformed = transform(
+                default_json, self.transformations)
+            config.write(config.json_to_string(transformed), self.config_path)
+        else:
+            abort('Config file %s missing. Default config file %s also '
+                  'missing. Could not generate config' % (
+                      self.config_path, self.default_config_path))
+
+    @overrides
+    def is_config_loaded(self):
+        return os.path.exists(self.config_path)
+
+
 class PresentFileConfig(RequireableConfig):
     def __init__(self, config_path):
         super(PresentFileConfig, self).__init__()
         self.config_path = config_path
 
+    @overrides
     def get_config(self):
         if not self.is_config_loaded():
             raise ConfigFileNotFoundError(
@@ -146,6 +177,7 @@ class PresentFileConfig(RequireableConfig):
                         'Create it and try again' % (self.config_path),
                         config_path=self.config_path)
 
+    @overrides
     def is_config_loaded(self):
         return os.path.exists(self.config_path)
 
