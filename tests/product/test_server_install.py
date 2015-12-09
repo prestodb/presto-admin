@@ -175,10 +175,10 @@ query.max-memory=50GB\n"""
         installer = StandalonePrestoInstaller(self, dummy=True)
         for container in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(container,
-                                          "mv /usr/java/jdk1.8.0_40 /usr/")
+                                          "mv /usr/java/jdk1.8.0_40 /tmp/")
         topology = {"coordinator": "master",
                     "workers": ["slave1", "slave2", "slave3"],
-                    "java8_home": "/usr/jdk1.8.0_40/jre"}
+                    "java8_home": "/tmp/jdk1.8.0_40/jre"}
         self.upload_topology(topology)
 
         cmd_output = installer.install()
@@ -196,7 +196,7 @@ query.max-memory=50GB\n"""
         installer = StandalonePrestoInstaller(self, dummy=True)
         for container in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(container,
-                                          "mv /usr/java/jdk1.8.0_40 /usr/")
+                                          "mv /usr/java/jdk1.8.0_40 /tmp/")
         self.upload_topology()
         cmd_output = installer.install(pa_raise_error=False)
         actual = cmd_output.splitlines()
