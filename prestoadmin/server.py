@@ -86,6 +86,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @task
+@runs_once
 @requires_config(StandaloneConfig)
 def install(local_path):
     """
@@ -107,6 +108,11 @@ def install(local_path):
     Parameters:
         local_path - Absolute path to the presto rpm to be installed
     """
+    package.check_if_valid_rpm(local_path)
+    return execute(deploy_install_configure, local_path, hosts=get_host_list())
+
+
+def deploy_install_configure(local_path):
     package.deploy_install(local_path)
     update_configs()
 

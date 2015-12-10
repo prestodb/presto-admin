@@ -89,6 +89,8 @@ release: clean
 	python setup.py sdist upload -r pypi_internal
 	python setup.py bdist_wheel upload -r pypi_internal
 
+release-builds: clean-build clean-pyc dist dist-online
+
 dist: clean-build clean-pyc
 	python setup.py bdist_prestoadmin
 	ls -l dist
