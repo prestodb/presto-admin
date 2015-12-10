@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ast
 import os
 
 from overrides import overrides
@@ -73,17 +74,74 @@ class AppConfigJson(SliderJsonConfig):
             os.path.join(SLIDER_CONFIG_DIR, 'appConfig-default.json'),
             APP_CONFIG_TRANSFORMATIONS)
 
+    def get_config(self):
+        self.config = super(AppConfigJson, self).get_config()
+        return self.config
+
+    def get_jvm_args(self):
+        jvm_args = self.config['global']['site.global.jvm_args']
+        if jvm_args is None:
+            return jvm_args
+        return ast.literal_eval(jvm_args)
+
 
 def _prompt_worker_instances(kpath, value):
     return prompt(
         "Enter the number of worker nodes to create", default=value)
+
+ONE_KiB = 2 ** 10
+ONE_MiB = 2 ** 20
+ONE_GiB = 2 ** 30
+
+# Allowed values per the JRockit documentation [0] because I couldn't find the
+# Hotspot JVM documentation and got tired of looking. Presumably they're the
+# same as JRockit was meant to be drop-in compatible with the Sun JRE before
+# Oracle bought Sun [1].
+# IEC rather than metric multiples because good luck finding any documenation
+# on which Java actually uses, and err on the side of generosity.
+# [0] http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html#wp999528
+# [1] https://en.wikipedia.org/wiki/JRockit
+UNIT_CHAR_LOOKUP = {
+    'k': ONE_KiB, 'K': ONE_KiB,
+    'm': ONE_MiB, 'M': ONE_MiB,
+    'g': ONE_GiB, 'G': ONE_GiB,
+}
+
+
+def _get_max_heap(jvm_args):
+    size = None
+    for arg in jvm_args:
+        if arg.startswith('-Xmx'):
+            size = arg
+            break
+
+    if size is None:
+        return None
+
+    size = size[4:]
+    suffix = size[-1]
+    size = int(size[:-1])
+    return size * UNIT_CHAR_LOOKUP.get(suffix, 1)
+
+
+def _pad_presto_heap_for_yarn(kpath, value):
+    padding = 512 * ONE_MiB
+    appConfig = AppConfigJson()
+    appConfig.get_config()
+    jvm_args = appConfig.get_jvm_args()
+    max_heap = _get_max_heap(jvm_args)
+    if max_heap is None:
+        max_heap = 0
+    return (max_heap + padding) / ONE_MiB
 
 
 RESOURCES_TRANSFORMATIONS = {
     as_key('components', 'COORDINATOR', 'yarn.label.expression'): purge,
     as_key('components', 'WORKER', 'yarn.label.expression'): purge,
     as_key('components', 'WORKER', 'yarn.component.instances'):
-        _prompt_worker_instances
+        _prompt_worker_instances,
+    as_key('components', 'WORKER', 'yarn.memory'):
+        _pad_presto_heap_for_yarn
 }
 
 

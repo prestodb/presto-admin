@@ -147,13 +147,14 @@ class JsonFileFromDefaultFile(RequireableConfig):
     @overrides
     def get_config(self):
         if os.path.exists(self.config_path):
-            return
+            return config.get_conf_from_json_file(self.config_path)
         elif os.path.exists(self.default_config_path):
             default_json = config.get_conf_from_json_file(
                 self.default_config_path)
             transformed = transform(
                 default_json, self.transformations)
             config.write(config.json_to_string(transformed), self.config_path)
+            return transformed
         else:
             abort('Config file %s missing. Default config file %s also '
                   'missing. Could not generate config' % (
