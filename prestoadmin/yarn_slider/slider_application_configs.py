@@ -50,10 +50,6 @@ def _application_def(kpath, value):
                         env.conf[PRESTO_PACKAGE])
 
 
-def _env_java_home(kpath, value):
-    return env.conf[JAVA_HOME]
-
-
 def _prompt_data_dir(kpath, value):
     return prompt(
         "Enter a directory for presto to use for data:", default=value)

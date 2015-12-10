@@ -22,7 +22,7 @@ import os.path
 from fabric.api import env, task, abort
 from fabric.context_managers import shell_env, quiet, warn_only
 from fabric.operations import put, sudo, local, run
-from fabric.utils import error, puts
+from fabric.utils import puts
 
 from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
     ResourcesJson
@@ -187,6 +187,7 @@ def start_app():
 BUILD = 'build'
 CREATE = 'create'
 
+
 def _build_or_create(command=BUILD):
     appConfig = AppConfigJson()
     resources = ResourcesJson()
@@ -199,6 +200,7 @@ def _build_or_create(command=BUILD):
                 get_slider_bin(env.conf), command, env.conf[APPNAME],
                 remote_appConfig, remote_resources)
             return run_slider(slider_cmd, env.conf)
+
 
 @task
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
@@ -231,7 +233,7 @@ def start():
              (appname,))
         return create()
     else:
-        abort('Failed to start presto application instance %s:' % \
+        abort('Failed to start presto application instance %s:' %
               (appname,))
 
 
@@ -241,6 +243,7 @@ def start():
 def stop():
     stop_command = '%s stop %s' % (get_slider_bin(env.conf), env.conf[APPNAME])
     return run_slider(stop_command, env.conf)
+
 
 @task
 @requires_config(SliderConfig)
