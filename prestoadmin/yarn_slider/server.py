@@ -20,11 +20,14 @@ from contextlib import contextmanager
 import os.path
 
 from fabric.api import env, task, abort
-from fabric.context_managers import shell_env, quiet
+from fabric.context_managers import shell_env, quiet, warn_only
 from fabric.operations import put, sudo, local, run
+from fabric.utils import error, puts
 
 from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
     ResourcesJson
+from prestoadmin.yarn_slider.slider_exit_codes import EXIT_SUCCESS, \
+    EXIT_UNKNOWN_INSTANCE
 from prestoadmin.yarn_slider.config import SliderConfig, \
     DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     PRESTO_PACKAGE, SLIDER_CONFIG_DIR, SLIDER_PKG_NAME
@@ -177,14 +180,14 @@ def remote_temp_file(local_path, remote_path):
 def start_app():
     start_cmd = (
         '%s start %s' % (get_slider_bin(env.conf), env.conf[APPNAME]))
-    with quiet():
+    with warn_only():
         return run_slider(start_cmd, env.conf)
 
 
-@task
-@requires_config(SliderConfig, AppConfigJson, ResourcesJson)
-@task_by_rolename(SLIDER_MASTER)
-def build():
+BUILD = 'build'
+CREATE = 'create'
+
+def _build_or_create(command=BUILD):
     appConfig = AppConfigJson()
     resources = ResourcesJson()
 
@@ -192,10 +195,23 @@ def build():
             remote_appConfig:
         with remote_temp_file(resources.get_config_path(), '/tmp') as \
                 remote_resources:
-            slider_cmd = '%s build %s --template %s --resources %s' % (
-                get_slider_bin(env.conf), env.conf[APPNAME], remote_appConfig,
-                remote_resources)
-            run_slider(slider_cmd, env.conf)
+            slider_cmd = '%s %s %s --template %s --resources %s' % (
+                get_slider_bin(env.conf), command, env.conf[APPNAME],
+                remote_appConfig, remote_resources)
+            return run_slider(slider_cmd, env.conf)
+
+@task
+@requires_config(SliderConfig, AppConfigJson, ResourcesJson)
+@task_by_rolename(SLIDER_MASTER)
+def create():
+    return _build_or_create(command=CREATE)
+
+
+@task
+@requires_config(SliderConfig, AppConfigJson, ResourcesJson)
+@task_by_rolename(SLIDER_MASTER)
+def build():
+    return _build_or_create(command=BUILD)
 
 
 # Doesn't actually require AppConfig and Resources to start server, but if the
@@ -206,8 +222,17 @@ def build():
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
 def start():
+    appname = env.conf[APPNAME]
     start_result = start_app()
-    return start_result
+    if start_result.return_code == EXIT_SUCCESS:
+        return start_result
+    elif start_result.return_code == EXIT_UNKNOWN_INSTANCE:
+        puts('Creating and starting presto application instance %s' %
+             (appname,))
+        return create()
+    else:
+        abort('Failed to start presto application instance %s:' % \
+              (appname,))
 
 
 @task
