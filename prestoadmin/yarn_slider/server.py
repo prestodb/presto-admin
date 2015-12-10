@@ -216,10 +216,10 @@ def build():
     return _build_or_create(command=BUILD)
 
 
-# Doesn't actually require AppConfig and Resources to start server, but if the
+# Starting Presto doesn't actually require AppConfig and Resources, but if the
 # app doesn't exist and we have to fall back to creating it, it's too late to
-# prompt the user for anything we don't have a default for when we go to
-# execute build_app.
+# prompt the user for anything we don't have a default for when we call
+# create().
 @task
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
