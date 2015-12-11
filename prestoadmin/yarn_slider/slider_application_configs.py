@@ -73,16 +73,27 @@ class AppConfigJson(SliderJsonConfig):
             os.path.join(SLIDER_CONFIG_DIR, 'appConfig.json'),
             os.path.join(SLIDER_CONFIG_DIR, 'appConfig-default.json'),
             APP_CONFIG_TRANSFORMATIONS)
+        self.config = None
 
     def get_config(self):
-        self.config = super(AppConfigJson, self).get_config()
+        if not self.config:
+            self.config = super(AppConfigJson, self).get_config()
         return self.config
 
     def get_jvm_args(self):
-        jvm_args = self.config['global']['site.global.jvm_args']
+        jvm_args = self.get_config()['global']['site.global.jvm_args']
         if jvm_args is None:
             return jvm_args
         return ast.literal_eval(jvm_args)
+
+    def get_data_dir(self):
+        return self.get_config()['global']['site.global.data_dir']
+
+    def get_user(self):
+        return self.get_config()['global']['site.global.app_user']
+
+    def get_group(self):
+        return self.get_config()['global']['site.global.user_group']
 
 
 def _prompt_worker_instances(kpath, value):
@@ -99,7 +110,7 @@ ONE_GiB = 2 ** 30
 # Oracle bought Sun [1].
 # IEC rather than metric multiples because good luck finding any documenation
 # on which Java actually uses, and err on the side of generosity.
-# [0] http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html#wp999528
+# [0] http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html#wp999528 # noqa
 # [1] https://en.wikipedia.org/wiki/JRockit
 UNIT_CHAR_LOOKUP = {
     'k': ONE_KiB, 'K': ONE_KiB,
@@ -127,7 +138,6 @@ def _get_max_heap(jvm_args):
 def _pad_presto_heap_for_yarn(kpath, value):
     padding = 512 * ONE_MiB
     appConfig = AppConfigJson()
-    appConfig.get_config()
     jvm_args = appConfig.get_jvm_args()
     max_heap = _get_max_heap(jvm_args)
     if max_heap is None:

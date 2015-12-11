@@ -19,6 +19,7 @@ from prestoadmin.util.exception import ConfigurationError
 
 from xml.etree import ElementTree
 
+
 def get_config(config_path):
     result = None
     key = None
@@ -59,9 +60,3 @@ def get_config(config_path):
             elif tag == 'configuration':
                 return result
     # Missing closing configuation tag raises a ParseError
-
-
-
-
-
-

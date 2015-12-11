@@ -45,6 +45,7 @@ EXPECTED = {
     'yarn.resourcemanager.scheduler.address': 'master:8030',
     'zk.home': '/usr/lib/zookeeper'}
 
+
 class HadoopConfTest(BaseUnitCase):
     def test_good(self):
         config = get_config(os.path.join(TEST_CONFIG_DIR, 'slider-client.xml'))
@@ -69,3 +70,7 @@ class HadoopConfTest(BaseUnitCase):
         config_path = os.path.join(TEST_CONFIG_DIR,
                                    'slider-client-missing-value.xml')
         self.assertRaises(ConfigurationError, get_config, config_path)
+
+    def test_nx_file(self):
+        config_path = os.path.join(TEST_CONFIG_DIR, 'NX_FILE')
+        self.assertRaises(IOError, get_config, config_path)

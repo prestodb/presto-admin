@@ -24,6 +24,8 @@ from fabric.context_managers import shell_env, quiet, warn_only
 from fabric.operations import put, sudo, local, run
 from fabric.utils import puts
 
+from prestoadmin.fabric_patches import execute
+from prestoadmin.util.cluster import get_nodes_from_rm
 from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
     ResourcesJson
 from prestoadmin.yarn_slider.slider_exit_codes import EXIT_SUCCESS, \
@@ -36,7 +38,7 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
-           'start', 'stop', 'build', 'destroy']
+           'start', 'stop', 'create', 'build', 'destroy', 'test']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
@@ -178,6 +180,8 @@ def remote_temp_file(local_path, remote_path):
 
 
 def start_app():
+    hostnames = get_nodes_from_rm()
+    execute(mk_data_dir, hosts=hostnames)
     start_cmd = (
         '%s start %s' % (get_slider_bin(env.conf), env.conf[APPNAME]))
     with warn_only():
@@ -252,3 +256,23 @@ def destroy():
     destroy_command = \
         '%s destroy %s' % (get_slider_bin(env.conf), env.conf[APPNAME])
     return run_slider(destroy_command, env.conf)
+
+
+def mk_data_dir():
+    app_config = AppConfigJson()
+    command = \
+        '[ -d %(dir)s ] || mkdir -p %(dir)s && ' \
+        'chown %(user)s:%(group)s %(dir)s' % (
+            {'dir': app_config.get_data_dir(),
+             'user': app_config.get_user(),
+             'group': app_config.get_group()})
+    return sudo(command)
+
+
+@task
+@requires_config(SliderConfig)
+@task_by_rolename(SLIDER_MASTER)
+def test():
+    hostnames = get_nodes_from_rm()
+    print hostnames
+    execute(mk_data_dir, hosts=hostnames)
