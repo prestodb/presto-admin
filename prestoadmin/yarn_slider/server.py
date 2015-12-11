@@ -38,7 +38,7 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
-           'start', 'stop', 'create', 'build', 'destroy', 'test']
+           'start', 'stop', 'create', 'build', 'destroy']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
@@ -267,12 +267,3 @@ def mk_data_dir():
              'user': app_config.get_user(),
              'group': app_config.get_group()})
     return sudo(command)
-
-
-@task
-@requires_config(SliderConfig)
-@task_by_rolename(SLIDER_MASTER)
-def test():
-    hostnames = get_nodes_from_rm()
-    print hostnames
-    execute(mk_data_dir, hosts=hostnames)
