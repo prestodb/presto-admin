@@ -98,7 +98,7 @@ class TestConnectors(BaseProductTestCase):
         self.assertRaisesRegexp(OSError, not_found_error,
                                 self.run_script_from_prestoadmin_dir, script)
 
-    def test_connector_add(self):
+    def test_connector_add_missing_connector(self):
         self.setup_cluster(NoHadoopBareImageProvider(),
                            self.STANDALONE_PRESTO_CLUSTER)
 
@@ -109,16 +109,24 @@ class TestConnectors(BaseProductTestCase):
         self.assertRaisesRegexp(OSError, not_found_error,
                                 self.run_prestoadmin, 'connector add tpch')
 
+    def test_connector_add_no_dir(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
         # test add all connectors when the directory does not exist
         self.cluster.exec_cmd_on_host(
             self.cluster.master,
-            'rmdir /etc/opt/prestoadmin/connectors')
+            'rm -r /etc/opt/prestoadmin/connectors')
         missing_dir_error = self.fatal_error('Cannot add connectors '
                                              'because directory /etc/'
                                              'opt/prestoadmin/connectors '
                                              'does not exist')
         self.assertRaisesRegexp(OSError, missing_dir_error,
                                 self.run_prestoadmin, 'connector add')
+
+    def test_connector_add_by_name(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        self.run_prestoadmin('connector remove tpch')
 
         # test add connector by name when it exists
         self.cluster.write_content_to_host(
@@ -132,10 +140,10 @@ class TestConnectors(BaseProductTestCase):
             self.assert_has_default_connector(host)
         self._assert_connectors_loaded([['system'], ['tpch']])
 
-        self.run_prestoadmin('connector remove tpch')
-        self.run_prestoadmin('server restart')
-
-        # test add connectors where directory is empty
+    def test_connector_add_empty_dir(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        output = self.run_prestoadmin('connector remove tpch')
         output = self.run_prestoadmin('connector add')
         expected = """
 Warning: [slave3] Directory /etc/opt/prestoadmin/connectors is empty. \
@@ -156,6 +164,11 @@ No connectors will be deployed
 """
         self.assertEqualIgnoringOrder(expected, output)
 
+    def test_connector_add_two_connectors(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        self.run_prestoadmin('connector remove tpch')
+
         # test add connectors from directory with more than one connector
         self.cluster.write_content_to_host(
             'connector.name=tpch',
@@ -168,7 +181,7 @@ No connectors will be deployed
             self.cluster.master
         )
         self.run_prestoadmin('connector add')
-        self.run_prestoadmin('server restart')
+        self.run_prestoadmin('server start')
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
             self.assert_file_content(host,
@@ -230,21 +243,25 @@ Aborting.
             self.assert_has_default_connector(host)
 
         missing_connector_message = """
-Warning: [slave1] Could not remove connector '%(name)s'. No such file \
+Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
+Aborting.
 
-Warning: [master] Could not remove connector '%(name)s'. No such file \
+Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
+Aborting.
 
-Warning: [slave3] Could not remove connector '%(name)s'. No such file \
+Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
+Aborting.
 
-Warning: [slave2] Could not remove connector '%(name)s'. No such file \
+Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
+Aborting.
 """
 
         success_message = """[master] Connector removed. Restart the server \
@@ -254,10 +271,12 @@ for the change to take effect
 [slave3] Connector removed. Restart the server for the change to take effect"""
 
         # test remove connector does not exist
-        output = self.run_prestoadmin('connector remove jmx')
-        self.assertEqualIgnoringOrder(
-            missing_connector_message % {'name': 'jmx'},
-            output)
+        # expect error
+
+        self.assertRaisesRegexp(OSError,
+                                missing_connector_message % {'name': 'jmx'},
+                                self.run_prestoadmin,
+                                'connector remove jmx')
 
         # test remove connector not in directory, but in presto
         self.cluster.exec_cmd_on_host(
@@ -274,10 +293,11 @@ for the change to take effect
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.cluster.master
         )
-        output = self.run_prestoadmin('connector remove tpch')
-        self.assertEqualIgnoringOrder(
-            missing_connector_message % {'name': 'tpch'},
-            output)
+
+        self.assertRaisesRegexp(OSError,
+                                missing_connector_message % {'name': 'tpch'},
+                                self.run_prestoadmin,
+                                'connector remove tpch')
 
     def test_connector_name_not_found(self):
         self.setup_cluster(NoHadoopBareImageProvider(),

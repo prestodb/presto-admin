@@ -21,7 +21,7 @@ from mock import patch
 
 from prestoadmin import connector
 from prestoadmin.util import constants
-from prestoadmin.util.exception import ConfigurationError,\
+from prestoadmin.util.exception import ConfigurationError, \
     ConfigFileNotFoundError
 from tests.unit.base_unit_case import BaseUnitCase
 
@@ -95,10 +95,11 @@ class TestConnector(BaseUnitCase):
         out = _AttributeString()
         out.succeeded = False
         sudo_mock.return_value = out
-        connector.remove('tpch')
-        self.assertEqual('\nWarning: [localhost] Failed to remove connector '
-                         'tpch.\n\t\n\n',
-                         self.test_stderr.getvalue())
+        self.assertRaisesRegexp(SystemExit,
+                                '\\[localhost\\] Failed to remove '
+                                'connector tpch.',
+                                connector.remove,
+                                'tpch')
 
     @patch('prestoadmin.connector.sudo')
     @patch('prestoadmin.connector.os.path.exists')
@@ -110,9 +111,10 @@ class TestConnector(BaseUnitCase):
         out = _AttributeString(error_msg)
         out.succeeded = True
         sudo_mock.return_value = out
-        connector.remove('tpch')
-        self.assertEqual('\nWarning: [localhost] %s\n\n' % error_msg,
-                         self.test_stderr.getvalue())
+        self.assertRaisesRegexp(SystemExit,
+                                '\\[localhost\\] %s' % error_msg,
+                                connector.remove,
+                                'tpch')
 
     @patch('prestoadmin.connector.os.listdir')
     @patch('prestoadmin.connector.os.path.isdir')
@@ -131,9 +133,8 @@ class TestConnector(BaseUnitCase):
         error_msg = ('Permission denied')
         listdir_mock.side_effect = OSError(13, error_msg)
         fabric.api.env.host = 'localhost'
-        connector.add()
-        self.assertEqual('\nWarning: [localhost] %s\n\n' % error_msg,
-                         self.test_stderr.getvalue())
+        self.assertRaisesRegexp(SystemExit, '\[localhost\] %s' % error_msg,
+                                connector.add)
 
     @patch('prestoadmin.connector.os.remove')
     @patch('prestoadmin.connector.remove_file')
