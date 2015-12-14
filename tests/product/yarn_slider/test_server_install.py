@@ -20,8 +20,6 @@ import json
 from socket import socket
 import time
 
-from nose.plugins.attrib import attr
-
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, PRESTO_PACKAGE
 
 from tests.product.base_product_case import BaseProductTestCase
@@ -76,14 +74,12 @@ class TestServerInstall(BaseProductTestCase):
         conf_dict = self.get_config()
         self.assertNotIn(PRESTO_PACKAGE, conf_dict)
 
-    @attr('quarantine')
     def test_install(self):
         self.assert_uninstalled()
         self.installer.install()
         self.installer.assert_installed(self)
         self.assert_config_has_package()
 
-    @attr('quarantine')
     def test_install_twice(self):
         self.assert_uninstalled()
         self.installer.install()
@@ -91,7 +87,6 @@ class TestServerInstall(BaseProductTestCase):
         self.assertRaisesRegexp(OSError, "Package exists",
                                 self.installer.install)
 
-    @attr('quarantine')
     def test_uninstall(self):
         self.assert_uninstalled()
         self.installer.install()
@@ -101,7 +96,6 @@ class TestServerInstall(BaseProductTestCase):
         self.assert_uninstalled()
         self.assert_config_no_package()
 
-    @attr('quarantine')
     def test_uninstall_not_installed(self):
         self.assert_uninstalled()
         self.assertRaisesRegexp(OSError, "Package does not exist",
