@@ -41,7 +41,7 @@ ADMIN_USER = 'admin'
 SSH_PORT = 'ssh_port'
 
 DIR = 'slider_directory'
-APPNAME = 'slider_appname'
+APP_INST_NAME = 'slider_appname'
 INSTANCE_NAME = 'slider_instname'
 SLIDER_USER = 'slider_user'
 JAVA_HOME = 'JAVA_HOME'
@@ -85,8 +85,8 @@ _SLIDER_CONFIG = [
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
                      'configuration on the slider master:',
                      '/etc/hadoop/conf', None),
-    SingleConfigItem(APPNAME, 'Enter a name for the presto slider ' +
-                     'application',
+    SingleConfigItem(APP_INST_NAME, 'Enter a name for the presto slider ' +
+                     'application instance',
                      'presto', None)]
 
 

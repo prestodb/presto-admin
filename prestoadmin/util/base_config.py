@@ -166,6 +166,12 @@ class JsonFileFromDefaultFile(RequireableConfig):
 
 
 class PresentFileConfig(RequireableConfig):
+    """
+    PresentFileConfig implements RequireableConfig for a file that must be
+    present on the file system in order for presto-admin to run successfully.
+    If there is a way to guide a user through creating a missing file, you
+    should override get_config to provide a more user-friendly experience.
+    """
     def __init__(self, config_path):
         super(PresentFileConfig, self).__init__()
         self.config_path = config_path

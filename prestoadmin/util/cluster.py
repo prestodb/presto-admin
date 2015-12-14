@@ -38,6 +38,15 @@ def json_request(host, api_endpoint):
 
 
 def get_rm_host():
+    """
+    Get the address for the YARN resource manager webapp. First check the
+    Apache Slider configuration in slider-client.xml, and then fall back to the
+    hadoop configuration in yarn-site.xml. Note that the address should consist
+    of both a hostname/IP address and a port. It is assumed that the address is
+    valid.
+
+    :return: The address of the YARN resource manager node.
+    """
     slider_client_xml = os.path.join(
         env.conf[DIR], 'conf', 'slider-client.xml')
     try:

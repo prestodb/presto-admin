@@ -31,7 +31,7 @@ from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
 from prestoadmin.yarn_slider.slider_exit_codes import EXIT_SUCCESS, \
     EXIT_UNKNOWN_INSTANCE
 from prestoadmin.yarn_slider.config import SliderConfig, \
-    DIR, SLIDER_USER, APPNAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
+    DIR, SLIDER_USER, APP_INST_NAME, JAVA_HOME, HADOOP_CONF, SLIDER_MASTER, \
     PRESTO_PACKAGE, SLIDER_CONFIG_DIR, SLIDER_PKG_NAME
 from prestoadmin.util.base_config import requires_config
 
@@ -183,7 +183,7 @@ def start_app():
     hostnames = get_nodes_from_rm()
     execute(mk_data_dir, hosts=hostnames)
     start_cmd = (
-        '%s start %s' % (get_slider_bin(env.conf), env.conf[APPNAME]))
+        '%s start %s' % (get_slider_bin(env.conf), env.conf[APP_INST_NAME]))
     with warn_only():
         return run_slider(start_cmd, env.conf)
 
@@ -201,7 +201,7 @@ def _build_or_create(command=BUILD):
         with remote_temp_file(resources.get_config_path(), '/tmp') as \
                 remote_resources:
             slider_cmd = '%s %s %s --template %s --resources %s' % (
-                get_slider_bin(env.conf), command, env.conf[APPNAME],
+                get_slider_bin(env.conf), command, env.conf[APP_INST_NAME],
                 remote_appConfig, remote_resources)
             return run_slider(slider_cmd, env.conf)
 
@@ -210,6 +210,10 @@ def _build_or_create(command=BUILD):
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
 def create():
+    """
+    Build and start the configured Presto application instance on the cluster
+    using Apache Slider.
+    """
     return _build_or_create(command=CREATE)
 
 
@@ -217,6 +221,11 @@ def create():
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
 def build():
+    """
+    Build, but do NOT start the configured Presto application instance on the
+    cluster using Apache Slider. The application instance can be started by
+    invoking the presto-admin command to start the application instance.
+    """
     return _build_or_create(command=BUILD)
 
 
@@ -228,7 +237,11 @@ def build():
 @requires_config(SliderConfig, AppConfigJson, ResourcesJson)
 @task_by_rolename(SLIDER_MASTER)
 def start():
-    appname = env.conf[APPNAME]
+    """
+    Start the configured Presto application instance. If the application
+    instance does not yet exist, create it and start it.
+    """
+    appname = env.conf[APP_INST_NAME]
     start_result = start_app()
     if start_result.return_code == EXIT_SUCCESS:
         return start_result
@@ -245,7 +258,11 @@ def start():
 @requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def stop():
-    stop_command = '%s stop %s' % (get_slider_bin(env.conf), env.conf[APPNAME])
+    """
+    Stop the configured Presto application instance.
+    """
+    stop_command = '%s stop %s' % (
+        get_slider_bin(env.conf), env.conf[APP_INST_NAME])
     return run_slider(stop_command, env.conf)
 
 
@@ -253,8 +270,12 @@ def stop():
 @requires_config(SliderConfig)
 @task_by_rolename(SLIDER_MASTER)
 def destroy():
+    """
+    Destroy the Presto application instance. Local configuration files will be
+    preserved, and the application instance will be removed from Apache Slider.
+    """
     destroy_command = \
-        '%s destroy %s' % (get_slider_bin(env.conf), env.conf[APPNAME])
+        '%s destroy %s' % (get_slider_bin(env.conf), env.conf[APP_INST_NAME])
     return run_slider(destroy_command, env.conf)
 
 

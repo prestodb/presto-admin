@@ -27,7 +27,7 @@ from tests.product.constants import LOCAL_RESOURCES_DIR
 
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, HOST, DIR, \
     SLIDER_USER, _SLIDER_CONFIG, ADMIN_USER, HADOOP_CONF, SSH_PORT, \
-    JAVA_HOME, APPNAME
+    JAVA_HOME, APP_INST_NAME
 
 SLIDER_DIST_FILENAME = 'slider-assembly-0.80.0-incubating-all.tar.gz'
 
@@ -47,7 +47,7 @@ class TestSliderInstallation(BaseProductTestCase):
             SLIDER_USER: 'yarn',
             HOST: 'master',
             JAVA_HOME: '/usr/java/jdk1.8.0_40/jre/',
-            APPNAME: 'presto'
+            APP_INST_NAME: 'presto'
         }
 
         if override:

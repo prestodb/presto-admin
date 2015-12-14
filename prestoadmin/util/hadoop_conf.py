@@ -21,6 +21,23 @@ from xml.etree import ElementTree
 
 
 def get_config(config_path):
+    """
+    Parse an XML file that conforms to Hadoop's conventions for a configuration
+    file. The returned dictionary will have one entry for each property element
+    in the XML file. The key will be the text of the name element; the value
+    will be the text of the value element.
+
+    Error checking is minimal and limited to what is required to ensure that we
+    return a sane dictionary. The assumption here is that the configuration
+    file needs to be both well-formed and valid in order for it to be useful to
+    Hadoop. Accordingly, the error checking is not as full-featured as it might
+    be. Users are expected to have ensured that configuration errors have been
+    fixed as part of making Hadoop run.
+
+    :param config_path: The location to look for a Hadoop configuration file.
+    :return: A dictionary of the key -> value pairs in the Hadoop configuration
+             file.
+    """
     result = None
     key = None
     value = None
