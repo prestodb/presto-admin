@@ -16,41 +16,57 @@
 Installer for Apache Slider
 """
 
+import os
+
+
+from prestoadmin.yarn_slider.config import HOST, DIR
+
 from tests.base_installer import BaseInstaller
+
+from tests.product.constants import LOCAL_RESOURCES_DIR
 from tests.product.prestoadmin_installer import PrestoadminInstaller
+from tests.product.yarn_slider.pa_slider_config import docker_config, \
+    get_config, upload_config
+
+SLIDER_DIST_FILENAME = 'slider-assembly-0.80.0-incubating-all.tar.gz'
 
 
 class SliderInstaller(BaseInstaller):
 
     def __init__(self, testcase, override=None):
-        from tests.product.yarn_slider.test_slider_installation import \
-            TestSliderInstallation
         self.testcase = testcase
-        self.conf = TestSliderInstallation.get_config(override)
+        self.conf = get_config(override)
 
     @staticmethod
     def get_dependencies():
         return [PrestoadminInstaller]
 
     def install(self):
-        from tests.product.yarn_slider.test_slider_installation import \
-            TestSliderInstallation
-        tsi = TestSliderInstallation
-        tsi.upload_config(self.testcase.cluster, self.conf)
-        slider_path = tsi.copy_slider_dist_to_cluster(self.testcase)
-        tsi.install_slider_package(self.testcase, slider_path)
+        upload_config(self.testcase.cluster, self.conf)
+        slider_path = self.copy_slider_dist_to_cluster(self.testcase)
+        self.install_slider_package(self.testcase, slider_path)
 
     def get_keywords(self):
-        from tests.product.yarn_slider.test_slider_installation import \
-            TestSliderInstallation
         # The docker config has the external hostname for the slider master,
         # which is the one we need to run stuff on clusters.
-        return TestSliderInstallation.docker_config(self.conf)
+        return docker_config(self.conf)
 
     @staticmethod
-    def assert_installed(testcase):
-        from tests.product.yarn_slider.test_slider_installation import \
-            TestSliderInstallation
-        tsi = TestSliderInstallation
-        conf = tsi.get_config()
-        tsi.assert_slider_installed(testcase, conf)
+    def assert_installed(testcase, conf=get_config()):
+        docker_conf = docker_config(conf)
+        testcase.assert_path_exists(docker_conf[HOST],
+                                os.path.join(docker_conf[DIR], 'LICENSE'))
+
+    @staticmethod
+    def copy_slider_dist_to_cluster(testcase):
+        slider_filename = SLIDER_DIST_FILENAME
+        slider_path = os.path.join(LOCAL_RESOURCES_DIR, slider_filename)
+        testcase.cluster.copy_to_host(slider_path, testcase.cluster.master)
+        return os.path.join(testcase.cluster.mount_dir, slider_filename)
+
+    @staticmethod
+    def install_slider_package(testcase, slider_path):
+        testcase.run_prestoadmin(
+            'slider slider_install %s' %
+            (os.path.join(testcase.cluster.mount_dir, slider_path)))
+
