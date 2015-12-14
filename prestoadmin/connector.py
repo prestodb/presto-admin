@@ -18,7 +18,7 @@ Module for presto connector configurations
 import logging
 import errno
 
-from fabric.api import task, env, abort
+from fabric.api import task, env
 from fabric.context_managers import hide
 from fabric.contrib import files
 from fabric.operations import sudo, os, put, get
@@ -47,7 +47,7 @@ def deploy_files(filenames, local_dir, remote_dir):
 def gather_connectors(local_config_dir, allow_overwrite=False):
     local_catalog_dir = os.path.join(local_config_dir, env.host, 'catalog')
     if not allow_overwrite and os.path.exists(local_catalog_dir):
-        abort("Refusing to overwrite %s" % local_catalog_dir)
+        fabric.utils.error("Refusing to overwrite %s" % local_catalog_dir)
     ensure_directory_exists(local_catalog_dir)
     if files.exists(constants.REMOTE_CATALOG_DIR):
         return get(constants.REMOTE_CATALOG_DIR, local_catalog_dir)
@@ -108,7 +108,7 @@ def add(name=None):
         try:
             filenames = os.listdir(constants.CONNECTORS_DIR)
         except OSError as e:
-            fabric.utils.warn(e.strerror)
+            fabric.utils.error(e.strerror)
             return
         if not filenames:
             fabric.utils.warn(
@@ -141,13 +141,13 @@ def remove(name):
                                    name + '.properties'))
     if ret.succeeded:
         if COULD_NOT_REMOVE in ret:
-            fabric.utils.warn(ret)
+            fabric.utils.error(ret)
         else:
             print('[%s] Connector removed. Restart the server for the change '
                   'to take effect' % env.host)
     else:
-        fabric.utils.warn('Failed to remove connector ' + name + '.\n\t'
-                          + ret)
+        fabric.utils.error('Failed to remove connector ' + name + '.\n\t' +
+                           ret)
 
     local_path = os.path.join(constants.CONNECTORS_DIR, name + '.properties')
     try:

@@ -71,10 +71,11 @@ class TestControl(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
 
-        start_output = self.run_prestoadmin('server start').splitlines()
+        start_output = self.run_prestoadmin(
+            'server start', raise_error=False).splitlines()
         self.assertRegexpMatchesLineByLine(
             start_output,
-            self.expected_port_warn(self.cluster.all_internal_hosts())
+            self.expected_port_error(self.cluster.all_internal_hosts())
         )
 
     def test_server_stop_not_started(self):
@@ -162,14 +163,15 @@ class TestControl(BaseProductTestCase):
                              self.cluster.internal_slaves[0])
 
         # Start all again
-        start_with_warn = self.run_prestoadmin('server start').splitlines()
+        start_with_error = self.run_prestoadmin('server start',
+                                                raise_error=False).splitlines()
         expected = self.expected_start(
             start_success=[self.cluster.internal_slaves[0]],
             already_started=[], failed_hosts=[])
         alive_hosts = self.cluster.all_internal_hosts()[:]
         alive_hosts.remove(self.cluster.internal_slaves[0])
-        expected.extend(self.expected_port_warn(alive_hosts))
-        self.assertRegexpMatchesLineByLine(start_with_warn, expected)
+        expected.extend(self.expected_port_error(alive_hosts))
+        self.assertRegexpMatchesLineByLine(start_with_error, expected)
 
     def assert_start_stop_restart_down_node(self, down_node,
                                             down_internal_node):
@@ -310,11 +312,12 @@ class TestControl(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
 
-        start_output = self.run_prestoadmin('server start').splitlines()
+        start_output = self.run_prestoadmin(
+            'server start', raise_error=False).splitlines()
         started_hosts = self.cluster.all_internal_hosts()
         started_hosts.remove(host)
         started_expected = self.expected_start(start_success=started_hosts)
-        started_expected.extend(self.expected_port_warn([host]))
+        started_expected.extend(self.expected_port_error([host]))
         self.assertRegexpMatchesLineByLine(
             start_output,
             started_expected
@@ -337,12 +340,12 @@ class TestControl(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output)
         self.assert_stopped(process_per_host)
 
-    def expected_port_warn(self, hosts=None):
+    def expected_port_error(self, hosts=None):
         return_str = []
         for host in hosts:
-            return_str += [r'Warning: \[%s\] Server failed to start on %s. '
-                           r'Port 8080 already in use' % (host, host), r'',
-                           r'']
+            return_str += [r'Fatal error: \[%s\] Server failed to start on %s.'
+                           r' Port 8080 already in use' % (host, host), r'',
+                           r'', r'Aborting.']
         return return_str
 
     def expected_start(self, start_success=None, already_started=None,

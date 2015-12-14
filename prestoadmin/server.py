@@ -25,7 +25,7 @@ from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once, with_settings, parallel
 from fabric.operations import run, os
 from fabric.tasks import execute
-from fabric.utils import warn
+from fabric.utils import warn, error
 
 from prestoadmin import configure_cmds
 from prestoadmin import connector
@@ -217,9 +217,9 @@ def check_status_for_control_commands():
     if check_server_status(client):
         print('Server started successfully on: ' + env.host)
     else:
-        warn('Server failed to start on: ' + env.host
-             + '\nPlease check ' + lookup_server_log_file(env.host) + ' and ' +
-             lookup_launcher_log_file(env.host))
+        error('Server failed to start on: ' + env.host +
+              '\nPlease check ' + lookup_server_log_file(env.host) + ' and ' +
+              lookup_launcher_log_file(env.host))
 
 
 def is_port_in_use(host):
@@ -235,8 +235,8 @@ def is_port_in_use(host):
     if output:
         _LOGGER.info("Presto server port already in use. Skipping "
                      "server start...")
-        warn('Server failed to start on %s. Port %s already in use'
-             % (env.host, str(portnum)))
+        error('Server failed to start on %s. Port %s already in use'
+              % (env.host, str(portnum)))
     return output
 
 
