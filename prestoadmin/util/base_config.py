@@ -18,15 +18,45 @@ Module for common configuration stuff.
 """
 
 import abc
+import os
 
 from functools import wraps
 
+from overrides import overrides
+
 from fabric.context_managers import settings
-from fabric.operations import prompt
+from fabric.operations import abort, prompt
+from fabric.state import env
 
 from prestoadmin import config
 from prestoadmin.config import ConfigFileNotFoundError
 from prestoadmin.util.exception import ConfigurationError
+from prestoadmin.util.json_tranform import transform
+
+
+def set_env_hosts(hosts_list, hosts_source):
+    if 'pa_hosts_source' in env and env.pa_hosts_source is not None:
+        raise ConfigurationError(
+            'We goofed! env.hosts was already set based on the configuration '
+            'in %s, but we are trying to set it again based on the '
+            'configuration in %s. Please file an issue on github and let us '
+            'know what command you were trying to run.'
+            % (env.pa_hosts_source, hosts_source))
+
+    env.pa_hosts_source = hosts_source
+    env.hosts = hosts_list
+
+
+def sanitize_env_hosts_source():
+    if 'pa_hosts_source' in env:
+        del env['pa_hosts_source']
+
+
+def get_env_hosts_source():
+    if 'pa_hosts_source' in env:
+        return env.pa_hosts_source
+    else:
+        return None
 
 
 class SingleConfigItem(object):
@@ -68,29 +98,105 @@ class MultiConfigItem(object):
             item.collect_prompts(l)
 
 
-def requires_config(config_class):
+def requires_config(*config_classes):
     def wrap(func):
-        config_instance = config_class()
-        func.pa_config_callback = config_instance.get_config
+        config_instances = [config_class() for config_class in config_classes]
+        func.pa_config_callbacks = \
+            [config_inst.get_config for config_inst in config_instances]
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if not config_instance.is_config_loaded():
-                raise ConfigurationError('Required config not loaded at task '
-                                         'execution time.')
+            for config_instance in config_instances:
+                if not config_instance.is_config_loaded():
+                    raise ConfigurationError('Required config not loaded at '
+                                             'task execution time.')
             return func(*args, **kwargs)
         return wrapper
     return wrap
 
 
-class BaseConfig(object):
+class RequireableConfig(object):
     '''
-    BaseConfig provides the common config functionality for loading
+    RequirableConfig represents the minimum functionality a configuration needs
+    to implement to be compatible with the @requires_config decorator.
+
+    Subclasses must have additionally have a no-arguments constructor in order
+    to be compatible with @requires_config.
+    '''
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self):
+        super(RequireableConfig, self).__init__()
+
+    @abc.abstractmethod
+    def is_config_loaded(self):
+        pass
+
+    @abc.abstractmethod
+    def get_config(self):
+        pass
+
+
+class JsonFileFromDefaultFile(RequireableConfig):
+    def __init__(self, config_path, default_config_path, transformations):
+        super(JsonFileFromDefaultFile, self).__init__()
+        self.config_path = config_path
+        self.default_config_path = default_config_path
+        self.transformations = transformations
+
+    @overrides
+    def get_config(self):
+        if os.path.exists(self.config_path):
+            return config.get_conf_from_json_file(self.config_path)
+        elif os.path.exists(self.default_config_path):
+            default_json = config.get_conf_from_json_file(
+                self.default_config_path)
+            transformed = transform(
+                default_json, self.transformations)
+            config.write(config.json_to_string(transformed), self.config_path)
+            return transformed
+        else:
+            abort('Config file %s missing. Default config file %s also '
+                  'missing. Could not generate config' % (
+                      self.config_path, self.default_config_path))
+
+    @overrides
+    def is_config_loaded(self):
+        return os.path.exists(self.config_path)
+
+
+class PresentFileConfig(RequireableConfig):
+    """
+    PresentFileConfig implements RequireableConfig for a file that must be
+    present on the file system in order for presto-admin to run successfully.
+    If there is a way to guide a user through creating a missing file, you
+    should override get_config to provide a more user-friendly experience.
+    """
+    def __init__(self, config_path):
+        super(PresentFileConfig, self).__init__()
+        self.config_path = config_path
+
+    @overrides
+    def get_config(self):
+        if not self.is_config_loaded():
+            raise ConfigFileNotFoundError(
+                message='The required configuration file %s is missing. '
+                        'Create it and try again' % (self.config_path),
+                        config_path=self.config_path)
+
+    @overrides
+    def is_config_loaded(self):
+        return os.path.exists(self.config_path)
+
+
+class FabricEnvConfig(RequireableConfig):
+    '''
+    FabricEnvConfig provides the common config functionality for loading
     configuration files for presto-admin and going through the interactive
     config process if a config file isn't present.
 
-    Instances of classes that subclass BaseConfig are intended to be used with
-    the @requires_config decorator, which is responsible for adding an
+    Instances of classes that subclass FabricEnvConfig are intended to be used
+    with the @requires_config decorator, which is responsible for adding an
     attribute to the task that tells main() how to load the configuration
     and subsequently for enforcing that the configuration has been loaded at
     the time the task is actually run.
@@ -101,6 +207,7 @@ class BaseConfig(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config_path, config_items):
+        super(FabricEnvConfig, self).__init__()
         self.config_path = config_path
         self.config_items = config_items
 
@@ -130,10 +237,6 @@ class BaseConfig(object):
                 self.set_env_from_conf(conf)
                 self.set_config_loaded()
             return self.config_path
-
-    @abc.abstractmethod
-    def is_config_loaded(self):
-        pass
 
     @abc.abstractmethod
     def set_config_loaded(self):

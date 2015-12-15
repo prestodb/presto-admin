@@ -19,8 +19,8 @@ import os
 import urllib
 
 import prestoadmin
-from prestoadmin.yarn_slider.config import APPNAME, SLIDER_USER, HOST, \
-    HADOOP_CONF
+from prestoadmin.yarn_slider.config import SLIDER_USER, HOST, \
+    HADOOP_CONF, SLIDER_PKG_NAME
 from prestoadmin.yarn_slider.server import get_slider_bin
 
 from tests.base_installer import BaseInstaller
@@ -130,7 +130,7 @@ class SliderPrestoInstaller(BaseInstaller):
         keywords = si.get_keywords()
         hdfs_cmd = 'hdfs dfs -ls %s' % (
             os.path.join('/', 'user', keywords[SLIDER_USER], '.slider',
-                         'package', keywords[APPNAME],
+                         'package', SLIDER_PKG_NAME,
                          os.path.basename(package_filename))
         )
         testcase.cluster.exec_cmd_on_host(
@@ -146,7 +146,7 @@ class SliderPrestoInstaller(BaseInstaller):
         output = testcase.cluster.exec_cmd_on_host(
             SliderPrestoInstaller._get_slider_master(testcase), slider_cmd,
             user=SliderPrestoInstaller._get_slider_user(testcase))
-        testcase.assertRegexpMatches(output, r'\b%s\b' % (conf[APPNAME]))
+        testcase.assertRegexpMatches(output, r'\b%s\b' % (SLIDER_PKG_NAME))
 
     def _copy_package_to_pa_host(self):
         package_path = os.path.join(self.package_dir, self.package_filename)
