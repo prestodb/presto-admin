@@ -15,47 +15,22 @@
 Tests for the server install sub command.
 """
 
-from errno import ECONNREFUSED
 import json
-from socket import socket
-import time
 
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, PRESTO_PACKAGE
 
-from tests.product.base_product_case import BaseProductTestCase
 from tests.hdp_bare_image_provider import HdpBareImageProvider
+from tests.product.yarn_slider.yarn_slider_test_case import YarnSliderTestCase
 from tests.product.yarn_slider.slider_presto_installer import \
     SliderPrestoInstaller
 
-HDFS_PORT = 8020
 
-
-class TestServerInstall(BaseProductTestCase):
+class TestServerInstall(YarnSliderTestCase):
     def setUp(self):
         super(TestServerInstall, self).setUp()
         self.setup_cluster(HdpBareImageProvider(), self.PA_SLIDER_CLUSTER)
         self.installer = SliderPrestoInstaller(self)
         self.await_hdfs()
-
-    def await_hdfs(self):
-        start = time.clock()
-        ip_addr = self.cluster.get_ip_address_dict()[self.cluster.master]
-        while True:
-            try:
-                s = socket()
-                s.connect((ip_addr, HDFS_PORT))
-                break
-            except Exception as e:
-                s.close()
-                if e.errno == ECONNREFUSED:
-                    pass
-                else:
-                    raise
-            finally:
-                s.close()
-        end = time.clock()
-        duration = end - start
-        print 'Waited %.3f seconds for hdfs' % (duration)
 
     def assert_uninstalled(self):
         self.assertRaisesRegexp(OSError, 'No such file or directory',

@@ -1,0 +1,24 @@
+{
+    "schema":"http://example.org/specification/v2.0.0",
+    "global":{
+        "site.global.app_name":"presto-server-0.123",
+        "site.global.presto_query_max_memory_per_node":"600MB",
+        "site.global.presto_query_max_memory":"5GB",
+        "site.global.app_user":"yarn",
+        "site.global.singlenode":false,
+        "site.global.presto_server_port":"8080",
+        "application.def":".slider/package/PRESTO/presto-yarn-package.zip",
+        "site.global.catalog":"{'hive': ['connector.name=hive-cdh5', 'hive.metastore.uri=thrift://${NN_HOST}:9083'], 'tpch': ['connector.name=tpch']}",
+        "site.global.coordinator_host":"${COORDINATOR_HOST}",
+        "site.global.user_group":"hadoop",
+        "site.global.data_dir":"/var/presto/data",
+        "java_home":"/usr/lib/jvm/java",
+        "site.global.jvm_args":"['-server', '-Xmx1024M', '-XX:+UseG1GC', '-XX:G1HeapRegionSize=32M', '-XX:+UseGCOverheadLimit', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:OnOutOfMemoryError=kill -9 %p']"
+    },
+    "components":{
+        "slider-appmaster":{
+            "jvm.heapsize":"128M"
+        }
+    },
+    "metadata":{}
+}

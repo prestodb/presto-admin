@@ -427,8 +427,14 @@ class DockerCluster(BaseCluster):
             host, 'cp %s %s' % (os.path.join(self.mount_dir, filename),
                                 dest_dir))
 
-    def copy_to_host(self, source_path, dest_host, **kwargs):
+    def copy_to_host(self, source_path, dest_host, dest_path=None):
         shutil.copy(source_path, self.get_local_mount_dir(dest_host))
+        if dest_path:
+            filename = os.path.basename(source_path)
+            # Got two turntables and a microphone...
+            where_its_at = os.path.join(self.mount_dir, filename)
+            self.exec_cmd_on_host(
+                dest_host, 'mv %s %s' % (where_its_at, dest_path))
 
     def get_ip_address_dict(self):
         ip_addresses = {}

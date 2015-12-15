@@ -32,6 +32,8 @@ from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.topology_installer import TopologyInstaller
 from tests.product.yarn_slider.slider_installer import SliderInstaller
+from tests.product.yarn_slider.slider_presto_installer import \
+    SliderPrestoInstaller
 
 PRESTO_VERSION = r'presto-main:.*'
 RETRY_TIMEOUT = 120
@@ -41,17 +43,22 @@ RETRY_INTERVAL = 5
 class BaseProductTestCase(BaseTestCase):
     STANDALONE_BARE_CLUSTER = 'bare'
     BARE_CLUSTER = 'bare'
+
     PA_ONLY_CLUSTER = 'pa_only'
     STANDALONE_PRESTO_CLUSTER = 'presto'
 
     PA_SLIDER_CLUSTER = 'pa_slider'
+    PRESTO_YARN_CLUSTER = 'presto_yarn'
 
     _cluster_types = {
         BARE_CLUSTER: [],
+
         PA_ONLY_CLUSTER: [PrestoadminInstaller],
         STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller, TopologyInstaller,
                                     StandalonePrestoInstaller],
-        PA_SLIDER_CLUSTER: [PrestoadminInstaller, SliderInstaller]
+        PA_SLIDER_CLUSTER: [PrestoadminInstaller, SliderInstaller],
+        PRESTO_YARN_CLUSTER: [PrestoadminInstaller, SliderInstaller,
+                              SliderPrestoInstaller]
     }
 
     default_workers_config_ = """coordinator=false

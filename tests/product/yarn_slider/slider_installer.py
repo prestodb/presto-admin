@@ -54,8 +54,8 @@ class SliderInstaller(BaseInstaller):
     @staticmethod
     def assert_installed(testcase, conf=get_config()):
         docker_conf = docker_config(conf)
-        testcase.assert_path_exists(docker_conf[HOST],
-                                    os.path.join(docker_conf[DIR], 'LICENSE'))
+        testcase.assert_path_exists(
+            docker_conf[HOST], os.path.join(docker_conf[DIR], 'LICENSE'))
 
     @staticmethod
     def copy_slider_dist_to_cluster(testcase):

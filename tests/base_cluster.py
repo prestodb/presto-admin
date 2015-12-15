@@ -125,5 +125,5 @@ class BaseCluster(object):
         pass
 
     @abc.abstractmethod
-    def copy_to_host(self, source_path, host, **kwargs):
+    def copy_to_host(self, source_path, host, dest_path=None):
         pass

@@ -20,7 +20,7 @@ import json
 
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, HOST, DIR, \
     SLIDER_USER, ADMIN_USER, HADOOP_CONF, SSH_PORT, \
-    JAVA_HOME, APPNAME
+    JAVA_HOME, APP_INST_NAME
 
 
 def get_config(override=None):
@@ -32,7 +32,7 @@ def get_config(override=None):
         SLIDER_USER: 'yarn',
         HOST: 'master',
         JAVA_HOME: '/usr/java/jdk1.8.0_40/jre/',
-        APPNAME: 'presto'
+        APP_INST_NAME: 'presto'
     }
 
     if override:
