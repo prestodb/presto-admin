@@ -26,8 +26,7 @@ from prestoadmin.yarn_slider.server import get_slider_bin
 from tests.base_installer import BaseInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.yarn_slider.slider_installer import SliderInstaller
-from tests.product.yarn_slider.test_slider_installation import \
-    TestSliderInstallation
+from tests.product.yarn_slider.pa_slider_config import get_config
 
 # If you have the misfortune of having to fix the download link in the future,
 # be aware that you're in for a treat.
@@ -139,7 +138,7 @@ class SliderPrestoInstaller(BaseInstaller):
             SliderPrestoInstaller._get_slider_user(testcase))
 
         # Verify that slider thinks the package is installed
-        conf = TestSliderInstallation.get_config()
+        conf = get_config()
         slider_cmd = \
             "bash -c 'export HADOOP_CONF_DIR=%s ; %s package --list'" % (
                 conf[HADOOP_CONF], get_slider_bin(conf))
