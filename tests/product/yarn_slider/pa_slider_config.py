@@ -69,4 +69,3 @@ def upload_config(cluster, conf):
     cluster.write_content_to_host(
         json.dumps(cluster_config(conf)), SLIDER_CONFIG_PATH, cluster.master)
     return conf
-
