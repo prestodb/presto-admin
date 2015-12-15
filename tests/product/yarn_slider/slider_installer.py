@@ -55,7 +55,7 @@ class SliderInstaller(BaseInstaller):
     def assert_installed(testcase, conf=get_config()):
         docker_conf = docker_config(conf)
         testcase.assert_path_exists(docker_conf[HOST],
-                                os.path.join(docker_conf[DIR], 'LICENSE'))
+                                    os.path.join(docker_conf[DIR], 'LICENSE'))
 
     @staticmethod
     def copy_slider_dist_to_cluster(testcase):
@@ -69,4 +69,3 @@ class SliderInstaller(BaseInstaller):
         testcase.run_prestoadmin(
             'slider slider_install %s' %
             (os.path.join(testcase.cluster.mount_dir, slider_path)))
-
