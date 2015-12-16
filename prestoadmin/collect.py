@@ -34,10 +34,13 @@ from fabric.utils import abort, warn
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import get_presto_version, get_connector_info_from
 from prestoadmin.util.base_config import requires_config
+from prestoadmin.util.filesystem import ensure_directory_exists
+from prestoadmin.util.remote_config_util import lookup_server_log_file,\
+    lookup_launcher_log_file
 from prestoadmin.standalone.config import StandaloneConfig
 import prestoadmin.util.fabricapi as fabricapi
 import prestoadmin
-from util.constants import REMOTE_PRESTO_LOG_DIR, PRESTOADMIN_LOG_DIR
+from util.constants import PRESTOADMIN_LOG_DIR
 
 
 TMP_PRESTO_DEBUG = '/tmp/presto-debug/'
@@ -58,20 +61,11 @@ def logs():
     """
     Gather all the server logs and presto-admin log and create a tar file.
     """
-
-    _LOGGER.debug('LOG directory to be archived: ' + REMOTE_PRESTO_LOG_DIR)
-
-    if not os.path.exists(TMP_PRESTO_DEBUG):
-        os.mkdir(TMP_PRESTO_DEBUG)
-
     downloaded_logs_location = os.path.join(TMP_PRESTO_DEBUG, "logs")
-
-    if not os.path.exists(downloaded_logs_location):
-        os.mkdir(downloaded_logs_location)
+    ensure_directory_exists(downloaded_logs_location)
 
     print 'Downloading logs from all the nodes...'
-    execute(file_get, REMOTE_PRESTO_LOG_DIR,
-            downloaded_logs_location, roles=env.roles)
+    execute(get_remote_log_files, downloaded_logs_location, roles=env.roles)
 
     copy_admin_log(downloaded_logs_location)
 
@@ -91,6 +85,18 @@ def make_tarfile(output_filename, source_dir):
         tar.add(source_dir, arcname=os.path.basename(source_dir))
     finally:
         tar.close()
+
+
+def get_remote_log_files(dest_path):
+    remote_server_log = lookup_server_log_file(env.host)
+    _LOGGER.debug('Logs to be archived on host ' + env.host + ': ' +
+                  remote_server_log)
+    file_get(remote_server_log + '*', dest_path)
+
+    remote_launcher_log = lookup_launcher_log_file(env.host)
+    _LOGGER.debug('LOG directory to be archived on host ' + env.host + ': '
+                  + remote_launcher_log)
+    file_get(remote_launcher_log + '*', dest_path)
 
 
 def file_get(remote_path, local_path):

@@ -30,7 +30,6 @@ from fabric.utils import warn
 from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import package
-from prestoadmin.util.constants import REMOTE_PRESTO_LOG_DIR
 from prestoadmin.util.version_util import VersionRange, VersionRangeList, \
     split_version, strip_tag
 from prestoadmin.prestoclient import PrestoClient
@@ -39,7 +38,8 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError
 from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
-from prestoadmin.util.service_util import lookup_port
+from prestoadmin.util.remote_config_util import lookup_port, \
+    lookup_server_log_file, lookup_launcher_log_file
 
 from tempfile import mkdtemp
 import util.filesystem
@@ -218,7 +218,8 @@ def check_status_for_control_commands():
         print('Server started successfully on: ' + env.host)
     else:
         warn('Server failed to start on: ' + env.host
-             + '\nPlease check ' + REMOTE_PRESTO_LOG_DIR + '/server.log')
+             + '\nPlease check ' + lookup_server_log_file(env.host) + ' and ' +
+             lookup_launcher_log_file(env.host))
 
 
 def is_port_in_use(host):

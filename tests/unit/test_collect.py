@@ -25,36 +25,33 @@ import requests
 from prestoadmin import collect
 from prestoadmin.collect import TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, PRESTOADMIN_LOG_DIR, \
-    REMOTE_PRESTO_LOG_DIR, OUTPUT_FILENAME_FOR_LOGS, \
-    OUTPUT_FILENAME_FOR_SYS_INFO
+    OUTPUT_FILENAME_FOR_LOGS, OUTPUT_FILENAME_FOR_SYS_INFO
 import prestoadmin
 from tests.unit.base_unit_case import BaseUnitCase
 
 
 class TestCollect(BaseUnitCase):
 
-    @patch('prestoadmin.collect.execute')
+    @patch('prestoadmin.collect.lookup_launcher_log')
+    @patch('prestoadmin.collect.lookup_server_log')
+    @patch('prestoadmin.collect.file_get')
     @patch("prestoadmin.collect.tarfile.open")
     @patch("prestoadmin.collect.shutil.copy")
-    @patch("prestoadmin.collect.os.mkdir")
+    @patch("prestoadmin.collect.ensure_directory_exists")
     @patch("prestoadmin.collect.os.path.exists")
     def test_collect_logs(self, path_exists_mock, mkdirs_mock, copy_mock,
-                          tarfile_open_mock, mock_execute):
+                          tarfile_open_mock, file_get_mock, server_log_mock,
+                          launcher_log_mock):
         downloaded_logs_loc = path.join(TMP_PRESTO_DEBUG, "logs")
         path_exists_mock.return_value = False
 
         collect.logs()
 
-        mkdirs_mock.assert_any_call(TMP_PRESTO_DEBUG)
         mkdirs_mock.assert_called_with(downloaded_logs_loc)
         copy_mock.assert_called_with(path.join(PRESTOADMIN_LOG_DIR,
                                                PRESTOADMIN_LOG_NAME),
                                      downloaded_logs_loc)
 
-        mock_execute.assert_called_with(collect.file_get,
-                                        REMOTE_PRESTO_LOG_DIR,
-                                        downloaded_logs_loc,
-                                        roles=[])
         tarfile_open_mock.assert_called_with(OUTPUT_FILENAME_FOR_LOGS, 'w:bz2')
         tar = tarfile_open_mock.return_value
         tar.add.assert_called_with(downloaded_logs_loc,
