@@ -84,18 +84,17 @@ def mock_error_topology():
     return loader
 
 
-class TestMain(BaseUnitCase):
-    @patch('prestoadmin.mode.get_mode', return_value='standalone')
-    def setUp(self, mode_mock):
-        reload(prestoadmin)
-        super(TestMain, self).setUp(capture_output=True, load_config=False)
+class BaseMainCase(BaseUnitCase):
+    def setUp(self):
+        super(BaseMainCase, self).setUp(capture_output=True, load_config=False)
 
     def _run_command_compare_to_file(self, command, exit_status, filename):
         """
             Compares stdout from the CLI to the given file
         """
         current_dir = os.path.abspath(os.path.dirname(__file__))
-        input_file = open(current_dir + filename, 'r')
+        expected_path = os.path.join(current_dir, filename)
+        input_file = open(expected_path, 'r')
         text = "".join(input_file.readlines())
         input_file.close()
         self._run_command_compare_to_string(command, exit_status,
@@ -117,17 +116,12 @@ class TestMain(BaseUnitCase):
         if stderr_text is not None:
             self.assertEqual(stderr_text, self.test_stderr.getvalue())
 
-    def test_standalone_help_text_short(self):
-        self._run_command_compare_to_file(
-            ["-h"], 0, "/resources/standalone-help.txt")
 
-    def test_standalone_help_text_long(self):
-        self._run_command_compare_to_file(
-            ["--help"], 0, "/resources/standalone-help.txt")
-
-    def test_standalone_help_displayed_with_no_args(self):
-        self._run_command_compare_to_file(
-            [], 0, "/resources/standalone-help.txt")
+class TestMain(BaseMainCase):
+    @patch('prestoadmin.mode.get_mode', return_value='standalone')
+    def setUp(self, mode_mock):
+        super(TestMain, self).setUp()
+        reload(prestoadmin)
 
     def test_version(self):
         # Note: this will have to be updated whenever we have a new version.
@@ -254,10 +248,6 @@ class TestMain(BaseUnitCase):
         self._run_command_compare_to_string(["--config"], 2)
         self.assertTrue("no such option: --config" in
                         self.test_stderr.getvalue())
-
-    def test_standalone_extended_help(self):
-        self._run_command_compare_to_file(
-            ['--extended-help'], 0, "/resources/standalone-extended-help.txt")
 
     @patch('prestoadmin.main.crawl')
     @patch('prestoadmin.fabric_patches.crawl')
