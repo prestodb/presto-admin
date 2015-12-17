@@ -68,4 +68,3 @@ def uninstall():
     Uninstall slider from the slider master.
     """
     sudo('rm -r "%s"' % (env.conf[DIR]))
-

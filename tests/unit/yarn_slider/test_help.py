@@ -22,18 +22,18 @@ import fabric
 from tests.unit.test_main import BaseMainCase
 
 
-class TestStandaloneHelp(BaseMainCase):
-    @patch('prestoadmin.mode.get_mode', return_value='standalone')
+class TestSliderHelp(BaseMainCase):
+    @patch('prestoadmin.mode.get_mode', return_value='yarn_slider')
     def setUp(self, mode_mock):
-        super(TestStandaloneHelp, self).setUp()
+        super(TestSliderHelp, self).setUp()
         fabric.state.commands = {}
         reload(prestoadmin)
 
     def get_short_help_path(self):
-        return os.path.join('resources', 'standalone-help.txt')
+        return os.path.join('resources', 'slider-help.txt')
 
     def get_extended_help_path(self):
-        return os.path.join('resources', 'standalone-extended-help.txt')
+        return os.path.join('resources', 'slider-extended-help.txt')
 
     def test_standalone_help_text_short(self):
         self._run_command_compare_to_file(

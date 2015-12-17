@@ -103,6 +103,7 @@ def get():
     else:
         abort("Select a mode using the subcommand 'mode select <mode>'")
 
+
 @task
 @runs_once
 def list():

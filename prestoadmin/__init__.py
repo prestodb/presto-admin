@@ -23,7 +23,7 @@ import sys
 
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
-from fabric.api import env, abort
+from fabric.api import env
 
 import fabric_patches
 import mode
