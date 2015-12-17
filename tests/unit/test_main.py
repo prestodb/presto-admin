@@ -85,7 +85,9 @@ def mock_error_topology():
 
 
 class TestMain(BaseUnitCase):
-    def setUp(self):
+    @patch('prestoadmin.mode.get_mode', return_value='standalone')
+    def setUp(self, mode_mock):
+        reload(prestoadmin)
         super(TestMain, self).setUp(capture_output=True, load_config=False)
 
     def _run_command_compare_to_file(self, command, exit_status, filename):
@@ -115,16 +117,17 @@ class TestMain(BaseUnitCase):
         if stderr_text is not None:
             self.assertEqual(stderr_text, self.test_stderr.getvalue())
 
-    def test_help_text_short(self):
-        # See if the help text matches what we expect it to be (in
-        # tests/help.txt)
-        self._run_command_compare_to_file(["-h"], 0, "/resources/help.txt")
+    def test_standalone_help_text_short(self):
+        self._run_command_compare_to_file(
+            ["-h"], 0, "/resources/standalone-help.txt")
 
-    def test_help_text_long(self):
-        self._run_command_compare_to_file(["--help"], 0, "/resources/help.txt")
+    def test_standalone_help_text_long(self):
+        self._run_command_compare_to_file(
+            ["--help"], 0, "/resources/standalone-help.txt")
 
-    def test_help_displayed_with_no_args(self):
-        self._run_command_compare_to_file([], 0, "/resources/help.txt")
+    def test_standalone_help_displayed_with_no_args(self):
+        self._run_command_compare_to_file(
+            [], 0, "/resources/standalone-help.txt")
 
     def test_version(self):
         # Note: this will have to be updated whenever we have a new version.
@@ -252,9 +255,9 @@ class TestMain(BaseUnitCase):
         self.assertTrue("no such option: --config" in
                         self.test_stderr.getvalue())
 
-    def test_extended_help(self):
-        self._run_command_compare_to_file(['--extended-help'], 0,
-                                          "/resources/extended-help.txt")
+    def test_standalone_extended_help(self):
+        self._run_command_compare_to_file(
+            ['--extended-help'], 0, "/resources/standalone-extended-help.txt")
 
     @patch('prestoadmin.main.crawl')
     @patch('prestoadmin.fabric_patches.crawl')

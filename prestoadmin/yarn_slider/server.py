@@ -29,7 +29,7 @@ from prestoadmin.util.base_config import requires_config
 
 from prestoadmin.util.fabricapi import task_by_rolename
 
-__all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall']
+__all__ = ['install', 'uninstall']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
