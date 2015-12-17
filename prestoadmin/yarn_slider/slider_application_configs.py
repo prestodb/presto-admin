@@ -142,7 +142,7 @@ def _pad_presto_heap_for_yarn(kpath, value):
     max_heap = _get_max_heap(jvm_args)
     if max_heap is None:
         max_heap = 0
-    return (max_heap + padding) / ONE_MiB
+    return str((max_heap + padding) / ONE_MiB)
 
 
 RESOURCES_TRANSFORMATIONS = {
@@ -150,6 +150,8 @@ RESOURCES_TRANSFORMATIONS = {
     as_key('components', 'WORKER', 'yarn.label.expression'): purge,
     as_key('components', 'WORKER', 'yarn.component.instances'):
         _prompt_worker_instances,
+    as_key('components', 'COORDINATOR', 'yarn.memory'):
+        _pad_presto_heap_for_yarn,
     as_key('components', 'WORKER', 'yarn.memory'):
         _pad_presto_heap_for_yarn
 }

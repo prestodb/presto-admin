@@ -59,7 +59,7 @@
 
   <property>
       <name>slider.zookeeper.quorum</name>
-      <value>master:5181</value>
+      <value>master:2181</value>
   </property>
 
   <property>
