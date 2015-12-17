@@ -18,6 +18,7 @@ import os
 
 import prestoadmin
 import fabric
+from fabric.state import commands
 
 from tests.unit.test_main import BaseMainCase
 
@@ -26,7 +27,6 @@ class TestSliderHelp(BaseMainCase):
     @patch('prestoadmin.mode.get_mode', return_value='yarn_slider')
     def setUp(self, mode_mock):
         super(TestSliderHelp, self).setUp()
-        fabric.state.commands = {}
         reload(prestoadmin)
 
     def get_short_help_path(self):

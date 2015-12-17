@@ -67,5 +67,5 @@ class SliderInstaller(BaseInstaller):
     @staticmethod
     def install_slider_package(testcase, slider_path):
         testcase.run_prestoadmin(
-            'slider slider_install %s' %
+            'slider install %s' %
             (os.path.join(testcase.cluster.mount_dir, slider_path)))

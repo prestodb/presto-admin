@@ -28,6 +28,9 @@ from prestoadmin.util import constants
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster, DockerClusterException
+
+from tests.product.mode_installers import StandaloneModeInstaller, \
+    YarnSliderModeInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.topology_installer import TopologyInstaller
@@ -41,17 +44,25 @@ RETRY_INTERVAL = 5
 class BaseProductTestCase(BaseTestCase):
     STANDALONE_BARE_CLUSTER = 'bare'
     BARE_CLUSTER = 'bare'
-    PA_ONLY_CLUSTER = 'pa_only'
+    PA_ONLY_CLUSTER = 'pa_only_standalone'
     STANDALONE_PRESTO_CLUSTER = 'presto'
 
+    PA_ONLY_YS_CLUSTER = 'pa_only_ys'
     PA_SLIDER_CLUSTER = 'pa_slider'
 
     _cluster_types = {
         BARE_CLUSTER: [],
-        PA_ONLY_CLUSTER: [PrestoadminInstaller],
-        STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller, TopologyInstaller,
+        PA_ONLY_CLUSTER: [PrestoadminInstaller,
+                          StandaloneModeInstaller],
+        STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller,
+                                    StandaloneModeInstaller,
+                                    TopologyInstaller,
                                     StandalonePrestoInstaller],
-        PA_SLIDER_CLUSTER: [PrestoadminInstaller, SliderInstaller]
+        PA_ONLY_YS_CLUSTER: [PrestoadminInstaller,
+                             YarnSliderModeInstaller],
+        PA_SLIDER_CLUSTER: [PrestoadminInstaller,
+                            YarnSliderModeInstaller,
+                            SliderInstaller]
     }
 
     default_workers_config_ = """coordinator=false

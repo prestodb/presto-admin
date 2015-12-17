@@ -81,7 +81,7 @@ class SliderPrestoInstaller(BaseInstaller):
         package_name = self._copy_package_to_pa_host()
 
         cmd_output = self.testcase.run_prestoadmin(
-            ' slider install ' +
+            ' server install ' +
             os.path.join(cluster.mount_dir, package_name),
             cluster=cluster)
 

@@ -25,7 +25,8 @@ import os
 import unittest
 from fabric import state
 
-from fabric.state import env
+import fabric
+from fabric.state import env, commands
 from mock import patch
 
 import prestoadmin
@@ -87,6 +88,8 @@ def mock_error_topology():
 class BaseMainCase(BaseUnitCase):
     def setUp(self):
         super(BaseMainCase, self).setUp(capture_output=True, load_config=False)
+        # Empty out commands from previous tests.
+        fabric.state.commands = {}
 
     def _run_command_compare_to_file(self, command, exit_status, filename):
         """

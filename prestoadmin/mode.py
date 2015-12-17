@@ -26,7 +26,7 @@ from prestoadmin.util.constants import LOCAL_CONF_DIR
 from prestoadmin.util.exception import ConfigurationError, \
     ConfigFileNotFoundError
 
-MODE_CONF_FILE = os.path.join(LOCAL_CONF_DIR, 'mode.json')
+MODE_CONF_PATH = os.path.join(LOCAL_CONF_DIR, 'mode.json')
 MODE_KEY = 'mode'
 
 MODE_SLIDER = 'yarn_slider'
@@ -36,11 +36,11 @@ VALID_MODES = [MODE_SLIDER, MODE_STANDALONE]
 
 
 def _load_mode_config():
-    return config.get_conf_from_json_file(MODE_CONF_FILE)
+    return config.get_conf_from_json_file(MODE_CONF_PATH)
 
 
 def _store_mode_config(mode_config):
-    config.write(config.json_to_string(mode_config), MODE_CONF_FILE)
+    config.write(config.json_to_string(mode_config), MODE_CONF_PATH)
 
 
 def get_mode(validate=True):
@@ -50,12 +50,12 @@ def get_mode(validate=True):
     if validate and mode is None:
         raise ConfigurationError(
             'Required key %s not found in configuration file %s' % (
-                MODE_KEY, MODE_CONF_FILE))
+                MODE_KEY, MODE_CONF_PATH))
 
     if validate and not validate_mode(mode):
         raise ConfigurationError(
             'Invalid mode %s in configuration file %s. Valid modes are %s' % (
-                mode, MODE_CONF_FILE, ' '.join(VALID_MODES)))
+                mode, MODE_CONF_PATH, ' '.join(VALID_MODES)))
 
     return mode
 
