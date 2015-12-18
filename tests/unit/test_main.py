@@ -25,6 +25,7 @@ import os
 import unittest
 from fabric import state
 
+import fabric
 from fabric.state import env
 from mock import patch
 
@@ -84,20 +85,28 @@ def mock_error_topology():
     return loader
 
 
-class TestMain(BaseUnitCase):
+class BaseMainCase(BaseUnitCase):
     def setUp(self):
-        super(TestMain, self).setUp(capture_output=True, load_config=False)
+        super(BaseMainCase, self).setUp(capture_output=True, load_config=False)
+        # Empty out commands from previous tests.
+        fabric.state.commands = {}
 
     def _run_command_compare_to_file(self, command, exit_status, filename):
         """
             Compares stdout from the CLI to the given file
         """
         current_dir = os.path.abspath(os.path.dirname(__file__))
-        input_file = open(current_dir + filename, 'r')
+        expected_path = os.path.join(current_dir, filename)
+        input_file = open(expected_path, 'r')
         text = "".join(input_file.readlines())
         input_file.close()
         self._run_command_compare_to_string(command, exit_status,
                                             stdout_text=text)
+
+    def _format_expected_actual(self, expected, actual):
+        return '\t\t======== vv EXPECTED vv ========\n%s\n' \
+               '\t\t========       !=       ========\n%s\n' \
+               '\t\t======== ^^  ACTUAL  ^^ ========\n' % (expected, actual)
 
     def _run_command_compare_to_string(self, command, exit_status,
                                        stdout_text=None, stderr_text=None):
@@ -110,21 +119,24 @@ class TestMain(BaseUnitCase):
             self.assertEqual(e.code, exit_status)
 
         if stdout_text is not None:
-            self.assertEqual(stdout_text, self.test_stdout.getvalue())
+            actual = self.test_stdout.getvalue()
+            self.assertEqual(stdout_text, actual,
+                             self._format_expected_actual(stdout_text, actual))
 
         if stderr_text is not None:
-            self.assertEqual(stderr_text, self.test_stderr.getvalue())
+            actual = self.test_stderr.getvalue()
+            self.assertEqual(stderr_text, self.test_stderr.getvalue(),
+                             self._format_expected_actual(stderr_text, actual))
 
-    def test_help_text_short(self):
-        # See if the help text matches what we expect it to be (in
-        # tests/help.txt)
-        self._run_command_compare_to_file(["-h"], 0, "/resources/help.txt")
 
-    def test_help_text_long(self):
-        self._run_command_compare_to_file(["--help"], 0, "/resources/help.txt")
+class TestMain(BaseMainCase):
 
-    def test_help_displayed_with_no_args(self):
-        self._run_command_compare_to_file([], 0, "/resources/help.txt")
+    # Everything in here needs some kind of mode set. Since they were all
+    # written against standalone originally, standalone it is.
+    @patch('prestoadmin.mode.get_mode', return_value='standalone')
+    def setUp(self, mode_mock):
+        super(TestMain, self).setUp()
+        reload(prestoadmin)
 
     def test_version(self):
         # Note: this will have to be updated whenever we have a new version.
@@ -251,10 +263,6 @@ class TestMain(BaseUnitCase):
         self._run_command_compare_to_string(["--config"], 2)
         self.assertTrue("no such option: --config" in
                         self.test_stderr.getvalue())
-
-    def test_extended_help(self):
-        self._run_command_compare_to_file(['--extended-help'], 0,
-                                          "/resources/extended-help.txt")
 
     @patch('prestoadmin.main.crawl')
     @patch('prestoadmin.fabric_patches.crawl')

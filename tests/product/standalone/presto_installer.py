@@ -25,6 +25,7 @@ from tests.product.constants import LOCAL_RESOURCES_DIR
 
 from tests.base_installer import BaseInstaller
 from tests.docker_cluster import DockerCluster
+from tests.product.mode_installers import StandaloneModeInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.topology_installer import TopologyInstaller
 
@@ -49,7 +50,8 @@ class StandalonePrestoInstaller(BaseInstaller):
 
     @staticmethod
     def get_dependencies():
-        return [PrestoadminInstaller, TopologyInstaller]
+        return [PrestoadminInstaller, StandaloneModeInstaller,
+                TopologyInstaller]
 
     def install(self, extra_configs=None, coordinator=None,
                 pa_raise_error=True):
