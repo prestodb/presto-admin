@@ -101,12 +101,8 @@ def get():
     mode = None
     try:
         mode = get_mode(validate=False)
-    except ConfigFileNotFoundError:
-        pass
-
-    if mode:
         print mode
-    else:
+    except ConfigFileNotFoundError:
         abort("Select a mode using the subcommand 'mode select <mode>'")
 
 

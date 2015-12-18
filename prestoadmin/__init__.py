@@ -39,12 +39,13 @@ from prestoadmin.util.exception import ConfigFileNotFoundError, \
 #
 __all__ = ['fabric_patches', 'mode']
 
-cfg_mode = None
+MODE_ERROR = None
+cfg_mode = MODE_STANDALONE
 try:
     cfg_mode = get_mode()
 except ConfigFileNotFoundError as e:
-    print >>sys.stderr, \
-        "Select a mode using the subcommand 'mode select <mode>'"
+    print >>sys.stderr, "No mode selected. Defaulting to %s. Select a mode " \
+        "using the command 'mode select <mode>'" % (MODE_STANDALONE,)
 except ConfigurationError as e:
     print >>sys.stderr, e.message
 

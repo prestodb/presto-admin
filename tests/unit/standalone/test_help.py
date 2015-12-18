@@ -17,6 +17,7 @@ from mock import patch
 import os
 
 import prestoadmin
+from prestoadmin import main
 
 from tests.unit.test_main import BaseMainCase
 
@@ -27,6 +28,7 @@ class TestStandaloneHelp(BaseMainCase):
     def setUp(self, mode_mock):
         super(TestStandaloneHelp, self).setUp()
         reload(prestoadmin)
+        reload(main)
 
     def get_short_help_path(self):
         return os.path.join('resources', 'standalone-help.txt')
