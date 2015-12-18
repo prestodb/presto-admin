@@ -63,7 +63,9 @@ APP_CONFIG_TRANSFORMATIONS = {
     as_key('global', 'java.home'):
         lambda kpath, value: env.conf[JAVA_HOME],
     as_key('global', 'site.global.singlenode'):
-        lambda kpath, value: False
+        lambda kpath, value: False,
+    as_key('global', 'site.global.catalog'):
+        lambda kpath, value: "{'tpch': ['connector.name=tpch']}"
 }
 
 

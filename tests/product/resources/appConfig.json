@@ -8,7 +8,7 @@
         "site.global.singlenode":false,
         "site.global.presto_server_port":"8080",
         "application.def":".slider/package/PRESTO/presto-yarn-package.zip",
-        "site.global.catalog":"{'hive': ['connector.name=hive-cdh5', 'hive.metastore.uri=thrift://${NN_HOST}:9083'], 'tpch': ['connector.name=tpch']}",
+        "site.global.catalog":"{'tpch': ['connector.name=tpch']}",
         "site.global.coordinator_host":"${COORDINATOR_HOST}",
         "site.global.user_group":"hadoop",
         "site.global.data_dir":"/var/presto/data",
