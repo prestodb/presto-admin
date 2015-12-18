@@ -75,6 +75,9 @@ def for_mode(mode, mode_map):
 @task
 @runs_once
 def select(new_mode):
+    """
+    Change the mode.
+    """
     if not validate_mode(new_mode):
         abort('Invalid mode selection %s. Valid modes are %s' % (
             new_mode, ' '.join(VALID_MODES)))
@@ -92,6 +95,9 @@ def select(new_mode):
 @task
 @runs_once
 def get():
+    """
+    Display the current mode.
+    """
     mode = None
     try:
         mode = get_mode(validate=False)
@@ -107,4 +113,7 @@ def get():
 @task
 @runs_once
 def list():
+    """
+    List the supported modes.
+    """
     print ' '.join(VALID_MODES)
