@@ -123,7 +123,6 @@ class BaseMainCase(BaseUnitCase):
             self.assertEqual(stdout_text, actual,
                              self._format_expected_actual(stdout_text, actual))
 
-
         if stderr_text is not None:
             actual = self.test_stderr.getvalue()
             self.assertEqual(stderr_text, self.test_stderr.getvalue(),
