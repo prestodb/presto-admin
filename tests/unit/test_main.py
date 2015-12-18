@@ -121,6 +121,9 @@ class BaseMainCase(BaseUnitCase):
 
 
 class TestMain(BaseMainCase):
+
+    # Everything in here needs some kind of mode set. Since they were all
+    # written against standalone originally, standalone it is.
     @patch('prestoadmin.mode.get_mode', return_value='standalone')
     def setUp(self, mode_mock):
         super(TestMain, self).setUp()

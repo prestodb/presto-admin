@@ -33,6 +33,10 @@ from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
 
 
+#
+# Subcommands common to all modes. If anybody knows why fabric_patches is in
+# the list, I'll make a note for the next person.
+#
 __all__ = ['fabric_patches', 'mode']
 
 cfg_mode = None

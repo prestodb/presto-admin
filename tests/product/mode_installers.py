@@ -62,7 +62,7 @@ class BaseModeInstaller(BaseInstaller):
         actual_mode_cfg = json.loads(json_str)
         testcase.assertEqual(
             BaseModeInstaller._get_mode_cfg(
-                expected_mode), actual_mode_cfg[MODE_KEY])
+                expected_mode), actual_mode_cfg)
 
 
 class StandaloneModeInstaller(BaseModeInstaller):

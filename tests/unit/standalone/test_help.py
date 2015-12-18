@@ -21,6 +21,7 @@ import prestoadmin
 from tests.unit.test_main import BaseMainCase
 
 
+# Consult the comment on yarn_slider.test_help.TestSliderHelp for more info.
 class TestStandaloneHelp(BaseMainCase):
     @patch('prestoadmin.mode.get_mode', return_value='standalone')
     def setUp(self, mode_mock):
