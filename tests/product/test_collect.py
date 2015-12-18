@@ -23,7 +23,7 @@ from nose.plugins.attrib import attr
 from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.server import run_sql
+from prestoadmin.server import run_sql, get_presto_version
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, PrestoError
 
@@ -192,6 +192,13 @@ class TestCollect(BaseProductTestCase):
     def test_collect_logs_nonstandard_location(self):
         self.setup_cluster(NoHadoopBareImageProvider(),
                            self.STANDALONE_PRESTO_CLUSTER)
+        version = self.cluster.exec_cmd_on_host(
+            self.cluster.master,
+            'rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm'
+        )
+        if '127t' not in version:
+            print 'test_collect_logs_nonstandard_location only valid for 127t'
+            return
         new_log_location = '/var/presto'
         self._add_custom_log_location(new_log_location)
 
