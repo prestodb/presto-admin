@@ -26,7 +26,7 @@ import unittest
 from fabric import state
 
 import fabric
-from fabric.state import env, commands
+from fabric.state import env
 from mock import patch
 
 import prestoadmin

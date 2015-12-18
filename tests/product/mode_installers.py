@@ -38,7 +38,7 @@ class BaseModeInstaller(BaseInstaller):
 
     @staticmethod
     def _get_mode_cfg(mode):
-        return { MODE_KEY: mode }
+        return {MODE_KEY: mode}
 
     @staticmethod
     @overrides
@@ -59,9 +59,10 @@ class BaseModeInstaller(BaseInstaller):
         json_str = testcase.cluster.exec_cmd_on_host(
             testcase.cluster.get_master(), 'cat %s' % MODE_CONF_PATH)
 
-        actual_mode_cfg = json.loads(json)
+        actual_mode_cfg = json.loads(json_str)
         testcase.assertEqual(
-            BaseModeInstaller._get_mode_cfg(expected_mode), actual_mode_cfg)
+            BaseModeInstaller._get_mode_cfg(
+                expected_mode), actual_mode_cfg[MODE_KEY])
 
 
 class StandaloneModeInstaller(BaseModeInstaller):

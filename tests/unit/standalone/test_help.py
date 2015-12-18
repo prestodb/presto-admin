@@ -17,8 +17,6 @@ from mock import patch
 import os
 
 import prestoadmin
-import fabric
-from fabric.state import commands
 
 from tests.unit.test_main import BaseMainCase
 

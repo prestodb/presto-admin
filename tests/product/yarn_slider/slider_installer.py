@@ -24,6 +24,7 @@ from prestoadmin.yarn_slider.config import HOST, DIR
 from tests.base_installer import BaseInstaller
 
 from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.mode_installers import YarnSliderModeInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.yarn_slider.pa_slider_config import docker_config, \
     get_config, upload_config
@@ -39,7 +40,7 @@ class SliderInstaller(BaseInstaller):
 
     @staticmethod
     def get_dependencies():
-        return [PrestoadminInstaller]
+        return [PrestoadminInstaller, YarnSliderModeInstaller]
 
     def install(self):
         upload_config(self.testcase.cluster, self.conf)
