@@ -103,6 +103,11 @@ class BaseMainCase(BaseUnitCase):
         self._run_command_compare_to_string(command, exit_status,
                                             stdout_text=text)
 
+    def _format_expected_actual(self, expected, actual):
+        return '\t\t======== vv EXPECTED vv ========\n%s\n' \
+               '\t\t========       !=       ========\n%s\n' \
+               '\t\t======== ^^  ACTUAL  ^^ ========\n' % (expected, actual)
+
     def _run_command_compare_to_string(self, command, exit_status,
                                        stdout_text=None, stderr_text=None):
         """
@@ -114,10 +119,15 @@ class BaseMainCase(BaseUnitCase):
             self.assertEqual(e.code, exit_status)
 
         if stdout_text is not None:
-            self.assertEqual(stdout_text, self.test_stdout.getvalue())
+            actual = self.test_stdout.getvalue()
+            self.assertEqual(stdout_text, actual,
+                             self._format_expected_actual(stdout_text, actual))
+
 
         if stderr_text is not None:
-            self.assertEqual(stderr_text, self.test_stderr.getvalue())
+            actual = self.test_stderr.getvalue()
+            self.assertEqual(stderr_text, self.test_stderr.getvalue(),
+                             self._format_expected_actual(stderr_text, actual))
 
 
 class TestMain(BaseMainCase):

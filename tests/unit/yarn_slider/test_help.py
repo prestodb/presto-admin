@@ -32,24 +32,21 @@ from tests.unit.test_main import BaseMainCase
 # we patch it down here, and then reload the prestoadmin module to re-execute
 # the code that calls get_mode and sets up the imports and __all__.
 #
-# In principle, this and TestStandaloneHelp could inherit the test method from
-# a common abstract base class, which would mean the test methods wouldn't have
-# to be duplicated. In practice, nosetests doesn't understand abstract base
-# classes, and tries to instantiate it, hence the duplication. In principle, we
-# could probably also have a non-abstract base class that takes a couple
-# additional constructor parameters for the mode_mock's return value and for
-# the expected help file paths, but I'm guessing we'd run into much the same
-# problem (i.e. nosetests tries to instantiate a class that it doesn't know how
-# to supply the appropriate constructor args to, and that doesn't really have
-# sensible defaults). There's probably a solution that involves not duplicating
-# all of the tests, but finding it will need to wait until somebody has time to
-# dig into it.
-#
 # The other thing to keep in mind is that the help tests end up (many levels
 # in) updating fabric.state.commands, and you need to clear it out in order for
 # the second test case to run correctly. BaseMainCase.setUp does this because
 # TestMain also ends up updating fabric.state.commands, and therefore ought to
 # clear it too.
+#
+# There's a lot of duplication between this and TestStandaloneHelp. Here are a
+# few things that don't work to remove it:
+#
+# Have a common abstract base class. Nosetests tries to instantiate it.
+# Mark the base class @nottest. Nosetests doesn't find the tests in the
+#     concrete classes.
+# Common non-abstract base class with additional constructor args. Nosetest
+#     will probably try to instantiate that too.
+# Multiple inheritance. Now you have two problems ;-)
 #
 class TestSliderHelp(BaseMainCase):
     @patch('prestoadmin.mode.get_mode', return_value='yarn_slider')

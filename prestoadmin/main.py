@@ -426,7 +426,10 @@ def _normal_list(docstrings=True):
     return result
 
 
-COMMANDS_HEADER = "Commands:"
+COMMANDS_HEADER = """The commands listed below are for the current mode.
+The current mode can be changed using the 'mode select' command.
+
+Commands:"""
 
 
 def list_commands(docstring, format_):
