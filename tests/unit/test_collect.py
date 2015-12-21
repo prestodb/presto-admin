@@ -32,8 +32,8 @@ from tests.unit.base_unit_case import BaseUnitCase
 
 class TestCollect(BaseUnitCase):
 
-    @patch('prestoadmin.collect.lookup_launcher_log')
-    @patch('prestoadmin.collect.lookup_server_log')
+    @patch('prestoadmin.collect.lookup_launcher_log_file')
+    @patch('prestoadmin.collect.lookup_server_log_file')
     @patch('prestoadmin.collect.file_get')
     @patch("prestoadmin.collect.tarfile.open")
     @patch("prestoadmin.collect.shutil.copy")

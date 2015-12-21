@@ -23,7 +23,7 @@ from nose.plugins.attrib import attr
 from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.server import run_sql, get_presto_version
+from prestoadmin.server import run_sql
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, PrestoError
 
