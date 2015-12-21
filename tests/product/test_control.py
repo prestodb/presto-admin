@@ -262,19 +262,6 @@ class TestControl(BaseProductTestCase):
                                           expected_stop=expected_stop,
                                           pa_raise_error=False)
 
-    def test_started_with_presto_user(self):
-        # note, will only work with 0.115t RPM
-        self.setup_cluster(NoHadoopBareImageProvider(), 'presto')
-        start_output = self.run_prestoadmin('server start').splitlines()
-        process_per_host = self.get_process_per_host(start_output)
-
-        for host, pid in process_per_host:
-            user_for_pid = self.run_script_from_prestoadmin_dir(
-                'uid=$(awk \'/^Uid:/{print $2}\' /proc/%s/status);'
-                'getent passwd "$uid" | awk -F: \'{print $1}\'' % pid,
-                host)
-            self.assertEqual(user_for_pid.strip(), 'presto')
-
     def assert_simple_start_stop(self, expected_start, expected_stop,
                                  pa_raise_error=True):
         cmd_output = self.run_prestoadmin(

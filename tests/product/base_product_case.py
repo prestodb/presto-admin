@@ -28,6 +28,9 @@ from prestoadmin.util import constants
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster, DockerClusterException
+
+from tests.product.mode_installers import StandaloneModeInstaller, \
+    YarnSliderModeInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.topology_installer import TopologyInstaller
@@ -44,21 +47,30 @@ class BaseProductTestCase(BaseTestCase):
     STANDALONE_BARE_CLUSTER = 'bare'
     BARE_CLUSTER = 'bare'
 
-    PA_ONLY_CLUSTER = 'pa_only'
+    PA_ONLY_CLUSTER = 'pa_only_standalone'
     STANDALONE_PRESTO_CLUSTER = 'presto'
 
+    PA_ONLY_YS_CLUSTER = 'pa_only_ys'
     PA_SLIDER_CLUSTER = 'pa_slider'
-    PRESTO_YARN_CLUSTER = 'presto_yarn'
+    YS_PRESTO_CLUSTER = 'presto_yarn'
 
     _cluster_types = {
         BARE_CLUSTER: [],
-
-        PA_ONLY_CLUSTER: [PrestoadminInstaller],
-        STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller, TopologyInstaller,
+        PA_ONLY_CLUSTER: [PrestoadminInstaller,
+                          StandaloneModeInstaller],
+        STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller,
+                                    StandaloneModeInstaller,
+                                    TopologyInstaller,
                                     StandalonePrestoInstaller],
-        PA_SLIDER_CLUSTER: [PrestoadminInstaller, SliderInstaller],
-        PRESTO_YARN_CLUSTER: [PrestoadminInstaller, SliderInstaller,
-                              SliderPrestoInstaller]
+        PA_ONLY_YS_CLUSTER: [PrestoadminInstaller,
+                             YarnSliderModeInstaller],
+        PA_SLIDER_CLUSTER: [PrestoadminInstaller,
+                            YarnSliderModeInstaller,
+                            SliderInstaller],
+        YS_PRESTO_CLUSTER: [PrestoadminInstaller,
+                            YarnSliderModeInstaller,
+                            SliderInstaller,
+                            SliderPrestoInstaller]
     }
 
     default_workers_config_ = """coordinator=false

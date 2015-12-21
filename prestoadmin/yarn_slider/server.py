@@ -37,51 +37,11 @@ from prestoadmin.util.base_config import requires_config
 
 from prestoadmin.util.fabricapi import task_by_rolename
 
-__all__ = ['slider_install', 'slider_uninstall', 'install', 'uninstall',
-           'start', 'stop', 'create', 'build', 'destroy']
+__all__ = ['install', 'uninstall', 'start', 'stop', 'create', 'build',
+           'destroy']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
-
-
-@task
-@requires_config(SliderConfig)
-@task_by_rolename(SLIDER_MASTER)
-def slider_install(slider_tarball):
-    """
-    Install slider on the slider master. You must provide a tar file on the
-    local machine that contains the slider distribution.
-
-    :param slider_tarball: The gzipped tar file containing the Apache Slider
-                           distribution
-    """
-    deploy_install(slider_tarball)
-
-
-def deploy_install(slider_tarball):
-    slider_dir = env.conf[DIR]
-    slider_parent = os.path.dirname(slider_dir)
-    slider_file = os.path.join(slider_parent, os.path.basename(slider_tarball))
-
-    sudo('mkdir -p %s' % (slider_dir))
-
-    result = put(slider_tarball, os.path.join(slider_parent, slider_file))
-    if result.failed:
-        abort('Failed to send slider tarball %s to directory %s on host %s' %
-              (slider_tarball, slider_dir, env.host))
-
-    sudo('gunzip -c %s | tar -x -C %s --strip-components=1 && rm -f %s' %
-         (slider_file, slider_dir, slider_file))
-
-
-@task
-@requires_config(SliderConfig)
-@task_by_rolename(SLIDER_MASTER)
-def slider_uninstall():
-    """
-    Uninstall slider from the slider master.
-    """
-    sudo('rm -r "%s"' % (env.conf[DIR]))
 
 
 def get_slider_bin(conf):

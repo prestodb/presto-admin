@@ -22,7 +22,7 @@ import socket
 
 from urllib2 import HTTPError, urlopen, URLError
 
-from prestoadmin.util.service_util import lookup_port
+from prestoadmin.util.remote_config_util import lookup_port
 
 from prestoadmin.util.exception import InvalidArgumentError
 

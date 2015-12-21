@@ -184,7 +184,7 @@ class TestPrestoClient(BaseTestCase):
         self.assertEqual(client.response_from_server, {"message": "ok!"})
 
     @patch('prestoadmin.prestoclient.HTTPConnection')
-    @patch('prestoadmin.util.service_util.run')
+    @patch('prestoadmin.util.remote_config_util.run')
     def test_execute_query_get_port(self, run_mock, conn_mock):
         client = PrestoClient('any_host', 'any_user')
         client.rows = ['hello']
@@ -192,6 +192,7 @@ class TestPrestoClient(BaseTestCase):
         client.response_from_server = {'hello': 'hello'}
         run_mock.return_value = _AttributeString('http-server.http.port=8080')
         run_mock.return_value.failed = False
+        run_mock.return_value.return_code = 0
         client.execute_query('select * from nation')
         self.assertEqual(client.port, 8080)
         self.assertEqual(client.rows, [])

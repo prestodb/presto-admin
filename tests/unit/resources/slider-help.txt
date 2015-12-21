@@ -11,27 +11,18 @@ Options:
                         password for use with authentication and/or sudo
 
 
+The commands listed below are for the current mode.
+The current mode can be changed using the 'mode select' command.
+Valid modes are yarn_slider, standalone.
+
+The current mode is yarn_slider
+
 Commands:
-    collect logs
-    collect query_info
-    collect system_info
-    configuration deploy
-    configuration show
-    connector add
-    connector remove
-    package install
-    plugin add_jar
-    script run
+    mode get
+    mode list
+    mode select
     server install
-    server restart
-    server start
-    server status
-    server stop
     server uninstall
-    server upgrade
     slider install
-    slider slider_install
-    slider slider_uninstall
     slider uninstall
-    topology show
 

@@ -41,5 +41,6 @@ CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, 'connectors')
 REMOTE_CONF_DIR = '/etc/presto'
 REMOTE_CATALOG_DIR = os.path.join(REMOTE_CONF_DIR, 'catalog')
 REMOTE_PACKAGES_PATH = '/opt/prestoadmin/packages'
-REMOTE_PRESTO_LOG_DIR = '/var/log/presto'
+DEFAULT_PRESTO_SERVER_LOG_FILE = '/var/log/presto/server.log'
+DEFAULT_PRESTO_LAUNCHER_LOG_FILE = '/var/log/presto/launcher.log'
 REMOTE_PLUGIN_DIR = '/usr/lib/presto/lib/plugin'

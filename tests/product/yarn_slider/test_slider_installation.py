@@ -31,7 +31,8 @@ from prestoadmin.yarn_slider.config import HOST, DIR, SLIDER_USER, \
 class TestSliderInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestSliderInstallation, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(
+            NoHadoopBareImageProvider(), self.PA_ONLY_YS_CLUSTER)
 
     def _get_interactive_config(self, conf):
         cluster_conf = cluster_config(conf)
@@ -85,7 +86,7 @@ class TestSliderInstallation(BaseProductTestCase):
         self.ensure_slider_user_exists(conf)
         slider_path = SliderInstaller.copy_slider_dist_to_cluster(self)
 
-        self.run_prestoadmin_expect('slider slider_install %s' %
+        self.run_prestoadmin_expect('slider install %s' %
                                     (slider_path,), expect)
 
         SliderInstaller.assert_installed(self, conf)

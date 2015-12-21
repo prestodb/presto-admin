@@ -36,7 +36,8 @@ from tests.unit.base_unit_case import BaseUnitCase
 class TestInstall(BaseUnitCase):
     SERVER_FAIL_MSG = 'Server failed to start on: failed_node1' \
                       '\nPlease check ' \
-                      + constants.REMOTE_PRESTO_LOG_DIR + '/server.log'
+                      + constants.DEFAULT_PRESTO_SERVER_LOG_FILE + ' and ' + \
+                      constants.DEFAULT_PRESTO_LAUNCHER_LOG_FILE
 
     def setUp(self):
         self.remove_runs_once_flag(server.status)
@@ -76,6 +77,7 @@ class TestInstall(BaseUnitCase):
         mock_sudo.assert_any_call('rpm -e presto')
         mock_sudo.assert_called_with('rpm -e presto-server-rpm')
 
+    @patch('prestoadmin.util.remote_config_util.lookup_in_config')
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.sudo')
     @patch.object(PrestoClient, 'execute_query')
@@ -84,13 +86,14 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.server.is_port_in_use')
     def test_server_start_fail(self, mock_port_in_use,
                                mock_version_check, mock_warn,
-                               mock_execute, mock_sudo, mock_run):
+                               mock_execute, mock_sudo, mock_run, mock_config):
         old_retry_timeout = server.RETRY_TIMEOUT
         server.RETRY_TIMEOUT = 1
         mock_execute.return_value = False
         env.host = "failed_node1"
         mock_version_check.return_value = ''
         mock_port_in_use.return_value = 0
+        mock_config.return_value = None
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
@@ -166,14 +169,17 @@ class TestInstall(BaseUnitCase):
         self.assertEqual(False, mock_port_in_use.called)
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' stop')
 
+    @patch('prestoadmin.util.remote_config_util.lookup_in_config')
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.warn')
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.is_port_in_use')
     def test_server_restart_fail(self, mock_port_in_use, mock_version_check,
-                                 mock_warn, mock_status, mock_sudo):
+                                 mock_warn, mock_status, mock_sudo,
+                                 mock_config):
         mock_status.return_value = False
+        mock_config.return_value = None
         env.host = "failed_node1"
         mock_version_check.return_value = ''
         mock_port_in_use.return_value = 0
@@ -184,7 +190,7 @@ class TestInstall(BaseUnitCase):
 
         mock_warn.assert_called_with(self.SERVER_FAIL_MSG)
 
-    @patch('prestoadmin.util.service_util.lookup_port')
+    @patch('prestoadmin.util.remote_config_util.lookup_port')
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.check_presto_version')
