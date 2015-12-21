@@ -17,11 +17,13 @@ Module to test hadoop config parsing.
 """
 
 import os
-from xml.etree.ElementTree import ParseError
+import sys
+from xml.parsers.expat import ExpatError
 
 from prestoadmin import main_dir
 from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util.hadoop_conf import get_config
+from prestoadmin.util.version_util import VersionRange, VersionRangeList
 
 from tests.unit.base_unit_case import BaseUnitCase
 
@@ -47,19 +49,41 @@ EXPECTED = {
 
 
 class HadoopConfTest(BaseUnitCase):
+    # release is a string, not a number. Strip it and serial out.
+    def _python_version(self):
+        M, m, u, r, s = sys.version_info
+        return M, m, u
+
     def test_good(self):
         config = get_config(os.path.join(TEST_CONFIG_DIR, 'slider-client.xml'))
         self.assertEqual(EXPECTED, config)
 
     def test_unclosed_property(self):
+        expected_exceptions = VersionRangeList(
+            VersionRange((2, 6, 0), (2, 7, 0), ExpatError),
+            VersionRange((2, 7, 0), (sys.maxint,), ConfigurationError))
+        expected_exception = expected_exceptions.for_version(
+            self._python_version())
         config_path = os.path.join(TEST_CONFIG_DIR,
                                    'slider-client-unclosed-property.xml')
-        self.assertRaises(ConfigurationError, get_config, config_path)
+        self.assertRaises(expected_exception, get_config, config_path)
+
+    @staticmethod
+    def _lazy_parse_error():
+        # ParseError is new in Python 2.7. We can't import it at the top level
+        # or the Unit tests will fail under Python 2.6
+        from xml.etree.ElementTree import ParseError
+        return ParseError
 
     def test_unclosed_configuration(self):
+        expected_exceptions = VersionRangeList(
+            VersionRange((2, 6, 0), (2, 7, 0), lambda: ExpatError),
+            VersionRange((2, 7, 0), (sys.maxint,), self._lazy_parse_error))
+        expected_exception = expected_exceptions.for_version(
+            self._python_version())()
         config_path = os.path.join(TEST_CONFIG_DIR,
                                    'slider-client-unclosed-configuration.xml')
-        self.assertRaises(ParseError, get_config, config_path)
+        self.assertRaises(expected_exception, get_config, config_path)
 
     def test_missing_name(self):
         config_path = os.path.join(TEST_CONFIG_DIR,

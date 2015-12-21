@@ -44,4 +44,3 @@ class YarnSliderTestCase(BaseProductTestCase):
         end = time.clock()
         duration = end - start
         print 'Waited %.3f seconds for hdfs' % (duration)
-

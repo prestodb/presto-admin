@@ -21,7 +21,12 @@ Commands:
     mode get
     mode list
     mode select
+    server build
+    server create
+    server destroy
     server install
+    server start
+    server stop
     server uninstall
     slider install
     slider uninstall
