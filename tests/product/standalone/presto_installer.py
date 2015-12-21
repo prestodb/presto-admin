@@ -70,7 +70,6 @@ class StandalonePrestoInstaller(BaseInstaller):
         return {
             'rpm': self.rpm_name,
             'rpm_basename': RPM_BASENAME,
-            'rpm_basename_without_arch': self.presto_rpm_filename[:-11],
         }
 
     @staticmethod
