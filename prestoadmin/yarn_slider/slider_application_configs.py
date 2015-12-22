@@ -168,3 +168,17 @@ class ResourcesJson(SliderJsonConfig):
             os.path.join(SLIDER_CONFIG_DIR, 'resources.json'),
             os.path.join(SLIDER_CONFIG_DIR, 'resources-default.json'),
             RESOURCES_TRANSFORMATIONS)
+        self.config = None
+
+    def get_config(self):
+        if not self.config:
+            self.config = super(ResourcesJson, self).get_config()
+        return self.config
+
+    def get_coordinator_instances(self):
+        return self.get_config(
+            )['components']['COORDINATOR']['yarn.component.instances']
+
+    def get_worker_instances(self):
+        return self.get_config(
+            )['components']['WORKER']['yarn.component.instances']

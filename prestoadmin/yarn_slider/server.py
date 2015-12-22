@@ -20,7 +20,7 @@ from contextlib import contextmanager
 import json
 import os.path
 
-from fabric.api import env, task, abort
+from fabric.api import abort, env, task
 from fabric.context_managers import shell_env, quiet, warn_only, hide
 from fabric.operations import put, sudo, local, run
 from fabric.utils import puts
@@ -273,23 +273,14 @@ def identity(x):
 
 def get_coordinator(slider_status, filtr=identity):
     coordinators = slider_status['status']['live'][ROLENAME_COORDINATOR]
-    num_coordinators = len(coordinators.values())
-
-    if num_coordinators != 1:
-        abort('Exactly 1 component instance of type %s should be running, '
-              'but found %d. Check the resources.json file and logs and '
-              'restart presto' % (ROLENAME_COORDINATOR, num_coordinators))
-
     return [filtr(v) for v in coordinators.values()]
 
 
 def get_workers(slider_status, filtr=identity):
-    workers = slider_status['status']['live'][ROLENAME_WORKER]
-
-    if len(workers) == 0:
-        abort('No %s component instance running. Check the resources.json '
-              'file and the logs restart presto after correcting any problems.'
-              % (ROLENAME_WORKER,))
+    try:
+        workers = slider_status['status']['live'][ROLENAME_WORKER]
+    except KeyError:
+        workers = []
 
     return [filtr(v) for v in workers.values()]
 
@@ -317,7 +308,18 @@ def status():
     """
     conf = env.conf
     slider_status = get_slider_status(conf)
-    all_hosts = get_coordinator(slider_status) + get_workers(slider_status)
+    coordinators = None
+
+    try:
+        coordinators = get_coordinator(slider_status)
+    except KeyError:
+        abort(
+            'No coordinator found. This may be because presto is still '
+            'starting. Check the application status')
+
+    workers = get_workers(slider_status)
+
+    all_hosts = coordinators + workers
     for host_info in map(get_status_transformer(), all_hosts):
         print 'Server Status:\n' \
               '\t%s\n' \
