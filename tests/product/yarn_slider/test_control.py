@@ -29,7 +29,7 @@ SLIDER_CLIENT_XML = 'slider-client.xml'
 class TestControl(YarnSliderTestCase):
     def setUp(self):
         super(TestControl, self).setUp()
-        self.setup_cluster(HdpBareImageProvider(), self.PRESTO_YARN_CLUSTER)
+        self.setup_cluster(HdpBareImageProvider(), self.YS_PRESTO_CLUSTER)
         self.await_hdfs()
 
     def get_slider_config(self):

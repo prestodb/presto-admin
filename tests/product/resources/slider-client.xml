@@ -26,11 +26,6 @@
   </property>
 
   <property>
-    <name>yarn.resourcemanager.webapp.address</name>
-    <value>master:8088</value>
-  </property>
-
-  <property>
     <name>yarn.resourcemanager.scheduler.address</name>
     <value>master:8030</value>
   </property>

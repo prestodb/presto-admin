@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Module for getting cluster information from YARN
+Module for getting cluster information from Hadoop
 """
 
 from contextlib import closing
@@ -26,7 +26,8 @@ from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util.hadoop_conf import get_config
 from prestoadmin.yarn_slider.config import HADOOP_CONF, DIR
 
-YARN_RM_ADDRESS_KEY = 'yarn.resourcemanager.webapp.address'
+YARN_RM_HOSTNAME_KEY = 'yarn.resourcemanager.hostnane'
+YARN_RM_WEBAPP_ADDRESS_KEY = 'yarn.resourcemanager.webapp.address'
 
 
 def json_request(host, api_endpoint):
@@ -37,7 +38,24 @@ def json_request(host, api_endpoint):
         return response.json()
 
 
-def get_rm_host():
+def _get_rm_webapp_address(conf_xml):
+    conf_cfg = None
+    try:
+        conf_cfg = get_config(conf_xml)
+    except IOError:
+        raise
+    except KeyError:
+        pass
+
+    try:
+        return conf_cfg[YARN_RM_WEBAPP_ADDRESS_KEY]
+    except KeyError:
+        pass
+
+    return '%s:8088' % conf_cfg[YARN_RM_HOSTNAME_KEY]
+
+
+def get_rm_webapp_address():
     """
     Get the address for the YARN resource manager webapp. First check the
     Apache Slider configuration in slider-client.xml, and then fall back to the
@@ -50,25 +68,23 @@ def get_rm_host():
     slider_client_xml = os.path.join(
         env.conf[DIR], 'conf', 'slider-client.xml')
     try:
-        slider_client_cfg = get_config(slider_client_xml)
-        return slider_client_cfg[YARN_RM_ADDRESS_KEY]
+        return _get_rm_webapp_address(slider_client_xml)
     except:
         pass
 
     yarn_site_xml = os.path.join(env.conf[HADOOP_CONF], 'yarn-site.xml')
     try:
-        yarn_site_cfg = get_config(yarn_site_xml)
-        return yarn_site_cfg[YARN_RM_ADDRESS_KEY]
+        return _get_rm_webapp_address(yarn_site_xml)
     except:
         raise ConfigurationError(
             'Failed to look up the ResourceManager webapp address (%s) in '
             '%s or %s.' %
-            (YARN_RM_ADDRESS_KEY, slider_client_xml, yarn_site_xml))
+            (YARN_RM_WEBAPP_ADDRESS_KEY, slider_client_xml, yarn_site_xml))
 
 
 def get_nodes_from_rm():
     nodes_response = json_request(
-        get_rm_host(), '/'.join(['ws', 'v1', 'cluster', 'nodes']))
+        get_rm_webapp_address(), '/'.join(['ws', 'v1', 'cluster', 'nodes']))
 
     nodelist = nodes_response['nodes']['node']
     hostnames = [n['nodeHostName'] for n in nodelist]
