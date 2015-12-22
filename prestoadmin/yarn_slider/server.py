@@ -280,7 +280,7 @@ def get_workers(slider_status, filtr=identity):
     try:
         workers = slider_status['status']['live'][ROLENAME_WORKER]
     except KeyError:
-        workers = []
+        workers = {}
 
     return [filtr(v) for v in workers.values()]
 
