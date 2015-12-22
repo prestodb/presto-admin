@@ -97,6 +97,9 @@ class AppConfigJson(SliderJsonConfig):
     def get_group(self):
         return self.get_config()['global']['site.global.user_group']
 
+    def get_presto_server_port(self):
+        return self.get_config()['global']['site.global.presto_server_port']
+
 
 def _prompt_worker_instances(kpath, value):
     return prompt(
