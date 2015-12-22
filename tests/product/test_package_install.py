@@ -11,14 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
     docker_only
-from tests.product.constants import LOCAL_RESOURCES_DIR
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -179,33 +177,6 @@ Aborting.
 
         self.assertRegexpMatchesLineByLine(cmd_output.splitlines(),
                                            expected.splitlines())
-
-    @docker_only
-    def test_install_rpm_with_missing_jdk(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
-        self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'rpm -e jdk1.8.0_40-1.8.0_40-fcs')
-        self.assertRaisesRegexp(OSError,
-                                'package jdk1.8.0_40-1.8.0_40-fcs is not '
-                                'installed',
-                                self.cluster.exec_cmd_on_host,
-                                self.cluster.master,
-                                'rpm -q jdk1.8.0_40-1.8.0_40-fcs')
-
-        cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%(rpm)s -H %(master)s',
-            rpm=rpm_name, raise_error=False)
-        self.assertRegexpMatchesLineByLine(
-            cmd_output.splitlines(),
-            self.jdk_not_found_error_message(rpm_name).splitlines()
-        )
-
-    def jdk_not_found_error_message(self, rpm_name):
-        with open(os.path.join(LOCAL_RESOURCES_DIR, 'jdk_not_found.txt')) as f:
-            jdk_not_found_error = f.read()
-        return self.escape_for_regex(
-            self.replace_keywords(jdk_not_found_error,
-                                  **self.installer.get_keywords()))
 
     @docker_only
     def test_install_rpm_missing_dependency(self):
