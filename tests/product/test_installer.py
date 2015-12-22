@@ -23,7 +23,8 @@ from nose.plugins.attrib import attr
 
 from prestoadmin import main_dir
 from tests.docker_cluster import DockerCluster
-from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
+from tests.product.base_product_case import BaseProductTestCase
 from tests.product.constants import BASE_TD_DOCKERFILE_DIR, BASE_IMAGE_NAME, \
     BASE_TD_IMAGE_NAME, DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT
 from tests.product.prestoadmin_installer import PrestoadminInstaller
@@ -33,6 +34,7 @@ class TestInstaller(BaseProductTestCase):
 
     def setUp(self):
         super(TestInstaller, self).setUp()
+        self.setup_cluster(NoHadoopBareImageProvider(), self.BARE_CLUSTER)
         self.centos_container = \
             self.__create_and_start_single_centos_container()
         self.pa_installer = PrestoadminInstaller(self)
@@ -42,7 +44,6 @@ class TestInstaller(BaseProductTestCase):
         self.centos_container.tear_down()
 
     @attr('smoketest')
-    @docker_only
     def test_online_installer(self):
         self.pa_installer._build_installer_in_docker(self.centos_container,
                                                      online_installer=True,
@@ -50,11 +51,9 @@ class TestInstaller(BaseProductTestCase):
         self.__verify_third_party_dir(False)
         self.pa_installer.install(
             dist_dir=self.centos_container.get_dist_dir(unique=True))
-        self.run_prestoadmin('--help', raise_error=True,
-                             cluster=self.centos_container)
+        self.run_prestoadmin('--help', raise_error=True)
 
     @attr('smoketest')
-    @docker_only
     def test_offline_installer(self):
         self.pa_installer._build_installer_in_docker(
             self.centos_container, online_installer=False, unique=True)
@@ -63,8 +62,7 @@ class TestInstaller(BaseProductTestCase):
             self.centos_container.master, 'ifdown eth0')
         self.pa_installer.install(
             dist_dir=self.centos_container.get_dist_dir(unique=True))
-        self.run_prestoadmin('--help', raise_error=True,
-                             cluster=self.centos_container)
+        self.run_prestoadmin('--help', raise_error=True)
 
     def __create_and_start_single_centos_container(self):
         centos_container = DockerCluster(
