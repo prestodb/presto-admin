@@ -176,7 +176,7 @@ def create():
     Build and start the configured Presto application instance on the cluster
     using Apache Slider.
     """
-    return _build_or_create(command=CREATE)
+    _build_or_create(command=CREATE)
 
 
 @task
@@ -188,7 +188,7 @@ def build():
     cluster using Apache Slider. The application instance can be started by
     invoking the presto-admin command to start the application instance.
     """
-    return _build_or_create(command=BUILD)
+    _build_or_create(command=BUILD)
 
 
 # Starting Presto doesn't actually require AppConfig and Resources, but if the
@@ -206,11 +206,11 @@ def start():
     appname = env.conf[APP_INST_NAME]
     start_result = start_app()
     if start_result.return_code == EXIT_SUCCESS:
-        return start_result
+        start_result
     elif start_result.return_code == EXIT_UNKNOWN_INSTANCE:
         puts('Creating and starting presto application instance %s' %
              (appname,))
-        return create()
+        create()
     else:
         abort('Failed to start presto application instance %s:' %
               (appname,))
@@ -225,7 +225,7 @@ def stop():
     """
     stop_command = '%s stop %s' % (
         get_slider_bin(env.conf), env.conf[APP_INST_NAME])
-    return run_slider(stop_command, env.conf)
+    run_slider(stop_command, env.conf)
 
 
 @task
@@ -238,7 +238,7 @@ def destroy():
     """
     destroy_command = \
         '%s destroy %s' % (get_slider_bin(env.conf), env.conf[APP_INST_NAME])
-    return run_slider(destroy_command, env.conf)
+    run_slider(destroy_command, env.conf)
 
 
 def mk_data_dir():
