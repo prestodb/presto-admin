@@ -41,12 +41,6 @@ Options:
                         comma-separated list of hosts to exclude
     --serial            default to serial execution method
 
-The commands listed below are for the current mode.
-The current mode can be changed using the 'mode select' command.
-Valid modes are yarn_slider, standalone.
-
-The current mode is standalone
-
 Commands:
     collect logs
     collect query_info
@@ -55,9 +49,6 @@ Commands:
     configuration show
     connector add
     connector remove
-    mode get
-    mode list
-    mode select
     package install
     plugin add_jar
     script run
