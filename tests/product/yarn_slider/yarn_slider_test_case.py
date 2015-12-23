@@ -44,3 +44,9 @@ class YarnSliderTestCase(BaseProductTestCase):
         end = time.clock()
         duration = end - start
         print 'Waited %.3f seconds for hdfs' % (duration)
+
+    def hdfs_unsafemode(self):
+        # If it doesn't fit force it; if it breaks, it probably needed to be
+        # replaced anyway...
+        self.cluster.exec_cmd_on_host(
+            self.cluster.master, 'hdfs dfsadmin -safemode leave', user='hdfs')

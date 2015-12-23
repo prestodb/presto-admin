@@ -411,14 +411,17 @@ query.max-memory=50GB\n"""
         expected = expected.replace('+', '\+')
         return expected
 
-    def retry(self, method_to_check):
+    def retry(self, method_to_check, *additional_errors):
+        retryable_errors = [AssertionError, PrestoError, OSError] + \
+                           list(additional_errors)
+        retryable_errors = tuple(retryable_errors)
         time_spent_waiting = 0
         while time_spent_waiting <= RETRY_TIMEOUT:
             try:
                 result = method_to_check()
                 # No exception thrown, success
                 return result
-            except (AssertionError, PrestoError, OSError):
+            except retryable_errors:
                 pass
             sleep(RETRY_INTERVAL)
             time_spent_waiting += RETRY_INTERVAL
