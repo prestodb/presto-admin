@@ -26,7 +26,7 @@ from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util.hadoop_conf import get_config
 from prestoadmin.yarn_slider.config import HADOOP_CONF, DIR
 
-YARN_RM_HOSTNAME_KEY = 'yarn.resourcemanager.hostnane'
+YARN_RM_HOSTNAME_KEY = 'yarn.resourcemanager.hostname'
 YARN_RM_WEBAPP_ADDRESS_KEY = 'yarn.resourcemanager.webapp.address'
 
 
