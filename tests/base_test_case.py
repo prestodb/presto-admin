@@ -133,6 +133,12 @@ class BaseTestCase(unittest.TestCase):
                 self.assertEqualIgnoringOrder('\n'.join(actual_lines),
                                               '\n'.join(expected_regexp_lines))
 
+    def format_expected_actual(self, expected, actual):
+        # Format message for failed multi-line string comparisons.
+        return '\t\t======== vv EXPECTED vv ========\n%s\n' \
+               '\t\t========       !=       ========\n%s\n' \
+               '\t\t======== ^^  ACTUAL  ^^ ========\n' % (expected, actual)
+
     def remove_runs_once_flag(self, callable_obj):
         # since we annotated show with @runs_once, we need to delete the
         # attribute the Fabric decorator gives it to indicate that it has

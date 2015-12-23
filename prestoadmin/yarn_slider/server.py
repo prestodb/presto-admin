@@ -17,15 +17,17 @@ Module for managing presto/YARN integration.
 """
 
 from contextlib import contextmanager
+import json
 import os.path
 
-from fabric.api import env, task, abort
-from fabric.context_managers import shell_env, quiet, warn_only
+from fabric.api import abort, env, task
+from fabric.context_managers import shell_env, quiet, warn_only, hide
 from fabric.operations import put, sudo, local, run
 from fabric.utils import puts
 
 from prestoadmin.fabric_patches import execute
 from prestoadmin.util.cluster import get_nodes_from_rm
+from prestoadmin.util.slider import degarbage_json
 from prestoadmin.yarn_slider.slider_application_configs import AppConfigJson, \
     ResourcesJson
 from prestoadmin.yarn_slider.slider_exit_codes import EXIT_SUCCESS, \
@@ -38,7 +40,7 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.fabricapi import task_by_rolename
 
 __all__ = ['install', 'uninstall', 'start', 'stop', 'create', 'build',
-           'destroy']
+           'destroy', 'status']
 
 
 SLIDER_PKG_DEFAULT_FILES = ['appConfig-default.json', 'resources-default.json']
@@ -248,3 +250,79 @@ def mk_data_dir():
              'user': app_config.get_user(),
              'group': app_config.get_group()})
     return sudo(command)
+
+
+def get_slider_status(conf):
+    status_cmd = '%s status %s' % (get_slider_bin(conf), conf[APP_INST_NAME])
+    with hide('running', 'stdout', 'stderr'):
+        status_json = degarbage_json(run_slider(status_cmd, conf))
+    return json.loads(status_json)
+
+
+ROLENAME_COORDINATOR = 'COORDINATOR'
+ROLENAME_WORKER = 'WORKER'
+
+
+def get_instances(slider_status, rolename):
+    return slider_status['instances'][rolename]
+
+
+def identity(x):
+    return x
+
+
+def get_coordinator(slider_status, filtr=identity):
+    coordinators = slider_status['status']['live'][ROLENAME_COORDINATOR]
+    return [filtr(v) for v in coordinators.values()]
+
+
+def get_workers(slider_status, filtr=identity):
+    try:
+        workers = slider_status['status']['live'][ROLENAME_WORKER]
+    except KeyError:
+        workers = {}
+
+    return [filtr(v) for v in workers.values()]
+
+
+def get_status_transformer():
+    app_config = AppConfigJson()
+
+    def transform_status(container):
+        host = container['host']
+        node_uri = 'http://%s:%s' % (
+            container['host'], app_config.get_presto_server_port())
+        is_running = container['state']
+        role = container['role'].lower()
+
+        return host, is_running, role, node_uri
+    return transform_status
+
+
+@task
+@requires_config(SliderConfig)
+@task_by_rolename(SLIDER_MASTER)
+def status():
+    """
+    Display status information about the cluster.
+    """
+    conf = env.conf
+    slider_status = get_slider_status(conf)
+    coordinators = None
+
+    try:
+        coordinators = get_coordinator(slider_status)
+    except KeyError:
+        abort(
+            'No coordinator found. This may be because presto is still '
+            'starting. Check the application status')
+
+    workers = get_workers(slider_status)
+
+    all_hosts = coordinators + workers
+    for host_info in map(get_status_transformer(), all_hosts):
+        print 'Server Status:\n' \
+              '\t%s\n' \
+              '\tState:      %d\n' \
+              '\tRole:       %s\n' \
+              '\tNode URI:   %s\n' % host_info

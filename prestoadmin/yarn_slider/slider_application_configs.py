@@ -70,11 +70,13 @@ APP_CONFIG_TRANSFORMATIONS = {
 
 
 class AppConfigJson(SliderJsonConfig):
-    def __init__(self):
+    def __init__(
+            self,
+            config_path=os.path.join(SLIDER_CONFIG_DIR, 'appConfig.json'),
+            default_config_path=os.path.join(
+                SLIDER_CONFIG_DIR, 'appConfig-default.json')):
         super(AppConfigJson, self).__init__(
-            os.path.join(SLIDER_CONFIG_DIR, 'appConfig.json'),
-            os.path.join(SLIDER_CONFIG_DIR, 'appConfig-default.json'),
-            APP_CONFIG_TRANSFORMATIONS)
+            config_path, default_config_path, APP_CONFIG_TRANSFORMATIONS)
         self.config = None
 
     def get_config(self):
@@ -96,6 +98,9 @@ class AppConfigJson(SliderJsonConfig):
 
     def get_group(self):
         return self.get_config()['global']['site.global.user_group']
+
+    def get_presto_server_port(self):
+        return self.get_config()['global']['site.global.presto_server_port']
 
 
 def _prompt_worker_instances(kpath, value):
@@ -160,8 +165,24 @@ RESOURCES_TRANSFORMATIONS = {
 
 
 class ResourcesJson(SliderJsonConfig):
-    def __init__(self):
+    def __init__(
+            self,
+            config_path=os.path.join(SLIDER_CONFIG_DIR, 'resources.json'),
+            default_config_path=\
+                os.path.join(SLIDER_CONFIG_DIR, 'resources-default.json')):
         super(ResourcesJson, self).__init__(
-            os.path.join(SLIDER_CONFIG_DIR, 'resources.json'),
-            os.path.join(SLIDER_CONFIG_DIR, 'resources-default.json'),
-            RESOURCES_TRANSFORMATIONS)
+            config_path, default_config_path, RESOURCES_TRANSFORMATIONS)
+        self.config = None
+
+    def get_config(self):
+        if not self.config:
+            self.config = super(ResourcesJson, self).get_config()
+        return self.config
+
+    def get_coordinator_instances(self):
+        return int(self.get_config(
+            )['components']['COORDINATOR']['yarn.component.instances'])
+
+    def get_worker_instances(self):
+        return int(self.get_config(
+            )['components']['WORKER']['yarn.component.instances'])

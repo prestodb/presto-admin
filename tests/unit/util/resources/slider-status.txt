@@ -1,0 +1,233 @@
+2015-12-21 11:51:59,087 [main] INFO  client.RMProxy - Connecting to ResourceManager at master/10.25.151.137:8050
+2015-12-21 11:52:00,787 [main] INFO  client.SliderClient - {
+  "version" : "1.0",
+  "name" : "test1",
+  "type" : "agent",
+  "state" : 3,
+  "createTime" : 1450721619776,
+  "updateTime" : 1450721623937,
+  "originConfigurationPath" : "hdfs://master/user/yarn/.slider/cluster/test1/snapshot",
+  "generatedConfigurationPath" : "hdfs://master/user/yarn/.slider/cluster/test1/generated",
+  "dataPath" : "hdfs://master/user/yarn/.slider/cluster/test1/database",
+  "options" : {
+    "site.global.security_enabled" : "false",
+    "site.global.presto_query_max_memory_per_node" : "600MB",
+    "site.global.app_name" : "presto-server-0.123",
+    "internal.application.home" : null,
+    "internal.appdef.dir.path" : "hdfs://master/user/yarn/.slider/cluster/test1/tmp/appdef",
+    "site.global.app_pkg_plugin" : "${AGENT_WORK_ROOT}/app/definition/package/plugins/",
+    "slider.cluster.directory.permissions" : "0770",
+    "application.name" : "test1",
+    "internal.addons.dir.path" : "hdfs://master/user/yarn/.slider/cluster/test1/tmp/addons",
+    "internal.tmp.dir" : "hdfs://master/user/yarn/.slider/cluster/test1/tmp",
+    "java_home" : "/usr/java/jdk1.8.0_40/jre/",
+    "site.global.presto_query_max_memory" : "5GB",
+    "internal.snapshot.conf.path" : "hdfs://master/user/yarn/.slider/cluster/test1/snapshot",
+    "site.global.user_group" : "hadoop",
+    "env.MALLOC_ARENA_MAX" : "4",
+    "site.global.jvm_args" : "['-server', '-Xmx1024M', '-XX:+UseG1GC', '-XX:G1HeapRegionSize=32M', '-XX:+UseGCOverheadLimit', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:OnOutOfMemoryError=kill -9 %p']",
+    "site.global.catalog" : "{'hive': ['connector.name=hive-cdh5', 'hive.metastore.uri=thrift://${NN_HOST}:9083'], 'tpch': ['connector.name=tpch']}",
+    "zookeeper.path" : "/services/slider/users/yarn/test1",
+    "internal.container.failure.shortlife" : "60000",
+    "site.global.presto_server_port" : "8080",
+    "internal.application.image.path" : null,
+    "internal.generated.conf.path" : "hdfs://master/user/yarn/.slider/cluster/test1/generated",
+    "site.fs.default.name" : "hdfs://master/",
+    "site.global.app_user" : "yarn",
+    "yarn.vcores" : "1",
+    "site.global.singlenode" : "false",
+    "zookeeper.hosts" : "master",
+    "internal.provider.name" : "agent",
+    "internal.data.dir.path" : "hdfs://master/user/yarn/.slider/cluster/test1/database",
+    "site.global.coordinator_host" : "${COORDINATOR_HOST}",
+    "site.fs.defaultFS" : "hdfs://master/",
+    "site.global.data_dir" : "/var/lib/presto/data",
+    "slider.data.directory.permissions" : "0770",
+    "zookeeper.quorum" : "master:5181",
+    "internal.am.tmp.dir" : "hdfs://master/user/yarn/.slider/cluster/test1/tmp/appmaster",
+    "internal.container.failure.threshold" : "5",
+    "application.def" : ".slider/package/PRESTO/presto-yarn-package-1.0.0.zip"
+  },
+  "info" : {
+    "info.am.container.id" : "container_1449610091917_0007_01_000001",
+    "info.am.rpc.port" : "1024",
+    "info.am.attempt.id" : "appattempt_1449610091917_0007_000001",
+    "yarn.memory" : "8192",
+    "info.am.web.port" : "1025",
+    "info.am.web.url" : "http://ediven5-slave2:1025/",
+    "info.am.app.id" : "application_1449610091917_0007",
+    "yarn.vcores" : "2",
+    "info.am.hostname" : "ediven5-slave2",
+    "status.application.build.info" : "Slider Core-0.81.1-incubating Built against commit# a9b1d659c6 on Java 1.7.0_55 by jmaron",
+    "status.hadoop.build.info" : "2.6.0",
+    "status.hadoop.deployed.info" : "branch-2.6.0 @18e43357c8f927c0695f1e9522859d6a",
+    "live.time" : "21 Dec 2015 18:13:39 GMT",
+    "live.time.millis" : "1450721619776",
+    "create.time" : "21 Dec 2015 18:13:39 GMT",
+    "create.time.millis" : "1450721619776",
+    "containers.at.am-restart" : "0",
+    "status.time" : "21 Dec 2015 19:51:38 GMT",
+    "status.time.millis" : "1450727498232",
+    "info.am.agent.status.url" : "https://ediven5-slave2:48082/",
+    "info.am.agent.status.port" : "48082",
+    "info.am.agent.ops.url" : "https://ediven5-slave2:58320/",
+    "info.am.agent.ops.port" : "58320"
+  },
+  "statistics" : {
+    "COORDINATOR" : {
+      "containers.failed.node" : 0,
+      "containers.start.started" : 0,
+      "containers.live" : 1,
+      "containers.failed.preempted" : 0,
+      "containers.start.failed" : 0,
+      "containers.active.requests" : 0,
+      "containers.failed.recently" : 0,
+      "containers.failed" : 0,
+      "containers.completed" : 0,
+      "containers.desired" : 1,
+      "containers.requested" : 1
+    },
+    "slider-appmaster" : {
+      "containers.unknown.completed" : 0,
+      "containers.start.started" : 3,
+      "containers.live" : 4,
+      "containers.start.failed" : 0,
+      "containers.failed" : 0,
+      "containers.completed" : 0,
+      "containers.surplus" : 0
+    },
+    "WORKER" : {
+      "containers.failed.node" : 0,
+      "containers.start.started" : 0,
+      "containers.live" : 2,
+      "containers.failed.preempted" : 0,
+      "containers.start.failed" : 0,
+      "containers.active.requests" : 0,
+      "containers.failed.recently" : 0,
+      "containers.failed" : 0,
+      "containers.completed" : 0,
+      "containers.desired" : 2,
+      "containers.requested" : 2
+    }
+  },
+  "instances" : {
+    "COORDINATOR" : [ "container_1449610091917_0007_01_000003" ],
+    "slider-appmaster" : [ "container_1449610091917_0007_01_000001" ],
+    "WORKER" : [ "container_1449610091917_0007_01_000002", "container_1449610091917_0007_01_000004" ]
+  },
+  "roles" : {
+    "COORDINATOR" : {
+      "role.failed.recently.instances" : "0",
+      "yarn.component.placement.policy" : "1",
+      "yarn.memory" : "1500",
+      "yarn.role.priority" : "1",
+      "role.requested.instances" : "0",
+      "role.failed.starting.instances" : "0",
+      "role.actual.instances" : "1",
+      "yarn.vcores" : "1",
+      "yarn.component.instances" : "1",
+      "role.releasing.instances" : "0",
+      "role.failed.node.instances" : "0",
+      "role.failed.instances" : "0",
+      "role.failed.preempted.instances" : "0"
+    },
+    "slider-appmaster" : {
+      "role.failed.recently.instances" : "0",
+      "yarn.memory" : "1024",
+      "role.requested.instances" : "0",
+      "role.failed.starting.instances" : "0",
+      "role.actual.instances" : "1",
+      "yarn.vcores" : "1",
+      "yarn.component.instances" : "1",
+      "role.releasing.instances" : "0",
+      "role.failed.node.instances" : "0",
+      "role.failed.instances" : "0",
+      "role.failed.preempted.instances" : "0"
+    },
+    "WORKER" : {
+      "role.failed.recently.instances" : "0",
+      "yarn.component.placement.policy" : "1",
+      "yarn.memory" : "1500",
+      "yarn.role.priority" : "2",
+      "role.requested.instances" : "0",
+      "role.failed.starting.instances" : "0",
+      "role.actual.instances" : "2",
+      "yarn.vcores" : "1",
+      "yarn.component.instances" : "2",
+      "role.releasing.instances" : "0",
+      "role.failed.node.instances" : "0",
+      "role.failed.instances" : "0",
+      "role.failed.preempted.instances" : "0"
+    }
+  },
+  "clientProperties" : { },
+  "status" : {
+    "live" : {
+      "COORDINATOR" : {
+        "container_1449610091917_0007_01_000003" : {
+          "name" : "container_1449610091917_0007_01_000003",
+          "role" : "COORDINATOR",
+          "roleId" : 1,
+          "createTime" : 1450721626573,
+          "startTime" : 1450721626984,
+          "released" : false,
+          "host" : "ediven5-slave3",
+          "hostUrl" : "http://ediven5-slave3:8042",
+          "state" : 3,
+          "exitCode" : 0,
+          "command" : "python ./infra/agent/slider-agent/agent/main.py --label container_1449610091917_0007_01_000003___COORDINATOR --zk-quorum master:5181 --zk-reg-path /registry/users/yarn/services/org-apache-slider/test1 > <LOG_DIR>/slider-agent.out 2>&1 ; ",
+          "environment" : [ "LANGUAGE=\"en_US.UTF-8\"", "AGENT_WORK_ROOT=\"$PWD\"", "HADOOP_USER_NAME=\"yarn\"", "AGENT_LOG_ROOT=\"<LOG_DIR>\"", "PYTHONPATH=\"./infra/agent/slider-agent/\"", "LC_ALL=\"en_US.UTF-8\"", "SLIDER_PASSPHRASE=\"AC65brgRtIwLKIl8AGjI7ux0PFkXCYI6rX6iGZUpOTODZIBHnl\"", "LANG=\"en_US.UTF-8\"" ]
+        }
+      },
+      "slider-appmaster" : {
+        "container_1449610091917_0007_01_000001" : {
+          "name" : "container_1449610091917_0007_01_000001",
+          "role" : "slider-appmaster",
+          "roleId" : 0,
+          "createTime" : 1450721619995,
+          "startTime" : 1450721619995,
+          "released" : false,
+          "host" : "ediven5-slave2",
+          "hostUrl" : "http://ediven5-slave2:1025",
+          "state" : 3,
+          "exitCode" : 0
+        }
+      },
+      "WORKER" : {
+        "container_1449610091917_0007_01_000004" : {
+          "name" : "container_1449610091917_0007_01_000004",
+          "role" : "WORKER",
+          "roleId" : 2,
+          "createTime" : 1450721626573,
+          "startTime" : 1450721626711,
+          "released" : false,
+          "host" : "ediven5-slave1",
+          "hostUrl" : "http://ediven5-slave1:8042",
+          "state" : 3,
+          "exitCode" : 0,
+          "command" : "python ./infra/agent/slider-agent/agent/main.py --label container_1449610091917_0007_01_000004___WORKER --zk-quorum master:5181 --zk-reg-path /registry/users/yarn/services/org-apache-slider/test1 > <LOG_DIR>/slider-agent.out 2>&1 ; ",
+          "environment" : [ "LANGUAGE=\"en_US.UTF-8\"", "AGENT_WORK_ROOT=\"$PWD\"", "HADOOP_USER_NAME=\"yarn\"", "AGENT_LOG_ROOT=\"<LOG_DIR>\"", "PYTHONPATH=\"./infra/agent/slider-agent/\"", "LC_ALL=\"en_US.UTF-8\"", "SLIDER_PASSPHRASE=\"AC65brgRtIwLKIl8AGjI7ux0PFkXCYI6rX6iGZUpOTODZIBHnl\"", "LANG=\"en_US.UTF-8\"" ]
+        },
+        "container_1449610091917_0007_01_000002" : {
+          "name" : "container_1449610091917_0007_01_000002",
+          "role" : "WORKER",
+          "roleId" : 2,
+          "createTime" : 1450721626554,
+          "startTime" : 1450721626659,
+          "released" : false,
+          "host" : "ediven5-slave2",
+          "hostUrl" : "http://ediven5-slave2:8042",
+          "state" : 3,
+          "exitCode" : 0,
+          "command" : "python ./infra/agent/slider-agent/agent/main.py --label container_1449610091917_0007_01_000002___WORKER --zk-quorum master:5181 --zk-reg-path /registry/users/yarn/services/org-apache-slider/test1 > <LOG_DIR>/slider-agent.out 2>&1 ; ",
+          "environment" : [ "LANGUAGE=\"en_US.UTF-8\"", "AGENT_WORK_ROOT=\"$PWD\"", "HADOOP_USER_NAME=\"yarn\"", "AGENT_LOG_ROOT=\"<LOG_DIR>\"", "PYTHONPATH=\"./infra/agent/slider-agent/\"", "LC_ALL=\"en_US.UTF-8\"", "SLIDER_PASSPHRASE=\"AC65brgRtIwLKIl8AGjI7ux0PFkXCYI6rX6iGZUpOTODZIBHnl\"", "LANG=\"en_US.UTF-8\"" ]
+        }
+      }
+    }
+  },
+  "liveness" : {
+    "allRequestsSatisfied" : true,
+    "requestsOutstanding" : 0
+  }
+}
+2015-12-21 11:52:00,792 [main] INFO  util.ExitUtil - Exiting with status 0
