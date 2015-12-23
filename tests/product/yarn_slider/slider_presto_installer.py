@@ -24,6 +24,7 @@ from prestoadmin.yarn_slider.config import SLIDER_USER, HOST, \
 from prestoadmin.yarn_slider.server import get_slider_bin
 
 from tests.base_installer import BaseInstaller
+from tests.product.mode_installers import YarnSliderModeInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.product.yarn_slider.slider_installer import SliderInstaller
 from tests.product.yarn_slider.pa_slider_config import get_config
@@ -65,7 +66,7 @@ class SliderPrestoInstaller(BaseInstaller):
 
     @staticmethod
     def get_dependencies():
-        return [PrestoadminInstaller, SliderInstaller]
+        return [PrestoadminInstaller, YarnSliderModeInstaller, SliderInstaller]
 
     @staticmethod
     def _get_slider_master(testcase):
@@ -81,7 +82,7 @@ class SliderPrestoInstaller(BaseInstaller):
         package_name = self._copy_package_to_pa_host()
 
         cmd_output = self.testcase.run_prestoadmin(
-            ' slider install ' +
+            ' server install ' +
             os.path.join(cluster.mount_dir, package_name),
             cluster=cluster)
 

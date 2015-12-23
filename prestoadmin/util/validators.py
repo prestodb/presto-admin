@@ -37,11 +37,11 @@ def validate_port(port):
         raise ConfigurationError('Port must be of type string, but '
                                  'found ' + str(type(port)) + '.')
     except ValueError:
-        raise ConfigurationError('Invalid value ' + port + ': '
-                                 'port must be a number between 1 and 65535.')
+        raise ConfigurationError('Invalid port number ' + port +
+                                 ': port must be a number between 1 and 65535')
     if not port_int > 0 or not port_int < 65535:
         raise ConfigurationError('Invalid port number ' + port +
-                                 ': port must be between 1 and 65535')
+                                 ': port must be a number between 1 and 65535')
     return port_int
 
 

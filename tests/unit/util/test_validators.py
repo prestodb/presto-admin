@@ -58,7 +58,7 @@ class TestValidators(BaseTestCase):
     def test_invalid_port(self):
         self.assertRaisesRegexp(ConfigurationError,
                                 "Invalid port number 99999999: port must be "
-                                "between 1 and 65535",
+                                "a number between 1 and 65535",
                                 validators.validate_port,
                                 ("99999999"))
 

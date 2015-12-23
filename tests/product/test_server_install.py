@@ -18,8 +18,7 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase, \
-    docker_only
+from tests.product.base_product_case import BaseProductTestCase
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
@@ -191,25 +190,6 @@ query.max-memory=50GB\n"""
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
-
-    def test_install_failure_without_java8_home(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
-        for container in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(container,
-                                          "mv /usr/java/jdk1.8.0_40 /usr/")
-        self.upload_topology()
-        cmd_output = installer.install(pa_raise_error=False)
-        actual = cmd_output.splitlines()
-        num_failures = 0
-        for line in enumerate(actual):
-            if str(line).find("Error: Required Java version"
-                              " could not be found") != -1:
-                num_failures += 1
-
-        self.assertEqual(4, num_failures)
-
-        for container in self.cluster.all_hosts():
-            installer.assert_uninstalled(container, dummy=True)
 
     @attr('smoketest')
     def test_install(self, installer=None):
@@ -531,25 +511,6 @@ query.max-memory=50GB\n"""
                     down_node, self.cluster.get_down_hostname(down_node)
                 )
             )
-
-    @docker_only
-    def test_install_with_no_perm_to_local_path(self):
-        installer = StandalonePrestoInstaller(self)
-        rpm_name = installer.copy_presto_rpm_to_master()
-        self.upload_topology()
-        self.run_prestoadmin("configuration deploy")
-
-        script = 'chmod 600 /mnt/presto-admin/%(rpm)s; su app-admin -c ' \
-                 '"./presto-admin server install /mnt/presto-admin/%(rpm)s "'
-        error_msg = '\nFatal error: [%(host)s] error: ' \
-                    '/mnt/presto-admin/%(rpm)s: ' \
-                    'open failed: Permission denied\n\nAborting.\n'
-        expected = ''
-        for host in self.cluster.all_internal_hosts():
-            expected += error_msg % {'host': host, 'rpm': rpm_name}
-        actual = self.run_script_from_prestoadmin_dir(script, rpm=rpm_name,
-                                                      raise_error=False)
-        self.assertEqualIgnoringOrder(actual, expected)
 
     def test_install_twice(self):
         installer = StandalonePrestoInstaller(self, dummy=True)

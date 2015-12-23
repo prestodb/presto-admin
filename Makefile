@@ -68,6 +68,9 @@ test-all: clean-test
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
 
+test-rpm: clean-test
+	tox -e py26 -- -s tests.rpm -a '!quarantine'
+
 coverage:
 	coverage run --source prestoadmin setup.py test -s tests.unit
 	coverage report -m
