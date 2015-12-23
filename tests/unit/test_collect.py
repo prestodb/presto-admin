@@ -96,8 +96,9 @@ class TestCollect(BaseUnitCase):
         collect.query_info("any_query_id")
         assert not req_get_mock.called
 
+    @patch('prestoadmin.collect.request_url')
     @patch("prestoadmin.collect.requests.get")
-    def test_query_info_fail_invalid_id(self, req_get_mock):
+    def test_query_info_fail_invalid_id(self, req_get_mock, requests_url):
         env.host = "myhost"
         env.roledefs["coordinator"] = ["myhost"]
         query_id = "invalid_id"
@@ -115,7 +116,8 @@ class TestCollect(BaseUnitCase):
     @patch("prestoadmin.collect.os.mkdir")
     @patch("prestoadmin.collect.os.path.exists")
     @patch("prestoadmin.collect.requests.get")
-    def test_collect_query_info(self, requests_get_mock,
+    @patch('prestoadmin.collect.request_url')
+    def test_collect_query_info(self, requests_url_mock, requests_get_mock,
                                 path_exist_mock, mkdir_mock, open_mock,
                                 req_json_mock, json_dumps_mock):
         query_id = "1234_abcd"
@@ -130,8 +132,6 @@ class TestCollect(BaseUnitCase):
 
         collect.query_info(query_id)
 
-        requests_get_mock.assert_called_with(collect.QUERY_REQUEST_URL
-                                             + query_id)
         mkdir_mock.assert_called_with(TMP_PRESTO_DEBUG)
 
         open_mock.assert_called_with(query_info_file_name, "w")
@@ -149,7 +149,9 @@ class TestCollect(BaseUnitCase):
     @patch("prestoadmin.collect.os.mkdir")
     @patch("prestoadmin.collect.os.path.exists")
     @patch("prestoadmin.collect.requests.get")
-    def test_collect_system_info(self, requests_get_mock, path_exists_mock,
+    @patch('prestoadmin.collect.request_url')
+    def test_collect_system_info(self, requests_url_mock, requests_get_mock,
+                                 path_exists_mock,
                                  mkdir_mock, open_mock,
                                  execute_mock, req_json_mock,
                                  json_dumps_mock, conn_info_mock,
@@ -167,9 +169,6 @@ class TestCollect(BaseUnitCase):
         connector_info = conn_info_mock.return_value
 
         collect.system_info()
-
-        requests_get_mock.assert_called_with(collect.NODES_REQUEST_URL)
-
         mkdir_mock.assert_any_call(TMP_PRESTO_DEBUG)
 
         mkdir_mock.assert_called_with(downloaded_sys_info_loc)

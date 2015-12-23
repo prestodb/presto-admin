@@ -36,7 +36,7 @@ from prestoadmin.server import get_presto_version, get_connector_info_from
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.filesystem import ensure_directory_exists
 from prestoadmin.util.remote_config_util import lookup_server_log_file,\
-    lookup_launcher_log_file
+    lookup_launcher_log_file,  lookup_port
 from prestoadmin.standalone.config import StandaloneConfig
 import prestoadmin.util.fabricapi as fabricapi
 import prestoadmin
@@ -48,8 +48,8 @@ OUTPUT_FILENAME_FOR_LOGS = '/tmp/presto-debug-logs.tar.bz2'
 OUTPUT_FILENAME_FOR_SYS_INFO = '/tmp/presto-debug-sysinfo.tar.bz2'
 PRESTOADMIN_LOG_NAME = 'presto-admin.log'
 _LOGGER = logging.getLogger(__name__)
-QUERY_REQUEST_URL = "http://localhost:8080/v1/query/"
-NODES_REQUEST_URL = "http://localhost:8080/v1/node"
+QUERY_REQUEST_EXT = 'v1/query/'
+NODES_REQUEST_EXT = 'v1/node'
 
 __all__ = ['logs', 'query_info', 'system_info']
 
@@ -113,6 +113,14 @@ def file_get(remote_path, local_path):
         warn('remote path ' + remote_path + ' not found on ' + env.host)
 
 
+def request_url(url_extension):
+    host = env.host
+    port = lookup_port(host)
+    return 'http://%(host)s:%(port)i/%(url_ext)s' % {'host': host,
+                                                     'port': port,
+                                                     'url_ext': url_extension}
+
+
 @task
 @requires_config(StandaloneConfig)
 def query_info(query_id):
@@ -130,8 +138,7 @@ def query_info(query_id):
     err_msg = 'Unable to retrieve information. Please check that the ' \
               'query_id is correct, or check that server is up with ' \
               'command: server status'
-
-    req = get_request(QUERY_REQUEST_URL + query_id, err_msg)
+    req = get_request(request_url(QUERY_REQUEST_EXT + query_id), err_msg)
     query_info_file_name = os.path.join(TMP_PRESTO_DEBUG,
                                         'query_info_' + query_id + '.json')
 
@@ -158,15 +165,16 @@ def get_request(url, err_msg):
 
 @task
 @requires_config(StandaloneConfig)
-@runs_once
 def system_info():
     """
     Gather system information like nodes in the system, presto
     version, presto-admin version, os version etc.
     """
+    if env.host not in fabricapi.get_coordinator_role():
+        return
     err_msg = 'Unable to access node information. ' \
               'Please check that server is up with command: server status'
-    req = get_request(NODES_REQUEST_URL, err_msg)
+    req = get_request(request_url(NODES_REQUEST_EXT), err_msg)
 
     if not os.path.exists(TMP_PRESTO_DEBUG):
         os.mkdir(TMP_PRESTO_DEBUG)
