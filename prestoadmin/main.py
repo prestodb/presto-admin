@@ -428,13 +428,7 @@ def _normal_list(docstrings=True):
     return result
 
 
-COMMANDS_HEADER = """The commands listed below are for the current mode.
-The current mode can be changed using the 'mode select' command.
-Valid modes are %s.
-
-The current mode is %s
-
-Commands:""" % (', '.join(mode.VALID_MODES), prestoadmin.cfg_mode)
+COMMANDS_HEADER = 'Commands:'
 
 
 def list_commands(docstring, format_):
