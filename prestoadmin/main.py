@@ -61,8 +61,6 @@ from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
-import prestoadmin
-from prestoadmin import mode
 from prestoadmin.util.exception import ConfigurationError, is_arguments_error
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
