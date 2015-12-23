@@ -61,8 +61,6 @@ from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
-import prestoadmin
-from prestoadmin import mode
 from prestoadmin.util.exception import ConfigurationError, is_arguments_error
 from prestoadmin import __version__
 from prestoadmin.util.application import entry_point
@@ -434,13 +432,7 @@ def _normal_list(docstrings=True):
     return result
 
 
-COMMANDS_HEADER = """The commands listed below are for the current mode.
-The current mode can be changed using the 'mode select' command.
-Valid modes are %s.
-
-The current mode is %s
-
-Commands:""" % (', '.join(mode.VALID_MODES), prestoadmin.cfg_mode)
+COMMANDS_HEADER = 'Commands:'
 
 
 def list_commands(docstring, format_):

@@ -25,7 +25,6 @@ __version__ = '1.4-SNAPSHOT'  # Make sure to update setup.py too
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 import fabric_patches  # noqa
-import mode  # noqa
 
 from prestoadmin.mode import get_mode, for_mode, MODE_STANDALONE, \
         MODE_SLIDER  # noqa
@@ -36,15 +35,13 @@ from prestoadmin.util.exception import ConfigFileNotFoundError, \
 # Subcommands common to all modes. If anybody knows why fabric_patches is in
 # the list, I'll make a note for the next person.
 #
-__all__ = ['fabric_patches', 'mode']
+__all__ = ['fabric_patches']
 
-MODE_ERROR = None
 cfg_mode = MODE_STANDALONE
 try:
     cfg_mode = get_mode()
 except ConfigFileNotFoundError as e:
-    print >>sys.stderr, "No mode selected. Defaulting to %s. Select a mode " \
-        "using the command 'mode select <mode>'" % (MODE_STANDALONE,)
+    pass
 except ConfigurationError as e:
     print >>sys.stderr, e.message
 
