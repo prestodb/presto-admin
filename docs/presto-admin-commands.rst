@@ -168,14 +168,16 @@ Further, add the following ``node.properties`` to
 ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers``: ::
 
     node.environment=test
+    node.data-dir=/var/lib/presto/data
+    plugin.config-dir=/etc/presto/catalog
+    plugin.dir=/usr/lib/presto/lib/plugin
 
 Then run: ::
 
     sudo ./presto-admin configuration deploy
 
 This will distribute to the coordinator a default ``config.properties``, the new
-``jvm.config``, and a ``node.properties`` with all of the default properties,
-except ``node.environment``, which will be set to ``test``.  The workers will
+``jvm.config`` and ``node.properties``.  The workers will
 receive the default ``config.properties`` and ``jvm.config``, and the same
 ``node.properties`` as the coordinator.
 
