@@ -72,7 +72,7 @@ class TestCollect(BaseProductTestCase):
         if not coordinator:
             coordinator = self.cluster.internal_master
         if not hosts:
-            hosts=self.cluster.all_hosts()
+            hosts = self.cluster.all_hosts()
         self.run_prestoadmin('server start')
         actual = self.run_prestoadmin('collect system_info')
         expected = 'System info archive created: ' + \
@@ -113,7 +113,8 @@ class TestCollect(BaseProductTestCase):
         self.upload_topology(topology=topology)
         installer.install(coordinator='slave1')
         self.test_basic_system_info(
-            coordinator=self.cluster.internal_slaves[0], hosts=self.cluster.slaves)
+            coordinator=self.cluster.internal_slaves[0],
+            hosts=self.cluster.slaves)
 
     @attr('smoketest')
     def test_collect_query_info(self):
