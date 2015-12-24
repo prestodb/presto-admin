@@ -168,6 +168,8 @@ class TestCollect(BaseUnitCase):
         requests_get_mock.return_value.status_code = requests.codes.ok
         connector_info = conn_info_mock.return_value
 
+        env.host = "myhost"
+        env.roledefs["coordinator"] = ["myhost"]
         collect.system_info()
         mkdir_mock.assert_any_call(TMP_PRESTO_DEBUG)
 
