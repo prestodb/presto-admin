@@ -200,9 +200,7 @@ class TestCollect(BaseProductTestCase):
         message = '\nFatal error: [%s] Unable to access node ' \
                   'information. Please check that server is up with ' \
                   'command: server status\n\nAborting.\n'
-        expected = ''
-        for host in self.cluster.all_internal_hosts():
-            expected += message % host
+        expected = message % self.cluster.internal_master
         self.assertEqualIgnoringOrder(actual, expected)
 
     def _add_custom_log_location(self, new_log_location):
