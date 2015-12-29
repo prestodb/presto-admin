@@ -37,16 +37,7 @@ Options:
                         username to use when connecting to remote hosts
     --serial            default to serial execution method
 
-The commands listed below are for the current mode.
-The current mode can be changed using the 'mode select' command.
-Valid modes are yarn_slider, standalone.
-
-The current mode is yarn_slider
-
 Commands:
-    mode get
-    mode list
-    mode select
     server install
     server uninstall
     slider install
