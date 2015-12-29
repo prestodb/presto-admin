@@ -6,7 +6,7 @@ Running Presto Queries
 
 The Presto CLI provides a terminal-based interactive shell for running queries. The CLI is a self-executing JAR file, which means it acts like a normal UNIX executable.
 
-Download the `presto-cli <https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&g=com.facebook.presto&a=presto-cli&v=RELEASE>`_ and copy it to the location you want to run it from. This location may be any node that has network access to the coordinator. Then rename it to presto and make it executable with chmod +x:
+Download the `presto-cli` and copy it to the location you want to run it from. This location may be any node that has network access to the coordinator. Then rename it to presto and make it executable with chmod +x:
 ::
 
  $ mv presto-cli-0.115-executable.jar presto
