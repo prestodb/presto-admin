@@ -36,7 +36,7 @@ from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.topology_installer import TopologyInstaller
 from tests.product.yarn_slider.slider_installer import SliderInstaller
 
-PRESTO_VERSION = r'presto-main:.*'
+PRESTO_VERSION = r'.+'
 RETRY_TIMEOUT = 120
 RETRY_INTERVAL = 5
 
