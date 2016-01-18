@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Presto-Admin Commands &mdash; presto-admin 1.1 documentation</title>
+    <title>Presto-Admin Commands &mdash; presto-admin 1.2 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1',
+        VERSION:     '1.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.1 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.2 documentation" href="index.html" />
     <link rel="up" title="User Guide" href="user-guide.html" />
     <link rel="next" title="Presto-Admin Command-Line Options" href="presto-admin-cli-options.html" />
     <link rel="prev" title="SSH Configuration" href="ssh-configuration.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
       </ul>
     </div>  
@@ -138,14 +138,13 @@ The deployed configuration files will overwrite the existing configurations on
 the cluster. However, the node.id from the
 node.properties file will be preserved. If no node.id exists, a new id will be
 generated. If any required files are absent when you run configuration deploy,
-a default configuration will be deployed. If any required properties from those
-files are missing, they will be filled in with defaults. Below are the default
+a default configuration will be deployed. Below are the default
 configurations:</p>
 <p><em>node.properties</em></p>
 <div class="highlight-python"><div class="highlight"><pre>node.environment=presto
 node.data-dir=/var/lib/presto/data
 plugin.config-dir=/etc/presto/catalog
-plugin.dir=/urs/lib/presto/lib/plugin
+plugin.dir=/usr/lib/presto/lib/plugin
 </pre></div>
 </div>
 <div class="admonition note">
@@ -171,7 +170,6 @@ discovery.uri=http://&lt;coordinator&gt;:8080
 http-server.http.port=8080
 query.max-memory-per-node=1GB
 query.max-memory=50GB
-task.max-memory=1GB
 </pre></div>
 </div>
 <p>For coordinator:</p>
@@ -179,10 +177,9 @@ task.max-memory=1GB
 discovery-server.enabled=true
 discovery.uri=http://&lt;coordinator&gt;:8080
 http-server.http.port=8080
-node.scheduler.include-coordinator=false
+node-scheduler.include-coordinator=false
 query.max-memory-per-node=1GB
 query.max-memory=50GB
-task.max-memory=1GB
 
 # if the coordinator is also a worker, it will have the following property instead
 node-scheduler.include-coordinator=true
@@ -206,7 +203,10 @@ following <code class="docutils literal"><span class="pre">jvm.config</span></co
 </div>
 <p>Further, add the following <code class="docutils literal"><span class="pre">node.properties</span></code> to
 <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code> and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">node</span><span class="o">.</span><span class="n">environment</span><span class="o">=</span><span class="n">test</span>
+<div class="highlight-python"><div class="highlight"><pre>node.environment=test
+node.data-dir=/var/lib/presto/data
+plugin.config-dir=/etc/presto/catalog
+plugin.dir=/usr/lib/presto/lib/plugin
 </pre></div>
 </div>
 <p>Then run:</p>
@@ -214,8 +214,7 @@ following <code class="docutils literal"><span class="pre">jvm.config</span></co
 </pre></div>
 </div>
 <p>This will distribute to the coordinator a default <code class="docutils literal"><span class="pre">config.properties</span></code>, the new
-<code class="docutils literal"><span class="pre">jvm.config</span></code>, and a <code class="docutils literal"><span class="pre">node.properties</span></code> with all of the default properties,
-except <code class="docutils literal"><span class="pre">node.environment</span></code>, which will be set to <code class="docutils literal"><span class="pre">test</span></code>.  The workers will
+<code class="docutils literal"><span class="pre">jvm.config</span></code> and <code class="docutils literal"><span class="pre">node.properties</span></code>.  The workers will
 receive the default <code class="docutils literal"><span class="pre">config.properties</span></code> and <code class="docutils literal"><span class="pre">jvm.config</span></code>, and the same
 <code class="docutils literal"><span class="pre">node.properties</span></code> as the coordinator.</p>
 <p>If instead you just want to update the coordinator configuration, run:</p>
@@ -346,13 +345,13 @@ top-level plugin directory. To deploy the jar to a different location, use the
 optional <code class="docutils literal"><span class="pre">plugin-dir</span></code> argument.</p>
 <div class="section" id="id12">
 <h3>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin plugin add_jar program.jar hive-cdh5
-sudo ./presto-admin plugin add_jar program.jar hive-cdh5 /my/plugin/dir
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin plugin add_jar connector.jar my_connector
+sudo ./presto-admin plugin add_jar connector.jar my_connector /my/plugin/dir
 </pre></div>
 </div>
-<p>The first example will deploy program.jar to
-<code class="docutils literal"><span class="pre">/usr/lib/presto/lib/plugin/hive-cdh5/program.jar</span></code>
-The second example will deploy it to <code class="docutils literal"><span class="pre">/my/plugin/dir/hive-cdh5/program.jar</span></code>.</p>
+<p>The first example will deploy connector.jar to
+<code class="docutils literal"><span class="pre">/usr/lib/presto/lib/plugin/my_connector/connector.jar</span></code>
+The second example will deploy it to <code class="docutils literal"><span class="pre">/my/plugin/dir/my_connector/program.jar</span></code>.</p>
 </div>
 </div>
 <div class="section" id="script-run">
@@ -638,7 +637,7 @@ files found in <code class="docutils literal"><span class="pre">/etc/opt/prestoa
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" >User Guide</a> &raquo;</li> 
       </ul>
     </div>

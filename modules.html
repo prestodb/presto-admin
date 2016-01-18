@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin &mdash; presto-admin 1.1 documentation</title>
+    <title>prestoadmin &mdash; presto-admin 1.2 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1',
+        VERSION:     '1.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.1 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.2 documentation" href="index.html" />
     <link rel="next" title="prestoadmin package" href="prestoadmin.html" />
-    <link rel="prev" title="Release History" href="release.html" /> 
+    <link rel="prev" title="Release 0.1.0" href="release/release-0.1.0.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -41,9 +41,9 @@
           <a href="prestoadmin.html" title="prestoadmin package"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="release.html" title="Release History"
+          <a href="release/release-0.1.0.html" title="Release 0.1.0"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -58,10 +58,17 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="prestoadmin.html">prestoadmin package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="prestoadmin.standalone.html">prestoadmin.standalone package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.standalone.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.standalone.html#module-prestoadmin.standalone.config">prestoadmin.standalone.config module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.standalone.html#module-prestoadmin.standalone">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="prestoadmin.util.html">prestoadmin.util package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.all_write_handler">prestoadmin.util.all_write_handler module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.application">prestoadmin.util.application module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.base_config">prestoadmin.util.base_config module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.constants">prestoadmin.util.constants module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.exception">prestoadmin.util.exception module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.fabric_application">prestoadmin.util.fabric_application module</a></li>
@@ -69,8 +76,18 @@
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.filesystem">prestoadmin.util.filesystem module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.hiddenoptgroup">prestoadmin.util.hiddenoptgroup module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.parser">prestoadmin.util.parser module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.service_util">prestoadmin.util.service_util module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.remote_config_util">prestoadmin.util.remote_config_util module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.validators">prestoadmin.util.validators module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.version_util">prestoadmin.util.version_util module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="prestoadmin.yarn_slider.html">prestoadmin.yarn_slider package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.yarn_slider.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider.config">prestoadmin.yarn_slider.config module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider.server">prestoadmin.yarn_slider.server module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider.slider">prestoadmin.yarn_slider.slider module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -84,6 +101,8 @@
 <li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.deploy">prestoadmin.deploy module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.fabric_patches">prestoadmin.fabric_patches module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.main">prestoadmin.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.mode">prestoadmin.mode module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.node">prestoadmin.node module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.package">prestoadmin.package module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.plugin">prestoadmin.plugin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prestoadmin.html#module-prestoadmin.presto_conf">prestoadmin.presto_conf module</a></li>
@@ -106,8 +125,8 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="release.html"
-                        title="previous chapter">Release History</a></p>
+  <p class="topless"><a href="release/release-0.1.0.html"
+                        title="previous chapter">Release 0.1.0</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="prestoadmin.html"
                         title="next chapter">prestoadmin package</a></p>
@@ -148,9 +167,9 @@
           <a href="prestoadmin.html" title="prestoadmin package"
              >next</a> |</li>
         <li class="right" >
-          <a href="release.html" title="Release History"
+          <a href="release/release-0.1.0.html" title="Release 0.1.0"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

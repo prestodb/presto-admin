@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.yarn_slider package &mdash; presto-admin 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 1.2 documentation" href="index.html" />
+    <link rel="up" title="prestoadmin package" href="prestoadmin.html" />
+    <link rel="prev" title="prestoadmin.util package" href="prestoadmin.util.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.util.html" title="prestoadmin.util package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="prestoadmin.html" accesskey="U">prestoadmin package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="prestoadmin-yarn-slider-package">
+<h1>prestoadmin.yarn_slider package<a class="headerlink" href="#prestoadmin-yarn-slider-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-prestoadmin.yarn_slider.config">
+<span id="prestoadmin-yarn-slider-config-module"></span><h2>prestoadmin.yarn_slider.config module<a class="headerlink" href="#module-prestoadmin.yarn_slider.config" title="Permalink to this headline">¶</a></h2>
+<p>Module for setting and validating the presto-admin Apache Slider config</p>
+<dl class="class">
+<dt id="prestoadmin.yarn_slider.config.SliderConfig">
+<em class="property">class </em><code class="descclassname">prestoadmin.yarn_slider.config.</code><code class="descname">SliderConfig</code><a class="reference internal" href="_modules/prestoadmin/yarn_slider/config.html#SliderConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.config.SliderConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig" title="prestoadmin.util.base_config.BaseConfig"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.util.base_config.BaseConfig</span></code></a></p>
+<p>presto-admin needs to update the slider config other than through the
+interactive config process because it needs to keep track of the name
+of the presto-yarn-package we install.</p>
+<p>As a result, SliderConfig acts a little funny; it acts like enough of a
+dict to allow env.conf[NAME] lookups and modifications, and it also exposes
+the ability to store the config after it&#8217;s been modified.</p>
+<dl class="method">
+<dt id="prestoadmin.yarn_slider.config.SliderConfig.is_config_loaded">
+<code class="descname">is_config_loaded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/yarn_slider/config.html#SliderConfig.is_config_loaded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.config.SliderConfig.is_config_loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.yarn_slider.config.SliderConfig.set_config_loaded">
+<code class="descname">set_config_loaded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/yarn_slider/config.html#SliderConfig.set_config_loaded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.config.SliderConfig.set_config_loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.yarn_slider.config.SliderConfig.set_env_from_conf">
+<code class="descname">set_env_from_conf</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/yarn_slider/config.html#SliderConfig.set_env_from_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.config.SliderConfig.set_env_from_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.yarn_slider.config.SliderConfig.store_conf">
+<code class="descname">store_conf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/yarn_slider/config.html#SliderConfig.store_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.config.SliderConfig.store_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.yarn_slider.server">
+<span id="prestoadmin-yarn-slider-server-module"></span><h2>prestoadmin.yarn_slider.server module<a class="headerlink" href="#module-prestoadmin.yarn_slider.server" title="Permalink to this headline">¶</a></h2>
+<p>Module for managing presto/YARN integration.</p>
+<dl class="attribute">
+<dt id="prestoadmin.yarn_slider.server.install">
+<code class="descclassname">prestoadmin.yarn_slider.server.</code><code class="descname">install</code><a class="reference internal" href="_modules/prestoadmin/yarn_slider/server.html#install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.server.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install the presto-yarn package on the cluster using Apache Slider. The
+presto-yarn package takes the form of a zip file that conforms to Slider&#8217;s
+packaging requirements. After installing the presto-yarn package the presto
+application is registered with Slider.</p>
+<p>Before Slider can install the presto-yarn package, the slider user&#8217;s hdfs
+home directory needs to be created. This needs to be done by a user that
+has write access to the hdfs /user directory, typically the user hdfs or a
+member of the superuser group.</p>
+<p>The name of the presto application is arbitrary and set in the slider
+configuration file. The default is PRESTO</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>presto_yarn_package</strong> &#8211; The zip file containing the presto-yarn
+package as structured for Slider.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.yarn_slider.server.uninstall">
+<code class="descclassname">prestoadmin.yarn_slider.server.</code><code class="descname">uninstall</code><a class="reference internal" href="_modules/prestoadmin/yarn_slider/server.html#uninstall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.server.uninstall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uninstall unregisters the presto application with slider and removes the
+installed package.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.yarn_slider.slider">
+<span id="prestoadmin-yarn-slider-slider-module"></span><h2>prestoadmin.yarn_slider.slider module<a class="headerlink" href="#module-prestoadmin.yarn_slider.slider" title="Permalink to this headline">¶</a></h2>
+<p>Module for installing and uninstalling slider.</p>
+<dl class="attribute">
+<dt id="prestoadmin.yarn_slider.slider.install">
+<code class="descclassname">prestoadmin.yarn_slider.slider.</code><code class="descname">install</code><a class="reference internal" href="_modules/prestoadmin/yarn_slider/slider.html#install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.slider.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install slider on the slider master. You must provide a tar file on the
+local machine that contains the slider distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>slider_tarball</strong> &#8211; The gzipped tar file containing the Apache Slider
+distribution</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.yarn_slider.slider.uninstall">
+<code class="descclassname">prestoadmin.yarn_slider.slider.</code><code class="descname">uninstall</code><a class="reference internal" href="_modules/prestoadmin/yarn_slider/slider.html#uninstall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.yarn_slider.slider.uninstall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uninstall slider from the slider master.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.yarn_slider">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-prestoadmin.yarn_slider" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">prestoadmin.yarn_slider package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.yarn_slider.config">prestoadmin.yarn_slider.config module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.yarn_slider.server">prestoadmin.yarn_slider.server module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.yarn_slider.slider">prestoadmin.yarn_slider.slider module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.yarn_slider">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prestoadmin.util.html"
+                        title="previous chapter">prestoadmin.util package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/prestoadmin.yarn_slider.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.util.html" title="prestoadmin.util package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="prestoadmin.html" >prestoadmin package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

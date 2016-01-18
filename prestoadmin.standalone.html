@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.standalone package &mdash; presto-admin 1.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 1.2 documentation" href="index.html" />
+    <link rel="up" title="prestoadmin package" href="prestoadmin.html" />
+    <link rel="next" title="prestoadmin.util package" href="prestoadmin.util.html" />
+    <link rel="prev" title="prestoadmin package" href="prestoadmin.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.util.html" title="prestoadmin.util package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.html" title="prestoadmin package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="prestoadmin.html" accesskey="U">prestoadmin package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="prestoadmin-standalone-package">
+<h1>prestoadmin.standalone package<a class="headerlink" href="#prestoadmin-standalone-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-prestoadmin.standalone.config">
+<span id="prestoadmin-standalone-config-module"></span><h2>prestoadmin.standalone.config module<a class="headerlink" href="#module-prestoadmin.standalone.config" title="Permalink to this headline">¶</a></h2>
+<p>Module for setting and validating the presto-admin config</p>
+<dl class="class">
+<dt id="prestoadmin.standalone.config.StandaloneConfig">
+<em class="property">class </em><code class="descclassname">prestoadmin.standalone.config.</code><code class="descname">StandaloneConfig</code><a class="reference internal" href="_modules/prestoadmin/standalone/config.html#StandaloneConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.standalone.config.StandaloneConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig" title="prestoadmin.util.base_config.BaseConfig"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.util.base_config.BaseConfig</span></code></a></p>
+<dl class="method">
+<dt id="prestoadmin.standalone.config.StandaloneConfig.is_config_loaded">
+<code class="descname">is_config_loaded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#prestoadmin.standalone.config.StandaloneConfig.is_config_loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.standalone.config.StandaloneConfig.read_conf">
+<code class="descname">read_conf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#prestoadmin.standalone.config.StandaloneConfig.read_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.standalone.config.StandaloneConfig.set_config_loaded">
+<code class="descname">set_config_loaded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#prestoadmin.standalone.config.StandaloneConfig.set_config_loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.standalone.config.StandaloneConfig.set_env_from_conf">
+<code class="descname">set_env_from_conf</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="headerlink" href="#prestoadmin.standalone.config.StandaloneConfig.set_env_from_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.standalone.config.validate">
+<code class="descclassname">prestoadmin.standalone.config.</code><code class="descname">validate</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/standalone/config.html#validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.standalone.config.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.standalone.config.validate_coordinator">
+<code class="descclassname">prestoadmin.standalone.config.</code><code class="descname">validate_coordinator</code><span class="sig-paren">(</span><em>coordinator</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/standalone/config.html#validate_coordinator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.standalone.config.validate_coordinator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.standalone.config.validate_java8_home">
+<code class="descclassname">prestoadmin.standalone.config.</code><code class="descname">validate_java8_home</code><span class="sig-paren">(</span><em>java8_home</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/standalone/config.html#validate_java8_home"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.standalone.config.validate_java8_home" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.standalone.config.validate_workers">
+<code class="descclassname">prestoadmin.standalone.config.</code><code class="descname">validate_workers</code><span class="sig-paren">(</span><em>workers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/standalone/config.html#validate_workers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.standalone.config.validate_workers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.standalone.config.validate_workers_for_prompt">
+<code class="descclassname">prestoadmin.standalone.config.</code><code class="descname">validate_workers_for_prompt</code><span class="sig-paren">(</span><em>workers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/standalone/config.html#validate_workers_for_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.standalone.config.validate_workers_for_prompt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.standalone">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-prestoadmin.standalone" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">prestoadmin.standalone package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.standalone.config">prestoadmin.standalone.config module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.standalone">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prestoadmin.html"
+                        title="previous chapter">prestoadmin package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prestoadmin.util.html"
+                        title="next chapter">prestoadmin.util package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/prestoadmin.standalone.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.util.html" title="prestoadmin.util package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.html" title="prestoadmin package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="prestoadmin.html" >prestoadmin package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>
