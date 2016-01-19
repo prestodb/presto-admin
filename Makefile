@@ -1,4 +1,6 @@
-.PHONY: clean-pyc clean-build docs clean
+.PHONY: clean-all clean clean-eggs clean-build clean-pyc clean-test-containers clean-test \
+	clean-docs lint smoke test test-all test-rpm coverage docs open-docs release release-builds \
+	dist dist-online wheel install
 
 help:
 	@echo "clean-all - clean everything; effectively resets repo as if it was just checked out"
@@ -6,14 +8,19 @@ help:
 	@echo "clean-eggs - remove *.egg and *.egg-info files and directories"
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
+	@echo "clean-test-containers - remove Docker containers used during tests"
 	@echo "clean-test - remove test and coverage artifacts"
+	@echo "clean-docs - remove doc artifacts"
 	@echo "lint - check style with flake8"
 	@echo "smoke - run tests annotated with attr smoke using nosetests"
 	@echo "test - run tests quickly with Python 2.6 and 2.7"
 	@echo "test-all - run tests on every Python version with tox. Specify TEST_SUITE env variable to run only a given suite."
+	@echo "test-rpm - run tests for the RPM package"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
+	@echo "open-docs - open the root document (index.html) using xdg-open"
 	@echo "release - package and upload a release"
+	@echo "release-builds - run all targets associated with a release (clean-build clean-pyc dist dist-online docs)"
 	@echo "dist - package and build installer that can be used offline"
 	@echo "dist-online - package and build installer that requires an Internet connection"
 	@echo "wheel - build wheel only"
@@ -22,7 +29,7 @@ help:
 clean-all: clean
 	rm -f presto*.rpm
 
-clean: clean-build clean-pyc clean-test clean-eggs
+clean: clean-build clean-pyc clean-test clean-eggs clean-docs
 
 clean-eggs:
 	rm -fr .eggs/
@@ -51,6 +58,11 @@ clean-test:
 	-for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$1}'); do docker rmi -f $$image ; done
 	@echo "\n\tYou can kill running containers that caused errors removing images by running \`make clean-test-containers'\n"
 
+clean-docs:
+	rm -rf docs/prestoadmin.*
+	rm -f docs/modules.rst
+	rm -rf docs/_build
+
 lint:
 	flake8 prestoadmin packaging tests
 
@@ -77,10 +89,7 @@ coverage:
 	coverage html
 	echo `pwd`/htmlcov/index.html
 
-docs:
-	rm -f docs/prestoadmin.rst
-	rm -f docs/prestoadmin.util.rst
-	rm -f docs/modules.rst
+docs: clean-docs
 	sphinx-apidoc -o docs/ prestoadmin
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
@@ -92,7 +101,7 @@ release: clean
 	python setup.py sdist upload -r pypi_internal
 	python setup.py bdist_wheel upload -r pypi_internal
 
-release-builds: clean-build clean-pyc dist dist-online
+release-builds: clean-build clean-pyc dist dist-online docs
 
 dist: clean-build clean-pyc
 	python setup.py bdist_prestoadmin
