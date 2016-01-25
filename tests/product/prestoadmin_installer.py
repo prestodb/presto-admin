@@ -105,9 +105,18 @@ class PrestoadminInstaller(BaseInstaller):
                     'presto-admin'),
                 ignore=shutil.ignore_patterns('tmp', '.git', 'presto*.rpm')
             )
+
+            # Pin pip to 7.1.2 because 8.0.0 removed support for distutils
+            # installed projects, of which the system setuptools is one on our
+            # Docker image. pip 8.0.1 or 8.0.2 replaced the error with a
+            # deprecation warning, and also warns that Python 2.6 is deprecated.
+            # While we still need to support Python 2.6, we'll pin pip to a 7.x
+            # version, but we should revisit this once we no longer need to
+            # support 2.6:
+            # https://github.com/pypa/pip/issues/3384
             installer_container.run_script_on_host(
                 '-e\n'
-                'pip install --upgrade pip\n'
+                'pip install --upgrade pip==7.1.2\n'
                 'pip install --upgrade wheel\n'
                 'pip install --upgrade setuptools\n'
                 'mv %s/presto-admin ~/\n'
