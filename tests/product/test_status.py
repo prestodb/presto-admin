@@ -187,6 +187,17 @@ http-server.http.port=8090"""
 
         return statuses
 
+    def status_fail_msg(self, actual_output, expected_regexp):
+        log_tail = self.cluster.exec_cmd_on_host(
+            self.cluster.get_master(),
+            'tail -100 /var/log/prestoadmin/presto-admin.log',
+            raise_error=False)
+
+        return (
+            '=== ACTUAL OUTPUT ===\n%s\n=== DID NOT MATCH REGEXP ===\n%s\n'
+            '=== LOG FOR DEBUGGING ===\n%s=== END OF LOG ===' % (
+                actual_output, expected_regexp, log_tail))
+
     def check_status(self, cmd_output, statuses, port=8080):
         expected_output = []
         for status in statuses:
@@ -205,7 +216,17 @@ http-server.http.port=8090"""
                      '\tNode status:    active',
                      '\tConnectors:     system, tpch']
 
-        self.assertRegexpMatches(cmd_output, '\n'.join(expected_output))
+        expected_regex = '\n'.join(expected_output)
+        # The status command is written such that there are a couple ways that
+        # the presto client can fail that result in partial output from the
+        # command, but errors in the logs. If we fail to match, we include the
+        # log information in the assertion message to make determining exactly
+        # what failed easier. Grab the logs lazily so that we don't incur the
+        # cost of getting them when they aren't needed. The status tests are
+        # slow enough already.
+        self.assertLazyMessage(
+            self.assertRegexpMatches, cmd_output, expected_regex,
+            lambda: self.status_fail_msg(cmd_output, expected_regex))
 
     def _server_status_with_retries(self):
         return self.retry(lambda: self._get_status_until_coordinator_updated())
