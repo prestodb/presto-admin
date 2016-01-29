@@ -236,6 +236,12 @@ query.max-memory=50GB\n"""
             cluster.master
         )
 
+    def fetch_log_tail(self, lines=50):
+        return self.cluster.exec_cmd_on_host(
+            self.cluster.get_master(),
+            'tail -%d /var/log/prestoadmin/presto-admin.log' % (lines,),
+            raise_error=False)
+
     def run_prestoadmin(self, command, raise_error=True, cluster=None,
                         **kwargs):
         if not cluster:

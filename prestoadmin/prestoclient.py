@@ -92,7 +92,8 @@ class PrestoClient:
         answer = ''
         try:
             _LOGGER.info("Connecting to server at: " + self.server +
-                         ":" + str(self.port) + " as user " + self.user)
+                         ":" + str(self.port) + " as user " + self.user +
+                         " to execute query " + sql)
             conn = HTTPConnection(self.server, self.port, False,
                                   URL_TIMEOUT_MS)
             conn.request("POST", "/v1/statement", sql, headers)
@@ -108,7 +109,7 @@ class PrestoClient:
             conn.close()
 
             self.response_from_server = json.loads(answer)
-            _LOGGER.info("Query executed successfully")
+            _LOGGER.info("Query executed successfully: %s" % (sql))
             return True
         except (HTTPException, socket.error) as e:
             _LOGGER.error("Error connecting to presto server at: " +

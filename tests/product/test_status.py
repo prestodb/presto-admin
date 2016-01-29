@@ -188,10 +188,7 @@ http-server.http.port=8090"""
         return statuses
 
     def status_fail_msg(self, actual_output, expected_regexp):
-        log_tail = self.cluster.exec_cmd_on_host(
-            self.cluster.get_master(),
-            'tail -100 /var/log/prestoadmin/presto-admin.log',
-            raise_error=False)
+        log_tail = self.fetch_log_tail(lines=1000)
 
         return (
             '=== ACTUAL OUTPUT ===\n%s\n=== DID NOT MATCH REGEXP ===\n%s\n'
