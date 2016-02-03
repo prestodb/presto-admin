@@ -1,6 +1,6 @@
 .PHONY: clean-all clean clean-eggs clean-build clean-pyc clean-test-containers clean-test \
 	clean-docs lint smoke test test-all test-rpm coverage docs open-docs release release-builds \
-	dist dist-online wheel install
+	dist dist-online dist-offline wheel install
 
 help:
 	@echo "clean-all - clean everything; effectively resets repo as if it was just checked out"
@@ -21,8 +21,9 @@ help:
 	@echo "open-docs - open the root document (index.html) using xdg-open"
 	@echo "release - package and upload a release"
 	@echo "release-builds - run all targets associated with a release (clean-build clean-pyc dist dist-online docs)"
-	@echo "dist - package and build installer that can be used offline"
+	@echo "dist - package and build installer that requires an Internet connection"
 	@echo "dist-online - package and build installer that requires an Internet connection"
+	@echo "dist-offline - package and build installer that does not require an Internet connection"
 	@echo "wheel - build wheel only"
 	@echo "install - install the package to the active Python's site-packages"
 
@@ -101,14 +102,16 @@ release: clean
 	python setup.py sdist upload -r pypi_internal
 	python setup.py bdist_wheel upload -r pypi_internal
 
-release-builds: clean-build clean-pyc dist dist-online docs
+release-builds: clean-build clean-pyc dist dist-offline docs
 
-dist: clean-build clean-pyc
-	python setup.py bdist_prestoadmin
-	ls -l dist
+dist: dist-online
 
 dist-online: clean-build clean-pyc
 	python setup.py bdist_prestoadmin --online-install
+	ls -l dist
+
+dist-offline: clean-build clean-pyc
+	python setup.py bdist_prestoadmin
 	ls -l dist
 
 wheel: clean
