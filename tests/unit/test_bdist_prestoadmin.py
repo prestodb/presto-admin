@@ -162,19 +162,14 @@ class TestBDistPrestoAdmin(BaseTestCase):
     @patch('packaging.bdist_prestoadmin.sys')
     @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
     @patch('packaging.bdist_prestoadmin.pip.main')
-    def test_offline_installer_succeeds_when_not_on_td_network(
+    def test_offline_installer_fails_when_not_on_td_network(
             self, pip_mock, urllib_mock, sys_mock):
         build_path = os.path.join('build', 'prestoadmin')
         exception = IOError()
         exception.errno = 'socket error'
         urllib_mock.side_effect = exception
 
-        self.bdist.package_dependencies(build_path)
-        self.assertRaises(IOError, urllib_mock)
-
-        # Test that we raise if some other error is thrown
-        urllib_mock.side_effect = LookupError()
-        self.assertRaises(LookupError, self.bdist.package_dependencies,
+        self.assertRaises(IOError, self.bdist.package_dependencies,
                           build_path)
 
     def test_generate_online_install_script(self):
