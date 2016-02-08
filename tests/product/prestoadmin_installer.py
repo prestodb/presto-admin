@@ -118,7 +118,7 @@ class PrestoadminInstaller(BaseInstaller):
                 '-e\n'
                 'pip install --upgrade pip==7.1.2\n'
                 'pip install --upgrade wheel\n'
-                'pip install --upgrade setuptools\n'
+                'pip install --upgrade setuptools==19.7\n'
                 'mv %s/presto-admin ~/\n'
                 'cd ~/presto-admin\n'
                 'make %s\n'
