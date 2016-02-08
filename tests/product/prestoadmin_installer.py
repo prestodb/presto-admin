@@ -124,7 +124,7 @@ class PrestoadminInstaller(BaseInstaller):
                 'make %s\n'
                 'cp dist/prestoadmin-*.tar.bz2 %s'
                 % (installer_container.mount_dir,
-                   'dist' if online_installer else 'dist-offline',
+                   'dist' if not online_installer else 'dist-online',
                    installer_container.mount_dir),
                 container_name)
 
