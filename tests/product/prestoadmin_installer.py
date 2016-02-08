@@ -117,7 +117,7 @@ class PrestoadminInstaller(BaseInstaller):
             installer_container.run_script_on_host(
                 '-e\n'
                 'pip install --upgrade pip==7.1.2\n'
-                'pip install --upgrade wheel\n'
+                'pip install --upgrade wheel==0.23.0\n'
                 'pip install --upgrade setuptools\n'
                 'mv %s/presto-admin ~/\n'
                 'cd ~/presto-admin\n'
