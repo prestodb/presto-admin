@@ -62,15 +62,21 @@ class DockerCluster(BaseCluster):
         # container mount point call get_local_mount_dir()
         self.local_mount_dir = local_mount_dir
         self.mount_dir = docker_mount_dir
+        self._client = None
 
+        self._DOCKER_START_TIMEOUT = 30
+        DockerCluster.__check_if_docker_exists()
+
+    @property
+    def client(self):
+        if self._client:
+            self._client.close()
         kwargs = kwargs_from_env()
         if 'tls' in kwargs:
             kwargs['tls'].assert_hostname = False
         kwargs['timeout'] = 240
-        self.client = Client(**kwargs)
-
-        self._DOCKER_START_TIMEOUT = 30
-        DockerCluster.__check_if_docker_exists()
+        self._client = Client(**kwargs)
+        return self._client
 
     def all_hosts(self):
         return self.slaves + [self.master]
