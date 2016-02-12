@@ -357,10 +357,14 @@ query.max-memory=50GB\n"""
 
     def assert_stopped(self, process_per_host):
         for host, pid in process_per_host:
-            self.assertRaisesRegexp(OSError,
-                                    'No such process',
-                                    self.cluster.exec_cmd_on_host,
-                                    host, 'kill -0 %s' % pid)
+            self.retry(lambda:
+                       self.assertRaisesRegexp(OSError,
+                                               'No such process',
+                                               self.cluster.exec_cmd_on_host,
+                                               host,
+                                               'kill -0 %s' % pid),
+                       retry_timeout=10,
+                       retry_interval=2)
 
     def get_process_per_host(self, output_lines):
         process_per_host = []
@@ -409,17 +413,18 @@ query.max-memory=50GB\n"""
         expected = expected.replace('+', '\+')
         return expected
 
-    def retry(self, method_to_check):
+    def retry(self, method_to_check, retry_timeout=RETRY_TIMEOUT,
+              retry_interval=RETRY_INTERVAL):
         time_spent_waiting = 0
-        while time_spent_waiting <= RETRY_TIMEOUT:
+        while time_spent_waiting <= retry_timeout:
             try:
                 result = method_to_check()
                 # No exception thrown, success
                 return result
             except (AssertionError, PrestoError, OSError):
                 pass
-            sleep(RETRY_INTERVAL)
-            time_spent_waiting += RETRY_INTERVAL
+            sleep(retry_interval)
+            time_spent_waiting += retry_interval
         return method_to_check()
 
     def down_node_connection_error(self, host):
