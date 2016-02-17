@@ -30,12 +30,12 @@ Presto-admin makes use of `make` as its build tool. `make` in turn calls out to 
 
 ### Building the installer
 
-The two tasks used to build the presto-admin installer are `dist` and `dist-online`. The `dist` task
-builds an installer which can be used offline (i.e. installed on a target machine that has no
-internet connectivity). The offline installer downloads all dependencies at build time and points
-`pip` to those dependencies during installation. In contract, the `dist-online` task builds an online
-installer (i.e. one that requires internet connectivity during installation). The online installer
-does not download any dependencies during build time.
+The two tasks used to build the presto-admin installer are `dist` and 
+`dist-offline`. The `dist` task builds an installer that requires internet 
+connectivity during installation. The `dist-offline` task builds an installer
+that does not require internet connectivity during installation. Instead the
+offline installer downloads all dependencies at build time and points `pip` to 
+those dependencies during installation. 
 
 ## License
 
