@@ -290,8 +290,37 @@ query.max-memory=50GB\n"""
         return self.cluster.exec_cmd_on_host(host, 'cat %s' % (filepath))
 
     def assert_file_content(self, host, filepath, expected):
-        config = self.get_file_content(host, filepath)
-        self.assertEqual(config, expected)
+        content = self.get_file_content(host, filepath)
+
+        split_path = os.path.split(filepath)
+        pa_file = None
+        if (split_path[0] == '/etc/presto' and
+            split_path[1] in ['config.properties',
+                              'log.properties',
+                              'jvm.config']):
+            if host in self.cluster.slaves:
+                config_dir = constants.WORKERS_DIR
+            else:
+                config_dir = constants.COORDINATOR_DIR
+
+            pa_file = os.path.join(config_dir, split_path[1])
+
+        self.assertLazyMessage(
+            lambda: self.file_content_message(content, expected, pa_file),
+            self.assertEqual,
+            content,
+            expected)
+
+    def file_content_message(self, actual, expected, pa_file):
+        msg = '%s != %s' % actual, expected
+        if pa_file:
+            try:
+                msg += '\n Content for presto-admin file %s \n' % pa_file
+                msg += self.get_file_content(self.cluster.get_master(),
+                                             pa_file)
+            except OSError as e:
+                msg += e.message
+        return msg
 
     def assert_file_content_regex(self, host, filepath, expected):
         config = self.get_file_content(host, filepath)
@@ -311,29 +340,40 @@ query.max-memory=50GB\n"""
         self.cluster.exec_cmd_on_host(
             container, ' [ ! -e %s ]' % directory)
 
-    def assert_has_default_config(self, container):
-        self.assert_file_content(container,
+    def assert_has_default_config(self, host):
+        self.assert_file_content(host,
                                  '/etc/presto/jvm.config',
                                  self.default_jvm_config_)
 
-        self.assert_node_config(container, self.default_node_properties_)
+        self.assert_node_config(host, self.default_node_properties_)
 
-        if container in self.cluster.slaves:
-            self.assert_file_content(container,
+        if host in self.cluster.slaves:
+            self.assert_file_content(host,
                                      '/etc/presto/config.properties',
                                      self.default_workers_test_config_)
 
         else:
-            self.assert_file_content(container,
+            self.assert_file_content(host,
                                      '/etc/presto/config.properties',
                                      self.default_coordinator_test_config_)
 
-    def assert_node_config(self, container, expected):
+    def assert_node_config(self, host, expected):
         node_properties = self.cluster.exec_cmd_on_host(
-            container, 'cat /etc/presto/node.properties')
+            host, 'cat /etc/presto/node.properties')
         split_properties = node_properties.split('\n', 1)
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
-        self.assertEqual(expected, split_properties[1])
+        actual = split_properties[1]
+        if host in self.cluster.slaves:
+            conf_dir = constants.COORDINATOR_DIR
+        else:
+            conf_dir = constants.WORKERS_DIR
+        self.assertLazyMessage(
+            lambda: self.file_content_message(actual, expected,
+                                              os.path.join(conf_dir,
+                                                           'node.properties')),
+            self.assertEqual,
+            actual,
+            expected)
 
     def expected_stop(self, running=None, not_running=None):
         if running is None:
