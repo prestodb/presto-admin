@@ -22,7 +22,7 @@ from base_unit_case import BaseUnitCase
 class TestBaseTestCase(BaseUnitCase):
     def testLazyPass(self):
         self.assertLazyMessage(
-            self.assertEqual, 1, 1, lambda: self.fail("shouldn't be called"))
+            lambda: self.fail("shouldn't be called"), self.assertEqual, 1, 1)
 
     def testLazyFail(self):
         a = 2
@@ -30,4 +30,4 @@ class TestBaseTestCase(BaseUnitCase):
 
         self.assertRaisesRegexp(
             AssertionError, 'asdfasdfasdf 2 1', self.assertLazyMessage,
-            self.assertEqual, a, e, lambda: 'asdfasdfasdf %d %d' % (a, e))
+            lambda: 'asdfasdfasdf %d %d' % (a, e), self.assertEqual, a, e)

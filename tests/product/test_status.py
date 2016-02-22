@@ -222,8 +222,8 @@ http-server.http.port=8090"""
         # cost of getting them when they aren't needed. The status tests are
         # slow enough already.
         self.assertLazyMessage(
-            self.assertRegexpMatches, cmd_output, expected_regex,
-            lambda: self.status_fail_msg(cmd_output, expected_regex))
+            lambda: self.status_fail_msg(cmd_output, expected_regex),
+            self.assertRegexpMatches, cmd_output, expected_regex)
 
     def _server_status_with_retries(self, check_connectors=False):
         return self.retry(lambda: self._get_status_until_coordinator_updated(
