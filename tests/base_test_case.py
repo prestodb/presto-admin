@@ -115,9 +115,9 @@ class BaseTestCase(unittest.TestCase):
             self.fail("Expected exception " + str(expected_exception) +
                       " not raised" + msg)
 
-    def assertLazyMessage(self, assert_function, actual, expected, msg_func):
+    def assertLazyMessage(self, msg_func, assert_function, *args, **kwargs):
         try:
-            assert_function(actual, expected)
+            assert_function(*args, **kwargs)
         except AssertionError:
             self.fail(msg=msg_func())
 
