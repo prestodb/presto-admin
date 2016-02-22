@@ -60,7 +60,6 @@ class Worker(Node):
         return constants.WORKERS_DIR
 
     def default_config(self, filename):
-        conf = copy.deepcopy(self.DEFAULT_PROPERTIES[filename])
         try:
             conf = copy.deepcopy(self.DEFAULT_PROPERTIES[filename])
         except KeyError:
