@@ -67,24 +67,22 @@ class TestCollect(BaseProductTestCase):
     def log_msg(self, actual, expected):
         msg = '%s != %s' % actual, expected
 
-        # Print log.properties files for coordinator and workers in
+        # Print node.properties files for coordinator and workers in
         # presto-admin and presto.
-        msg += '\n\nCoordinator log.properties file in presto-admin:\n'
-        coord_properties = os.path.join(constants.COORDINATOR_DIR,
-                                        'log.properties')
+        filename = 'node.properties'
+        msg += '\n\nCoordinator %s file in presto-admin:\n' % filename
+        coord_properties = os.path.join(constants.COORDINATOR_DIR, filename)
         msg = self.cluster.exec_cmd_on_host(self.cluster.master,
                                             'cat %s' % coord_properties)
-        msg += '\n\nWorker log.properties file in presto-admin:\n'
-        worker_properties = os.path.join(constants.WORKERS_DIR,
-                                         'log.properties')
+        msg += '\n\nWorker %s file in presto-admin:\n' % filename
+        worker_properties = os.path.join(constants.WORKERS_DIR, filename)
         msg += self.cluster.exec_cmd_on_host(self.cluster.master,
                                              'cat %s' % worker_properties)
-        msg += '\n\nlog.properties file on presto coordinator:\n'
-        presto_properties = os.path.join(constants.REMOTE_CONF_DIR,
-                                         'log.properties')
+        msg += '\n\n%s file on presto coordinator:\n' % filename
+        presto_properties = os.path.join(constants.REMOTE_CONF_DIR, filename)
         msg += self.cluster.exec_cmd_on_host(self.cluster.master,
                                              'cat %s' % presto_properties)
-        msg += '\n\nlog.properties file on presto slave1:\n'
+        msg += '\n\n%s file on presto slave1:\n'% filename
         msg += self.cluster.exec_cmd_on_host(self.cluster.slaves[0],
                                              'cat %s' % presto_properties)
         return msg
