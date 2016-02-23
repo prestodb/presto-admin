@@ -35,13 +35,11 @@ RUN curl -LsSO https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/v
 
 # Modify the ssh-bootstrap script to copy id_rsa to ~/.ssh (the script already makes ~/.ssh
 # and copies authorized_keys)
-RUN printf " if [[ -e /etc/services-config/ssh/id_rsa ]]; then \n \ 
-            cp -f /etc/services-config/ssh/id_rsa \${OPTS_SSH_USER_HOME_DIR}/.ssh/id_rsa\n \
+RUN printf "cp -f /etc/services-config/ssh/id_rsa \${OPTS_SSH_USER_HOME_DIR}/.ssh/id_rsa\n \
 	    chown -R \${OPTS_SSH_USER}:${OPTS_SSH_USER} \${OPTS_SSH_USER_HOME_DIR}/.ssh/id_rsa\n \
 	    chmod 600 \${OPTS_SSH_USER_HOME_DIR}/.ssh/id_rsa\n \
-	    cp -r \${OPTS_SSH_USER_HOME_DIR}/.ssh /root/.ssh\n \
-	  fi\n\
-	  " > /etc/bootstrap-extra
+	    cp -r \${OPTS_SSH_USER_HOME_DIR}/.ssh /root/.ssh\n" > /etc/bootstrap-extra
+
 RUN printf "\nuseradd -ms /bin/bash testuser\necho "testuser:testpass" | chpasswd" >> /etc/bootstrap-extra
 
 RUN awk -v file="/etc/bootstrap-extra" -v lineno=$(($(wc -l < /etc/ssh-bootstrap) - 3)) ' \
