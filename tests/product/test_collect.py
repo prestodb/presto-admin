@@ -15,7 +15,7 @@
 """
 Product tests for presto-admin collect
 """
-
+import os
 from os import path
 
 from nose.plugins.attrib import attr
@@ -25,6 +25,7 @@ from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import run_sql
+from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, PrestoError
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
@@ -40,9 +41,11 @@ class TestCollect(BaseProductTestCase):
                            self.STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         actual = self.run_prestoadmin('collect logs')
+
         expected = 'Downloading logs from all the nodes...\n' + \
                    'logs archive created: ' + OUTPUT_FILENAME_FOR_LOGS + '\n'
-        self.assertEqual(expected, actual)
+        self.assertLazyMessage(lambda: self.log_msg(actual, expected),
+                               self.assertEqual, actual, expected)
         self.assert_path_exists(self.cluster.master,
                                 OUTPUT_FILENAME_FOR_LOGS)
         self.assert_path_exists(self.cluster.master,
@@ -60,6 +63,31 @@ class TestCollect(BaseProductTestCase):
 
         admin_log = path.join(downloaded_logs_location, PRESTOADMIN_LOG_NAME)
         self.assert_path_exists(self.cluster.master, admin_log)
+
+    def log_msg(self, actual, expected):
+        msg = '%s != %s' % actual, expected
+
+        # Print log.properties files for coordinator and workers in
+        # presto-admin and presto.
+        msg += '\n\nCoordinator log.properties file in presto-admin:\n'
+        coord_properties = os.path.join(constants.COORDINATOR_DIR,
+                                        'log.properties')
+        msg = self.cluster.exec_cmd_on_host(self.cluster.master,
+                                            'cat %s' % coord_properties)
+        msg += '\n\nWorker log.properties file in presto-admin:\n'
+        worker_properties = os.path.join(constants.WORKERS_DIR,
+                                         'log.properties')
+        msg += self.cluster.exec_cmd_on_host(self.cluster.master,
+                                             'cat %s' % worker_properties)
+        msg += '\n\nlog.properties file on presto coordinator:\n'
+        presto_properties = os.path.join(constants.REMOTE_CONF_DIR,
+                                         'log.properties')
+        msg += self.cluster.exec_cmd_on_host(self.cluster.master,
+                                             'cat %s' % presto_properties)
+        msg += '\n\nlog.properties file on presto slave1:\n'
+        msg += self.cluster.exec_cmd_on_host(self.cluster.slaves[0],
+                                             'cat %s' % presto_properties)
+        return msg
 
     @attr('smoketest')
     def test_collect_system_info_basic(self):
