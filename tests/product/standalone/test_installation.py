@@ -28,6 +28,7 @@ from tests.product.constants import DEFAULT_DOCKER_MOUNT_POINT, \
     DEFAULT_LOCAL_MOUNT_POINT
 
 install_py26_script = """\
+set -e
 echo "deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main" \
     > /etc/apt/sources.list.d/fkrull-deadsnakes-trusty.list
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
@@ -102,8 +103,9 @@ class TestInstallation(BaseProductTestCase):
             ubuntu_container.start_containers(
                 image + ':' + tag, cmd='tail -f /var/log/bootstrap.log')
 
-            ubuntu_container.run_script_on_host(install_py26_script,
-                                                ubuntu_container.master)
+            self.retry(lambda: ubuntu_container.run_script_on_host(
+                install_py26_script, ubuntu_container.master))
+
             ubuntu_container.exec_cmd_on_host(
                 ubuntu_container.master, 'sudo apt-get -y install wget')
 
