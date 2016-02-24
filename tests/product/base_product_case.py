@@ -68,7 +68,7 @@ class BaseProductTestCase(BaseTestCase):
     default_workers_config_ = """coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
-query.max-memory-per-node=1GB
+query.max-memory-per-node=8GB
 query.max-memory=50GB\n"""
 
     default_workers_test_config_ = """coordinator=false
@@ -97,7 +97,7 @@ discovery-server.enabled=true
 discovery.uri=http://master:8080
 http-server.http.port=8080
 node-scheduler.include-coordinator=false
-query.max-memory-per-node=1GB
+query.max-memory-per-node=8GB
 query.max-memory=50GB\n"""
 
     default_coordinator_test_config_ = """coordinator=true

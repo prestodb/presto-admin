@@ -47,7 +47,7 @@ class TestWorkers(BaseTestCase):
                                           'discovery.uri': 'http://a:8080',
                                           'http-server.http.port': '8080',
                                           'query.max-memory': '50GB',
-                                          'query.max-memory-per-node': '1GB'}
+                                          'query.max-memory-per-node': '8GB'}
                     }
 
         self.assertEqual(actual_default, expected)
@@ -125,7 +125,7 @@ class TestWorkers(BaseTestCase):
                                           'discovery.uri': 'http://j:8080',
                                           'http-server.http.port': '8080',
                                           'query.max-memory': '50GB',
-                                          'query.max-memory-per-node': '1GB'}
+                                          'query.max-memory-per-node': '8GB'}
                     }
         self.assertEqual(workers.Worker().get_conf(), expected)
 
