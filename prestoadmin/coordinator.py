@@ -51,7 +51,7 @@ class Coordinator(Node):
                               'http-server.http.port': '8080',
                               'node-scheduler.include-coordinator': 'false',
                               'query.max-memory': '50GB',
-                              'query.max-memory-per-node': '1GB'}
+                              'query.max-memory-per-node': '8GB'}
                           }
 
     def _get_conf_dir(self):

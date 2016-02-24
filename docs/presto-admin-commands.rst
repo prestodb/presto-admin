@@ -129,7 +129,7 @@ For workers: ::
     coordinator=false
     discovery.uri=http://<coordinator>:8080
     http-server.http.port=8080
-    query.max-memory-per-node=1GB
+    query.max-memory-per-node=8GB
     query.max-memory=50GB
 
 For coordinator: ::
@@ -139,7 +139,7 @@ For coordinator: ::
     discovery.uri=http://<coordinator>:8080
     http-server.http.port=8080
     node-scheduler.include-coordinator=false
-    query.max-memory-per-node=1GB
+    query.max-memory-per-node=8GB
     query.max-memory=50GB
 
     # if the coordinator is also a worker, it will have the following property instead

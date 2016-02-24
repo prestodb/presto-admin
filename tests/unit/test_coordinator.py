@@ -50,7 +50,7 @@ class TestCoordinator(BaseTestCase):
                         'http-server.http.port': '8080',
                         'node-scheduler.include-coordinator': 'false',
                         'query.max-memory': '50GB',
-                        'query.max-memory-per-node': '1GB'}
+                        'query.max-memory-per-node': '8GB'}
                     }
 
         self.assertEqual(actual_default, expected)
@@ -80,7 +80,7 @@ class TestCoordinator(BaseTestCase):
                         'http-server.http.port': '8080',
                         'node-scheduler.include-coordinator': 'true',
                         'query.max-memory': '50GB',
-                        'query.max-memory-per-node': '1GB'}
+                        'query.max-memory-per-node': '8GB'}
                     }
 
         self.assertEqual(actual_default, expected)
@@ -164,7 +164,7 @@ class TestCoordinator(BaseTestCase):
                         'http-server.http.port': '8080',
                         'node-scheduler.include-coordinator': 'false',
                         'query.max-memory': '50GB',
-                        'query.max-memory-per-node': '1GB'}
+                        'query.max-memory-per-node': '8GB'}
                     }
 
         self.assertEqual(coordinator.Coordinator().get_conf(), expected)
