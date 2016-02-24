@@ -1,7 +1,7 @@
 
 master: Configuration file at /etc/presto/jvm.config:
 -server
--Xmx2G
+-Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent
@@ -13,7 +13,7 @@ master: Configuration file at /etc/presto/jvm.config:
 
 slave1: Configuration file at /etc/presto/jvm.config:
 -server
--Xmx2G
+-Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent
@@ -25,7 +25,7 @@ slave1: Configuration file at /etc/presto/jvm.config:
 
 slave2: Configuration file at /etc/presto/jvm.config:
 -server
--Xmx2G
+-Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent
@@ -37,7 +37,7 @@ slave2: Configuration file at /etc/presto/jvm.config:
 
 slave3: Configuration file at /etc/presto/jvm.config:
 -server
--Xmx2G
+-Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent

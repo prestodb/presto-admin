@@ -113,7 +113,7 @@ configurations:
 *jvm.config* ::
 
     -server
-    -Xmx2G
+    -Xmx16G
     -XX:-UseBiasedLocking
     -XX:+UseG1GC
     -XX:+ExplicitGCInvokesConcurrent
@@ -156,7 +156,7 @@ following ``jvm.config`` to ``/etc/opt/prestoadmin/coordinator``
 .. code-block:: none
 
     -server
-    -Xmx2G
+    -Xmx16G
     -XX:-UseBiasedLocking
     -XX:+UseG1GC
     -XX:+ExplicitGCInvokesConcurrent
