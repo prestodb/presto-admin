@@ -390,7 +390,8 @@ query.max-memory=50GB\n"""
         if not_running:
             for host in not_running:
                 expected_output += [r'\[%s\] out: ' % host,
-                                    r'\[%s\] out: Not running' % host,
+                                    r'\[%s\] out: Not '
+                                    r'(running|runnning)' % host,
                                     r'\[%s\] out: Stopping presto' % host]
 
         return expected_output
