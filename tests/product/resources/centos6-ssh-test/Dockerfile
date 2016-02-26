@@ -21,9 +21,8 @@ RUN yum upgrade ca-certificates --disablerepo=epel -y && \
 RUN rpm -ivh jdk-8u40-linux-x64.rpm && rm jdk-8u40-linux-x64.rpm
 
 # Copy Vagrant insecure SSH keys for passwordless SSH between
-# containers and to localhost
-RUN curl -LsSO https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant && \
-  mv vagrant /etc/services-config/ssh/id_rsa
+# containers and to localhost.
+COPY vagrant_insecure_rsa /etc/services-config/ssh/id_rsa
 
 # Modify the ssh-bootstrap script to copy id_rsa to ~/.ssh (the script already makes ~/.ssh
 # and copies authorized_keys)
