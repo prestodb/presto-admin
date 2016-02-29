@@ -115,10 +115,10 @@ class PrestoadminInstaller(BaseInstaller):
             # longer need to support 2.6:
             # https://github.com/pypa/pip/issues/3384
             installer_container.run_script_on_host(
-                '-e\n'
+                'set -e\n'
                 'pip install --upgrade pip==7.1.2\n'
                 'pip install --upgrade wheel==0.23.0\n'
-                'pip install --upgrade setuptools\n'
+                'pip install --upgrade setuptools==20.1.1\n'
                 'mv %s/presto-admin ~/\n'
                 'cd ~/presto-admin\n'
                 'make %s\n'
