@@ -26,6 +26,7 @@ from fabric.decorators import runs_once, with_settings, parallel
 from fabric.operations import run, os
 from fabric.tasks import execute
 from fabric.utils import warn, error
+from retrying import retry
 
 from prestoadmin import configure_cmds
 from prestoadmin import connector
@@ -115,6 +116,7 @@ def install(local_path):
 def deploy_install_configure(local_path):
     package.deploy_install(local_path)
     update_configs()
+    wait_for_presto_user()
 
 
 def add_tpch_connector():
@@ -132,6 +134,14 @@ def update_configs():
         connector.add()
     except ConfigFileNotFoundError:
         _LOGGER.info('No connector directory found, not adding connectors.')
+
+
+@retry(stop_max_delay=30000, wait_fixed=2000)
+def wait_for_presto_user():
+    ret = sudo('getent passwd presto')
+    if not ret.succeeded:
+        raise Exception('Presto package was not installed successufully. '
+                        'Presto user was not created.')
 
 
 @task

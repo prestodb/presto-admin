@@ -43,7 +43,8 @@ requirements = [
     'setuptools==20.1.1',
     'wheel==0.23.0',
     'flake8==2.5.4',
-    'tox==1.9.2'
+    'tox==1.9.2',
+    'retrying==1.3.3'
 ]
 
 test_requirements = [
