@@ -242,23 +242,23 @@ Aborting.
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
 
-        missing_connector_message = """
-Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
+        missing_connector_message = """[Errno 1] 
+Fatal error: [master] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
 
-Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
+Fatal error: [slave1] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
 
-Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
+Fatal error: [slave2] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
 
-Fatal error: \\[.*\\] Could not remove connector '%(name)s'. No such file \
+Fatal error: [slave3] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
@@ -273,10 +273,11 @@ for the change to take effect
         # test remove connector does not exist
         # expect error
 
-        self.assertRaisesRegexp(OSError,
-                                missing_connector_message % {'name': 'jmx'},
-                                self.run_prestoadmin,
-                                'connector remove jmx')
+        self.assertRaisesMessageIgnoringOrder(
+            OSError,
+            missing_connector_message % {'name': 'jmx'},
+            self.run_prestoadmin,
+            'connector remove jmx')
 
         # test remove connector not in directory, but in presto
         self.cluster.exec_cmd_on_host(
@@ -294,10 +295,11 @@ for the change to take effect
             self.cluster.master
         )
 
-        self.assertRaisesRegexp(OSError,
-                                missing_connector_message % {'name': 'tpch'},
-                                self.run_prestoadmin,
-                                'connector remove tpch')
+        self.assertRaisesMessageIgnoringOrder(
+            OSError,
+            missing_connector_message % {'name': 'tpch'},
+            self.run_prestoadmin,
+            'connector remove tpch')
 
     def test_connector_name_not_found(self):
         self.setup_cluster(NoHadoopBareImageProvider(),

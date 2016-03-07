@@ -115,6 +115,17 @@ class BaseTestCase(unittest.TestCase):
             self.fail("Expected exception " + str(expected_exception) +
                       " not raised" + msg)
 
+    def assertRaisesMessageIgnoringOrder(self, expected_exception,
+                                         expected_msg, callable_object,
+                                         *args, **kwargs):
+        try:
+            callable_object(*args, **kwargs)
+        except expected_exception as e:
+            self.assertEqualIgnoringOrder(expected_msg, str(e))
+        else:
+            self.fail("Expected exception " + str(expected_exception) +
+                      " not raised")
+
     def assertLazyMessage(self, msg_func, assert_function, *args, **kwargs):
         try:
             assert_function(*args, **kwargs)
