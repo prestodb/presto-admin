@@ -242,7 +242,7 @@ Aborting.
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
 
-        missing_connector_message = "[Errno 1] " + """
+        missing_connector_message = """[Errno 1] 
 Fatal error: [master] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
@@ -262,7 +262,7 @@ Fatal error: [slave3] Could not remove connector '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
-"""
+"""  # noqa
 
         success_message = """[master] Connector removed. Restart the server \
 for the change to take effect
