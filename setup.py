@@ -16,7 +16,7 @@
 import os
 
 # This is necessary for nose to handle multiprocessing correctly
-from multiprocessing import util
+from multiprocessing import util  # noqa
 
 try:
     from setuptools import setup, find_packages
@@ -38,7 +38,10 @@ requirements = [
     'paramiko==1.15.3',
     'fabric==1.10.1',
     'requests==2.7.0',
-    'overrides==0.5'
+    'overrides==0.5',
+    'pip==7.1.2',
+    'setuptools==20.1.1',
+    'wheel==0.23.0'
 ]
 
 test_requirements = [
@@ -58,7 +61,7 @@ test_requirements = [
 # that is located in the current directory. This enables
 # us to check it in with the code and not require
 # developers to create files in their home directory.
-from distutils.config import PyPIRCCommand
+from distutils.config import PyPIRCCommand  # noqa
 
 
 def get_custom_rc_file(self):
@@ -76,8 +79,10 @@ PyPIRCCommand._get_rc_file = get_custom_rc_file
 
 setup(
     name='prestoadmin',
-    version='1.2',  # Make sure to update version in prestoadmin/__init__.py
-    description="Presto-admin installs, configures, and manages Presto installations.",
+    # Make sure to update version in prestoadmin/__init__.py
+    version='1.2',
+    description="Presto-admin installs, configures, and manages Presto " + \
+                "installations.",
     long_description=readme + '\n\n' + history,
     author="Teradata Coporation",
     author_email='christina.wallin@teradata.com',
