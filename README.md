@@ -28,6 +28,34 @@ Comprehensive documentation can be found [here](http://prestodb.github.io/presto
 Presto-admin makes use of `make` as its build tool. `make` in turn calls out to various utilities (e.g.
 `tox`, `flake8`, `sphinx-apidoc`, `python`) in order to perform the requested actions.
 
+In order to get started with `presto-admin`,
+1. Fork the `presto-admin` repo on GitHub, https://github.com/prestodb/presto-admin.
+2. Clone your fork locally::
+
+    $ git clone git@github.com:your_name_here/presto-admin.git
+
+3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+
+    $ mkvirtualenv prestoadmin
+    $ cd prestoadmin/
+    $ python setup.py develop
+
+4. Create a branch for local development::
+
+    $ git checkout -b name-of-your-bugfix-or-feature
+
+   Now you can make your changes locally.
+
+5. When you're done making changes, check that your changes pass `make clean lint test`, which runs flake8 and the unit tests (which test both Python 2.6 and 2.7).
+To run the product tests tests (`make test-all`), you need docker installed. You may also need to run `pip install wheel` in your virtualenv. To install and start docker use::
+
+    $ wget -qO- https://get.docker.com/ | sh
+
+    # Add current user to Docker group to run without sudo
+    $ sudo gpasswd -a ${USER} docker
+    $ sudo service docker restart
+
+
 ### Building the installer
 
 The two tasks used to build the presto-admin installer are `dist` and 
