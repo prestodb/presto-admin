@@ -232,12 +232,12 @@ class TestCollect(BaseUnitCase):
                                     java_version + '\n')
 
         append_mock.assert_any_call(version_info_file_name,
-                                    'Presto-admin version: '
-                                    + prestoadmin.__version__ + '\n')
+                                    'Presto-admin version: ' +
+                                    prestoadmin.__version__ + '\n')
 
         append_mock.assert_any_call(version_info_file_name,
-                                    'Presto server version: '
-                                    + server_version + '\n')
+                                    'Presto server version: ' +
+                                    server_version + '\n')
 
         file_get_mock.assert_called_with(version_info_file_name,
                                          downloaded_sys_info_loc)

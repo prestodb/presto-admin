@@ -15,23 +15,22 @@
 
 """Presto-Admin tool for deploying and managing Presto clusters"""
 
-__version__ = '1.2'  # Make sure to update setup.py too
-
-
 import os
 import sys
 
-main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-
 from fabric.api import env
 
-import fabric_patches
-import mode
+__version__ = '1.2'  # Make sure to update setup.py too
 
-from prestoadmin.mode import get_mode, for_mode, MODE_STANDALONE, MODE_SLIDER
+main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+
+import fabric_patches  # noqa
+import mode  # noqa
+
+from prestoadmin.mode import get_mode, for_mode, MODE_STANDALONE, \
+        MODE_SLIDER  # noqa
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
-    ConfigurationError
-
+    ConfigurationError  # noqa
 
 #
 # Subcommands common to all modes. If anybody knows why fabric_patches is in

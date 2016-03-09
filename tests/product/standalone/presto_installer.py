@@ -158,8 +158,8 @@ class StandalonePrestoInstaller(BaseInstaller):
     @staticmethod
     def _check_if_corrupted_rpm(rpm_name, cluster):
         cluster.exec_cmd_on_host(
-            cluster.master, 'rpm -K --nosignature '
-                            + os.path.join(cluster.mount_dir, rpm_name)
+            cluster.master, 'rpm -K --nosignature ' +
+                            os.path.join(cluster.mount_dir, rpm_name)
         )
 
     def assert_uninstalled(self, container, dummy=False, msg=None):

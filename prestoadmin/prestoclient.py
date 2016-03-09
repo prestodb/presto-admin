@@ -101,8 +101,8 @@ class PrestoClient:
 
             if response.status != 200:
                 conn.close()
-                _LOGGER.error("Connection error: "
-                              + str(response.status) + " " + response.reason)
+                _LOGGER.error("Connection error: " +
+                              str(response.status) + " " + response.reason)
                 return False
 
             answer = response.read()

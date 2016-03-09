@@ -77,8 +77,8 @@ NODE_INFO_PER_URI_SQL = VersionRangeList(
 
 )
 
-EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from system.runtime.nodes' \
-                  ' WHERE node_id = \'%s\''
+EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from ' \
+                  'system.runtime.nodes WHERE node_id = \'%s\''
 CONNECTOR_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
 PRESTO_RPM_MIN_REQUIRED_VERSION = 103
 PRESTO_TD_RPM = ['101t']
@@ -468,8 +468,8 @@ def get_ext_ip_of_node(client):
     external_ip = ''
     if len(external_ip_row) > 1:
         warn_more_than_one_ip = 'More than one external ip found for ' \
-                                + env.host + '. There could be multiple nodes ' \
-                                             'associated with the same node.id'
+                                + env.host + '. There could be multiple ' \
+                                'nodes associated with the same node.id'
         _LOGGER.debug(warn_more_than_one_ip)
         warn(warn_more_than_one_ip)
         return external_ip

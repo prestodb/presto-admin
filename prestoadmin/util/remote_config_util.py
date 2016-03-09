@@ -45,14 +45,14 @@ def lookup_port(host):
     try:
         port = port.split('=', 1)[1]
         port = prestoadmin.util.validators.validate_port(port)
-        _LOGGER.info('Looked up port ' + str(port) + ' on host '
-                     + host)
+        _LOGGER.info('Looked up port ' + str(port) + ' on host ' +
+                     host)
         return port
     except ConfigurationError as e:
         raise ConfigurationError(e.message +
                                  ' for property '
-                                 'http-server.http.port on host '
-                                 + host + '.')
+                                 'http-server.http.port on host ' +
+                                 host + '.')
 
 
 def lookup_server_log_file(host):

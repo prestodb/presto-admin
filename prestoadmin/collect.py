@@ -94,8 +94,8 @@ def get_remote_log_files(dest_path):
     file_get(remote_server_log + '*', dest_path)
 
     remote_launcher_log = lookup_launcher_log_file(env.host)
-    _LOGGER.debug('LOG directory to be archived on host ' + env.host + ': '
-                  + remote_launcher_log)
+    _LOGGER.debug('LOG directory to be archived on host ' + env.host + ': ' +
+                  remote_launcher_log)
     file_get(remote_launcher_log + '*', dest_path)
 
 
@@ -220,10 +220,10 @@ def get_system_info(download_location):
     append(version_file_name, "platform information : " +
            get_platform_information() + '\n')
     append(version_file_name, 'Java version: ' + get_java_version() + '\n')
-    append(version_file_name, 'Presto-admin version: '
-           + prestoadmin.__version__ + '\n')
-    append(version_file_name, 'Presto server version: '
-           + get_presto_version() + '\n')
+    append(version_file_name, 'Presto-admin version: ' +
+           prestoadmin.__version__ + '\n')
+    append(version_file_name, 'Presto server version: ' +
+           get_presto_version() + '\n')
 
     _LOGGER.debug('Gathered version information in file: ' + version_file_name)
 

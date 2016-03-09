@@ -152,8 +152,8 @@ class TestCollect(BaseProductTestCase):
 
         actual = self.run_prestoadmin('collect query_info ' + query_id)
         query_info_file_name = path.join(TMP_PRESTO_DEBUG,
-                                         'query_info_' + query_id
-                                         + '.json')
+                                         'query_info_' + query_id +
+                                         '.json')
 
         expected = 'Gathered query information in file: ' + \
                    query_info_file_name + '\n'
@@ -176,8 +176,8 @@ class TestCollect(BaseProductTestCase):
 
         actual = self.run_prestoadmin('collect query_info ' + query_id)
         query_info_file_name = path.join(TMP_PRESTO_DEBUG,
-                                         'query_info_' + query_id
-                                         + '.json')
+                                         'query_info_' + query_id +
+                                         '.json')
 
         expected = 'Gathered query information in file: ' + \
                    query_info_file_name + '\n'

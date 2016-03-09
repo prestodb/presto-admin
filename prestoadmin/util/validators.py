@@ -50,8 +50,8 @@ def validate_host(host):
         socket.inet_pton(socket.AF_INET, host)
         return host
     except TypeError:
-        raise ConfigurationError('Host must be of type string.  Found '
-                                 + str(type(host)) + '.')
+        raise ConfigurationError('Host must be of type string.  Found ' +
+                                 str(type(host)) + '.')
     except socket.error:
         pass
 

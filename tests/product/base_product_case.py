@@ -108,20 +108,20 @@ node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
 
-    down_node_connection_string = r'(\nWarning: (\[%(host)s\] )?Low level socket ' \
-                                  r'error connecting to host %(host)s on ' \
-                                  r'port 22: No route to host ' \
+    down_node_connection_string = r'(\nWarning: (\[%(host)s\] )?Low level ' \
+                                  r'socket error connecting to host ' \
+                                  r'%(host)s on port 22: No route to host ' \
                                   r'\(tried 1 time\)\n\nUnderlying ' \
                                   r'exception:\n    No route to host\n' \
-                                  r'|\nWarning: (\[%(host)s] )?Timed out trying ' \
-                                  r'to connect to %(host)s \(tried 1 ' \
+                                  r'|\nWarning: (\[%(host)s] )?Timed out ' \
+                                  r'trying to connect to %(host)s \(tried 1 ' \
                                   r'time\)\n\nUnderlying exception:' \
                                   r'\n    timed out\n)'
 
-    status_down_node_string = r'(\tLow level socket error connecting to host ' \
-                              r'%(host)s on port 22: No route to host \(tried ' \
-                              r'1 time\)|\tTimed out trying to connect to ' \
-                              r'%(host)s \(tried 1 time\))'
+    status_down_node_string = r'(\tLow level socket error connecting to ' \
+                              r'host %(host)s on port 22: No route to host ' \
+                              r'\(tried 1 time\)|\tTimed out trying to ' \
+                              r'connect to %(host)s \(tried 1 time\))'
 
     len_down_node_error = 6
 

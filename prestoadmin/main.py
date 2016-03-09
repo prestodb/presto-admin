@@ -126,9 +126,8 @@ def is_classic_task(tup):
     name, func = tup
     try:
         is_classic = (
-            callable(func)
-            and (func not in _internals)
-            and not name.startswith('_')
+            callable(func) and (func not in _internals) and not
+            name.startswith('_')
         )
     # Handle poorly behaved __eq__ implementations
     except (ValueError, TypeError):
@@ -390,8 +389,8 @@ def _task_names(mapping):
         module = mapping[collection]
         if hasattr(module, 'default'):
             tasks.append(collection)
-        join = lambda x: " ".join((collection, x))
-        tasks.extend(map(join, _task_names(module)))
+        tasks.extend(map(lambda x: " ".join((collection, x)),
+                     _task_names(module)))
     return tasks
 
 

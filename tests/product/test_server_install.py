@@ -299,8 +299,8 @@ query.max-memory=50GB\n"""
                 self.cluster.master],
             r'Package installed successfully on: ' + ips[
                 self.cluster.master],
-            r'Package deployed successfully on: '
-            + ips[self.cluster.slaves[0]],
+            r'Package deployed successfully on: ' +
+            ips[self.cluster.slaves[0]],
             r'Package installed successfully on: ' +
             ips[self.cluster.slaves[0]],
             r'Deploying configuration on: ' +
@@ -408,10 +408,10 @@ query.max-memory=50GB\n"""
                     ips[self.cluster.master],
                     r'Package installed successfully on: ' +
                     ips[self.cluster.master],
-                    r'Package deployed successfully on: '
-                    + ips[self.cluster.slaves[0]],
-                    r'Package installed successfully on: '
-                    + ips[self.cluster.slaves[0]],
+                    r'Package deployed successfully on: ' +
+                    ips[self.cluster.slaves[0]],
+                    r'Package installed successfully on: ' +
+                    ips[self.cluster.slaves[0]],
                     r'Deploying configuration on: ' +
                     ips[self.cluster.master],
                     r'Deploying tpch.properties connector '
@@ -519,8 +519,8 @@ query.max-memory=50GB\n"""
 
         self.default_keywords.update(installer.get_keywords())
 
-        with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'), 'r') \
-                as f:
+        with open(os.path.join(LOCAL_RESOURCES_DIR, 'install_twice.txt'),
+                  'r') as f:
             expected = f.read()
         expected = self.escape_for_regex(
             self.replace_keywords(expected))

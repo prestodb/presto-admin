@@ -98,8 +98,8 @@ fabric.api.sudo = sudo
 
 def log_output(out):
     _LOGGER.info('\nCOMMAND: ' + out.command + '\nFULL COMMAND: ' +
-                 out.real_command + '\nSTDOUT: ' + out + '\nSTDERR: '
-                 + out.stderr)
+                 out.real_command + '\nSTDOUT: ' + out + '\nSTDERR: ' +
+                 out.stderr)
 
 
 # Monkey patch _execute and execute so that we can handle errors differently
@@ -234,8 +234,10 @@ def execute(task, *args, **kwargs):
                 results[host] = e
                 # Backwards compat test re: whether to use an exception or
                 # abort
-                func = warn if state.env.skip_bad_hosts or state.env.warn_only \
-                    else abort
+                if state.env.skip_bad_hosts or state.env.warn_only:
+                    func = warn
+                else:
+                    func = abort
                 error(e.message, func=func, exception=e.wrapped)
             except SystemExit, e:
                 results[host] = e
