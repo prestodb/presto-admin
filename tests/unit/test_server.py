@@ -53,23 +53,24 @@ class TestInstall(BaseUnitCase):
         mock_execute.assert_called_with(server.deploy_install_configure,
                                         local_path, hosts=get_host_list())
 
+    @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.package.deploy_install')
     @patch('prestoadmin.server.update_configs')
-    def test_deploy_install_configure(self, mock_update, mock_install):
+    def test_deploy_install_configure(self, mock_update, mock_install,
+                                      mock_sudo):
         local_path = "/any/path/rpm"
+        mock_sudo.side_effect = self.mock_fail_then_succeed()
+
         server.deploy_install_configure(local_path)
         mock_install.assert_called_with(local_path)
-        mock_update.assert_called_with()
+        self.assertTrue(mock_update.called)
+        mock_sudo.assert_called_with('getent passwd presto')
 
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.sudo')
     def test_uninstall_is_called(self, mock_sudo, mock_version_check):
         env.host = "any_host"
-        output1 = _AttributeString()
-        output1.succeeded = False
-        output2 = _AttributeString()
-        output2.succeeded = True
-        mock_sudo.side_effect = [output1, output2]
+        mock_sudo.side_effect = self.mock_fail_then_succeed()
 
         server.uninstall()
 
@@ -454,3 +455,10 @@ class TestInstall(BaseUnitCase):
             call('rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm'),
         ])
         self.assertEqual(expected, '')
+
+    def mock_fail_then_succeed(self):
+        output1 = _AttributeString()
+        output1.succeeded = False
+        output2 = _AttributeString()
+        output2.succeeded = True
+        return [output1, output2]
