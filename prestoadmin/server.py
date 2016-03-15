@@ -75,7 +75,6 @@ NODE_INFO_PER_URI_SQL = VersionRangeList(
                   'system.runtime.nodes where '
                   'url_extract_host(http_uri) = \'%s\'',
                  new_sysnode_processor))
-
 )
 
 EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from ' \
@@ -136,7 +135,7 @@ def update_configs():
         _LOGGER.info('No connector directory found, not adding connectors.')
 
 
-@retry(stop_max_delay=30000, wait_fixed=2000)
+@retry(stop_max_delay=3000, wait_fixed=250)
 def wait_for_presto_user():
     ret = sudo('getent passwd presto', quiet=True)
     if not ret.succeeded:
