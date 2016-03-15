@@ -61,3 +61,12 @@ mkdir -p $LOG_DIR
 
 CONF_DIR=/etc/opt/prestoadmin
 mkdir -p $CONF_DIR
+
+CONNECTOR_DIR=$CONF_DIR/connectors
+mkdir -p $CONNECTOR_DIR
+
+COORDINATOR_DIR=$CONF_DIR/coordinator
+mkdir -p $COORDINATOR_DIR
+
+WORKERS_DIR=$CONF_DIR/workers
+mkdir -p $WORKERS_DIR
