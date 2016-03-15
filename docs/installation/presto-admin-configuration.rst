@@ -26,7 +26,7 @@ file should be owned by root with R/W permissions (i.e. 622).
  "username": "<ssh_user_name>",
  "port": "<ssh_port>",
  "coordinator": "<host_name>",
- "workers": ["<host_name_1>", "<host_name_2>", ... "<host_name_n>"]
+ "workers": ["<host_name_1>", "<host_name_2>", ... "<host_name_n>"],
  "java8_home":"<path/to/java8/on/presto/nodes>"
  }
 
@@ -43,7 +43,7 @@ be used:
 
 Note that ``java8_home`` is not set by default.  It only needs to be set if
 Java 8 is in a non-standard location on the Presto nodes.  The property is used
-to tell the presto rpm where to find Java 8.
+to tell the Presto RPM where to find Java 8.
 
 You can also specify some but not all of the properties. For example, the
 default configuration is for a single-node installation of Presto on the same
