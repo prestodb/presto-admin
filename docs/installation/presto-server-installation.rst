@@ -11,7 +11,13 @@ First download the `presto-server-rpm-VERSION.ARCH.rpm` and copy it to a locatio
  $ sudo ./presto-admin server install <local_path_to_rpm>
 
 
-Presto! Presto is now installed on the coordinator and workers specified in your ``/etc/opt/prestoadmin/config.json`` file. Before you can issue your first query, you must start Presto:
+Presto! Presto is now installed on the coordinator and workers specified in your ``/etc/opt/prestoadmin/config.json`` file. 
+
+The default port for Presto is 8080.  If that port is already in use on your cluster, you will not be able to start Presto.
+In order to change the port that Presto uses, and if necessary check what ports are in use, proceed to :ref:`presto-port-configuration-label`.
+
+Now, you are ready to start Presto:
+
 ::
 
  $ sudo ./presto-admin server start

@@ -11,6 +11,7 @@ A full explanation of the commands and features of ``presto-admin``.
 
     quick-start-guide
     installation/advanced-installation-options
+    installation/presto-port-configuration
     ssh-configuration
     presto-admin-commands
     presto-admin-cli-options
