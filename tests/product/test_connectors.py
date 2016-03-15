@@ -29,8 +29,7 @@ from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
 class TestConnectors(BaseProductTestCase):
-    @attr('smoketest')
-    def test_basic_connector_add_remove(self):
+    def setup_cluster_assert_connectors(self):
         self.setup_cluster(NoHadoopBareImageProvider(),
                            self.STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
@@ -38,6 +37,10 @@ class TestConnectors(BaseProductTestCase):
             self.assert_has_default_connector(host)
 
         self._assert_connectors_loaded([['system'], ['tpch']])
+
+    @attr('smoketest')
+    def test_basic_connector_add_remove(self):
+        self.setup_cluster_assert_connectors()
 
         self.run_prestoadmin('connector remove tpch')
         self.run_prestoadmin('server restart')
@@ -60,6 +63,56 @@ class TestConnectors(BaseProductTestCase):
         for host in self.cluster.all_hosts():
             self.assert_has_default_connector(host)
         self._assert_connectors_loaded([['system'], ['tpch']])
+
+    def test_connector_add_remove_coord_worker_using_dash_h(self):
+        self.setup_cluster_assert_connectors()
+
+        self.run_prestoadmin('connector remove tpch -H %(master)s,%(slave1)s')
+        self.run_prestoadmin('server restart')
+        self.assert_path_removed(self.cluster.master,
+                                 os.path.join(constants.CONNECTORS_DIR,
+                                              'tpch.properties'))
+        self._assert_connectors_loaded([['system']])
+        for host in [self.cluster.master, self.cluster.slaves[0]]:
+            self.assert_path_removed(host,
+                                     os.path.join(constants.REMOTE_CATALOG_DIR,
+                                                  'tpch.properties'))
+        self.assert_has_default_connector(self.cluster.slaves[1])
+        self.assert_has_default_connector(self.cluster.slaves[2])
+
+        self.cluster.write_content_to_host(
+            'connector.name=tpch',
+            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            self.cluster.master
+        )
+        self.run_prestoadmin('connector add tpch -H %(master)s,%(slave1)s')
+        self.run_prestoadmin('server restart')
+        self.assert_has_default_connector(self.cluster.master)
+        self.assert_has_default_connector(self.cluster.slaves[1])
+
+    def test_connector_add_remove_coord_worker_using_dash_x(self):
+        self.setup_cluster_assert_connectors()
+
+        self.run_prestoadmin('connector remove tpch -x %(master)s,%(slave1)s')
+        self.run_prestoadmin('server restart')
+        self._assert_connectors_loaded([['system'], ['tpch']])
+        self.assert_has_default_connector(self.cluster.master)
+        self.assert_has_default_connector(self.cluster.slaves[0])
+        for host in [self.cluster.slaves[1], self.cluster.slaves[2]]:
+            self.assert_path_removed(host,
+                                 os.path.join(constants.REMOTE_CATALOG_DIR,
+                                              'tpch.properties'))
+
+        self.cluster.write_content_to_host(
+            'connector.name=tpch',
+            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            self.cluster.master
+        )
+        self.run_prestoadmin('connector add tpch -x %(master)s,%(slave1)s')
+        self.run_prestoadmin('server restart')
+        self._assert_connectors_loaded([['system'], ['tpch']])
+        for slave in [self.cluster.slaves[1], self.cluster.slaves[2]]:
+            self.assert_has_default_connector(slave)
 
     @docker_only
     def test_connector_add_wrong_permissions(self):
