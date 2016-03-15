@@ -64,7 +64,7 @@ class TestInstall(BaseUnitCase):
         server.deploy_install_configure(local_path)
         mock_install.assert_called_with(local_path)
         self.assertTrue(mock_update.called)
-        mock_sudo.assert_called_with('getent passwd presto')
+        mock_sudo.assert_called_with('getent passwd presto', quiet=True)
 
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.sudo')

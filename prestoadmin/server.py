@@ -138,7 +138,7 @@ def update_configs():
 
 @retry(stop_max_delay=30000, wait_fixed=2000)
 def wait_for_presto_user():
-    ret = sudo('getent passwd presto')
+    ret = sudo('getent passwd presto', quiet=True)
     if not ret.succeeded:
         raise Exception('Presto package was not installed successfully. '
                         'Presto user was not created.')
