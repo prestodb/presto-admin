@@ -155,3 +155,26 @@ class TestInstallation(BaseProductTestCase):
         self.assertTrue('Adding pypi.python.org as trusted-host. Cannot find'
                         ' certificate file: %s' % cert_file not in output,
                         'Unable to find cert file; output: %s' % output)
+
+    def test_additional_dirs_created(self):
+        install_dir = '/opt'
+        script = """
+            set -e
+            cp {mount_dir}/prestoadmin-*.tar.bz2 {install_dir}
+            cd {install_dir}
+            tar jxf prestoadmin-*.tar.bz2
+            cd prestoadmin
+             ./install-prestoadmin.sh
+        """.format(mount_dir=self.cluster.mount_dir,
+                   install_dir=install_dir)
+        self.cluster.run_script_on_host(script, self.cluster.master)
+
+        pa_etc_dir = '/etc/opt/prestoadmin'
+        connectors_dir = pa_etc_dir + '/connectors'
+        self.assert_path_exists(self.cluster.master, connectors_dir)
+
+        coordinator_dir = pa_etc_dir + '/coordinator'
+        self.assert_path_exists(self.cluster.master, coordinator_dir)
+
+        workers_dir = pa_etc_dir + '/workers'
+        self.assert_path_exists(self.cluster.master, workers_dir)
