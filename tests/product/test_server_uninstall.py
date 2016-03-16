@@ -151,7 +151,7 @@ class TestServerUninstall(BaseProductTestCase):
     def test_uninstall_as_non_sudo(self):
         self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
         self.upload_topology()
-        self.installer.install(dummy=True)
+        self.installer.install()
 
         script = './presto-admin server uninstall -u testuser -p testpass'
         output = self.run_script_from_prestoadmin_dir(script)

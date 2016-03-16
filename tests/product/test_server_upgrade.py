@@ -27,7 +27,7 @@ class TestServerUpgrade(BaseProductTestCase):
         super(TestServerUpgrade, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider(),
                            self.STANDALONE_PRESTO_CLUSTER)
-        self.installer = StandalonePrestoInstaller(self, dummy=True)
+        self.installer = StandalonePrestoInstaller(self)
 
     def start_and_assert_started(self):
         cmd_output = self.run_prestoadmin('server start')

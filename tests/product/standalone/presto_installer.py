@@ -21,7 +21,6 @@ import os
 import urllib
 
 import prestoadmin
-from tests.product.constants import LOCAL_RESOURCES_DIR
 
 from tests.base_installer import BaseInstaller
 from tests.docker_cluster import DockerCluster
@@ -32,20 +31,12 @@ from tests.product.topology_installer import TopologyInstaller
 RPM_BASENAME = r'presto.*'
 PRESTO_RPM_GLOB = r'presto*.rpm'
 
-DUMMY_RPM_NAME = 'dummy-rpm.rpm'
-
 
 class StandalonePrestoInstaller(BaseInstaller):
-    def __init__(self, testcase, dummy=False):
+    def __init__(self, testcase):
         self.presto_rpm_filename = self._detect_presto_rpm()
-
-        if dummy:
-            self.rpm_dir = LOCAL_RESOURCES_DIR
-            self.rpm_name = DUMMY_RPM_NAME
-        else:
-            self.rpm_dir = prestoadmin.main_dir
-            self.rpm_name = self.presto_rpm_filename
-
+        self.rpm_dir = prestoadmin.main_dir
+        self.rpm_name = self.presto_rpm_filename
         self.testcase = testcase
 
     @staticmethod
@@ -111,13 +102,6 @@ class StandalonePrestoInstaller(BaseInstaller):
             cluster.copy_to_host(rpm_path, cluster.master)
             self._check_if_corrupted_rpm(self.rpm_name, cluster)
         except OSError:
-            #
-            # Can't retry downloading the dummy rpm. It's a local resource.
-            # If we've gotten here, we've corrupted it somehow.
-            #
-            self.testcase.assertNotEqual(self.rpm_name, DUMMY_RPM_NAME,
-                                         "Bad dummy rpm!")
-
             print 'Downloading RPM again'
             # try to download the RPM again if it's corrupt (but only once)
             StandalonePrestoInstaller._download_rpm()
@@ -162,11 +146,8 @@ class StandalonePrestoInstaller(BaseInstaller):
                             os.path.join(cluster.mount_dir, rpm_name)
         )
 
-    def assert_uninstalled(self, container, dummy=False, msg=None):
-        if dummy:
-            rpm_name = os.path.splitext(DUMMY_RPM_NAME)[0]
-        else:
-            rpm_name = os.path.splitext(self.presto_rpm_filename)[0]
+    def assert_uninstalled(self, container, msg=None):
+        rpm_name = os.path.splitext(self.presto_rpm_filename)[0]
         failure_msg = 'package %s is not installed' % rpm_name
         rpm_cmd = 'rpm -q %s' % rpm_name
 

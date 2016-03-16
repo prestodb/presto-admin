@@ -171,7 +171,7 @@ query.max-memory=50GB\n"""
                                            self.default_workers_config_regex_)
 
     def test_install_with_java8_home(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         for container in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(container,
                                           "mv /usr/java/jdk1.8.0_40 /usr/")
@@ -210,7 +210,7 @@ query.max-memory=50GB\n"""
             self.assert_has_default_connector(container)
 
     def test_install_worker_is_pa_master(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology)
@@ -228,7 +228,7 @@ query.max-memory=50GB\n"""
              self.cluster.master])
 
     def test_install_ext_host_is_pa_master(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         topology = {"coordinator": "slave1",
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology)
@@ -245,7 +245,7 @@ query.max-memory=50GB\n"""
              self.cluster.slaves[2]])
 
     def test_install_when_connector_json_exists(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         topology = {"coordinator": "master",
                     "workers": ["slave1"]}
         self.upload_topology(topology)
@@ -280,7 +280,7 @@ query.max-memory=50GB\n"""
             self.assert_has_jmx_connector(container)
 
     def test_install_when_topology_has_ips(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         ips = self.cluster.get_ip_address_dict()
         topology = {"coordinator": ips[self.cluster.master],
                     "workers": [ips[self.cluster.slaves[0]]]}
@@ -465,7 +465,7 @@ query.max-memory=50GB\n"""
                                 rpm=rpm_name)
 
     def test_install_with_malformed_connector(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         self.upload_topology()
         self.cluster.write_content_to_host(
             'connectr.typo:invalid',
@@ -482,7 +482,7 @@ query.max-memory=50GB\n"""
             self.assert_has_default_config(container)
 
     def test_connection_to_coord_lost(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         down_node = self.cluster.internal_slaves[0]
         topology = {"coordinator": down_node,
                     "workers": [self.cluster.internal_master,
@@ -513,7 +513,7 @@ query.max-memory=50GB\n"""
             )
 
     def test_install_twice(self):
-        installer = StandalonePrestoInstaller(self, dummy=True)
+        installer = StandalonePrestoInstaller(self)
         self.test_install(installer=installer)
         output = installer.install(pa_raise_error=False)
 
