@@ -90,7 +90,7 @@ class TestInstallation(BaseProductTestCase):
             self.cluster.master
         )
 
-    @attr('smoketest')
+    @attr('smoketest', 'offline_installer')
     @docker_only
     def test_install_on_wrong_os_offline_installer(self):
         image = 'ubuntu'

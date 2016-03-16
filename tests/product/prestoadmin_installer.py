@@ -78,8 +78,12 @@ class PrestoadminInstaller(BaseInstaller):
             self._build_installer_in_docker(cluster, unique=unique)
         return cluster.get_dist_dir(unique)
 
-    def _build_installer_in_docker(self, cluster, online_installer=False,
+    def _build_installer_in_docker(self, cluster, online_installer=None,
                                    unique=False):
+        if online_installer is None:
+            paTestOnlineInstaller = os.environ.get('PA_TEST_ONLINE_INSTALLER')
+            online_installer = paTestOnlineInstaller is not None
+
         container_name = 'installer'
         installer_container = DockerCluster(
             container_name, [], DEFAULT_LOCAL_MOUNT_POINT,

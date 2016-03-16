@@ -53,7 +53,7 @@ class TestInstaller(BaseProductTestCase):
             dist_dir=self.centos_container.get_dist_dir(unique=True))
         self.run_prestoadmin('--help', raise_error=True)
 
-    @attr('smoketest')
+    @attr('smoketest', 'offline_installer')
     def test_offline_installer(self):
         self.pa_installer._build_installer_in_docker(
             self.centos_container, online_installer=False, unique=True)
