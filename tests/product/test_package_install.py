@@ -25,7 +25,7 @@ class TestPackageInstall(BaseProductTestCase):
         super(TestPackageInstall, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
         self.upload_topology()
-        self.installer = StandalonePrestoInstaller(self, dummy=True)
+        self.installer = StandalonePrestoInstaller(self)
 
     @attr('smoketest')
     def test_package_install(self):
