@@ -16,6 +16,8 @@ import os
 
 from nose.plugins.attrib import attr
 
+import prestoadmin
+
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
@@ -27,17 +29,29 @@ class TestServerUpgrade(BaseProductTestCase):
         super(TestServerUpgrade, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider(),
                            self.STANDALONE_PRESTO_CLUSTER)
-        self.installer = StandalonePrestoInstaller(self)
+        self.dummy_installer = StandalonePrestoInstaller(
+            self, (os.path.join(prestoadmin.main_dir, 'tests', 'product',
+                                'resources'), 'dummy-rpm.rpm'))
+        self.real_installer = StandalonePrestoInstaller(self)
 
     def start_and_assert_started(self):
         cmd_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(cmd_output.splitlines())
         self.assert_started(process_per_host)
 
+    #
+    # The dummy RPM is not guaranteed to have any functionality beyond not
+    # including any real payload and adding the random README file. It's a
+    # hacky one-off that satisfies the requirement of having *something* to
+    # upgrade to without downloading another copy of the real RPM. This is NOT
+    # the place to test functionality that the presto-server-rpm normally
+    # provides, because the dummy rpm probably doesn't provide it, or worse,
+    # provides an old and/or broken version of it.
+    #
     def assert_upgraded_to_dummy_rpm(self, hosts):
         for container in hosts:
             # Still should have the same configs
-            self.installer.assert_installed(self, container)
+            self.dummy_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
@@ -63,7 +77,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
         self.run_prestoadmin('configuration deploy')
         for container in self.cluster.all_hosts():
-            self.installer.assert_installed(self, container)
+            self.real_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
 
@@ -91,5 +105,5 @@ class TestServerUpgrade(BaseProductTestCase):
         self.retry(lambda: self.upgrade_and_assert_success(path_on_cluster))
 
     def copy_upgrade_rpm_to_cluster(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
+        rpm_name = self.dummy_installer.copy_presto_rpm_to_master()
         return os.path.join(self.cluster.mount_dir, rpm_name)

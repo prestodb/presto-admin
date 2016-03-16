@@ -31,12 +31,16 @@ from tests.product.topology_installer import TopologyInstaller
 RPM_BASENAME = r'presto.*'
 PRESTO_RPM_GLOB = r'presto*.rpm'
 
+PACKAGE_NAME = 'presto-server-rpm'
+
 
 class StandalonePrestoInstaller(BaseInstaller):
-    def __init__(self, testcase):
-        self.presto_rpm_filename = self._detect_presto_rpm()
-        self.rpm_dir = prestoadmin.main_dir
-        self.rpm_name = self.presto_rpm_filename
+    def __init__(self, testcase, rpm_location=None):
+        if rpm_location:
+            self.rpm_dir, self.rpm_name = rpm_location
+        else:
+            self.rpm_dir, self.rpm_name = self._detect_presto_rpm()
+
         self.testcase = testcase
 
     @staticmethod
@@ -77,7 +81,7 @@ class StandalonePrestoInstaller(BaseInstaller):
 
         try:
             check_rpm = cluster.exec_cmd_on_host(
-                container, 'rpm -q presto-server-rpm')
+                container, 'rpm -q %s' % (PACKAGE_NAME,))
             testcase.assertRegexpMatches(
                 check_rpm, RPM_BASENAME + '\n', msg=msg
             )
@@ -131,13 +135,15 @@ class StandalonePrestoInstaller(BaseInstaller):
         if rpm_names:
             # Choose the last RPM name if you sort the list, since if there
             # are multiple RPMs, the last one is probably the latest
-            return sorted(rpm_names)[-1]
+            rpm_name = sorted(rpm_names)[-1]
         else:
             try:
-                return StandalonePrestoInstaller._download_rpm()
+                rpm_name = StandalonePrestoInstaller._download_rpm()
             except:
                 # retry once
-                return StandalonePrestoInstaller._download_rpm()
+                rpm_name = StandalonePrestoInstaller._download_rpm()
+
+        return prestoadmin.main_dir, rpm_name
 
     @staticmethod
     def _check_if_corrupted_rpm(rpm_name, cluster):
@@ -147,9 +153,8 @@ class StandalonePrestoInstaller(BaseInstaller):
         )
 
     def assert_uninstalled(self, container, msg=None):
-        rpm_name = os.path.splitext(self.presto_rpm_filename)[0]
-        failure_msg = 'package %s is not installed' % rpm_name
-        rpm_cmd = 'rpm -q %s' % rpm_name
+        failure_msg = 'package %s is not installed' % (PACKAGE_NAME,)
+        rpm_cmd = 'rpm -q %s' % (PACKAGE_NAME,)
 
         self.testcase.assertRaisesRegexp(
             OSError,
