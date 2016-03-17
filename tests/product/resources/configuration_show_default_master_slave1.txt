@@ -1,0 +1,56 @@
+master: Configuration file at /etc/presto/node.properties:
+node.id=.*
+node.data-dir=/var/lib/presto/data
+node.environment=presto
+plugin.config-dir=/etc/presto/catalog
+plugin.dir=/usr/lib/presto/lib/plugin
+
+
+master: Configuration file at /etc/presto/jvm.config:
+-server
+-Xmx16G
+-XX:\-UseBiasedLocking
+-XX:\+UseG1GC
+-XX:\+ExplicitGCInvokesConcurrent
+-XX:\+HeapDumpOnOutOfMemoryError
+-XX:\+UseGCOverheadLimit
+-XX:OnOutOfMemoryError=kill -9 %p
+-DHADOOP_USER_NAME=hive
+
+
+master: Configuration file at /etc/presto/config.properties:
+coordinator=true
+discovery-server.enabled=true
+discovery.uri=http://master:8080
+http-server.http.port=8080
+node.scheduler.include-coordinator=false
+query.max-memory-per-node=512MB
+query.max-memory=50GB
+
+
+slave1: Configuration file at /etc/presto/node.properties:
+node.id=.*
+node.data-dir=/var/lib/presto/data
+node.environment=presto
+plugin.config-dir=/etc/presto/catalog
+plugin.dir=/usr/lib/presto/lib/plugin
+
+
+slave1: Configuration file at /etc/presto/jvm.config:
+-server
+-Xmx16G
+-XX:\-UseBiasedLocking
+-XX:\+UseG1GC
+-XX:\+ExplicitGCInvokesConcurrent
+-XX:\+HeapDumpOnOutOfMemoryError
+-XX:\+UseGCOverheadLimit
+-XX:OnOutOfMemoryError=kill -9 %p
+-DHADOOP_USER_NAME=hive
+
+
+slave1: Configuration file at /etc/presto/config.properties:
+coordinator=false
+discovery.uri=http://master:8080
+http-server.http.port=8080
+query.max-memory-per-node=512MB
+query.max-memory=50GB
