@@ -297,7 +297,8 @@ class DockerCluster(BaseCluster):
         to start after the container itself is up. This function checks
         whether those services are up and returns a boolean accordingly.
         Specifically, we check that the app-admin user has been created
-        and that the ssh daemon is up.
+        and that the ssh daemon is up, as well as that the SSH keys are
+        in the right place.
 
         Args:
           host: the host to check.
@@ -317,6 +318,10 @@ class DockerCluster(BaseCluster):
             user_output = ''
         if 'sshd_bootstrap' in ps_output or 'sshd\n' not in ps_output\
                 or not user_output:
+            return False
+        # check for .ssh being in the right place
+        ssh_output = self.exec_cmd_on_host(host, 'ls /home/app-admin/.ssh')
+        if 'id_rsa' not in ssh_output:
             return False
         return True
 
