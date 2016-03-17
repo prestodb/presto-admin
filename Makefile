@@ -1,8 +1,9 @@
 .PHONY: clean-all clean clean-eggs clean-build clean-pyc clean-test-containers clean-test \
 	clean-docs lint smoke test test-all test-rpm coverage docs open-docs release release-builds \
-	dist dist-online dist-offline wheel install
+	dist dist-online dist-offline wheel install precommit
 
 help:
+	@echo "precommit - run \`quick' tests and tasks that should pass or succeed prior to pushing"
 	@echo "clean-all - clean everything; effectively resets repo as if it was just checked out"
 	@echo "clean - remove build, test, coverage and Python artifacts except for the cache Presto RPM"
 	@echo "clean-eggs - remove *.egg and *.egg-info files and directories"
@@ -26,6 +27,8 @@ help:
 	@echo "dist-offline - package and build installer that does not require an Internet connection"
 	@echo "wheel - build wheel only"
 	@echo "install - install the package to the active Python's site-packages"
+
+precommit: clean dist test docs lint
 
 clean-all: clean
 	rm -f presto*.rpm
