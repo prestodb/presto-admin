@@ -20,6 +20,8 @@ import json
 from socket import socket
 import time
 
+from nose.plugins.attrib import attr
+
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, PRESTO_PACKAGE
 
 from tests.product.base_product_case import BaseProductTestCase
@@ -30,6 +32,7 @@ from tests.product.yarn_slider.slider_presto_installer import \
 HDFS_PORT = 8020
 
 
+@attr('quarantine')
 class TestServerInstall(BaseProductTestCase):
     def setUp(self):
         super(TestServerInstall, self).setUp()
