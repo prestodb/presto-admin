@@ -63,6 +63,14 @@ class TestCollect(BaseProductTestCase):
         admin_log = path.join(downloaded_logs_location, PRESTOADMIN_LOG_NAME)
         self.assert_path_exists(self.cluster.master, admin_log)
 
+    def test_collect_logs_dash_h_invalid_host(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        expected = 'Hosts defined in --hosts/-H must be present in /etc/opt/prestoadmin/config.json'
+
+        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
+                                'collect logs -H invalidHost' )
+
     def log_msg(self, actual, expected):
         msg = '%s != %s' % actual, expected
         return msg
@@ -71,16 +79,16 @@ class TestCollect(BaseProductTestCase):
     def test_collect_system_info_basic(self):
         self.setup_cluster(NoHadoopBareImageProvider(),
                            self.STANDALONE_PRESTO_CLUSTER)
-        self.test_basic_system_info()
+        self.run_prestoadmin('server start')
+        actual = self.run_prestoadmin('collect system_info')
+        self.test_basic_system_info(actual)
 
     @nottest
-    def test_basic_system_info(self, coordinator=None, hosts=None):
+    def test_basic_system_info(self, actual, coordinator=None, hosts=None):
         if not coordinator:
             coordinator = self.cluster.internal_master
         if not hosts:
             hosts = self.cluster.all_hosts()
-        self.run_prestoadmin('server start')
-        actual = self.run_prestoadmin('collect system_info')
         expected = 'System info archive created: ' + \
                    OUTPUT_FILENAME_FOR_SYS_INFO + '\n'
         self.assertEqual(expected, actual)
@@ -110,6 +118,28 @@ class TestCollect(BaseProductTestCase):
                                 slave0_system_info_loc)
         self.assert_path_exists(self.cluster.master,
                                 OUTPUT_FILENAME_FOR_SYS_INFO)
+
+    def test_collect_system_info_dash_h_coord_worker(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        self.run_prestoadmin('server start')
+        actual = self.run_prestoadmin('collect system_info -H %(master)s,%(slave1)s')
+        self.test_basic_system_info(actual, self.cluster.internal_master, [self.cluster.master, self.cluster.slaves[0]])
+
+    def test_collect_system_info_dash_x_two_workers(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        self.run_prestoadmin('server start')
+        actual = self.run_prestoadmin('collect system_info -x %(slave2)s,%(slave3)s')
+        self.test_basic_system_info(actual, self.cluster.internal_master, [self.cluster.master, self.cluster.slaves[0]])
+
+    def test_collect_system_info_dash_h_invalid_host(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        expected = 'Hosts defined in --hosts/-H must be present in /etc/opt/prestoadmin/config.json'
+
+        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
+                                'collect system_info -H invalidHost' )
 
     def test_system_info_pa_separate_node(self):
         installer = StandalonePrestoInstaller(self)
