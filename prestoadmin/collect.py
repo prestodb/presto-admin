@@ -91,15 +91,15 @@ def get_remote_log_files(dest_path):
     remote_server_log = lookup_server_log_file(env.host)
     _LOGGER.debug('Logs to be archived on host ' + env.host + ': ' +
                   remote_server_log)
-    file_get(remote_server_log + '*', dest_path)
+    get_files(remote_server_log + '*', dest_path)
 
     remote_launcher_log = lookup_launcher_log_file(env.host)
     _LOGGER.debug('LOG directory to be archived on host ' + env.host + ': ' +
                   remote_launcher_log)
-    file_get(remote_launcher_log + '*', dest_path)
+    get_files(remote_launcher_log + '*', dest_path)
 
 
-def file_get(remote_path, local_path):
+def get_files(remote_path, local_path):
     path_with_host_name = os.path.join(local_path, env.host)
 
     if not os.path.exists(path_with_host_name):
@@ -107,9 +107,9 @@ def file_get(remote_path, local_path):
 
     _LOGGER.debug('local path used ' + path_with_host_name)
 
-    if exists(remote_path, True):
+    try:
         get(remote_path, path_with_host_name, True)
-    else:
+    except SystemExit:
         warn('remote path ' + remote_path + ' not found on ' + env.host)
 
 
@@ -227,7 +227,7 @@ def get_system_info(download_location):
 
     _LOGGER.debug('Gathered version information in file: ' + version_file_name)
 
-    file_get(version_file_name, download_location)
+    get_files(version_file_name, download_location)
 
 
 def get_platform_information():

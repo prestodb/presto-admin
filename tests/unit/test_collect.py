@@ -34,13 +34,13 @@ class TestCollect(BaseUnitCase):
 
     @patch('prestoadmin.collect.lookup_launcher_log_file')
     @patch('prestoadmin.collect.lookup_server_log_file')
-    @patch('prestoadmin.collect.file_get')
+    @patch('prestoadmin.collect.get_files')
     @patch("prestoadmin.collect.tarfile.open")
     @patch("prestoadmin.collect.shutil.copy")
     @patch("prestoadmin.collect.ensure_directory_exists")
     @patch("prestoadmin.collect.os.path.exists")
     def test_collect_logs(self, path_exists_mock, mkdirs_mock, copy_mock,
-                          tarfile_open_mock, file_get_mock, server_log_mock,
+                          tarfile_open_mock, get_files_mock, server_log_mock,
                           launcher_log_mock):
         downloaded_logs_loc = path.join(TMP_PRESTO_DEBUG, "logs")
         path_exists_mock.return_value = False
@@ -59,33 +59,29 @@ class TestCollect(BaseUnitCase):
 
     @patch("prestoadmin.collect.os.path.exists")
     @patch("prestoadmin.collect.get")
-    @patch("prestoadmin.collect.exists")
-    def test_file_get(self, exists_mock, get_mock, path_exists_mock):
+    def test_get_files(self, get_mock, path_exists_mock):
         remote_path = "/a/b"
         local_path = "/c/d"
         env.host = "myhost"
         path_with_host_name = path.join(local_path, env.host)
-        exists_mock.return_value = True
         path_exists_mock.return_value = True
 
-        collect.file_get(remote_path, local_path)
+        collect.get_files(remote_path, local_path)
 
-        exists_mock.assert_called_with(remote_path, True)
         get_mock.assert_called_with(remote_path, path_with_host_name, True)
 
     @patch("prestoadmin.collect.os.path.exists")
     @patch("prestoadmin.collect.warn")
-    @patch("prestoadmin.collect.exists")
-    def test_file_get_warning(self, exists_mock, warn_mock, path_exists_mock):
+    @patch("prestoadmin.collect.get")
+    def test_get_files_warning(self, get_mock, warn_mock, path_exists_mock):
         remote_path = "/a/b"
         local_path = "/c/d"
         env.host = "remote_host"
-        exists_mock.return_value = False
         path_exists_mock.return_value = True
+        get_mock.side_effect = SystemExit
 
-        collect.file_get(remote_path, local_path)
+        collect.get_files(remote_path, local_path)
 
-        exists_mock.assert_called_with(remote_path, True)
         warn_mock.assert_called_with("remote path " + remote_path +
                                      " not found on " + env.host)
 
@@ -193,7 +189,7 @@ class TestCollect(BaseUnitCase):
         make_tarfile_mock.assert_called_with(OUTPUT_FILENAME_FOR_SYS_INFO,
                                              downloaded_sys_info_loc)
 
-    @patch("prestoadmin.collect.file_get")
+    @patch("prestoadmin.collect.get_files")
     @patch("prestoadmin.collect.append")
     @patch("prestoadmin.collect.get_presto_version")
     @patch("prestoadmin.collect.get_java_version")
@@ -203,7 +199,7 @@ class TestCollect(BaseUnitCase):
     def test_get_system_info(self, exists_mock, run_collect_mock,
                              plat_info_mock, java_version_mock,
                              server_version_mock,
-                             append_mock, file_get_mock):
+                             append_mock, get_files_mock):
         downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, "sysinfo")
         version_info_file_name = path.join(TMP_PRESTO_DEBUG,
                                            "version_info.txt")
@@ -239,5 +235,5 @@ class TestCollect(BaseUnitCase):
                                     'Presto server version: ' +
                                     server_version + '\n')
 
-        file_get_mock.assert_called_with(version_info_file_name,
-                                         downloaded_sys_info_loc)
+        get_files_mock.assert_called_with(version_info_file_name,
+                                          downloaded_sys_info_loc)
