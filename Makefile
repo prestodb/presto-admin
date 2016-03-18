@@ -28,7 +28,7 @@ help:
 	@echo "wheel - build wheel only"
 	@echo "install - install the package to the active Python's site-packages"
 
-precommit: clean dist test docs lint
+precommit: clean dist lint docs test
 
 clean-all: clean
 	rm -f presto*.rpm
