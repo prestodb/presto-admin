@@ -17,7 +17,7 @@ Creates bare images with HDP 2.3 installed for product tests that require
 that hadoop is actually installed.
 """
 
-from tests.tag_bare_image_provider import TagBareImageProvider
+from tests.bare_image_provider import TagBareImageProvider
 
 
 class HdpBareImageProvider(TagBareImageProvider):

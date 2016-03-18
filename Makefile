@@ -70,7 +70,7 @@ clean-docs:
 lint:
 	flake8 prestoadmin packaging tests
 
-smoke: clean-test
+smoke: clean-test docker-images
 	tox -e py26 -- -a smoketest,'!quarantine'
 
 test: clean-test
@@ -79,10 +79,15 @@ test: clean-test
 
 TEST_SUITE?=tests.product
 
-test-all: clean-test
+test-all: clean-test docker-images
 	tox -- -s tests.unit
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
+
+
+DOCKERFILE_DIR=tests/product/resources/centos6-ssh-test
+docker-images:
+	docker build --rm=true --tag teradatalabs/centos-ssh-test $(DOCKERFILE_DIR)
 
 test-rpm: clean-test
 	tox -e py26 -- -s tests.rpm -a '!quarantine'

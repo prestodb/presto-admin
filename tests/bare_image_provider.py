@@ -21,9 +21,15 @@ the product tests.
 
 import abc
 
+from docker import Client
+
 
 class BareImageProvider(object):
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, tag_decoration):
+        super(BareImageProvider, self).__init__()
+        self.tag_decoration = tag_decoration
 
     @abc.abstractmethod
     def create_bare_images(self, cluster, master_name, slave_name):
@@ -31,8 +37,34 @@ class BareImageProvider(object):
         slave_name, respectively."""
         pass
 
-    @abc.abstractmethod
     def get_tag_decoration(self):
         """Returns a string that's prepended to docker image tags for images
         based off of the bare image created by the provider."""
-        pass
+        return self.tag_decoration
+
+
+"""
+Provides bare images from existing tags in Docker. For some of the heftier
+images, we don't want to go through a long and drawn-out Docker build on a
+regular basis. For these, we count on having an image in Docker that we can
+tag appropriately into the teradatalabs/pa_tests namespace. Test cleanup can
+continue to obliterate that namespace without disrupting the actual heavyweight
+images.
+
+As an additional benefit, this means we can have tests depend on images that
+the test code doesn't know how to build. That seems like a liability, but it
+that the build process for complex images can be versioned outside of the
+presto-admin codebase.
+"""
+
+
+class TagBareImageProvider(BareImageProvider):
+    def __init__(self, base_master_name, base_slave_name, tag_decoration):
+        super(TagBareImageProvider, self).__init__(tag_decoration)
+        self.base_master_name = base_master_name
+        self.base_slave_name = base_slave_name
+        self.client = Client()
+
+    def create_bare_images(self, cluster, master_name, slave_name):
+        self.client.tag(self.base_master_name, master_name)
+        self.client.tag(self.base_slave_name, slave_name)
