@@ -25,7 +25,6 @@ from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import run_sql
-from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, PrestoError
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
@@ -66,25 +65,6 @@ class TestCollect(BaseProductTestCase):
 
     def log_msg(self, actual, expected):
         msg = '%s != %s' % actual, expected
-
-        # Print node.properties files for coordinator and workers in
-        # presto-admin and presto.
-        filename = 'node.properties'
-        msg += '\n\nCoordinator %s file in presto-admin:\n' % filename
-        coord_properties = os.path.join(constants.COORDINATOR_DIR, filename)
-        msg = self.cluster.exec_cmd_on_host(self.cluster.master,
-                                            'cat %s' % coord_properties)
-        msg += '\n\nWorker %s file in presto-admin:\n' % filename
-        worker_properties = os.path.join(constants.WORKERS_DIR, filename)
-        msg += self.cluster.exec_cmd_on_host(self.cluster.master,
-                                             'cat %s' % worker_properties)
-        msg += '\n\n%s file on presto coordinator:\n' % filename
-        presto_properties = os.path.join(constants.REMOTE_CONF_DIR, filename)
-        msg += self.cluster.exec_cmd_on_host(self.cluster.master,
-                                             'cat %s' % presto_properties)
-        msg += '\n\n%s file on presto slave1:\n' % filename
-        msg += self.cluster.exec_cmd_on_host(self.cluster.slaves[0],
-                                             'cat %s' % presto_properties)
         return msg
 
     @attr('smoketest')
@@ -294,3 +274,33 @@ class TestCollect(BaseProductTestCase):
                            self.PA_ONLY_CLUSTER)
         self.upload_topology()
         self._assert_no_logs_downloaded()
+
+    def test_collect_logs_multiple_server_logs(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+        self.run_prestoadmin('server start')
+        self.cluster.write_content_to_host('Stuff that I logged!',
+                                           'var/log/presto/server.log-2',
+                                           self.cluster.master)
+        actual = self.run_prestoadmin('collect logs')
+
+        expected = 'Downloading logs from all the nodes...\n' + \
+                   'logs archive created: ' + OUTPUT_FILENAME_FOR_LOGS + '\n'
+        self.assertLazyMessage(lambda: self.log_msg(actual, expected),
+                               self.assertEqual, actual, expected)
+
+        downloaded_logs_location = path.join(TMP_PRESTO_DEBUG, 'logs')
+        self.assert_path_exists(self.cluster.master,
+                                downloaded_logs_location)
+
+        for host in self.cluster.all_internal_hosts():
+            host_log_location = path.join(downloaded_logs_location,
+                                          host)
+            self.assert_path_exists(self.cluster.master,
+                                    os.path.join(host_log_location,
+                                                 'server.log'))
+
+        master_path = os.path.join(downloaded_logs_location,
+                                   self.cluster.internal_master,)
+        self.assert_path_exists(self.cluster.master,
+                                os.path.join(master_path, 'server.log-2'))
