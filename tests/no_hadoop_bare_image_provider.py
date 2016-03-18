@@ -16,30 +16,11 @@
 Provides bare images for standalone clusters.
 """
 
-from tests.bare_image_provider import BareImageProvider
-
-from tests.product.constants import \
-    BASE_IMAGE_NAME, BASE_IMAGE_TAG, BASE_TD_DOCKERFILE_DIR
+from tests.bare_image_provider import TagBareImageProvider
 
 
-class NoHadoopBareImageProvider(BareImageProvider):
+class NoHadoopBareImageProvider(TagBareImageProvider):
     def __init__(self):
-        super(NoHadoopBareImageProvider, self).__init__()
-
-    def create_bare_images(self, cluster, master_name, slave_name):
-        cluster.create_image(
-            BASE_TD_DOCKERFILE_DIR,
-            master_name,
-            BASE_IMAGE_NAME,
-            BASE_IMAGE_TAG
-        )
-
-        cluster.create_image(
-            BASE_TD_DOCKERFILE_DIR,
-            slave_name,
-            BASE_IMAGE_NAME,
-            BASE_IMAGE_TAG
-        )
-
-    def get_tag_decoration(self):
-        return 'nohadoop'
+        super(NoHadoopBareImageProvider, self).__init__(
+            'teradatalabs/centos-ssh-test', 'teradatalabs/centos-ssh-test',
+            'nohadoop')
