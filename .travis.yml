@@ -20,7 +20,7 @@ env:
 install: 
   - pip install --upgrade pip==6.1.1
   - pip install -r requirements.txt
-before-script:
+before_script:
   - make docker-images
 script: 
   - |
