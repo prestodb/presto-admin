@@ -108,9 +108,7 @@ class BaseTestCase(unittest.TestCase):
         try:
             callable_object(*args, **callable_kwargs)
         except expected_exception as e:
-            self.assertTrue(re.search(expected_regexp, str(e)),
-                            repr(expected_regexp) + " not found in " +
-                            repr(str(e)) + msg)
+            self.assertRegexpMatches(str(e), expected_regexp, msg)
         else:
             self.fail("Expected exception " + str(expected_exception) +
                       " not raised" + msg)
@@ -132,10 +130,16 @@ class BaseTestCase(unittest.TestCase):
         except AssertionError:
             self.fail(msg=msg_func())
 
+    def _format_regexp_not_found(self, msg, regexp, text):
+        return '%s:\n' \
+               '\t\t======== vv REGEXP vv ========\n%s\n' \
+               '\t\t========   not found in   ========\n%s\n' \
+               '\t\t======== ^^  TEXT  ^^ ========\n' % (msg, regexp, text)
+
     # equivalent to python 2.7's unittest.assertRegexpMatches()
     def assertRegexpMatches(
             self, text, expected_regexp, msg="Regexp didn't match"):
-        msg = '%s: %r not found in %r' % (msg, expected_regexp, text)
+        msg = self._format_regexp_not_found(msg, expected_regexp, text)
         self.assertTrue(re.search(expected_regexp, text), msg)
 
     def assertRegexpMatchesLineByLine(self, actual_lines,
