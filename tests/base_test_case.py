@@ -135,6 +135,7 @@ class BaseTestCase(unittest.TestCase):
     # equivalent to python 2.7's unittest.assertRegexpMatches()
     def assertRegexpMatches(
             self, text, expected_regexp, msg="Regexp didn't match"):
+        msg = '%s: %r not found in %r' % (msg, expected_regexp, text)
         self.assertTrue(re.search(expected_regexp, text), msg)
 
     def assertRegexpMatchesLineByLine(self, actual_lines,
