@@ -320,8 +320,11 @@ class DockerCluster(BaseCluster):
                 or not user_output:
             return False
         # check for .ssh being in the right place
-        ssh_output = self.exec_cmd_on_host(host, 'ls /home/app-admin/.ssh')
-        if 'id_rsa' not in ssh_output:
+        try:
+            ssh_output = self.exec_cmd_on_host(host, 'ls /home/app-admin/.ssh')
+            if 'id_rsa' not in ssh_output:
+                return False
+        except OSError:
             return False
         return True
 
