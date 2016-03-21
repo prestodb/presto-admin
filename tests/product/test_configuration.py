@@ -55,9 +55,8 @@ class TestConfiguration(BaseProductTestCase):
 
         self.assertEqualIgnoringOrder(output, expected)
 
-    def write_dummy_config_file(self):
+    def __write_dummy_config_file(self):
         # deploy coordinator configuration only.  Has a non-default file
-        filename = 'config.properties'
         dummy_prop1 = 'a.dummy.property=\'single-quoted\''
         dummy_prop2 = 'another.dummy=value'
         extra_configs = '%s\n%s' % (dummy_prop1, dummy_prop2)
@@ -71,7 +70,7 @@ class TestConfiguration(BaseProductTestCase):
         self.deploy_and_assert_default_config()
 
         # deploy coordinator configuration only.  Has a non-default file
-        dummy_prop1, dummy_prop2 = self.write_dummy_config_file()
+        dummy_prop1, dummy_prop2 = self.__write_dummy_config_file()
 
         output = self.run_prestoadmin('configuration deploy coordinator')
         deploy_template = 'Deploying configuration on: %s\n'
@@ -120,12 +119,14 @@ class TestConfiguration(BaseProductTestCase):
 
         self.deploy_and_assert_default_config()
 
-        dummy_prop1, dummy_prop2 = self.write_dummy_config_file()
+        dummy_prop1, dummy_prop2 = self.__write_dummy_config_file()
 
-        output = self.run_prestoadmin('configuration deploy -H %(master)s,%(slave1)s')
+        output = self.run_prestoadmin('configuration deploy '
+                                      '-H %(master)s,%(slave1)s')
         deploy_template = 'Deploying configuration on: %s\n'
         expected = ''
-        for host in [self.cluster.internal_master, self.cluster.internal_slaves[0]]:
+        for host in [self.cluster.internal_master,
+                     self.cluster.internal_slaves[0]]:
             expected += deploy_template % host
 
         for host in [self.cluster.slaves[1], self.cluster.slaves[2]]:
@@ -151,33 +152,27 @@ class TestConfiguration(BaseProductTestCase):
 
         self.deploy_and_assert_default_config()
 
-        dummy_prop1, dummy_prop2 = self.write_dummy_config_file()
+        dummy_prop1, dummy_prop2 = self.__write_dummy_config_file()
 
-        output = self.run_prestoadmin('configuration deploy -x %(master)s,%(slave1)s')
+        output = self.run_prestoadmin('configuration deploy '
+                                      '-x %(master)s,%(slave1)s')
         self.assert_has_default_config(self.cluster.master)
         self.assert_has_default_config(self.cluster.slaves[0])
         deploy_template = 'Deploying configuration on: %s\n'
         expected = ''
-        for host in [self.cluster.internal_slaves[1], self.cluster.internal_slaves[2]]:
+        for host in [self.cluster.internal_slaves[1],
+                     self.cluster.internal_slaves[2]]:
             expected += deploy_template % host
 
         self.assertEqualIgnoringOrder(output, expected)
 
         for slave in [self.cluster.slaves[1], self.cluster.slaves[2]]:
             self.assert_file_content(slave,
-                                 os.path.join(constants.REMOTE_CONF_DIR,
-                                              'config.properties'),
-                                 dummy_prop1 + '\n' +
-                                 dummy_prop2 + '\n' +
-                                 self.default_workers_test_config_)
-
-    def test_configuration_deploy_using_dash_h_invalid_host(self):
-        self.upload_topology()
-
-        expected = 'Hosts defined in --hosts/-H must be present in /etc/opt/prestoadmin/config.json'
-
-        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
-                                'configuration deploy -H invalidHost' )
+                                     os.path.join(constants.REMOTE_CONF_DIR,
+                                                  'config.properties'),
+                                     dummy_prop1 + '\n' +
+                                     dummy_prop2 + '\n' +
+                                     self.default_workers_test_config_)
 
     def test_lost_coordinator_connection(self):
         internal_bad_host = self.cluster.internal_slaves[0]
@@ -304,19 +299,13 @@ class TestConfiguration(BaseProductTestCase):
         self.run_prestoadmin('configuration deploy')
 
         # show default configuration for master and slave1
-        output = self.run_prestoadmin('configuration show -H %(master)s,%(slave1)s')
+        output = self.run_prestoadmin('configuration show '
+                                      '-H %(master)s,%(slave1)s')
         with open(os.path.join(LOCAL_RESOURCES_DIR,
-                               'configuration_show_default_master_slave1.txt'), 'r') as f:
+                               'configuration_show_default_master_slave1.txt'),
+                  'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
-
-    def test_configuration_show_using_dash_h_invalid_host(self):
-        self.upload_topology()
-
-        expected = 'Hosts defined in --hosts/-H must be present in /etc/opt/prestoadmin/config.json'
-
-        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
-                                'configuration show -H invalidHost' )
 
     def test_configuration_show_coord_worker_using_dash_x(self):
         self.upload_topology()
@@ -324,9 +313,10 @@ class TestConfiguration(BaseProductTestCase):
         self.run_prestoadmin('configuration deploy')
 
         # show default configuration for all except master and slave1
-        output = self.run_prestoadmin('configuration show -x %(master)s,%(slave1)s')
+        output = self.run_prestoadmin('configuration show '
+                                      '-x %(master)s,%(slave1)s')
         with open(os.path.join(LOCAL_RESOURCES_DIR,
-                               'configuration_show_default_slave2_slave3.txt'), 'r') as f:
+                               'configuration_show_default_slave2_slave3.txt'),
+                  'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
-

@@ -90,22 +90,6 @@ class TestConnectors(BaseProductTestCase):
         self.assert_has_default_connector(self.cluster.master)
         self.assert_has_default_connector(self.cluster.slaves[1])
 
-    def test_connector_add_invalid_host_using_dash_h(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
-        expected = 'Hosts defined in --hosts/-H must be present in /etc/opt/prestoadmin/config.json'
-
-        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
-                                'connector add tpch -H invalidHost' )
-
-    def test_connector_remove_invalid_host_using_dash_h(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
-        expected = 'Hosts defined in --hosts/-H must be present in /etc/opt/prestoadmin/config.json'
-
-        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
-                                'connector remove tpch -H invalidHost' )
-
     def test_connector_add_remove_coord_worker_using_dash_x(self):
         self.setup_cluster_assert_connectors()
 
@@ -116,8 +100,8 @@ class TestConnectors(BaseProductTestCase):
         self.assert_has_default_connector(self.cluster.slaves[0])
         for host in [self.cluster.slaves[1], self.cluster.slaves[2]]:
             self.assert_path_removed(host,
-                                 os.path.join(constants.REMOTE_CATALOG_DIR,
-                                              'tpch.properties'))
+                                     os.path.join(constants.REMOTE_CATALOG_DIR,
+                                                  'tpch.properties'))
 
         self.cluster.write_content_to_host(
             'connector.name=tpch',

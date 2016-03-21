@@ -480,6 +480,12 @@ class TestMain(BaseMainCase):
             ConfigurationError, main.parse_and_validate_commands,
             args=['--hosts', 'non_conf_host', 'server', 'uninstall'])
 
+    @patch('prestoadmin.main.load_config', side_effect=mock_load_topology())
+    def test_host_not_in_conf_short_option(self, unused_mock_load):
+        self.assertRaises(
+            ConfigurationError, main.parse_and_validate_commands,
+            args=['-H', 'non_conf_host', 'server', 'uninstall'])
+
     # PORT CASE 3
     @patch('prestoadmin.main.load_config', side_effect=mock_load_topology())
     def test_cli_overrides_config(self, unused_mock_load):
