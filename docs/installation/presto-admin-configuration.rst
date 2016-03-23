@@ -1,8 +1,8 @@
 .. _presto-admin-configuration-label:
 
-==========================
-Presto-Admin Configuration
-==========================
+========================
+Configuring Presto-Admin
+========================
 A Presto cluster consists of a coordinator node and one or more workers nodes.
 A coordinator and worker may be located on the same node, meaning that you can
 have a single-node installation of Presto, but having a dedicated node for the

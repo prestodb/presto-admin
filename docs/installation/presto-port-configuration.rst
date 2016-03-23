@@ -1,23 +1,33 @@
 .. _presto-port-configuration-label:
 
-=========================
-Presto Port Configuration
-=========================
+===========================
+Configuring the Presto Port
+===========================
 
 By default, Presto uses 8080 for the HTTP port. If the port is already in use on any given node on your cluster, Presto will not start on that node(s).
-You can check if that port is already in use on a node by running the following on that node:
+
+To configure the server to use a different port:
+
+1. Select a port that is free on all of the nodes. You can check if a port is already in use on a node by running the following on that node:
 ::
 
-    netstat -an |grep 8080 |grep LISTEN
+    netstat -an |grep 8081 |grep LISTEN
 
-It will return nothing if port 8080 is free. 
+It will return nothing if port 8081 is free. 
 
-You can configure the server to use a different port by changing the following properties in ``config.properties`` for both coordinator and workers:
+2. Modify the following properties in ``/etc/opt/prestoadmin/coordinator/config.properties`` and ``/etc/opt/prestoadmin/workers/config.properties``:
 
 ::
 
     http-server.http.port=<port>
     discovery.uri=http://<coordinator_ip_or_host>:<port>
 
-You can add these properties with the new ``port`` to ``/etc/opt/prestoadmin/coordinator/config.properties`` and
-``/etc/opt/prestoadmin/workers/config.properties``. Then, run :ref:`configuration-deploy-label`.
+
+3. Run the following command to deploy the configuration change to the cluster: ::
+
+    sudo ./presto-admin configuration deploy
+
+
+4. Restart the Presto servers so that the changes get picked up: ::
+
+    sudo ./presto-admin server restart
