@@ -64,7 +64,7 @@ class TestCollect(BaseProductTestCase):
         self.assert_path_exists(self.cluster.master, admin_log)
 
     def log_msg(self, actual, expected):
-        msg = '%s != %s' % actual, expected
+        msg = '%s != %s' % (actual, expected)
         return msg
 
     @attr('smoketest')
