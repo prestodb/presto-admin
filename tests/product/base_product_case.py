@@ -312,7 +312,7 @@ query.max-memory=50GB\n"""
             expected)
 
     def file_content_message(self, actual, expected, pa_file):
-        msg = '%s != %s' % actual, expected
+        msg = '%s != %s' % (actual, expected)
         if pa_file:
             try:
                 msg += '\n Content for presto-admin file %s \n' % pa_file
