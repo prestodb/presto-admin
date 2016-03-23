@@ -34,7 +34,13 @@ with open('HISTORY.rst') as history_file:
 # Requirements for both development and testing are duplicated here
 # and in the requirements.txt. Unfortunately this is required by
 # tox which relies on the existence of both.
+
+# Note that argparse is special. We don't actually depend on argparse, but
+# wheel does. If argparse exists in the system libraries, pip wheel won't
+# package it up into the third-party directory, and the resulting dist-offline
+# will fail to install if argparse isn't in the system python libraries.
 requirements = [
+    'argparse==1.4',
     'paramiko==1.15.3',
     'fabric==1.10.1',
     'requests==2.7.0',
