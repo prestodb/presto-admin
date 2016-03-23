@@ -66,6 +66,10 @@ be found below.
     Routes SSH connections through the SSH daemon on the
     specified gateway host to their final destination.
 
+-H HOSTS, --hosts=HOSTS
+    Sets the list of hosts where a ``presto-admin`` command should be executed.
+    The values should be comma-separated and exist in your topology.
+
 -i PATH
     Adds the SSH private key file specified by PATH to the set of keys to
     try during key-based SSH authentication. May be repeated.
@@ -102,6 +106,10 @@ be found below.
     Sets the user that is used for SSH connections. If the SSH username is set both in
     ``/etc/opt/prestoadmin/config.json`` and on the command line, the username
     specified on the command line will be used.
+
+-x HOSTS, --exclude-hosts=HOSTS
+    Sets the list of hosts to be excluded when executing a ``presto-admin``
+    command. The values should be comma-separated and exist in your topology.
 
 --serial
     Switches to run the command in serial. The default is to run in parallel, because

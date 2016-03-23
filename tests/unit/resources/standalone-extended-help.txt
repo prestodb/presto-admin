@@ -19,6 +19,8 @@ Options:
                         do not load user known_hosts file
     -g HOST, --gateway=HOST
                         gateway host to connect through
+    -H HOSTS, --hosts=HOSTS
+                        comma-separated list of hosts to operate on
     -i PATH             path to SSH private key file. May be repeated.
     -k, --no-keys       don't load private key files from ~/.ssh/
     --keepalive=N       enables a keepalive every N seconds
@@ -35,6 +37,8 @@ Options:
                         set remote command timeout to N seconds
     -u USER, --user=USER
                         username to use when connecting to remote hosts
+    -x HOSTS, --exclude-hosts=HOSTS
+                        comma-separated list of hosts to exclude
     --serial            default to serial execution method
 
 The commands listed below are for the current mode.

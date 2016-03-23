@@ -84,8 +84,7 @@ def _get_presto_env_options():
                           'warn_only', 'always_use_pty', 'skip_unknown_tasks',
                           'abort_on_prompts', 'pool_size',
                           'eagerly_disconnect', 'ssh_config_path']
-    commands_to_hide = ['--hosts', '--exclude-hosts', '--roles', '--shell',
-                        '--linewise', '--show', '--hide']
+    commands_to_hide = ['--roles', '--shell', '--linewise', '--show', '--hide']
     new_env_options = \
         [x for x in new_env_options if x.dest not in commands_to_remove]
     for env_option in new_env_options:
@@ -327,7 +326,7 @@ def parser_for_options():
 
     # Hide most of the options from the help text so it's simpler. Need to
     # document the other options, however.
-    commands_to_show = ['hosts', 'exclude_hosts', 'password']
+    commands_to_show = ['password']
 
     for option in presto_env_options:
         if option.dest in commands_to_show:
