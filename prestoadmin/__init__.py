@@ -20,7 +20,7 @@ import sys
 
 from fabric.api import env
 
-__version__ = '1.2'  # Make sure to update setup.py too
+__version__ = '1.3'  # Make sure to update setup.py too
 
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
