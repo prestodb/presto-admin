@@ -7,8 +7,8 @@ Advanced Installation Options
 Online vs Offline Installer
 ---------------------------
 The installer has two different versions: the offline installer -- 
-``prestoadmin-1.2-offline.tar.bz2``-- and the online installer --
-``prestoadmin-1.2-online.tar.bz2``. The offline installer includes all of the
+``prestoadmin-1.3-offline.tar.bz2``-- and the online installer --
+``prestoadmin-1.3-online.tar.bz2``. The offline installer includes all of the
 dependencies for ``presto-admin``, so it can be used on a cluster without an 
 outside network connection. The offline installer is recommended because it is faster.
 
