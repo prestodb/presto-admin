@@ -112,7 +112,7 @@ def secure_create_file(filepath, user_group, mode=600):
     with settings(warn_only=True):
         result = sudo(command)
         if result.return_code == missing_owner_code:
-            abort("User %s does not exist. Make sure the presto server rpm "
+            abort("User %s does not exist. Make sure the Presto server RPM "
                   "is installed and try again" % (user,))
         elif result.failed:
             abort("Failed to securely create file %s" % (filepath))
