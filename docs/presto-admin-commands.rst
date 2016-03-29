@@ -96,7 +96,7 @@ the ``/etc/presto`` directory on your Presto cluster:
 If the coordinator is also a worker, it will get the coordinator configuration.
 The deployed configuration files will overwrite the existing configurations on
 the cluster. However, the node.id from the
-node.properties file will be preserved. If no node.id exists, a new id will be
+node.properties file will be preserved. If no ``node.id`` exists, a new id will be
 generated. If any required files are absent when you run configuration deploy,
 a default configuration will be deployed. Below are the default
 configurations:
