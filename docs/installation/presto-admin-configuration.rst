@@ -14,12 +14,41 @@ you must specify a configuration for ``presto-admin``. This configuration
 indicates the nodes on which to install as well as other credentials.
 
 To set up a configuration, create a file ``/etc/opt/prestoadmin/config.json``
-with the content below. Replace the variables denoted with brackets <> with
-actual values enclosed in quotations. The user specified by ``username`` must
-have sudo access on all of Presto nodes, and ``presto-admin`` also must be able
-to login to all of the nodes via SSH as that user
-(see :ref:`ssh-configuration-label` for details on how to set that up). The
-file should be owned by root with R/W permissions (i.e. 622).
+with the content below as appropriate for your cluster setup. Replace the
+variables denoted with brackets <> with actual values enclosed in double
+quotations. The user specified by ``username`` must have sudo access on all
+the Presto nodes, and ``presto-admin`` also must be able to login to all of
+the nodes via SSH as that user (see :ref:`ssh-configuration-label` for details
+on how to set that up). The file should be owned by root with R/W permissions
+(i.e. 622).
+
+Configuration for Amazon EMR 
+----------------------------
+
+Use the following configuration as a template for Amazon EMR: 
+::
+
+ {
+ "username": "hadoop",
+ "port": "<ssh_port>",
+ "coordinator": "<EMR_master_node_host_name>",
+ "workers": ["<host_name_1>", "<host_name_2>", ... "<host_name_n>"],
+ "java8_home":"<path/to/java8/on/presto/nodes>"
+ }
+
+Also, for running Presto Admin commands on Amazon EMR, do the following:
+
+	- Copy the ``.pem`` file associated with the Amazon EC2 key pair to the Presto Admin installation node of the EMR cluster.
+	- Use the ``-i </path/to/your.pem>`` input argument when running presto-admin commands on the node.
+
+	  ::
+
+	   sudo </path/to/presto-admin> -i </path/to/your.pem> <presto_admin_command>
+
+
+Configuration for other clusters
+----------------------------------------------
+Use the following configuration as a template for other clusters:
 ::
 
  {
