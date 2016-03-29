@@ -66,8 +66,15 @@ class TestDeploy(BaseTestCase):
         deploy.coordinator()
         assert configure_mock.called
 
+    class SudoResult(object):
+        def __init__(self):
+            super(TestDeploy.SudoResult, self).__init__()
+            self.return_code = 0
+            self.failed = False
+
     @patch('prestoadmin.deploy.sudo')
     def test_deploy(self, sudo_mock):
+        sudo_mock.return_value = self.SudoResult()
         files = {"jvm.config": "a=b"}
         deploy.deploy(files, "/my/remote/dir")
         sudo_mock.assert_any_call("mkdir -p /my/remote/dir")
@@ -77,6 +84,7 @@ class TestDeploy(BaseTestCase):
     @patch('prestoadmin.deploy.files.append')
     @patch('prestoadmin.deploy.sudo')
     def test_deploy_node_properties(self, sudo_mock, append_mock, open_mock):
+        sudo_mock.return_value = self.SudoResult()
         file_manager = open_mock.return_value.__enter__.return_value
         file_manager.read.return_value = ("key=value")
         command = (

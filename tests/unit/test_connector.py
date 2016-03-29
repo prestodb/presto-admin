@@ -23,6 +23,7 @@ from prestoadmin import connector
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError, \
     ConfigFileNotFoundError
+from prestoadmin.standalone.config import PRESTO_STANDALONE_USER_GROUP
 from tests.unit.base_unit_case import BaseUnitCase
 
 
@@ -46,7 +47,8 @@ class TestConnector(BaseUnitCase):
         filenames = ['tpch.properties']
         deploy_mock.assert_called_with(filenames,
                                        constants.CONNECTORS_DIR,
-                                       constants.REMOTE_CATALOG_DIR)
+                                       constants.REMOTE_CATALOG_DIR,
+                                       PRESTO_STANDALONE_USER_GROUP)
         validate_mock.assert_called_with(filenames)
 
     @patch('prestoadmin.connector.deploy_files')
@@ -60,7 +62,8 @@ class TestConnector(BaseUnitCase):
         connector.add()
         deploy_mock.assert_called_with(catalogs,
                                        constants.CONNECTORS_DIR,
-                                       constants.REMOTE_CATALOG_DIR)
+                                       constants.REMOTE_CATALOG_DIR,
+                                       PRESTO_STANDALONE_USER_GROUP)
 
     @patch('prestoadmin.connector.deploy_files')
     @patch('prestoadmin.connector.os.path.isdir')
@@ -150,10 +153,13 @@ class TestConnector(BaseUnitCase):
     def test_deploy_files(self, put_mock, sudo_mock):
         local_dir = '/my/local/dir'
         remote_dir = '/my/remote/dir'
-        connector.deploy_files(['a', 'b'], local_dir, remote_dir)
+        connector.deploy_files(['a', 'b'], local_dir, remote_dir,
+                               PRESTO_STANDALONE_USER_GROUP)
         sudo_mock.assert_called_with('mkdir -p %s' % remote_dir)
-        put_mock.assert_any_call('/my/local/dir/a', remote_dir, use_sudo=True)
-        put_mock.assert_any_call('/my/local/dir/b', remote_dir, use_sudo=True)
+        put_mock.assert_any_call('/my/local/dir/a', remote_dir, use_sudo=True,
+                                 mode=0600)
+        put_mock.assert_any_call('/my/local/dir/b', remote_dir, use_sudo=True,
+                                 mode=0600)
 
     @patch('prestoadmin.connector.os.path.isfile')
     @patch("__builtin__.open")
