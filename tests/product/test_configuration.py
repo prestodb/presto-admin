@@ -80,8 +80,8 @@ class TestConfiguration(BaseProductTestCase):
         for container in self.cluster.slaves:
             self.assert_has_default_config(container)
 
-        config_properties_path = os.path.join(constants.REMOTE_CONF_DIR,
-                     'config.properties')
+        config_properties_path = os.path.join(
+            constants.REMOTE_CONF_DIR, 'config.properties')
         self.assert_config_perms(self.cluster.master, config_properties_path)
         self.assert_file_content(self.cluster.master,
                                  config_properties_path,
