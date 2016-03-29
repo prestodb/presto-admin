@@ -10,6 +10,7 @@ A full explanation of the commands and features of ``presto-admin``.
     :maxdepth: 2
 
     quick-start-guide
+    emr
     installation/advanced-installation-options
     installation/presto-port-configuration
     ssh-configuration

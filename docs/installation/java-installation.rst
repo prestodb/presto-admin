@@ -7,6 +7,8 @@ Prerequisites: :ref:`presto-admin-installation-label` and :ref:`presto-admin-con
 
 The Oracle Java 1.8 JRE (64-bit), update 45 or higher, is a prerequisite for Presto. If a suitable 64-bit version of Oracle Java 8 is already installed on the cluster, you can skip this step.
 
+.. NOTE:: On Amazon EMR (up to EMR 4.4.0), the default version of Java is 1.7. To run Presto on EMR, please install Java 1.8.
+
 There are two ways to install Java: via RPM and via tarball.  The RPM installation sets the default Java on your machine to be Java 8. If 
 it is acceptable to set the default Java to be Java 8, you can use ``presto-admin`` to install Java, otherwise you will need to install Java 8 manually.
 

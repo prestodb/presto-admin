@@ -1,3 +1,5 @@
+.. _presto-server-installation-label:
+
 ============================
 Installing the Presto Server
 ============================

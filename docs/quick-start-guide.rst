@@ -1,3 +1,5 @@
+.. _quick-start-guide-label:
+
 *****************
 Quick Start Guide
 *****************
