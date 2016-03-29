@@ -236,10 +236,11 @@ No connectors will be deployed
         self.run_prestoadmin('connector add')
         self.run_prestoadmin('server start')
         for host in self.cluster.all_hosts():
+            filepath = '/etc/presto/catalog/jmx.properties'
             self.assert_has_default_connector(host)
-            self.assert_file_content(host,
-                                     '/etc/presto/catalog/jmx.properties',
-                                     'connector.name=jmx')
+            self.assert_file_perm_owner(host, filepath,
+                                        '-rw-------', 'presto', 'presto')
+            self.assert_file_content(host, filepath, 'connector.name=jmx')
         self._assert_connectors_loaded([['system'], ['jmx'], ['tpch']])
 
     def fatal_error(self, error):

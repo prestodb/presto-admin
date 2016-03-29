@@ -49,8 +49,8 @@ def deploy_files(filenames, local_dir, remote_dir, user_group, mode=0600):
         for file in files:
             with settings(warn_only=True):
                 command = \
-                    "getent passwd {user} >/dev/null || ( rm -f {file} ; " \
-                    "exit {missing_owner_code} ) && " \
+                    "( getent passwd {user} >/dev/null || ( rm -f {file} ; " \
+                    "exit {missing_owner_code} ) ) && " \
                     "chown {user_group} {file}".format(
                         user=user, file=file, user_group=user_group,
                         missing_owner_code=missing_owner_code)

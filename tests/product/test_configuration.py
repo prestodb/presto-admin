@@ -30,7 +30,8 @@ class TestConfiguration(BaseProductTestCase):
 
     def setUp(self):
         super(TestConfiguration, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(
+            NoHadoopBareImageProvider(), self.STANDALONE_PRESTO_CLUSTER)
         self.write_test_configs(self.cluster)
 
     def deploy_and_assert_default_config(self):
@@ -79,9 +80,11 @@ class TestConfiguration(BaseProductTestCase):
         for container in self.cluster.slaves:
             self.assert_has_default_config(container)
 
+        config_properties_path = os.path.join(constants.REMOTE_CONF_DIR,
+                     'config.properties')
+        self.assert_config_perms(self.cluster.master, config_properties_path)
         self.assert_file_content(self.cluster.master,
-                                 os.path.join(constants.REMOTE_CONF_DIR,
-                                              'config.properties'),
+                                 config_properties_path,
                                  dummy_prop1 + '\n' +
                                  dummy_prop2 + '\n' +
                                  self.default_coordinator_test_config_)
@@ -102,9 +105,9 @@ class TestConfiguration(BaseProductTestCase):
         self.assertEqualIgnoringOrder(output, expected)
 
         for container in self.cluster.slaves:
+            self.assert_config_perms(container, config_properties_path)
             self.assert_file_content(container,
-                                     os.path.join(constants.REMOTE_CONF_DIR,
-                                                  'config.properties'),
+                                     config_properties_path,
                                      dummy_prop1 + '\n' +
                                      dummy_prop2 + '\n' +
                                      self.default_workers_test_config_)
@@ -134,15 +137,21 @@ class TestConfiguration(BaseProductTestCase):
 
         self.assertEqualIgnoringOrder(output, expected)
 
+        config_properties_path = os.path.join(constants.REMOTE_CONF_DIR,
+                                              'config.properties')
+
+        self.assert_config_perms(
+            self.cluster.master, config_properties_path)
         self.assert_file_content(self.cluster.master,
-                                 os.path.join(constants.REMOTE_CONF_DIR,
-                                              'config.properties'),
+                                 config_properties_path,
                                  dummy_prop1 + '\n' +
                                  dummy_prop2 + '\n' +
                                  self.default_coordinator_test_config_)
+
+        self.assert_config_perms(
+            self.cluster.slaves[0], config_properties_path)
         self.assert_file_content(self.cluster.slaves[0],
-                                 os.path.join(constants.REMOTE_CONF_DIR,
-                                              'config.properties'),
+                                 config_properties_path,
                                  dummy_prop1 + '\n' +
                                  dummy_prop2 + '\n' +
                                  self.default_workers_test_config_)
@@ -166,10 +175,13 @@ class TestConfiguration(BaseProductTestCase):
 
         self.assertEqualIgnoringOrder(output, expected)
 
+        config_properties_path = os.path.join(constants.REMOTE_CONF_DIR,
+                                              'config.properties')
+
         for slave in [self.cluster.slaves[1], self.cluster.slaves[2]]:
+            self.assert_config_perms(slave, config_properties_path)
             self.assert_file_content(slave,
-                                     os.path.join(constants.REMOTE_CONF_DIR,
-                                                  'config.properties'),
+                                     config_properties_path,
                                      dummy_prop1 + '\n' +
                                      dummy_prop2 + '\n' +
                                      self.default_workers_test_config_)
@@ -227,6 +239,9 @@ class TestConfiguration(BaseProductTestCase):
 
     def test_configuration_show(self):
         self.upload_topology()
+
+        for host in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(host, 'rm -rf /etc/presto')
 
         # configuration show no configuration
         output = self.run_prestoadmin('configuration show')

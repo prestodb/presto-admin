@@ -289,6 +289,18 @@ query.max-memory=50GB\n"""
     def get_file_content(self, host, filepath):
         return self.cluster.exec_cmd_on_host(host, 'cat %s' % (filepath))
 
+    def assert_config_perms(self, host, filepath):
+        self.assert_file_perm_owner(
+            host, filepath, '-rw-------', 'presto', 'presto')
+
+    def assert_file_perm_owner(
+            self, host, filepath, permissions, owner, group):
+        ls = self.cluster.exec_cmd_on_host(host, "ls -l %s" % (filepath,))
+        fields = ls.split()
+        self.assertEqual(fields[0], permissions)
+        self.assertEqual(fields[2], owner)
+        self.assertEqual(fields[3], group)
+
     def assert_file_content(self, host, filepath, expected):
         content = self.get_file_content(host, filepath)
 
@@ -327,9 +339,10 @@ query.max-memory=50GB\n"""
         self.assertRegexpMatches(config, expected)
 
     def assert_has_default_connector(self, container):
-        self.assert_file_content(container,
-                                 '/etc/presto/catalog/tpch.properties',
-                                 'connector.name=tpch')
+        filepath = '/etc/presto/catalog/tpch.properties'
+
+        self.assert_config_perms(container, filepath)
+        self.assert_file_content(container, filepath, 'connector.name=tpch')
 
     def assert_has_jmx_connector(self, container):
         self.assert_file_content(container,
@@ -341,25 +354,30 @@ query.max-memory=50GB\n"""
             container, ' [ ! -e %s ]' % directory)
 
     def assert_has_default_config(self, host):
-        self.assert_file_content(host,
-                                 '/etc/presto/jvm.config',
-                                 self.default_jvm_config_)
+        jvm_config_path = '/etc/presto/jvm.config'
+        self.assert_config_perms(host, jvm_config_path)
+        self.assert_file_content(
+            host, jvm_config_path, self.default_jvm_config_)
 
         self.assert_node_config(host, self.default_node_properties_)
 
+        config_properties_path = os.path.join(constants.REMOTE_CONF_DIR,
+                                              'config.properties')
+
+        self.assert_config_perms(host, config_properties_path)
         if host in self.cluster.slaves:
-            self.assert_file_content(host,
-                                     '/etc/presto/config.properties',
+            self.assert_file_content(host, config_properties_path,
                                      self.default_workers_test_config_)
 
         else:
-            self.assert_file_content(host,
-                                     '/etc/presto/config.properties',
+            self.assert_file_content(host, config_properties_path,
                                      self.default_coordinator_test_config_)
 
     def assert_node_config(self, host, expected):
+        node_properties_path = '/etc/presto/node.properties'
+        self.assert_config_perms(host, node_properties_path)
         node_properties = self.cluster.exec_cmd_on_host(
-            host, 'cat /etc/presto/node.properties')
+            host, 'cat %s' % (node_properties_path,))
         split_properties = node_properties.split('\n', 1)
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
         actual = split_properties[1]
