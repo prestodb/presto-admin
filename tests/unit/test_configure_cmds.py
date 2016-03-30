@@ -18,6 +18,7 @@ from mock import patch
 from prestoadmin.util import constants
 from prestoadmin import configure_cmds
 from tests.unit.base_unit_case import BaseUnitCase
+from tests.unit import SudoResult
 
 
 class TestConfigureCmds(BaseUnitCase):
@@ -122,15 +123,16 @@ class TestConfigureCmds(BaseUnitCase):
         self.assertRaises(Exception, configure_cmds.fetch_all, 'any_dir')
         self.assertFalse(mock_fetch.called)
 
+    @patch('prestoadmin.util.fabricapi.sudo')
     @patch('prestoadmin.configure_cmds.get')
-    @patch('prestoadmin.configure_cmds.put')
+    @patch('prestoadmin.util.fabricapi.put')
     @patch('prestoadmin.configure_cmds.files.exists')
     @patch('prestoadmin.configure_cmds.os.path.exists')
     @patch('prestoadmin.configure_cmds.ensure_parent_directories_exist')
     def test_fetch_deploy_all_same_paths(self, mock_ensure,
                                          mock_local_exists,
                                          mock_remote_exists,
-                                         mock_put, mock_get):
+                                         mock_put, mock_get, mock_sudo):
         env.host = 'any_host'
         get_files = set()
         put_files = set()
@@ -138,11 +140,13 @@ class TestConfigureCmds(BaseUnitCase):
         def get(remote_path, local_path):
             get_files.add((local_path, remote_path))
 
-        def put(local_path, remote_path):
+        def put(local_path, remote_path, **kwargs):
             put_files.add((local_path, remote_path))
+            return [remote_path]
 
         mock_put.side_effect = put
         mock_get.side_effect = get
+        mock_sudo.return_value = SudoResult()
 
         # Local files don't exist for the fetch phase so we don't have to
         # worry about allow_overwrite behavior.

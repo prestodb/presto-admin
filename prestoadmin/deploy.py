@@ -21,10 +21,12 @@ import logging
 import os
 
 from fabric.contrib import files
-from fabric.operations import sudo
+from fabric.context_managers import settings
+from fabric.operations import sudo, abort
 from fabric.api import env
 
 from prestoadmin.util import constants
+from prestoadmin.standalone.config import PRESTO_STANDALONE_USER_GROUP
 import coordinator as coord
 import prestoadmin.util.fabricapi as util
 import workers as w
@@ -92,13 +94,35 @@ def deploy(confs, remote_dir):
     _LOGGER.info("Deploying configurations for " + str(confs.keys()))
     sudo("mkdir -p " + remote_dir)
     for name, content in confs.iteritems():
-        write_to_remote_file(content, os.path.join(remote_dir, name))
+        write_to_remote_file(content, os.path.join(remote_dir, name),
+                             'presto')
+
+
+def secure_create_file(filepath, user_group, mode=600):
+    user, group = user_group.split(':')
+    missing_owner_code = 42
+    command = \
+        "( getent passwd {user} >/dev/null || exit {missing_owner_code} ) &&" \
+        " echo '' > {filepath} && " \
+        "chown {user_group} {filepath} && " \
+        "chmod {mode} {filepath} ".format(
+            filepath=filepath, user=user, user_group=user_group, mode=mode,
+            missing_owner_code=missing_owner_code)
+
+    with settings(warn_only=True):
+        result = sudo(command)
+        if result.return_code == missing_owner_code:
+            abort("User %s does not exist. Make sure the Presto server RPM "
+                  "is installed and try again" % (user,))
+        elif result.failed:
+            abort("Failed to securely create file %s" % (filepath))
 
 
 def deploy_node_properties(content, remote_dir):
     _LOGGER.info("Deploying node.properties configuration")
     name = "node.properties"
     node_file_path = (os.path.join(remote_dir, name))
+    secure_create_file(node_file_path, PRESTO_STANDALONE_USER_GROUP)
     node_id_command = (
         "if ! ( grep -q -s 'node.id' " + node_file_path + " ); then "
         "uuid=$(uuidgen); "
@@ -110,8 +134,11 @@ def deploy_node_properties(content, remote_dir):
     files.append(os.path.join(remote_dir, name), content, True)
 
 
-def write_to_remote_file(text, filename):
-    sudo("echo '%s' > %s" % (escape_single_quotes(text), filename))
+def write_to_remote_file(text, filepath, owner, mode=600):
+    secure_create_file(filepath, PRESTO_STANDALONE_USER_GROUP)
+    command = "echo '{text}' > {filepath}".format(
+            text=escape_single_quotes(text), filepath=filepath)
+    sudo(command)
 
 
 def escape_single_quotes(text):

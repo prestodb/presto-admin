@@ -22,13 +22,14 @@ from contextlib import closing
 from fabric.contrib import files
 from fabric.decorators import task, serial
 from fabric.operations import get
-from fabric.operations import put
 from fabric.state import env
 from fabric.utils import abort, warn
 import prestoadmin.deploy
-from prestoadmin.standalone.config import StandaloneConfig
+from prestoadmin.standalone.config import StandaloneConfig, \
+    PRESTO_STANDALONE_USER_GROUP
 from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
+from prestoadmin.util.fabricapi import put_secure
 from prestoadmin.util.filesystem import ensure_parent_directories_exist
 
 __all__ = ['show']
@@ -92,7 +93,8 @@ def deploy_all(source_directory, should_warn=True):
                      % (env.host, local_config_file))
             continue
         remote_config_file = os.path.join(constants.REMOTE_CONF_DIR, file_name)
-        put(local_config_file, remote_config_file)
+        put_secure(PRESTO_STANDALONE_USER_GROUP, 0600, local_config_file,
+                   remote_config_file)
 
 
 def fetch_all(target_directory, allow_overwrite=False):
