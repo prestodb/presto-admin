@@ -20,6 +20,7 @@ import os
 
 from nose.plugins.attrib import attr
 
+from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
@@ -371,6 +372,18 @@ for the change to take effect
                                     'contain connector.name')
         self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
                                 'connector add example')
+
+    def test_connector_add_no_presto_user(self):
+        self.setup_cluster(NoHadoopBareImageProvider(),
+                           self.STANDALONE_PRESTO_CLUSTER)
+
+        for host in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(
+                host, "userdel %s" % (PRESTO_STANDALONE_USER,))
+
+        self.assertRaisesRegexp(
+            OSError, "User presto does not exist", self.run_prestoadmin,
+            'connector add tpch')
 
     def get_connector_info(self):
         output = self.cluster.exec_cmd_on_host(

@@ -20,6 +20,7 @@ import os
 
 from nose.plugins.attrib import attr
 
+from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
@@ -335,3 +336,12 @@ class TestConfiguration(BaseProductTestCase):
                   'r') as f:
             expected = f.read()
         self.assertRegexpMatches(output, expected)
+
+    def test_configuration_no_presto_user(self):
+        for host in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(
+                host, "userdel %s" % (PRESTO_STANDALONE_USER,))
+
+        self.assertRaisesRegexp(
+            OSError, "User presto does not exist", self.run_prestoadmin,
+            'configuration deploy')

@@ -29,7 +29,8 @@ from constants import LOCAL_RESOURCES_DIR
 class TestAuthentication(BaseProductTestCase):
     def setUp(self):
         super(TestAuthentication, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(
+            NoHadoopBareImageProvider(), self.STANDALONE_PRESTO_CLUSTER)
 
     success_output = (
         'Deploying tpch.properties connector configurations on: slave1 \n'
@@ -111,13 +112,14 @@ class TestAuthentication(BaseProductTestCase):
             'echo "password" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
-            non_root_sudo_warning, command_output)
+            self.sudo_password_prompt + non_root_sudo_warning, command_output)
 
         # Passwordless SSH as app-admin, but specify -p
         command_output = self.run_prestoadmin('connector add --password '
                                               'password -u app-admin')
         self.assertEqualIgnoringOrder(
-            self.success_output + self.sudo_password_prompt, command_output)
+            self.success_output + self.sudo_password_prompt +
+            self.sudo_password_prompt, command_output)
 
         # Passwordless SSH as app-admin, but specify wrong password with -I
         parallel_password_failure = self.parallel_password_failure_message()
@@ -177,13 +179,14 @@ class TestAuthentication(BaseProductTestCase):
             'echo "password" | ./presto-admin connector add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
-            non_root_sudo_warning, command_output)
+            self.sudo_password_prompt + non_root_sudo_warning, command_output)
 
         # No passwordless SSH, -p correct -u app-admin
         command_output = self.run_prestoadmin('connector add -p password '
                                               '-u app-admin')
         self.assertEqualIgnoringOrder(
-            self.success_output + self.sudo_password_prompt, command_output)
+            self.success_output + self.sudo_password_prompt +
+            self.sudo_password_prompt, command_output)
 
         # No passwordless SSH, specify keyfile with -i
         self.cluster.exec_cmd_on_host(
@@ -198,7 +201,7 @@ class TestAuthentication(BaseProductTestCase):
                 'mv /root/.ssh/id_rsa.bak /root/.ssh/id_rsa'
             )
 
-    @attr('smoketest')
+    @attr('smoketest', 'quarantine')
     @docker_only
     def test_prestoadmin_no_sudo_popen(self):
         self.upload_topology()

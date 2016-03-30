@@ -149,7 +149,7 @@ class TestConnector(BaseUnitCase):
                                 connector.remove, 'tpch')
 
     @patch('prestoadmin.connector.sudo')
-    @patch('prestoadmin.connector.put')
+    @patch('prestoadmin.util.fabricapi.put')
     def test_deploy_files(self, put_mock, sudo_mock):
         local_dir = '/my/local/dir'
         remote_dir = '/my/remote/dir'

@@ -102,8 +102,8 @@ def secure_create_file(filepath, user_group, mode=600):
     user, group = user_group.split(':')
     missing_owner_code = 42
     command = \
-        "( getent passwd {user} >/dev/null || exit {missing_owner_code} ) ; " \
-        "echo '' > {filepath} && " \
+        "( getent passwd {user} >/dev/null || exit {missing_owner_code} ) &&" \
+        " echo '' > {filepath} && " \
         "chown {user_group} {filepath} && " \
         "chmod {mode} {filepath} ".format(
             filepath=filepath, user=user, user_group=user_group, mode=mode,

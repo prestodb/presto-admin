@@ -19,9 +19,9 @@ import logging
 import errno
 
 from fabric.api import task, env
-from fabric.context_managers import hide, settings
+from fabric.context_managers import hide
 from fabric.contrib import files
-from fabric.operations import sudo, os, put, get, abort
+from fabric.operations import sudo, os, get
 import fabric.utils
 
 from prestoadmin.standalone.config import StandaloneConfig, \
@@ -30,6 +30,7 @@ from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
+from prestoadmin.util.fabricapi import put_secure
 from prestoadmin.util.filesystem import ensure_directory_exists
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,29 +40,11 @@ COULD_NOT_REMOVE = 'Could not remove connector'
 
 
 def deploy_files(filenames, local_dir, remote_dir, user_group, mode=0600):
-    missing_owner_code = 42
-    user, group = user_group.split(":")
     _LOGGER.info('Deploying configurations for ' + str(filenames))
     sudo('mkdir -p ' + remote_dir)
     for name in filenames:
-        files = put(os.path.join(local_dir, name), remote_dir, use_sudo=True,
-                    mode=mode)
-        for file in files:
-            with settings(warn_only=True):
-                command = \
-                    "( getent passwd {user} >/dev/null || ( rm -f {file} ; " \
-                    "exit {missing_owner_code} ) ) && " \
-                    "chown {user_group} {file}".format(
-                        user=user, file=file, user_group=user_group,
-                        missing_owner_code=missing_owner_code)
-
-                result = sudo(command)
-
-                if result.return_code == missing_owner_code:
-                    abort("User %s does not exist. Make sure the Presto "
-                          "server RPM is installed and try again" % (user,))
-                elif result.failed:
-                    abort("Failed to chown file %s" % (file,))
+        put_secure(user_group, mode, os.path.join(local_dir, name), remote_dir,
+                   use_sudo=True)
 
 
 def gather_connectors(local_config_dir, allow_overwrite=False):
