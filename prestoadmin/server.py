@@ -34,7 +34,8 @@ from prestoadmin import package
 from prestoadmin.util.version_util import VersionRange, VersionRangeList, \
     split_version, strip_tag
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.standalone.config import StandaloneConfig
+from prestoadmin.standalone.config import StandaloneConfig, \
+    PRESTO_STANDALONE_USER_GROUP
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError
@@ -203,8 +204,7 @@ def upgrade(local_package_path, local_config_dir=None):
     connector.deploy_files(
         filenames,
         os.path.join(local_config_dir, env.host, 'catalog'),
-        constants.REMOTE_CATALOG_DIR
-    )
+        constants.REMOTE_CATALOG_DIR, PRESTO_STANDALONE_USER_GROUP)
 
 
 def service(control=None):

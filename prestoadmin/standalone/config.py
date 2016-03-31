@@ -27,6 +27,12 @@ import prestoadmin.util.fabricapi as util
 from prestoadmin.util.validators import validate_username, validate_port, \
     validate_host
 
+# Created by the presto-server RPM package.
+PRESTO_STANDALONE_USER = 'presto'
+PRESTO_STANDALONE_GROUP = 'presto'
+PRESTO_STANDALONE_USER_GROUP = "%s:%s" % (PRESTO_STANDALONE_USER,
+                                          PRESTO_STANDALONE_GROUP)
+
 # CONFIG KEYS
 USERNAME = 'username'
 PORT = 'port'

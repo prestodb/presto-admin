@@ -21,14 +21,16 @@ import errno
 from fabric.api import task, env
 from fabric.context_managers import hide
 from fabric.contrib import files
-from fabric.operations import sudo, os, put, get
+from fabric.operations import sudo, os, get
 import fabric.utils
 
-from prestoadmin.standalone.config import StandaloneConfig
+from prestoadmin.standalone.config import StandaloneConfig, \
+    PRESTO_STANDALONE_USER_GROUP
 from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
+from prestoadmin.util.fabricapi import put_secure
 from prestoadmin.util.filesystem import ensure_directory_exists
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,11 +39,12 @@ __all__ = ['add', 'remove']
 COULD_NOT_REMOVE = 'Could not remove connector'
 
 
-def deploy_files(filenames, local_dir, remote_dir):
+def deploy_files(filenames, local_dir, remote_dir, user_group, mode=0600):
     _LOGGER.info('Deploying configurations for ' + str(filenames))
     sudo('mkdir -p ' + remote_dir)
     for name in filenames:
-        put(os.path.join(local_dir, name), remote_dir, use_sudo=True)
+        put_secure(user_group, mode, os.path.join(local_dir, name), remote_dir,
+                   use_sudo=True)
 
 
 def gather_connectors(local_config_dir, allow_overwrite=False):
@@ -124,7 +127,7 @@ def add(name=None):
           (', '.join(filenames), env.host))
 
     deploy_files(filenames, constants.CONNECTORS_DIR,
-                 constants.REMOTE_CATALOG_DIR)
+                 constants.REMOTE_CATALOG_DIR, PRESTO_STANDALONE_USER_GROUP)
 
 
 @task
