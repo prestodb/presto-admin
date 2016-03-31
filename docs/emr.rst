@@ -24,7 +24,7 @@ To install, configure and run Presto Admin on an Amazon EMR cluster, follow the 
 
 - To run Presto Admin on EMR, see the sections starting from :ref:`presto-server-installation-label` onwards in :ref:`quick-start-guide-label`) except for the following caveats:
 
-        - The default version of Java installed on EMR cluster (up to EMR 4.4.0) is 1.7, whereas Presto requires Java 1.8. Install Java 1.8 on EMR cluster by following the instructions in Java installation (see :ref:`java-installation-label`).
+        - The default version of Java installed on an EMR cluster (up to EMR 4.4.0) is 1.7, whereas Presto requires Java 1.8. Install Java 1.8 on the EMR cluster by following the instructions in :ref:`java-installation-label`.
 
         - For running Presto Admin commands on an EMR cluster, do the following:
                 * Copy the ``.pem`` file associated with the Amazon EC2 key pair to the Presto Admin installation node of the EMR cluster.
