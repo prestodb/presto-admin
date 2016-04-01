@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin package &mdash; presto-admin 1.2 documentation</title>
+    <title>prestoadmin package &mdash; presto-admin 1.3 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.2 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.3 documentation" href="index.html" />
     <link rel="up" title="prestoadmin" href="modules.html" />
     <link rel="next" title="prestoadmin.standalone package" href="prestoadmin.standalone.html" />
     <link rel="prev" title="prestoadmin" href="modules.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">prestoadmin</a> &raquo;</li> 
       </ul>
     </div>  
@@ -278,7 +278,7 @@ to deploy on the presto cluster</p>
 <dd><p>Bases: <a class="reference internal" href="#prestoadmin.node.Node" title="prestoadmin.node.Node"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.node.Node</span></code></a></p>
 <dl class="attribute">
 <dt id="prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES">
-<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx2G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'true', 'discovery-server.enabled': 'true', 'http-server.http.port': '8080', 'node-scheduler.include-coordinator': 'false', 'query.max-memory-per-node': '1GB'}, 'node.properties': {'plugin.dir': '/usr/lib/presto/lib/plugin', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data'}}</em><a class="headerlink" href="#prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'true', 'discovery-server.enabled': 'true', 'http-server.http.port': '8080', 'node-scheduler.include-coordinator': 'false', 'query.max-memory-per-node': '8GB'}, 'node.properties': {'plugin.dir': '/usr/lib/presto/lib/plugin', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data'}}</em><a class="headerlink" href="#prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -910,7 +910,7 @@ to deploy on the presto cluster</p>
 <dd><p>Bases: <a class="reference internal" href="#prestoadmin.node.Node" title="prestoadmin.node.Node"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.node.Node</span></code></a></p>
 <dl class="attribute">
 <dt id="prestoadmin.workers.Worker.DEFAULT_PROPERTIES">
-<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx2G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'false', 'query.max-memory-per-node': '1GB', 'http-server.http.port': '8080'}, 'node.properties': {'plugin.dir': '/usr/lib/presto/lib/plugin', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data'}}</em><a class="headerlink" href="#prestoadmin.workers.Worker.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'false', 'query.max-memory-per-node': '8GB', 'http-server.http.port': '8080'}, 'node.properties': {'plugin.dir': '/usr/lib/presto/lib/plugin', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data'}}</em><a class="headerlink" href="#prestoadmin.workers.Worker.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1016,7 +1016,7 @@ to deploy on the presto cluster</p>
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li> 
       </ul>
     </div>

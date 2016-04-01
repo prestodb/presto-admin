@@ -6,7 +6,9 @@ Subpackages
 
 .. toctree::
 
+    prestoadmin.standalone
     prestoadmin.util
+    prestoadmin.yarn_slider
 
 Submodules
 ----------
@@ -71,6 +73,22 @@ prestoadmin.main module
 -----------------------
 
 .. automodule:: prestoadmin.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+prestoadmin.mode module
+-----------------------
+
+.. automodule:: prestoadmin.mode
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+prestoadmin.node module
+-----------------------
+
+.. automodule:: prestoadmin.node
     :members:
     :undoc-members:
     :show-inheritance:

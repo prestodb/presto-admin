@@ -20,6 +20,14 @@ prestoadmin.util.application module
     :undoc-members:
     :show-inheritance:
 
+prestoadmin.util.base_config module
+-----------------------------------
+
+.. automodule:: prestoadmin.util.base_config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 prestoadmin.util.constants module
 ---------------------------------
 
@@ -76,10 +84,26 @@ prestoadmin.util.parser module
     :undoc-members:
     :show-inheritance:
 
-prestoadmin.util.service_util module
+prestoadmin.util.remote_config_util module
+------------------------------------------
+
+.. automodule:: prestoadmin.util.remote_config_util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+prestoadmin.util.validators module
+----------------------------------
+
+.. automodule:: prestoadmin.util.validators
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+prestoadmin.util.version_util module
 ------------------------------------
 
-.. automodule:: prestoadmin.util.service_util
+.. automodule:: prestoadmin.util.version_util
     :members:
     :undoc-members:
     :show-inheritance:

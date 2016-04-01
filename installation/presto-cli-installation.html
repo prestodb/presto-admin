@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Running Presto Queries &mdash; presto-admin 1.1 documentation</title>
+    <title>Running Presto Queries &mdash; presto-admin 1.3 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,10 +23,10 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.1 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.3 documentation" href="../index.html" />
     <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
-    <link rel="next" title="Troubleshooting" href="troubleshooting-installation.html" />
-    <link rel="prev" title="Presto Server Installation" href="presto-server-installation.html" /> 
+    <link rel="next" title="Adding a Connector" href="presto-connector-installation.html" />
+    <link rel="prev" title="Installing the Presto Server" href="presto-server-installation.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -39,12 +39,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="troubleshooting-installation.html" title="Troubleshooting"
+          <a href="presto-connector-installation.html" title="Adding a Connector"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="presto-server-installation.html" title="Presto Server Installation"
+          <a href="presto-server-installation.html" title="Installing the Presto Server"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
       </ul>
@@ -58,23 +58,31 @@
   <div class="section" id="running-presto-queries">
 <span id="presto-cli-installation-label"></span><h1>Running Presto Queries<a class="headerlink" href="#running-presto-queries" title="Permalink to this headline">¶</a></h1>
 <p>The Presto CLI provides a terminal-based interactive shell for running queries. The CLI is a self-executing JAR file, which means it acts like a normal UNIX executable.</p>
-<p>Download the <a class="reference external" href="https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&amp;g=com.facebook.presto&amp;a=presto-cli&amp;v=RELEASE">presto-cli</a> and copy it to the location you want to run it from. This location may be any node that has network access to the coordinator. Then rename it to presto and make it executable with chmod +x:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ mv presto-cli-0.115-executable.jar presto
+<p>To run a query via the Presto CLI:</p>
+<ol class="arabic">
+<li><p class="first">Download the <code class="docutils literal"><span class="pre">presto-cli</span></code> and copy it to the location you want to run it from. This location may be any node that has network access to the coordinator.</p>
+</li>
+<li><p class="first">Rename the artifact to <code class="docutils literal"><span class="pre">presto</span></code> and make it executable, substituting your version of Presto for &#8220;version&#8221;:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mv presto-cli-&lt;version&gt;-executable.jar presto
 $ chmod +x presto
 </pre></div>
 </div>
+</li>
+</ol>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Presto must run with Java 8, so if Java 7 is the default on your cluster, you will need to explicitly specify the Java 8 executable. For example, <code class="docutils literal"><span class="pre">&lt;path_to_java_8_executable&gt;</span> <span class="pre">-jar</span> <span class="pre">presto</span></code>. It may be helpful to add an alias for the Presto CLI: <code class="docutils literal"><span class="pre">alias</span> <span class="pre">presto='&lt;path_to_java_8_executable&gt;</span> <span class="pre">-jar</span> <span class="pre">&lt;path_to_presto&gt;'</span></code>.</p>
 </div>
-<p>By default, <code class="docutils literal"><span class="pre">presto-admin</span></code> installs the TPC-H connector for you, which generates TPC-H data on-the-fly.  Using this connector, issue the following commands to run your first Presto query:</p>
+<ol class="arabic" start="3">
+<li><p class="first">By default, <code class="docutils literal"><span class="pre">presto-admin</span></code> configures the TPC-H connector, which generates TPC-H data on-the-fly.  Using this connector, issue the following commands to run your first Presto query:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ ./presto --catalog tpch --schema tiny
 $ select count(*) from lineitem;
 </pre></div>
 </div>
-<p>For more on connectors, including how to connect to Hive, see <a class="reference internal" href="../presto-admin-commands.html#connector-add"><span>connector add</span></a>.</p>
+</li>
+</ol>
 <p>The above command assumes that you installed the Presto CLI on the coordinator, and that the Presto server is on port 8080. If either of these are not the case, then specify the server location in the command:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ./presto --server &lt;host_name&gt;:&lt;port_number&gt; --catalog system
+<div class="highlight-python"><div class="highlight"><pre>$ ./presto --server &lt;host_name&gt;:&lt;port_number&gt; --catalog tpch --schema tiny
 </pre></div>
 </div>
 </div>
@@ -87,10 +95,10 @@ $ select count(*) from lineitem;
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="presto-server-installation.html"
-                        title="previous chapter">Presto Server Installation</a></p>
+                        title="previous chapter">Installing the Presto Server</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="troubleshooting-installation.html"
-                        title="next chapter">Troubleshooting</a></p>
+  <p class="topless"><a href="presto-connector-installation.html"
+                        title="next chapter">Adding a Connector</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -125,12 +133,12 @@ $ select count(*) from lineitem;
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="troubleshooting-installation.html" title="Troubleshooting"
+          <a href="presto-connector-installation.html" title="Adding a Connector"
              >next</a> |</li>
         <li class="right" >
-          <a href="presto-server-installation.html" title="Presto Server Installation"
+          <a href="presto-server-installation.html" title="Installing the Presto Server"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
       </ul>

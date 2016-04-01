@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Presto-Admin Commands &mdash; presto-admin 1.2 documentation</title>
+    <title>Presto-Admin Commands &mdash; presto-admin 1.3 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.2 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.3 documentation" href="index.html" />
     <link rel="up" title="User Guide" href="user-guide.html" />
     <link rel="next" title="Presto-Admin Command-Line Options" href="presto-admin-cli-options.html" />
     <link rel="prev" title="SSH Configuration" href="ssh-configuration.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
       </ul>
     </div>  
@@ -136,7 +136,7 @@ the <code class="docutils literal"><span class="pre">/etc/presto</span></code> d
 <p>If the coordinator is also a worker, it will get the coordinator configuration.
 The deployed configuration files will overwrite the existing configurations on
 the cluster. However, the node.id from the
-node.properties file will be preserved. If no node.id exists, a new id will be
+node.properties file will be preserved. If no <code class="docutils literal"><span class="pre">node.id</span></code> exists, a new id will be
 generated. If any required files are absent when you run configuration deploy,
 a default configuration will be deployed. Below are the default
 configurations:</p>
@@ -153,7 +153,7 @@ plugin.dir=/usr/lib/presto/lib/plugin
 </div>
 <p><em>jvm.config</em></p>
 <div class="highlight-python"><div class="highlight"><pre>-server
--Xmx2G
+-Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent
@@ -168,7 +168,7 @@ plugin.dir=/usr/lib/presto/lib/plugin
 <div class="highlight-python"><div class="highlight"><pre>coordinator=false
 discovery.uri=http://&lt;coordinator&gt;:8080
 http-server.http.port=8080
-query.max-memory-per-node=1GB
+query.max-memory-per-node=8GB
 query.max-memory=50GB
 </pre></div>
 </div>
@@ -178,21 +178,21 @@ discovery-server.enabled=true
 discovery.uri=http://&lt;coordinator&gt;:8080
 http-server.http.port=8080
 node-scheduler.include-coordinator=false
-query.max-memory-per-node=1GB
+query.max-memory-per-node=8GB
 query.max-memory=50GB
 
 # if the coordinator is also a worker, it will have the following property instead
 node-scheduler.include-coordinator=true
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="installation/presto-port-configuration.html#presto-port-configuration-label"><span>Presto Port Configuration</span></a> for details on http port configuration.</p>
+<p>See <a class="reference internal" href="installation/presto-port-configuration.html#presto-port-configuration-label"><span>Configuring the Presto Port</span></a> for details on http port configuration.</p>
 <div class="section" id="id6">
 <h3>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <p>If you want to change the jvm configuration on the coordinator and the
 <code class="docutils literal"><span class="pre">node.environment</span></code> property from <code class="docutils literal"><span class="pre">node.properties</span></code> on all nodes, add the
 following <code class="docutils literal"><span class="pre">jvm.config</span></code> to <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code></p>
 <div class="highlight-none"><div class="highlight"><pre>-server
--Xmx2G
+-Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
 -XX:+ExplicitGCInvokesConcurrent
@@ -376,7 +376,7 @@ sudo ./presto-admin script run /my/local/script.sh /remote/dir
 </pre></div>
 </div>
 <p>This command copies the presto-server rpm from <code class="docutils literal"><span class="pre">local_path</span></code> to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The <code class="docutils literal"><span class="pre">local_path</span></code> should be accessible by <code class="docutils literal"><span class="pre">presto-admin</span></code>.
-The topology used to configure the nodes are obtained from <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. See <a class="reference internal" href="installation/presto-admin-configuration.html#presto-admin-configuration-label"><span>Presto-Admin Configuration</span></a> on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.</p>
+The topology used to configure the nodes are obtained from <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. See <a class="reference internal" href="installation/presto-admin-configuration.html#presto-admin-configuration-label"><span>Configuring Presto-Admin</span></a> on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.</p>
 <p>The general configurations for Presto&#8217;s coordinator and workers are taken from the directories <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code> and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers</span></code> respectively. If these directories or any required configuration files are absent when you run <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code>, a default configuration will be deployed. See <a class="reference internal" href="#configuration-deploy">configuration deploy</a> for details.</p>
 <p>The connectors directory <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/connectors/</span></code> should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
 The <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code>, then by default the tpch connector is configured. See <a class="reference internal" href="#id8">connector add</a> on how to add connector configuration files after installation.</p>
@@ -637,7 +637,7 @@ files found in <code class="docutils literal"><span class="pre">/etc/opt/prestoa
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.2 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" >User Guide</a> &raquo;</li> 
       </ul>
     </div>

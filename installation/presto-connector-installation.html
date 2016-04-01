@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Adding a Connector &mdash; presto-admin 1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 1.3 documentation" href="../index.html" />
+    <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
+    <link rel="next" title="Configuring Presto" href="presto-configuration.html" />
+    <link rel="prev" title="Running Presto Queries" href="presto-cli-installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-configuration.html" title="Configuring Presto"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="presto-cli-installation.html" title="Running Presto Queries"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="adding-a-connector">
+<h1>Adding a Connector<a class="headerlink" href="#adding-a-connector" title="Permalink to this headline">¶</a></h1>
+<p>In Presto, connectors allow you to access different data sources &#8211; e.g.,
+Hive, PostgreSQL, or MySQL.</p>
+<p>To add the Hive connector:</p>
+<ol class="arabic">
+<li><p class="first">Create a file <code class="docutils literal"><span class="pre">hive.properties</span></code> in <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/connectors</span></code> with the following content:</p>
+<div class="highlight-python"><div class="highlight"><pre>connector.name=hive-hadoop2
+hive.metastore.uri=thrift://&lt;metastore-host-or-ip&gt;:&lt;metastore-port&gt;
+</pre></div>
+</div>
+</li>
+<li><p class="first">Distribute the configuration file to all of the nodes in the cluster:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin connector add hive
+</pre></div>
+</div>
+</li>
+<li><p class="first">Restart Presto:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server restart
+</pre></div>
+</div>
+</li>
+</ol>
+<p>You may need to add additional properties for the Hive connector to work properly, such as if your Hadoop cluster
+is set up for high availability. For these and other properties, see the <a class="reference external" href="https://prestodb.io/docs/current/connector/hive.html">Hive connector documentation</a>.</p>
+<p>For detailed documentation on <code class="docutils literal"><span class="pre">connector</span> <span class="pre">add</span></code>, see <a class="reference internal" href="../presto-admin-commands.html#connector-add"><span>connector add</span></a>.
+For more on which connectors Presto supports, see the <a class="reference external" href="https://prestodb.io/docs/current/connector.html">Presto connector documentation</a>.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="presto-cli-installation.html"
+                        title="previous chapter">Running Presto Queries</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="presto-configuration.html"
+                        title="next chapter">Configuring Presto</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/presto-connector-installation.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-configuration.html" title="Configuring Presto"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="presto-cli-installation.html" title="Running Presto Queries"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

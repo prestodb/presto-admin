@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.fabric_patches &mdash; presto-admin 1.1 documentation</title>
+    <title>prestoadmin.fabric_patches &mdash; presto-admin 1.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.1',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.1 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.3 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -96,8 +96,8 @@
     <span class="k">if</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s">&#39;] &#39;</span> <span class="o">+</span> <span class="n">msg</span>
     <span class="n">old_warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">format_exc</span><span class="p">())</span>
-</div>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">format_exc</span><span class="p">())</span></div>
+
 <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">warn</span> <span class="o">=</span> <span class="n">warn</span>
 <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">warn</span> <span class="o">=</span> <span class="n">warn</span>
 
@@ -105,8 +105,8 @@
 <div class="viewcode-block" id="abort"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.abort">[docs]</a><span class="k">def</span> <span class="nf">abort</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s">&#39;] &#39;</span> <span class="o">+</span> <span class="n">msg</span>
-    <span class="n">old_abort</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-</div>
+    <span class="n">old_abort</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
 <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">abort</span> <span class="o">=</span> <span class="n">abort</span>
 <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">abort</span> <span class="o">=</span> <span class="n">abort</span>
 
@@ -122,9 +122,9 @@
                   <span class="n">warn_only</span><span class="o">=</span><span class="n">warn_only</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
                   <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">shell_escape</span><span class="o">=</span><span class="n">shell_escape</span><span class="p">)</span>
     <span class="n">log_output</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">out</span></div>
 
-</div>
+
 <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">run</span>
 <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">run</span>
 
@@ -138,20 +138,20 @@
                    <span class="n">warn_only</span><span class="o">=</span><span class="n">warn_only</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
                    <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">shell_escape</span><span class="o">=</span><span class="n">shell_escape</span><span class="p">)</span>
     <span class="n">log_output</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">out</span></div>
 
-</div>
+
 <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">sudo</span> <span class="o">=</span> <span class="n">sudo</span>
 <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">sudo</span> <span class="o">=</span> <span class="n">sudo</span>
 
 
 <div class="viewcode-block" id="log_output"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.log_output">[docs]</a><span class="k">def</span> <span class="nf">log_output</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
     <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">COMMAND: &#39;</span> <span class="o">+</span> <span class="n">out</span><span class="o">.</span><span class="n">command</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">FULL COMMAND: &#39;</span> <span class="o">+</span>
-                 <span class="n">out</span><span class="o">.</span><span class="n">real_command</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">STDOUT: &#39;</span> <span class="o">+</span> <span class="n">out</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">STDERR: &#39;</span>
-                 <span class="o">+</span> <span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+                 <span class="n">out</span><span class="o">.</span><span class="n">real_command</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">STDOUT: &#39;</span> <span class="o">+</span> <span class="n">out</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">STDERR: &#39;</span> <span class="o">+</span>
+                 <span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div>
 
 
-<span class="c"># Monkey patch _execute and execute so that we can handle errors differently</span></div>
+<span class="c"># Monkey patch _execute and execute so that we can handle errors differently</span>
 <span class="k">def</span> <span class="nf">_execute</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">my_env</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">jobs</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">multiprocessing</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Primary single-host work body of execute().</span>
@@ -283,11 +283,13 @@
                 <span class="n">results</span><span class="p">[</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
                 <span class="c"># Backwards compat test re: whether to use an exception or</span>
                 <span class="c"># abort</span>
-                <span class="n">func</span> <span class="o">=</span> <span class="n">warn</span> <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">skip_bad_hosts</span> <span class="ow">or</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">warn_only</span> \
-                    <span class="k">else</span> <span class="n">abort</span>
+                <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">skip_bad_hosts</span> <span class="ow">or</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">warn_only</span><span class="p">:</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">warn</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">abort</span>
                 <span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">wrapped</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">pass</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
 
             <span class="c"># If requested, clear out connections here and not just at the end.</span>
             <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">eagerly_disconnect</span><span class="p">:</span>
@@ -324,9 +326,9 @@
             <span class="n">results</span><span class="p">[</span><span class="s">&#39;&lt;local-only&gt;&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">new_kwargs</span><span class="p">)</span>
     <span class="c"># Return what we can from the inner task executions</span>
 
-    <span class="k">return</span> <span class="n">results</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
-</div>
+
 <span class="n">fabric</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">_execute</span> <span class="o">=</span> <span class="n">_execute</span>
 <span class="n">fabric</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">execute</span> <span class="o">=</span> <span class="n">execute</span>
 </pre></div>
@@ -362,7 +364,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

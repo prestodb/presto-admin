@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.util.fabricapi &mdash; presto-admin 1.1 documentation</title>
+    <title>prestoadmin.util.fabricapi &mdash; presto-admin 1.3 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.1',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.1 documentation" href="../../../index.html" />
+    <link rel="top" title="presto-admin 1.3 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -64,19 +64,53 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module to add extensions and helpers for fabric api methods</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
 <span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">env</span>
+<span class="kn">from</span> <span class="nn">fabric.utils</span> <span class="kn">import</span> <span class="n">abort</span>
 
 
 <div class="viewcode-block" id="get_host_list"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.fabricapi.get_host_list">[docs]</a><span class="k">def</span> <span class="nf">get_host_list</span><span class="p">():</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">host</span> <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">hosts</span> <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">exclude_hosts</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">host</span> <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">hosts</span> <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">exclude_hosts</span><span class="p">]</span></div>
 
-</div>
+
 <div class="viewcode-block" id="get_coordinator_role"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.fabricapi.get_coordinator_role">[docs]</a><span class="k">def</span> <span class="nf">get_coordinator_role</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s">&#39;coordinator&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s">&#39;coordinator&#39;</span><span class="p">]</span></div>
 
-</div>
+
 <div class="viewcode-block" id="get_worker_role"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.fabricapi.get_worker_role">[docs]</a><span class="k">def</span> <span class="nf">get_worker_role</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s">&#39;worker&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="task_by_rolename"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.fabricapi.task_by_rolename">[docs]</a><span class="k">def</span> <span class="nf">task_by_rolename</span><span class="p">(</span><span class="n">rolename</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">inner_decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">by_rolename</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">rolename</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">inner_decorator</span></div>
+
+
+<div class="viewcode-block" id="by_rolename"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.fabricapi.by_rolename">[docs]</a><span class="k">def</span> <span class="nf">by_rolename</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">rolename</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">rolename</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rolename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s">&quot;Invalid role name </span><span class="si">%s</span><span class="s">. Valid rolenames are </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                  <span class="p">(</span><span class="n">rolename</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="n">rolename</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="by_role_coordinator"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.fabricapi.by_role_coordinator">[docs]</a><span class="k">def</span> <span class="nf">by_role_coordinator</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">get_coordinator_role</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="by_role_worker"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.fabricapi.by_role_worker">[docs]</a><span class="k">def</span> <span class="nf">by_role_worker</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">get_worker_role</span><span class="p">()</span> <span class="ow">and</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">get_coordinator_role</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
 
           </div>
@@ -110,7 +144,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

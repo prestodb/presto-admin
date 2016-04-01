@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.package &mdash; presto-admin 1.1 documentation</title>
+    <title>prestoadmin.package &mdash; presto-admin 1.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.1',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.1 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.3 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -66,17 +66,17 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hide</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hide</span><span class="p">,</span> <span class="n">shell_env</span>
 <span class="kn">from</span> <span class="nn">fabric.decorators</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">runs_once</span>
 <span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">put</span><span class="p">,</span> <span class="n">os</span><span class="p">,</span> <span class="n">local</span>
 <span class="kn">from</span> <span class="nn">fabric.state</span> <span class="kn">import</span> <span class="n">env</span>
 <span class="kn">from</span> <span class="nn">fabric.tasks</span> <span class="kn">import</span> <span class="n">execute</span>
 <span class="kn">from</span> <span class="nn">fabric.utils</span> <span class="kn">import</span> <span class="n">abort</span>
 
-<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">topology</span>
 <span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.standalone.config</span> <span class="kn">import</span> <span class="n">StandaloneConfig</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.base_config</span> <span class="kn">import</span> <span class="n">requires_config</span>
 <span class="kn">from</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">import</span> <span class="n">get_host_list</span>
-
 
 <span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;install&#39;</span><span class="p">]</span>
@@ -84,6 +84,7 @@
 
 <span class="nd">@task</span>
 <span class="nd">@runs_once</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
 <div class="viewcode-block" id="install"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.package.install">[docs]</a><span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Install the rpm package on the cluster</span>
@@ -94,11 +95,10 @@
 <span class="sd">            should ignore checking package dependencies. Equivalent</span>
 <span class="sd">            to adding --nodeps flag to rpm -i.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">topology</span><span class="o">.</span><span class="n">set_topology_if_missing</span><span class="p">()</span>
-    <span class="n">execute</span><span class="p">(</span><span class="n">deploy_install</span><span class="p">,</span> <span class="n">local_path</span><span class="p">,</span>
-            <span class="n">hosts</span><span class="o">=</span><span class="n">get_host_list</span><span class="p">())</span>
+    <span class="n">check_if_valid_rpm</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">execute</span><span class="p">(</span><span class="n">deploy_install</span><span class="p">,</span> <span class="n">local_path</span><span class="p">,</span> <span class="n">hosts</span><span class="o">=</span><span class="n">get_host_list</span><span class="p">())</span></div>
 
-</div>
+
 <span class="k">def</span> <span class="nf">check_if_valid_rpm</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
     <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Checking rpm checksum to see if it is corrupted&quot;</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s">&#39;warnings&#39;</span><span class="p">,</span> <span class="s">&#39;stdout&#39;</span><span class="p">),</span> <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -118,7 +118,6 @@
 
 
 <span class="k">def</span> <span class="nf">deploy_action</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">rpm_action</span><span class="p">):</span>
-    <span class="n">check_if_valid_rpm</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
     <span class="n">deploy</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
     <span class="n">rpm_action</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">local_path</span><span class="p">))</span>
 
@@ -142,9 +141,15 @@
     <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">nodeps</span><span class="p">:</span>
         <span class="n">nodeps</span> <span class="o">=</span> <span class="s">&#39;--nodeps &#39;</span>
 
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -i </span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span>
-               <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span>
-                                     <span class="n">rpm_name</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="s">&#39;java8_home&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">env</span> <span class="ow">or</span> <span class="n">env</span><span class="o">.</span><span class="n">java8_home</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -i </span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span>
+                   <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span>
+                                         <span class="n">rpm_name</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">shell_env</span><span class="p">(</span><span class="n">JAVA8_HOME</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">env</span><span class="o">.</span><span class="n">java8_home</span><span class="p">):</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s">&#39;rpm -i </span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span>
+                       <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span>
+                                             <span class="n">rpm_name</span><span class="p">)))</span>
     <span class="k">if</span> <span class="n">ret</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
         <span class="k">print</span><span class="p">(</span><span class="s">&quot;Package installed successfully on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
 
@@ -196,7 +201,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.prestoclient &mdash; presto-admin 1.1 documentation</title>
+    <title>prestoadmin.prestoclient &mdash; presto-admin 1.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.1',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.1 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.3 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -71,7 +71,7 @@
 
 <span class="kn">from</span> <span class="nn">urllib2</span> <span class="kn">import</span> <span class="n">HTTPError</span><span class="p">,</span> <span class="n">urlopen</span><span class="p">,</span> <span class="n">URLError</span>
 
-<span class="kn">from</span> <span class="nn">prestoadmin.util.service_util</span> <span class="kn">import</span> <span class="n">lookup_port</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.remote_config_util</span> <span class="kn">import</span> <span class="n">lookup_port</span>
 
 <span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">InvalidArgumentError</span>
 
@@ -92,7 +92,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">server</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span> <span class="k">if</span> <span class="n">port</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
 
 <div class="viewcode-block" id="PrestoClient.clear_old_results"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.prestoclient.PrestoClient.clear_old_results">[docs]</a>    <span class="k">def</span> <span class="nf">clear_old_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">:</span>
@@ -102,8 +102,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">next_uri</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_from_server</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">response_from_server</span> <span class="o">=</span> <span class="p">{}</span>
-</div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">response_from_server</span> <span class="o">=</span> <span class="p">{}</span></div>
+
 <div class="viewcode-block" id="PrestoClient.execute_query"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.prestoclient.PrestoClient.execute_query">[docs]</a>    <span class="k">def</span> <span class="nf">execute_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="s">&quot;default&quot;</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="s">&quot;hive&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Execute a query connecting to Presto server using passed parameters.</span>
@@ -141,7 +141,8 @@
         <span class="n">answer</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Connecting to server at: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span> <span class="o">+</span>
-                         <span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; as user &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+                         <span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; as user &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">+</span>
+                         <span class="s">&quot; to execute query &quot;</span> <span class="o">+</span> <span class="n">sql</span><span class="p">)</span>
             <span class="n">conn</span> <span class="o">=</span> <span class="n">HTTPConnection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span>
                                   <span class="n">URL_TIMEOUT_MS</span><span class="p">)</span>
             <span class="n">conn</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s">&quot;POST&quot;</span><span class="p">,</span> <span class="s">&quot;/v1/statement&quot;</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
@@ -149,15 +150,15 @@
 
             <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
                 <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Connection error: &quot;</span>
-                              <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">response</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+                <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Connection error: &quot;</span> <span class="o">+</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">response</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
                 <span class="k">return</span> <span class="bp">False</span>
 
             <span class="n">answer</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
             <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">response_from_server</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
-            <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Query executed successfully&quot;</span><span class="p">)</span>
+            <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Query executed successfully: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sql</span><span class="p">))</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">HTTPException</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Error connecting to presto server at: &quot;</span> <span class="o">+</span>
@@ -166,8 +167,8 @@
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Error connecting to Presto server: &#39;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span> <span class="o">+</span>
                           <span class="s">&#39; error from server: &#39;</span> <span class="o">+</span> <span class="n">answer</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">e</span>
-</div>
+            <span class="k">raise</span> <span class="n">e</span></div>
+
 <div class="viewcode-block" id="PrestoClient.get_response_from"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.prestoclient.PrestoClient.get_response_from">[docs]</a>    <span class="k">def</span> <span class="nf">get_response_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sends a GET request to the Presto server at the specified next_uri</span>
@@ -184,8 +185,8 @@
         <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">URLError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Error opening the presto response uri: &quot;</span> <span class="o">+</span>
                           <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">))</span>
-            <span class="k">return</span> <span class="bp">False</span>
-</div>
+            <span class="k">return</span> <span class="bp">False</span></div>
+
 <div class="viewcode-block" id="PrestoClient.build_results_from_response"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.prestoclient.PrestoClient.build_results_from_response">[docs]</a>    <span class="k">def</span> <span class="nf">build_results_from_response</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build result from the response</span>
@@ -204,8 +205,8 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">response_from_server</span><span class="p">[</span><span class="n">DATA_RESP</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_from_server</span><span class="p">[</span><span class="n">DATA_RESP</span><span class="p">]</span>
-</div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_from_server</span><span class="p">[</span><span class="n">DATA_RESP</span><span class="p">]</span></div>
+
 <div class="viewcode-block" id="PrestoClient.get_rows"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.prestoclient.PrestoClient.get_rows">[docs]</a>    <span class="k">def</span> <span class="nf">get_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_of_rows</span><span class="o">=</span><span class="n">NUM_ROWS</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the rows returned from the query.</span>
@@ -234,8 +235,8 @@
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">num_of_rows</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">build_results_from_response</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
-</div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span></div>
+
 <div class="viewcode-block" id="PrestoClient.get_next_uri"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.prestoclient.PrestoClient.get_next_uri">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_uri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_uri</span></div></div>
 </pre></div>
@@ -271,7 +272,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

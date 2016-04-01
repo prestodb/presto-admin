@@ -4,7 +4,7 @@ Software Requirements
 
 **Operating System**
 
-* RedHat Linux version 6.2 or 6.5 OR
+* RedHat Linux version 6.x
 * CentOS (equivalent to above)
 
 **Hadoop distributions**

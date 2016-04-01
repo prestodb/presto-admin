@@ -96,10 +96,9 @@ the ``/etc/presto`` directory on your Presto cluster:
 If the coordinator is also a worker, it will get the coordinator configuration.
 The deployed configuration files will overwrite the existing configurations on
 the cluster. However, the node.id from the
-node.properties file will be preserved. If no node.id exists, a new id will be
+node.properties file will be preserved. If no ``node.id`` exists, a new id will be
 generated. If any required files are absent when you run configuration deploy,
-a default configuration will be deployed. If any required properties from those
-files are missing, they will be filled in with defaults. Below are the default
+a default configuration will be deployed. Below are the default
 configurations:
 
 *node.properties* ::
@@ -107,14 +106,14 @@ configurations:
     node.environment=presto
     node.data-dir=/var/lib/presto/data
     plugin.config-dir=/etc/presto/catalog
-    plugin.dir=/urs/lib/presto/lib/plugin
+    plugin.dir=/usr/lib/presto/lib/plugin
 
 .. NOTE:: Do not change the value of plugin.config-dir=/etc/presto/catalog as it is necessary for presto to be able to find the catalog directory when Presto has been installed by RPM.
 
 *jvm.config* ::
 
     -server
-    -Xmx2G
+    -Xmx16G
     -XX:-UseBiasedLocking
     -XX:+UseG1GC
     -XX:+ExplicitGCInvokesConcurrent
@@ -130,9 +129,8 @@ For workers: ::
     coordinator=false
     discovery.uri=http://<coordinator>:8080
     http-server.http.port=8080
-    query.max-memory-per-node=1GB
+    query.max-memory-per-node=8GB
     query.max-memory=50GB
-    task.max-memory=1GB
 
 For coordinator: ::
 
@@ -140,10 +138,9 @@ For coordinator: ::
     discovery-server.enabled=true
     discovery.uri=http://<coordinator>:8080
     http-server.http.port=8080
-    node.scheduler.include-coordinator=false
-    query.max-memory-per-node=1GB
+    node-scheduler.include-coordinator=false
+    query.max-memory-per-node=8GB
     query.max-memory=50GB
-    task.max-memory=1GB
 
     # if the coordinator is also a worker, it will have the following property instead
     node-scheduler.include-coordinator=true
@@ -159,7 +156,7 @@ following ``jvm.config`` to ``/etc/opt/prestoadmin/coordinator``
 .. code-block:: none
 
     -server
-    -Xmx2G
+    -Xmx16G
     -XX:-UseBiasedLocking
     -XX:+UseG1GC
     -XX:+ExplicitGCInvokesConcurrent
@@ -171,14 +168,16 @@ Further, add the following ``node.properties`` to
 ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers``: ::
 
     node.environment=test
+    node.data-dir=/var/lib/presto/data
+    plugin.config-dir=/etc/presto/catalog
+    plugin.dir=/usr/lib/presto/lib/plugin
 
 Then run: ::
 
     sudo ./presto-admin configuration deploy
 
 This will distribute to the coordinator a default ``config.properties``, the new
-``jvm.config``, and a ``node.properties`` with all of the default properties,
-except ``node.environment``, which will be set to ``test``.  The workers will
+``jvm.config`` and ``node.properties``.  The workers will
 receive the default ``config.properties`` and ``jvm.config``, and the same
 ``node.properties`` as the coordinator.
 
@@ -250,13 +249,13 @@ once, you could run ::
     sudo ./presto-admin server restart
 
 Adding a Custom Connector
---------------------------
+-------------------------
 In order to install a custom connector not included with Presto, the jar must be
 added to the Presto plugin location using the ``plugin add_jar`` command before
 running the ``connector add`` command.
 
 Example: ::
-   
+
    sudo ./presto-admin plugin add_jar my_connector.jar my_connector
    sudo ./presto-admin connector add my_connector
    sudo ./presto-admin server restart
@@ -330,12 +329,12 @@ Example
 -------
 ::
 
-    sudo ./presto-admin plugin add_jar program.jar hive-cdh5
-    sudo ./presto-admin plugin add_jar program.jar hive-cdh5 /my/plugin/dir
+    sudo ./presto-admin plugin add_jar connector.jar my_connector
+    sudo ./presto-admin plugin add_jar connector.jar my_connector /my/plugin/dir
 
-The first example will deploy program.jar to
-``/usr/lib/presto/lib/plugin/hive-cdh5/program.jar``
-The second example will deploy it to ``/my/plugin/dir/hive-cdh5/program.jar``.
+The first example will deploy connector.jar to
+``/usr/lib/presto/lib/plugin/my_connector/connector.jar``
+The second example will deploy it to ``/my/plugin/dir/my_connector/program.jar``.
 
 **********
 script run

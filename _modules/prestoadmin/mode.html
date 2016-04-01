@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.mode &mdash; presto-admin 1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 1.3 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.mode</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c"># you may not use this file except in compliance with the License.</span>
+<span class="c"># You may obtain a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c"># See the License for the specific language governing permissions and</span>
+<span class="c"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for handling presto-admin mode-related functionality.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">abort</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span> <span class="nn">fabric.decorators</span> <span class="kn">import</span> <span class="n">runs_once</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.constants</span> <span class="kn">import</span> <span class="n">LOCAL_CONF_DIR</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> \
+    <span class="n">ConfigFileNotFoundError</span>
+
+<span class="n">MODE_CONF_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">LOCAL_CONF_DIR</span><span class="p">,</span> <span class="s">&#39;mode.json&#39;</span><span class="p">)</span>
+<span class="n">MODE_KEY</span> <span class="o">=</span> <span class="s">&#39;mode&#39;</span>
+
+<span class="n">MODE_SLIDER</span> <span class="o">=</span> <span class="s">&#39;yarn_slider&#39;</span>
+<span class="n">MODE_STANDALONE</span> <span class="o">=</span> <span class="s">&#39;standalone&#39;</span>
+
+<span class="n">VALID_MODES</span> <span class="o">=</span> <span class="p">[</span><span class="n">MODE_SLIDER</span><span class="p">,</span> <span class="n">MODE_STANDALONE</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_load_mode_config</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">get_conf_from_json_file</span><span class="p">(</span><span class="n">MODE_CONF_PATH</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_store_mode_config</span><span class="p">(</span><span class="n">mode_config</span><span class="p">):</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">json_to_string</span><span class="p">(</span><span class="n">mode_config</span><span class="p">),</span> <span class="n">MODE_CONF_PATH</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_mode"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.mode.get_mode">[docs]</a><span class="k">def</span> <span class="nf">get_mode</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">mode_config</span> <span class="o">=</span> <span class="n">_load_mode_config</span><span class="p">()</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">mode_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">MODE_KEY</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">validate</span> <span class="ow">and</span> <span class="n">mode</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="s">&#39;Required key </span><span class="si">%s</span><span class="s"> not found in configuration file </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">MODE_KEY</span><span class="p">,</span> <span class="n">MODE_CONF_PATH</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">validate</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">validate_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="s">&#39;Invalid mode </span><span class="si">%s</span><span class="s"> in configuration file </span><span class="si">%s</span><span class="s">. Valid modes are </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">mode</span><span class="p">,</span> <span class="n">MODE_CONF_PATH</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">VALID_MODES</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">mode</span></div>
+
+
+<div class="viewcode-block" id="validate_mode"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.mode.validate_mode">[docs]</a><span class="k">def</span> <span class="nf">validate_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">VALID_MODES</span></div>
+
+
+<div class="viewcode-block" id="for_mode"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.mode.for_mode">[docs]</a><span class="k">def</span> <span class="nf">for_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">mode_map</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mode_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">VALID_MODES</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s">&#39;keys in for_nodes</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">do not match VALID_MODES</span><span class="se">\n</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">mode_map</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">VALID_MODES</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">mode_map</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span></div>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<div class="viewcode-block" id="select"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.mode.select">[docs]</a><span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="n">new_mode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Change the mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">validate_mode</span><span class="p">(</span><span class="n">new_mode</span><span class="p">):</span>
+        <span class="n">abort</span><span class="p">(</span><span class="s">&#39;Invalid mode selection </span><span class="si">%s</span><span class="s">. Valid modes are </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">new_mode</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">VALID_MODES</span><span class="p">)))</span>
+
+    <span class="n">mode_config</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mode_config</span> <span class="o">=</span> <span class="n">_load_mode_config</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">ConfigFileNotFoundError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="n">mode_config</span><span class="p">[</span><span class="n">MODE_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_mode</span>
+    <span class="n">_store_mode_config</span><span class="p">(</span><span class="n">mode_config</span><span class="p">)</span></div>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<div class="viewcode-block" id="get"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.mode.get">[docs]</a><span class="k">def</span> <span class="nf">get</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Display the current mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">get_mode</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">mode</span>
+    <span class="k">except</span> <span class="n">ConfigFileNotFoundError</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="s">&quot;Select a mode using the subcommand &#39;mode select &lt;mode&gt;&#39;&quot;</span><span class="p">)</span></div>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<div class="viewcode-block" id="list"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.mode.list">[docs]</a><span class="k">def</span> <span class="nf">list</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    List the supported modes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">VALID_MODES</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>
