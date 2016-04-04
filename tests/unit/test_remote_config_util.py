@@ -21,9 +21,9 @@ from tests.base_test_case import BaseTestCase
 
 
 class TestRemoteConfigUtil(BaseTestCase):
-    @patch('prestoadmin.util.remote_config_util.run')
-    def test_lookup_port_failure(self, run_mock):
-        run_mock.return_value = Exception('File not found')
+    @patch('prestoadmin.util.remote_config_util.sudo')
+    def test_lookup_port_failure(self, sudo_mock):
+        sudo_mock.return_value = Exception('File not found')
 
         self.assertRaisesRegexp(
             ConfigurationError,
@@ -32,11 +32,12 @@ class TestRemoteConfigUtil(BaseTestCase):
             lookup_port, 'any_host'
         )
 
-    @patch('prestoadmin.util.remote_config_util.run')
-    def test_lookup_port_not_integer_failure(self, run_mock):
-        run_mock.return_value = _AttributeString('http-server.http.port=hello')
-        run_mock.return_value.failed = False
-        run_mock.return_value.return_code = 0
+    @patch('prestoadmin.util.remote_config_util.sudo')
+    def test_lookup_port_not_integer_failure(self, sudo_mock):
+        sudo_mock.return_value = _AttributeString(
+            'http-server.http.port=hello')
+        sudo_mock.return_value.failed = False
+        sudo_mock.return_value.return_code = 0
 
         self.assertRaisesRegexp(
             ConfigurationError,
@@ -45,19 +46,20 @@ class TestRemoteConfigUtil(BaseTestCase):
             lookup_port, 'any_host'
         )
 
-    @patch('prestoadmin.util.remote_config_util.run')
-    def test_lookup_port_not_in_file(self, run_mock):
-        run_mock.return_value = _AttributeString('')
-        run_mock.return_value.failed = False
-        run_mock.return_value.return_code = 1
+    @patch('prestoadmin.util.remote_config_util.sudo')
+    def test_lookup_port_not_in_file(self, sudo_mock):
+        sudo_mock.return_value = _AttributeString('')
+        sudo_mock.return_value.failed = False
+        sudo_mock.return_value.return_code = 1
         port = lookup_port('any_host')
         self.assertEqual(port, 8080)
 
-    @patch('prestoadmin.util.remote_config_util.run')
-    def test_lookup_port_out_of_range(self, run_mock):
-        run_mock.return_value = _AttributeString('http-server.http.port=99999')
-        run_mock.return_value.failed = False
-        run_mock.return_value.return_code = 0
+    @patch('prestoadmin.util.remote_config_util.sudo')
+    def test_lookup_port_out_of_range(self, sudo_mock):
+        sudo_mock.return_value = _AttributeString(
+            'http-server.http.port=99999')
+        sudo_mock.return_value.failed = False
+        sudo_mock.return_value.return_code = 0
         self.assertRaisesRegexp(
             ConfigurationError,
             'Invalid port number 99999: port must be a number between 1 and '
@@ -65,30 +67,30 @@ class TestRemoteConfigUtil(BaseTestCase):
             lookup_port, 'any_host'
         )
 
-    @patch('prestoadmin.util.remote_config_util.run')
-    def test_lookup_string_config(self, run_mock):
-        run_mock.return_value = _AttributeString(
+    @patch('prestoadmin.util.remote_config_util.sudo')
+    def test_lookup_string_config(self, sudo_mock):
+        sudo_mock.return_value = _AttributeString(
             'config.to.lookup=/path/hello')
-        run_mock.return_value.failed = False
-        run_mock.return_value.return_code = 0
+        sudo_mock.return_value.failed = False
+        sudo_mock.return_value.return_code = 0
         config_value = lookup_string_config('config.to.lookup',
                                             NODE_CONFIG_FILE, 'any_host')
         self.assertEqual(config_value, '/path/hello')
 
-    @patch('prestoadmin.util.remote_config_util.run')
-    def test_lookup_string_config_not_in_file(self, run_mock):
-        run_mock.return_value = _AttributeString('')
-        run_mock.return_value.failed = False
-        run_mock.return_value.return_code = 1
+    @patch('prestoadmin.util.remote_config_util.sudo')
+    def test_lookup_string_config_not_in_file(self, sudo_mock):
+        sudo_mock.return_value = _AttributeString('')
+        sudo_mock.return_value.failed = False
+        sudo_mock.return_value.return_code = 1
         config_value = lookup_string_config('config.to.lookup',
                                             NODE_CONFIG_FILE, 'any_host')
         self.assertEqual(config_value, '')
 
-    @patch('prestoadmin.util.remote_config_util.run')
-    def test_lookup_string_config_file_not_found(self, run_mock):
-        run_mock.return_value = _AttributeString(
+    @patch('prestoadmin.util.remote_config_util.sudo')
+    def test_lookup_string_config_file_not_found(self, sudo_mock):
+        sudo_mock.return_value = _AttributeString(
             'grep: /etc/presto/node.properties does not exist')
-        run_mock.return_value.return_code = 2
+        sudo_mock.return_value.return_code = 2
 
         self.assertRaisesRegexp(
             ConfigurationError,
