@@ -324,12 +324,24 @@ query.max-memory=50GB\n"""
             expected)
 
     def file_content_message(self, actual, expected, pa_file):
-        msg = '%s != %s' % (actual, expected)
+        msg = '\t===== vv ACTUAL FILE CONTENT vv =====\n' \
+              '%s\n' \
+              '\t=========== DID NOT EQUAL ===========\n' \
+              '%s\n' \
+              '\t==== ^^ EXPECTED FILE CONTENT ^^ ====\n' \
+              '' % (actual, expected)
         if pa_file:
             try:
-                msg += '\n Content for presto-admin file %s \n' % pa_file
+                # If the actual file content should have come from a file that
+                # lives on the presto-admin host that we shove over to some
+                # other host, display the content of the file as it is on the
+                # presto-admin host. Presumably this will match the actual
+                # file content that we display above.
+                msg += '\t==== Content for presto-admin file %s ====\n' % \
+                       (pa_file,)
                 msg += self.get_file_content(self.cluster.get_master(),
                                              pa_file)
+                msg += '\n\t==========================================\n'
             except OSError as e:
                 msg += e.message
         return msg
