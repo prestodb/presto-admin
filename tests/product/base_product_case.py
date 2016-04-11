@@ -332,6 +332,11 @@ query.max-memory=50GB\n"""
               '' % (actual, expected)
         if pa_file:
             try:
+                # If the actual file content should have come from a file that
+                # lives on the presto-admin host that we shove over to some
+                # other host, display the content of the file as it is on the
+                # presto-admin host. Presumably this will match the actual
+                # file content that we display above.
                 msg += '\t==== Content for presto-admin file %s ====\n' % \
                        (pa_file,)
                 msg += self.get_file_content(self.cluster.get_master(),
