@@ -74,6 +74,8 @@ Note that ``java8_home`` is not set by default.  It only needs to be set if
 Java 8 is in a non-standard location on the Presto nodes.  The property is used
 to tell the Presto RPM where to find Java 8.
 
+.. NOTE:: If you have installed the JDK, ``java8_home`` should be set so refer to the ``jre`` subdirectory of the JDK.
+
 You can also specify some but not all of the properties. For example, the
 default configuration is for a single-node installation of Presto on the same
 node that ``presto-admin`` is installed on. For a 6 node cluster with default
