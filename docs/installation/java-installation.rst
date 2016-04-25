@@ -25,4 +25,6 @@ To install Java via RPM using ``presto-admin``:
 
 .. NOTE:: The ``server-install-label`` will look for your Oracle Java 1.8 installation at locations where Java is normally installed when using the binary or the RPM based installer. Otherwise, you need to have an environment variable called ``JAVA8_HOME`` set with your Java 1.8 install path. If ``JAVA8_HOME`` is not set or is pointing to an incompatible version of Java, the installer will look for the ``JAVA_HOME`` environment variable for a compatible version of Java. If neither of these environmental variables is set with a compatible version, and ``presto-admin`` fails to find Java 8 at any of the normal installation locations, then ``server install`` will fail. After successfully running ``server install`` you can find the Java being used by Presto at ``/etc/presto/env.sh``.
 
+.. NOTE:: If you have installed the JDK, ``java8_home`` should be set so refer to the public JRE that is distributed with the JDK rather than the private JRE. The public JRE is located in the ``jre`` directory of the JDK.
+
 .. NOTE:: If installing Java on SLES, you will need to specify the flag ``--nodeps`` for ``presto-admin package install``, so that the RPM is installed without checking or validating dependencies.
