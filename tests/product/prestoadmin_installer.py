@@ -24,11 +24,10 @@ import os
 import prestoadmin
 
 from tests.base_installer import BaseInstaller
-from tests.product.constants import LOCAL_RESOURCES_DIR, \
-    BASE_TD_DOCKERFILE_DIR, BASE_IMAGE_NAME, BASE_TD_IMAGE_NAME
+from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 
-from tests.docker_cluster import DockerCluster, DockerClusterException, \
-    DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT
+from tests.docker_cluster import DockerCluster
 
 
 class PrestoadminInstaller(BaseInstaller):
@@ -85,21 +84,15 @@ class PrestoadminInstaller(BaseInstaller):
             online_installer = paTestOnlineInstaller is not None
 
         container_name = 'installer'
-        installer_container = DockerCluster(
-            container_name, [], DEFAULT_LOCAL_MOUNT_POINT,
-            DEFAULT_DOCKER_MOUNT_POINT)
-        try:
-            installer_container.create_image(
-                BASE_TD_DOCKERFILE_DIR,
-                BASE_TD_IMAGE_NAME,
-                BASE_IMAGE_NAME
-            )
-            installer_container.start_containers(
-                BASE_TD_IMAGE_NAME
-            )
-        except DockerClusterException as e:
-            installer_container.tear_down()
-            self.testcase.fail(e.msg)
+        cluster_type = 'installer_builder'
+        bare_image_provider = NoHadoopBareImageProvider()
+
+        installer_container, created_bare = DockerCluster.start_cluster(
+            bare_image_provider, cluster_type, 'installer', [])
+
+        if created_bare:
+            installer_container.commit_images(
+                bare_image_provider, cluster_type)
 
         try:
             shutil.copytree(

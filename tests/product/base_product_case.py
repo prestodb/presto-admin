@@ -170,14 +170,12 @@ query.max-memory=50GB\n"""
                 StandalonePrestoInstaller.assert_installed)
         else:
             try:
-                self.cluster = DockerCluster.start_existing_images(
+                self.cluster, bare_cluster = DockerCluster.start_cluster(
                     bare_image_provider, cluster_type)
-                if self.cluster:
+                if not bare_cluster:
                     self._apply_post_install_hooks(installers)
                     self._update_replacement_keywords(installers)
                     return
-                self.cluster = DockerCluster.start_bare_cluster(
-                    bare_image_provider)
             except DockerClusterException as e:
                 self.fail(e.msg)
 

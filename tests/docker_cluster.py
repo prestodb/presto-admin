@@ -110,16 +110,6 @@ class DockerCluster(BaseCluster):
             sys.exit('Docker is not installed. Try installing it with '
                      'presto-admin/bin/install-docker.sh.')
 
-    def create_image(self, path_to_dockerfile_dir, image_tag, base_image,
-                     base_image_tag=None):
-        self.fetch_image_if_not_present(base_image, base_image_tag)
-        output = self._execute_and_wait(self.client.build,
-                                        path=path_to_dockerfile_dir,
-                                        tag=image_tag,
-                                        rm=True)
-        if not self._is_image_present_locally(image_tag, 'latest'):
-            raise OSError('Unable to build image %s: %s' % (image_tag, output))
-
     def fetch_image_if_not_present(self, image, tag=None):
         if not tag and not self.client.images(image):
             self._execute_and_wait(self.client.pull, image)
@@ -356,43 +346,37 @@ class DockerCluster(BaseCluster):
                                 bare_image_provider, cluster_type, 'slave'))
 
     @staticmethod
-    def start_bare_cluster(bare_image_provider):
+    def _get_image_names(bare_image_provider, cluster_type):
         dc = DockerCluster
-        master_name = dc._get_master_image_name(bare_image_provider,
-                                                dc.BARE_CLUSTER_TYPE)
-        slave_name = dc._get_slave_image_name(bare_image_provider,
-                                              dc.BARE_CLUSTER_TYPE)
-        centos_cluster = DockerCluster('master',
-                                       ['slave1', 'slave2', 'slave3'],
-                                       DEFAULT_LOCAL_MOUNT_POINT,
-                                       DEFAULT_DOCKER_MOUNT_POINT)
-
-        if not dc._check_for_images(master_name, slave_name):
-            bare_image_provider.create_bare_images(centos_cluster, master_name,
-                                                   slave_name)
-
-        centos_cluster.start_containers(master_name, slave_name)
-
-        return centos_cluster
+        return (dc._get_master_image_name(bare_image_provider, cluster_type),
+                dc._get_slave_image_name(bare_image_provider, cluster_type))
 
     @staticmethod
-    def start_existing_images(bare_image_provider, cluster_type):
+    def start_cluster(bare_image_provider, cluster_type, master_host='master',
+                      slave_hosts=None, **kwargs):
+        if slave_hosts is None:
+            slave_hosts = ['slave1', 'slave2', 'slave3']
+        created_bare = False
         dc = DockerCluster
-        master_name = dc._get_master_image_name(bare_image_provider,
-                                                cluster_type)
-        slave_name = dc._get_slave_image_name(bare_image_provider,
-                                              cluster_type)
 
-        if not dc._check_for_images(master_name, slave_name):
-            return None
-
-        centos_cluster = DockerCluster('master',
-                                       ['slave1', 'slave2', 'slave3'],
+        centos_cluster = DockerCluster(master_host, slave_hosts,
                                        DEFAULT_LOCAL_MOUNT_POINT,
                                        DEFAULT_DOCKER_MOUNT_POINT)
 
-        centos_cluster.start_containers(master_name, slave_name)
-        return centos_cluster
+        master_name, slave_name = dc._get_image_names(
+            bare_image_provider, cluster_type)
+
+        if not dc._check_for_images(master_name, slave_name):
+            master_name, slave_name = dc._get_image_names(
+                bare_image_provider, dc.BARE_CLUSTER_TYPE)
+            if not dc._check_for_images(master_name, slave_name):
+                bare_image_provider.create_bare_images(
+                    centos_cluster, master_name, slave_name)
+            created_bare = True
+
+        centos_cluster.start_containers(master_name, slave_name, **kwargs)
+
+        return centos_cluster, created_bare
 
     @staticmethod
     def _check_for_images(master_image_name, slave_image_name, tag='latest'):
@@ -413,9 +397,10 @@ class DockerCluster(BaseCluster):
         self.client.commit(self.master,
                            self._get_master_image_name(bare_image_provider,
                                                        cluster_type))
-        self.client.commit(self.slaves[0],
-                           self._get_slave_image_name(bare_image_provider,
-                                                      cluster_type))
+        if self.slaves:
+            self.client.commit(self.slaves[0],
+                               self._get_slave_image_name(bare_image_provider,
+                                                          cluster_type))
 
     def run_script_on_host(self, script_contents, host):
         temp_script = '/tmp/tmp.sh'
