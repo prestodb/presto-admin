@@ -20,7 +20,15 @@ from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
-from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.constants import LOCAL_RESOURCES_DIR, JAVA_VERSION_DIR, \
+    DEFAULT_JAVA_DIR
+
+
+def relocate_default_java(cluster, destination):
+    for container in cluster.all_hosts():
+        cluster.exec_cmd_on_host(
+            container, "mv %s %s" % (DEFAULT_JAVA_DIR, destination))
+    return os.path.join(destination, JAVA_VERSION_DIR)
 
 
 install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
@@ -172,12 +180,11 @@ query.max-memory=50GB\n"""
 
     def test_install_with_java8_home(self):
         installer = StandalonePrestoInstaller(self)
-        for container in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(container,
-                                          "mv /usr/java/jdk1.8.0_40 /usr/")
+        new_java_home = relocate_default_java(self.cluster, '/usr')
+
         topology = {"coordinator": "master",
                     "workers": ["slave1", "slave2", "slave3"],
-                    "java8_home": "/usr/jdk1.8.0_40/jre"}
+                    "java8_home": new_java_home}
         self.upload_topology(topology)
 
         cmd_output = installer.install()

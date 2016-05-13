@@ -25,8 +25,6 @@ from prestoadmin import main_dir
 from tests.docker_cluster import DockerCluster
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
-from tests.product.constants import BASE_TD_DOCKERFILE_DIR, BASE_IMAGE_NAME, \
-    BASE_TD_IMAGE_NAME, DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
@@ -59,25 +57,25 @@ class TestInstaller(BaseProductTestCase):
             self.centos_container, online_installer=False, unique=True)
         self.__verify_third_party_dir(True)
         self.centos_container.exec_cmd_on_host(
-            self.centos_container.master, 'ifdown eth0')
+            # IMPORTANT: ifdown eth0 fails silently without taking the
+            # interface down if the NET_ADMIN capability isn't set for the
+            # container. ifconfig eth0 down accomplishes the same thing, but
+            # results in a failure if it fails.
+            self.centos_container.master, 'ifconfig eth0 down')
         self.pa_installer.install(
             dist_dir=self.centos_container.get_dist_dir(unique=True))
         self.run_prestoadmin('--help', raise_error=True)
 
     def __create_and_start_single_centos_container(self):
-        centos_container = DockerCluster(
-            'master', [], DEFAULT_LOCAL_MOUNT_POINT,
-            DEFAULT_DOCKER_MOUNT_POINT)
-        # we can't assume that another test has created the image
-        centos_container.create_image(
-            BASE_TD_DOCKERFILE_DIR,
-            BASE_TD_IMAGE_NAME,
-            BASE_IMAGE_NAME
-        )
-        centos_container.start_containers(
-            BASE_TD_IMAGE_NAME,
-            cap_add=['NET_ADMIN']
-        )
+        cluster_type = 'installer_tester'
+        bare_image_provider = NoHadoopBareImageProvider()
+        centos_container, bare_cluster = DockerCluster.start_cluster(
+            bare_image_provider, cluster_type, 'master', [],
+            cap_add=['NET_ADMIN'])
+
+        if bare_cluster:
+            centos_container.commit_images(bare_image_provider, cluster_type)
+
         return centos_container
 
     def __verify_third_party_dir(self, is_third_party_present):

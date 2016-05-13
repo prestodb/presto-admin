@@ -16,9 +16,11 @@
 Product tests for generating an online and offline installer for presto-admin
 """
 
+import os
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
+from tests.product.test_server_install import relocate_default_java
 
 
 class TestRpm(BaseProductTestCase):
@@ -30,9 +32,8 @@ class TestRpm(BaseProductTestCase):
     @docker_only
     def test_install_fails_java8_not_found(self):
         installer = StandalonePrestoInstaller(self)
-        for container in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(container,
-                                          'mv /usr/java/jdk1.8.0_40 /usr/')
+        relocate_default_java(self.cluster, '/usr')
+
         self.upload_topology()
         cmd_output = installer.install(pa_raise_error=False)
         actual = cmd_output.splitlines()
@@ -50,12 +51,14 @@ class TestRpm(BaseProductTestCase):
     @docker_only
     def test_server_starts_java8_in_bin_java(self):
         installer = StandalonePrestoInstaller(self)
+
+        new_java_home = relocate_default_java(self.cluster, '/usr')
+        java_bin = os.path.join(new_java_home, 'bin', 'java')
+
         for container in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(container,
-                                          'mv /usr/java/jdk1.8.0_40 /usr')
-            self.cluster.exec_cmd_on_host(container,
-                                          'ln -s /usr/jdk1.8.0_40/bin/java '
-                                          '/bin/java')
+            self.cluster.exec_cmd_on_host(
+                container, 'ln -s %s /bin/java' % (java_bin,))
+
         self.upload_topology()
 
         installer.install()
