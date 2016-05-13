@@ -74,8 +74,7 @@ class TestInstaller(BaseProductTestCase):
             cap_add=['NET_ADMIN'])
 
         if bare_cluster:
-            centos_container.commit_images(
-                bare_image_provider, cluster_type)
+            centos_container.commit_images(bare_image_provider, cluster_type)
 
         return centos_container
 

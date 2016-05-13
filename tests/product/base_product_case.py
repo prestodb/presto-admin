@@ -172,6 +172,19 @@ query.max-memory=50GB\n"""
             try:
                 self.cluster, bare_cluster = DockerCluster.start_cluster(
                     bare_image_provider, cluster_type)
+
+                # If we've found images and started a non-bare cluster, the
+                # containers have already had the installers applied to them.
+                # We do need to get the test environment in sync with the
+                # containers by calling the following two functions.
+                #
+                # Once that's done, the cluster and test environment is in the
+                # same state it would be as if we'd called _run_installers on
+                # a bare cluster, and we can return.
+                #
+                # We do this to save the cost of running the installers on the
+                # docker containers every time we run a test. In practice,
+                # that turns out to be a fairly expensive thing to do.
                 if not bare_cluster:
                     self._apply_post_install_hooks(installers)
                     self._update_replacement_keywords(installers)
@@ -179,6 +192,9 @@ query.max-memory=50GB\n"""
             except DockerClusterException as e:
                 self.fail(e.msg)
 
+        # If we got a bare cluster back, we need to run the installers on it.
+        # applying the post-install hooks and updating the replacement
+        # keywords is handled internally in _run_installers.
         self._run_installers(installers)
 
         if isinstance(self.cluster, DockerCluster):
