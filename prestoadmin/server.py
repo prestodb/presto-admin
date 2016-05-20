@@ -166,7 +166,7 @@ def uninstall():
 
 @task
 @requires_config(StandaloneConfig)
-def upgrade(local_package_path, local_config_dir=None):
+def upgrade(local_package_path, local_config_dir=None, overwrite=False):
     """
     Copy and upgrade a new presto-server rpm to all of the nodes in the
     cluster. Retains existing node configuration.
@@ -188,6 +188,8 @@ def upgrade(local_package_path, local_config_dir=None):
     :param local_config_dir -   (optional) Directory to store the cluster
                                 configuration in. If not specified, a temp
                                 directory is used.
+    :param overwrite -          (optional) if set to True then existing
+                                configuration will be orerwriten.
     """
     stop()
 
@@ -195,8 +197,8 @@ def upgrade(local_package_path, local_config_dir=None):
         local_config_dir = mkdtemp()
         print('Saving cluster configuration to %s' % local_config_dir)
 
-    configure_cmds.gather_directory(local_config_dir)
-    filenames = connector.gather_connectors(local_config_dir)
+    configure_cmds.gather_directory(local_config_dir, overwrite)
+    filenames = connector.gather_connectors(local_config_dir, overwrite)
 
     package.deploy_upgrade(local_package_path)
 

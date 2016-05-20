@@ -103,7 +103,7 @@ def fetch_all(target_directory, allow_overwrite=False):
         local_config_file = os.path.join(host_config_dir, file_name)
         ensure_parent_directories_exist(local_config_file)
         if not allow_overwrite and os.path.exists(local_config_file):
-            abort("Refusing to overwrite %s" % (local_config_file))
+            abort("Refusing to overwrite %s. Use 'overwrite' parameter to overwrite." % (local_config_file))
         configuration_fetch(file_name, local_config_file)
 
 
