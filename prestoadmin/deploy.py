@@ -137,7 +137,7 @@ def deploy_node_properties(content, remote_dir):
 def write_to_remote_file(text, filepath, owner, mode=600):
     secure_create_file(filepath, PRESTO_STANDALONE_USER_GROUP)
     command = "echo '{text}' > {filepath}".format(
-            text=escape_single_quotes(text), filepath=filepath)
+        text=escape_single_quotes(text), filepath=filepath)
     sudo(command)
 
 
