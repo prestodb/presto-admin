@@ -90,6 +90,7 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
 -XX:OnOutOfMemoryError=kill -9 %p
+-XX:ReservedCodeCacheSize=512M
 -DHADOOP_USER_NAME=hive\n"""
 
     default_coordinator_config_ = """coordinator=true

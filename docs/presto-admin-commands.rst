@@ -120,6 +120,7 @@ configurations:
     -XX:+HeapDumpOnOutOfMemoryError
     -XX:+UseGCOverheadLimit
     -XX:OnOutOfMemoryError=kill -9 %p
+    -XX:ReservedCodeCacheSize=512M
     -DHADOOP_USER_NAME=hive
 
 *config.properties*
@@ -163,6 +164,7 @@ following ``jvm.config`` to ``/etc/opt/prestoadmin/coordinator``
     -XX:+HeapDumpOnOutOfMemoryError
     -XX:+UseGCOverheadLimit
     -XX:OnOutOfMemoryError=kill -9 %p
+    -XX:ReservedCodeCacheSize=512M
 
 Further, add the following ``node.properties`` to
 ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers``: ::

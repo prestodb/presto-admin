@@ -42,6 +42,7 @@ class TestCoordinator(BaseTestCase):
                                    '-XX:+HeapDumpOnOutOfMemoryError',
                                    '-XX:+UseGCOverheadLimit',
                                    '-XX:OnOutOfMemoryError=kill -9 %p',
+                                   '-XX:ReservedCodeCacheSize=512M',
                                    '-DHADOOP_USER_NAME=hive'],
                     'config.properties': {
                         'coordinator': 'true',
@@ -72,6 +73,7 @@ class TestCoordinator(BaseTestCase):
                                    '-XX:+HeapDumpOnOutOfMemoryError',
                                    '-XX:+UseGCOverheadLimit',
                                    '-XX:OnOutOfMemoryError=kill -9 %p',
+                                   '-XX:ReservedCodeCacheSize=512M',
                                    '-DHADOOP_USER_NAME=hive'],
                     'config.properties': {
                         'coordinator': 'true',
@@ -156,6 +158,7 @@ class TestCoordinator(BaseTestCase):
                                    '-XX:+HeapDumpOnOutOfMemoryError',
                                    '-XX:+UseGCOverheadLimit',
                                    '-XX:OnOutOfMemoryError=kill -9 %p',
+                                   '-XX:ReservedCodeCacheSize=512M',
                                    '-DHADOOP_USER_NAME=hive'],
                     'config.properties': {
                         'coordinator': 'true',
