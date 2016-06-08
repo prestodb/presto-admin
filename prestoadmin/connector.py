@@ -50,7 +50,8 @@ def deploy_files(filenames, local_dir, remote_dir, user_group, mode=0600):
 def gather_connectors(local_config_dir, allow_overwrite=False):
     local_catalog_dir = os.path.join(local_config_dir, env.host, 'catalog')
     if not allow_overwrite and os.path.exists(local_catalog_dir):
-        fabric.utils.error("Refusing to overwrite %s. Use 'overwrite' option to overwrite." % local_catalog_dir)
+        fabric.utils.error("Refusing to overwrite %s. Use 'overwrite' "
+                           "option to overwrite." % local_catalog_dir)
     ensure_directory_exists(local_catalog_dir)
     if files.exists(constants.REMOTE_CATALOG_DIR):
         return get(constants.REMOTE_CATALOG_DIR, local_catalog_dir)
