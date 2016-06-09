@@ -489,15 +489,16 @@ server upgrade
 **************
 ::
 
-    presto-admin server upgrade local_package_path [local_config_dir]
+    presto-admin server upgrade path/to/new/package.rpm [local_config_dir]
 
-This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM specified
-by ``local_package_path``, preserving the existing configuration on the cluster. The existing
+This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM at
+``path/to/new/package.rpm``, preserving the existing configuration on the cluster. The existing
 cluster configuration is saved locally to local_config_dir (which defaults to a temporary
-folder if not specified).
+folder if not specified). The path can either be absolute or relative to the current
+directory.
 
-This command can also be used to downgrade the Presto installation, if the RPM at ``local_package_path``
-is an earlier version than the Presto installed on the cluster.
+This command can also be used to downgrade the Presto installation, if the RPM at
+``path/to/new/package.rpm`` is an earlier version than the Presto installed on the cluster.
 
 Note that if the configuration files on the cluster differ from the presto-admin configuration
 files found in ``/etc/opt/prestoadmin``, the presto-admin configuration files are not updated.
@@ -506,7 +507,8 @@ Example
 -------
 ::
 
-    sudo ./presto-admin server upgrade new-rpm.rpm /tmp/cluster-configuration
+    sudo ./presto-admin server upgrade path/to/new/package.rpm /tmp/cluster-configuration
+    sudo ./presto-admin server upgrade /path/to/new/package.rpm /tmp/cluster-configuration
 
 
 *************

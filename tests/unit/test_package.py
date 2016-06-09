@@ -22,10 +22,12 @@ from tests.unit.base_unit_case import BaseUnitCase
 
 class TestPackage(BaseUnitCase):
 
+    @patch('prestoadmin.package.os.path.isfile')
     @patch('prestoadmin.package.sudo')
     @patch('prestoadmin.package.put')
-    def test_deploy_is_called(self, mock_put, mock_sudo):
+    def test_deploy_is_called(self, mock_put, mock_sudo, mock_isfile):
         env.host = 'any_host'
+        mock_isfile.return_value = True
         package.deploy('/any/path/rpm')
         mock_sudo.assert_called_with('mkdir -p ' +
                                      constants.REMOTE_PACKAGES_PATH)
@@ -119,10 +121,13 @@ class TestPackage(BaseUnitCase):
                                       capture=True)
         mock_abort.assert_called_with('Not an rpm package')
 
+    @patch('prestoadmin.package.os.path.isfile')
     @patch('prestoadmin.package.sudo')
     @patch('prestoadmin.package.put')
-    def test_deploy_with_fallback_location(self, mock_put, mock_sudo):
+    def test_deploy_with_fallback_location(self, mock_put, mock_sudo,
+                                           mock_isfile):
         env.host = 'any_host'
+        mock_isfile.return_value = True
         package.deploy('/any/path/rpm')
         mock_put.return_value = lambda: None
         setattr(mock_put.return_value, 'succeeded', False)

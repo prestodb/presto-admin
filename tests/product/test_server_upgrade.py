@@ -107,3 +107,68 @@ class TestServerUpgrade(BaseProductTestCase):
     def copy_upgrade_rpm_to_cluster(self):
         rpm_name = self.dummy_installer.copy_presto_rpm_to_master()
         return os.path.join(self.cluster.mount_dir, rpm_name)
+
+    def test_upgrade_fails_given_directory(self):
+        dir_on_cluster = '/opt/prestoadmin'
+        self.assertRaisesRegexp(
+            OSError,
+            'RPM file not found at %s.' % dir_on_cluster,
+            self.run_prestoadmin,
+            'server upgrade ' + dir_on_cluster
+        )
+
+    def test_upgrade_works_with_symlink(self):
+        self.run_prestoadmin('configuration deploy')
+        for container in self.cluster.all_hosts():
+            self.real_installer.assert_installed(self, container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
+
+        path_on_cluster = self.copy_upgrade_rpm_to_cluster()
+        symlink = '/opt/prestoadmin/link.rpm'
+        self.cluster.exec_cmd_on_host(self.cluster.master, 'ln -s %s %s'
+                                      % (path_on_cluster, symlink))
+        self.upgrade_and_assert_success(symlink)
+
+    def test_configuration_preserved_on_upgrade(self):
+        self.run_prestoadmin('configuration deploy')
+        for container in self.cluster.all_hosts():
+            self.real_installer.assert_installed(self, container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
+
+        self.add_dummy_properties_to_host(self.cluster.slaves[1])
+        path_on_cluster = self.copy_upgrade_rpm_to_cluster()
+        symlink = '/opt/prestoadmin/link.rpm'
+        self.cluster.exec_cmd_on_host(self.cluster.master, 'ln -s %s %s'
+                                      % (path_on_cluster, symlink))
+
+        self.run_prestoadmin('server upgrade ' + path_on_cluster)
+        self.assert_dummy_properties(self.cluster.slaves[1])
+
+    def add_dummy_properties_to_host(self, host):
+        self.cluster.write_content_to_host(
+            'com.facebook.presto=INFO',
+            '/etc/presto/log.properties',
+            host
+        )
+        self.cluster.write_content_to_host(
+            'dummy config file',
+            '/etc/presto/jvm.config',
+            host
+        )
+
+    def assert_dummy_properties(self, host):
+        # assert log properties file is there
+        self.assert_file_content(
+            host,
+            '/etc/presto/log.properties',
+            'com.facebook.presto=INFO'
+        )
+
+        # assert dummy jvm config is there too
+        self.assert_file_content(
+            host,
+            '/etc/presto/jvm.config',
+            'dummy config file'
+        )

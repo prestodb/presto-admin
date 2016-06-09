@@ -74,6 +74,9 @@ def deploy_action(local_path, rpm_action):
 
 
 def deploy(local_path=None):
+    if not os.path.isfile(local_path):
+        abort('RPM file not found at %s.' % local_path)
+
     _LOGGER.info("Deploying rpm on %s..." % env.host)
     print("Deploying rpm on %s..." % env.host)
     sudo('mkdir -p ' + constants.REMOTE_PACKAGES_PATH)
