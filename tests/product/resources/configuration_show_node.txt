@@ -2,6 +2,8 @@ master: Configuration file at /etc/presto/node.properties:
 node.id=.*
 node.data-dir=/var/lib/presto/data
 node.environment=presto
+node.launcher-log-file=/var/log/presto/launcher.log
+node.server-log-file=/var/log/presto/server.log
 plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin
 
@@ -10,6 +12,8 @@ slave1: Configuration file at /etc/presto/node.properties:
 node.id=.*
 node.data-dir=/var/lib/presto/data
 node.environment=presto
+node.launcher-log-file=/var/log/presto/launcher.log
+node.server-log-file=/var/log/presto/server.log
 plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin
 
@@ -18,6 +22,8 @@ slave2: Configuration file at /etc/presto/node.properties:
 node.id=.*
 node.data-dir=/var/lib/presto/data
 node.environment=presto
+node.launcher-log-file=/var/log/presto/launcher.log
+node.server-log-file=/var/log/presto/server.log
 plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin
 
@@ -26,5 +32,7 @@ slave3: Configuration file at /etc/presto/node.properties:
 node.id=.*
 node.data-dir=/var/lib/presto/data
 node.environment=presto
+node.launcher-log-file=/var/log/presto/launcher.log
+node.server-log-file=/var/log/presto/server.log
 plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin

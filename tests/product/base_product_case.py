@@ -79,6 +79,8 @@ query.max-memory=50GB\n"""
 
     default_node_properties_ = """node.data-dir=/var/lib/presto/data
 node.environment=presto
+node.launcher-log-file=/var/log/presto/launcher.log
+node.server-log-file=/var/log/presto/server.log
 plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin\n"""
 
@@ -409,9 +411,9 @@ query.max-memory=50GB\n"""
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
         actual = split_properties[1]
         if host in self.cluster.slaves:
-            conf_dir = constants.COORDINATOR_DIR
-        else:
             conf_dir = constants.WORKERS_DIR
+        else:
+            conf_dir = constants.COORDINATOR_DIR
         self.assertLazyMessage(
             lambda: self.file_content_message(actual, expected,
                                               os.path.join(conf_dir,

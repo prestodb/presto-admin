@@ -34,6 +34,10 @@ class Coordinator(Node):
     DEFAULT_PROPERTIES = {'node.properties':
                           {'node.environment': 'presto',
                            'node.data-dir': '/var/lib/presto/data',
+                           'node.launcher-log-file':
+                               '/var/log/presto/launcher.log',
+                           'node.server-log-file':
+                               '/var/log/presto/server.log',
                            'plugin.config-dir': '/etc/presto/catalog',
                            'plugin.dir': '/usr/lib/presto/lib/plugin'},
                           'jvm.config': ['-server',
