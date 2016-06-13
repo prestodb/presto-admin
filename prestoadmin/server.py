@@ -183,7 +183,8 @@ def upgrade(new_rpm_path, local_config_dir=None, overwrite=False):
     Note that the configuration files in /etc/opt/prestoadmin are not updated
     during upgrade.
 
-    :param new_rpm_path -       The path to the new Presto RPM to install
+    :param new_rpm_path -       The path to the new Presto RPM to
+                                install
     :param local_config_dir -   (optional) Directory to store the cluster
                                 configuration in. If not specified, a temp
                                 directory is used.
