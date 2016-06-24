@@ -242,7 +242,8 @@ def is_port_in_use(host):
                      "Skipping check for port already being used")
         return 0
     with settings(hide('warnings', 'stdout'), warn_only=True):
-        output = run('netstat -ln |grep -E "\<%s\>" |grep LISTEN' % str(portnum))
+        output = run(
+                'netstat -ln |grep -E "\<%s\>" |grep LISTEN' % str(portnum))
     if output:
         _LOGGER.info("Presto server port already in use. Skipping "
                      "server start...")
