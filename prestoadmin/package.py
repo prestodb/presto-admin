@@ -89,27 +89,31 @@ def deploy(local_path=None):
         print("Package deployed successfully on: " + env.host)
 
 
-def rpm_install(rpm_name):
-    _LOGGER.info("Installing the rpm")
+def _rpm_install(package_path):
     nodeps = ''
     if env.nodeps:
         nodeps = '--nodeps '
 
     if 'java8_home' not in env or env.java8_home is None:
-        ret = sudo('rpm -i %s%s' %
-                   (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH,
-                                         rpm_name)))
+        ret = sudo('rpm -i %s%s' % (nodeps, package_path))
     else:
         with shell_env(JAVA8_HOME='%s' % env.java8_home):
-            ret = sudo('rpm -i %s%s' %
-                       (nodeps, os.path.join(constants.REMOTE_PACKAGES_PATH,
-                                             rpm_name)))
+            ret = sudo('rpm -i %s%s' % (nodeps, package_path))
+
+    return ret
+
+
+def rpm_install(rpm_name):
+    _LOGGER.info("Installing the rpm")
+    package_path = os.path.join(constants.REMOTE_PACKAGES_PATH, rpm_name)
+    ret = _rpm_install(package_path)
     if ret.succeeded:
         print("Package installed successfully on: " + env.host)
 
 
 def rpm_upgrade(rpm_name):
     _LOGGER.info("Upgrading the rpm")
+
     nodeps = ''
     if env.nodeps:
         nodeps = '--nodeps '
@@ -119,6 +123,6 @@ def rpm_upgrade(rpm_name):
                         % package_path, quiet=True)
 
     ret_uninstall = sudo('rpm -e %s%s' % (nodeps, package_name))
-    ret_install = sudo('rpm -i %s%s' % (nodeps, package_path))
+    ret_install = _rpm_install(package_path)
     if ret_uninstall.succeeded and ret_install.succeeded:
         print("Package upgraded successfully on: " + env.host)
