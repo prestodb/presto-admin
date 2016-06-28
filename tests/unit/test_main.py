@@ -51,7 +51,7 @@ from tests.unit.base_unit_case import BaseUnitCase
 # The tests that need config loaded can patch that with one of the following
 # functions as a side-effect. Instead of main.load_config being called, the
 # function returned by e.g. mock_load_topology gets called, and it patches
-# the config load implementation to achieve the desired result.
+# the config load implementation to achieve    the desired result.
 #
 # The downside of this approach is that any tests function that uses this ends
 # up getting an unused mock as a parameter. The upside is that when config load

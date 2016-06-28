@@ -21,7 +21,8 @@ from overrides import overrides
 
 from prestoadmin import config
 from prestoadmin.util import constants
-from prestoadmin.util.base_config import BaseConfig, SingleConfigItem
+from prestoadmin.util.base_config import FabricEnvConfig, SingleConfigItem, \
+    set_env_hosts
 from prestoadmin.util.exception import ConfigurationError
 import prestoadmin.util.fabricapi as util
 from prestoadmin.util.validators import validate_username, validate_port, \
@@ -67,7 +68,7 @@ _TOPOLOGY_CONFIG = [
         PORT, 'Enter port number for SSH connections to all nodes:',
         default=DEFAULT_PROPERTIES['port'], validate=validate_port),
     SingleConfigItem(
-        COORDINATOR, 'Enter host name or IP address for coordinator node. '
+        COORDINATOR, 'Enter host name or: IP address for coordinator node. '
         'Enter an external host name or ip address if this is a multi-node '
         'cluster:', default=DEFAULT_PROPERTIES['coordinator'],
         validate=validate_coordinator),
@@ -137,7 +138,7 @@ def validate_workers(workers):
     return workers
 
 
-class StandaloneConfig(BaseConfig):
+class StandaloneConfig(FabricEnvConfig):
 
     def __init__(self):
         super(StandaloneConfig, self).__init__(constants.TOPOLOGY_CONFIG_PATH,
@@ -175,7 +176,7 @@ class StandaloneConfig(BaseConfig):
         env.roledefs['all'] = self._dedup_list(util.get_coordinator_role() +
                                                util.get_worker_role())
 
-        env.hosts = env.roledefs['all'][:]
+        set_env_hosts(env.roledefs['all'][:], self.config_path)
 
     @staticmethod
     def _dedup_list(host_list):

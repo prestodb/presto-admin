@@ -61,6 +61,8 @@ from fabric.tasks import Task, execute
 from fabric.task_utils import _Dict, crawl
 from fabric.utils import abort, indent, warn, _pty_size
 
+from prestoadmin.util.base_config import get_env_hosts_source, \
+    sanitize_env_hosts_source
 import prestoadmin
 from prestoadmin import mode
 from prestoadmin.util.exception import ConfigurationError, is_arguments_error
@@ -679,15 +681,13 @@ def validate_hosts(cli_hosts, config_path):
             config_path)
 
 
-def _update_env(default_options, non_default_options, load_config_callback):
+def _update_env(default_options, non_default_options, load_config_callbacks):
     # Fill in the state with the default values
     for opt, value in default_options.__dict__.items():
         state.env[opt] = value
 
-    if load_config_callback:
-        config_path = load_config(load_config_callback)
-    else:
-        config_path = None
+    if load_config_callbacks:
+        load_config(*load_config_callbacks)
 
     # Save env.hosts from the config into another env variable for validation.
     # _handle_generic_set_env_vars will overwrite it if --set hosts=...
@@ -702,14 +702,14 @@ def _update_env(default_options, non_default_options, load_config_callback):
         # for hosts, it's still an unsplit, comma separated string rather than
         # a list, which is what it would be after loading hosts from a config
         # file.
-        validate_hosts(state.env.hosts, config_path)
+        validate_hosts(state.env.hosts, get_env_hosts_source())
 
     # Go back through and add the non-default values (e.g. the values that
     # were set on the CLI)
     for opt, value in non_default_options.__dict__.items():
         # raise error if hosts not in topology
         if opt == 'hosts':
-            validate_hosts(value, config_path)
+            validate_hosts(value, get_env_hosts_source())
 
         state.env[opt] = value
 
@@ -728,6 +728,7 @@ def _update_env(default_options, non_default_options, load_config_callback):
     # validation. Hide it from the world.
     if 'conf_hosts' in state.env:
         del state.env['conf_hosts']
+    sanitize_env_hosts_source()
 
 
 def get_default_options(options, non_default_options):
@@ -751,8 +752,8 @@ def get_default_options(options, non_default_options):
     return default_options
 
 
-def _get_config_callback(commands_to_run):
-    config_callback = None
+def _get_config_callbacks(commands_to_run):
+    config_callbacks = []
     if len(commands_to_run) != 1:
         raise Exception('Multiple commands are not supported')
 
@@ -763,11 +764,11 @@ def _get_config_callback(commands_to_run):
     command_callable = module_dict[command]
 
     try:
-        config_callback = command_callable.pa_config_callback
+        config_callbacks = command_callable.pa_config_callbacks
     except AttributeError:
         pass
 
-    return config_callback
+    return config_callbacks
 
 
 def parse_and_validate_commands(args=sys.argv[1:]):
@@ -823,8 +824,8 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     if options.display:
         display_command(commands_to_run[0][0])
 
-    load_config_callback = _get_config_callback(commands_to_run)
-    _update_env(default_options, non_default_options, load_config_callback)
+    load_config_callbacks = _get_config_callbacks(commands_to_run)
+    _update_env(default_options, non_default_options, load_config_callbacks)
 
     if not options.serial:
         state.env.parallel = True
@@ -841,13 +842,14 @@ def parse_and_validate_commands(args=sys.argv[1:]):
     return commands_to_run
 
 
-def load_config(load_config_callback):
+def load_config(*load_config_callbacks):
     """
     This provides a patch point for the unit tests so that individual test
     cases don't need to know the internal details of what happens in
     _load_topology. See test_main.py for examples.
     """
-    return load_config_callback()
+    for callback in load_config_callbacks:
+        callback()
 
 
 def _exit_code(results):

@@ -23,11 +23,13 @@ from overrides import overrides
 
 from fabric.state import env
 
-from prestoadmin.util.base_config import BaseConfig, SingleConfigItem, \
-    MultiConfigItem
+from prestoadmin.util.base_config import FabricEnvConfig, SingleConfigItem, \
+    MultiConfigItem, set_env_hosts
 from prestoadmin.util.constants import LOCAL_CONF_DIR
 from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
+
+SLIDER_PKG_NAME = 'PRESTO'
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
 SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
@@ -39,7 +41,7 @@ ADMIN_USER = 'admin'
 SSH_PORT = 'ssh_port'
 
 DIR = 'slider_directory'
-APPNAME = 'slider_appname'
+APP_INST_NAME = 'slider_appname'
 INSTANCE_NAME = 'slider_instname'
 SLIDER_USER = 'slider_user'
 JAVA_HOME = 'JAVA_HOME'
@@ -83,11 +85,12 @@ _SLIDER_CONFIG = [
     SingleConfigItem(HADOOP_CONF, 'Enter the location of the Hadoop ' +
                      'configuration on the slider master:',
                      '/etc/hadoop/conf', None),
-    SingleConfigItem(APPNAME, 'Enter a name for the presto slider application',
-                     'PRESTO', None)]
+    SingleConfigItem(APP_INST_NAME, 'Enter a name for the presto slider ' +
+                     'application instance',
+                     'presto', None)]
 
 
-class SliderConfig(BaseConfig):
+class SliderConfig(FabricEnvConfig):
     '''
     presto-admin needs to update the slider config other than through the
     interactive config process because it needs to keep track of the name
@@ -129,7 +132,7 @@ class SliderConfig(BaseConfig):
 
         env.conf = self
 
-        env.hosts = env.roledefs['all'][:]
+        set_env_hosts(env.roledefs['all'][:], self.config_path)
 
     def store_conf(self):
         super(SliderConfig, self).write_conf(self.config)
