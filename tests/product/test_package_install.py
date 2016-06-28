@@ -37,38 +37,17 @@ class TestPackageInstall(BaseProductTestCase):
             self.installer.assert_installed(self, container,
                                             msg=output)
 
-    def test_install_coord_using_dash_h(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
-        output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%(rpm)s -H %(master)s',
-            rpm=rpm_name)
-        self.installer.assert_installed(self, self.cluster.master)
-        for slave in self.cluster.slaves:
-            self.installer.assert_uninstalled(slave, msg=output)
-
-    def test_install_worker_using_dash_h(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
-        output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%(rpm)s -H %(slave1)s',
-            rpm=rpm_name)
-
-        self.installer.assert_installed(self, self.cluster.slaves[0],
-                                        msg=output)
-        self.installer.assert_uninstalled(self.cluster.master, msg=output)
-        self.installer.assert_uninstalled(self.cluster.slaves[1], msg=output)
-        self.installer.assert_uninstalled(self.cluster.slaves[2], msg=output)
-
-    def test_install_workers_using_dash_h(self):
+    def test_install_using_dash_h(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         output = self.run_prestoadmin('package install /mnt/presto-admin/'
-                                      '%(rpm)s -H %(slave1)s,%(slave2)s',
+                                      '%(rpm)s -H %(master)s,%(slave2)s',
                                       rpm=rpm_name)
 
-        self.installer.assert_installed(self, self.cluster.slaves[0],
+        self.installer.assert_installed(self, self.cluster.master,
                                         msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[1],
                                         msg=output)
-        self.installer.assert_uninstalled(self.cluster.master, msg=output)
+        self.installer.assert_uninstalled(self.cluster.slaves[0], msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[2], msg=output)
 
     def test_install_exclude_coord(self):
