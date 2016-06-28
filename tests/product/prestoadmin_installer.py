@@ -16,18 +16,11 @@
 Module for installing prestoadmin on a cluster.
 """
 
-import errno
 import fnmatch
-import shutil
 import os
-
-import prestoadmin
 
 from tests.base_installer import BaseInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR
-from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-
-from tests.docker_cluster import DockerCluster
 
 
 class PrestoadminInstaller(BaseInstaller):
@@ -39,18 +32,13 @@ class PrestoadminInstaller(BaseInstaller):
         return []
 
     def install(self, cluster=None, dist_dir=None):
-        # Passing in a cluster supports the installation tests. We need to be
-        # able to try an installation against an unsupported OS, and for that
-        # testcase, we create a cluster that is local to the testcase and then
-        # run the install on it. We can't replace self.cluster with the local
-        # cluster in the test, because that would prevent the test's "regular"
-        # cluster from getting torn down.
         if not cluster:
             cluster = self.testcase.cluster
 
         if not dist_dir:
-            dist_dir = self._build_dist_if_necessary(cluster)
-        self._copy_dist_to_host(cluster, dist_dir, cluster.master)
+            dist_dir = cluster.get_dist_dir(unique=False)
+
+        self.copy_dist_to_master(cluster, dist_dir)
         cluster.copy_to_host(
             LOCAL_RESOURCES_DIR + "/install-admin.sh", cluster.master)
         cluster.exec_cmd_on_host(
@@ -69,84 +57,16 @@ class PrestoadminInstaller(BaseInstaller):
     def get_keywords(self):
         return {}
 
-    def _build_dist_if_necessary(self, cluster, unique=False):
-        if (not os.path.isdir(cluster.get_dist_dir(unique)) or
-                not fnmatch.filter(
-                    os.listdir(cluster.get_dist_dir(unique)),
-                    'prestoadmin-*.tar.bz2')):
-            self._build_installer_in_docker(cluster, unique=unique)
-        return cluster.get_dist_dir(unique)
-
-    def _build_installer_in_docker(self, cluster, online_installer=None,
-                                   unique=False):
-        if online_installer is None:
-            paTestOnlineInstaller = os.environ.get('PA_TEST_ONLINE_INSTALLER')
-            online_installer = paTestOnlineInstaller is not None
-
-        container_name = 'installer'
-        cluster_type = 'installer_builder'
-        bare_image_provider = NoHadoopBareImageProvider()
-
-        installer_container, created_bare = DockerCluster.start_cluster(
-            bare_image_provider, cluster_type, 'installer', [])
-
-        if created_bare:
-            installer_container.commit_images(
-                bare_image_provider, cluster_type)
-
-        try:
-            shutil.copytree(
-                prestoadmin.main_dir,
-                os.path.join(
-                    installer_container.get_local_mount_dir(container_name),
-                    'presto-admin'),
-                ignore=shutil.ignore_patterns('tmp', '.git', 'presto*.rpm')
-            )
-
-            # Pin pip to 7.1.2 because 8.0.0 removed support for distutils
-            # installed projects, of which the system setuptools is one on our
-            # Docker image. pip 8.0.1 or 8.0.2 replaced the error with a
-            # deprecation warning, and also warns that Python 2.6 is
-            # deprecated. While we still need to support Python 2.6, we'll pin
-            # pip to a 7.x version, but we should revisit this once we no
-            # longer need to support 2.6:
-            # https://github.com/pypa/pip/issues/3384
-            installer_container.run_script_on_host(
-                'set -e\n'
-                'pip install --upgrade pip==7.1.2\n'
-                'pip install --upgrade wheel==0.23.0\n'
-                'pip install --upgrade setuptools==20.1.1\n'
-                'mv %s/presto-admin ~/\n'
-                'cd ~/presto-admin\n'
-                'make %s\n'
-                'cp dist/prestoadmin-*.tar.bz2 %s'
-                % (installer_container.mount_dir,
-                   'dist' if online_installer else 'dist-offline',
-                   installer_container.mount_dir),
-                container_name)
-
-            try:
-                os.makedirs(cluster.get_dist_dir(unique))
-            except OSError, e:
-                if e.errno != errno.EEXIST:
-                    raise
-            local_container_dist_dir = os.path.join(
-                prestoadmin.main_dir,
-                installer_container.get_local_mount_dir(container_name)
-            )
-            installer_file = fnmatch.filter(
-                os.listdir(local_container_dist_dir),
-                'prestoadmin-*.tar.bz2')[0]
-            shutil.copy(
-                os.path.join(local_container_dist_dir, installer_file),
-                cluster.get_dist_dir(unique))
-        finally:
-            installer_container.tear_down()
-
-    @staticmethod
-    def _copy_dist_to_host(cluster, local_dist_dir, dest_host):
-        for dist_file in os.listdir(local_dist_dir):
+    def copy_dist_to_master(self, cluster, dist_dir):
+        if (not os.path.isdir(dist_dir) or
+                len(fnmatch.filter(
+                    os.listdir(dist_dir),
+                    'prestoadmin-*.tar.bz2')) == 0):
+            self.testcase.fail(
+                'Unable to find presto-admin package. Have you run one of '
+                '`make dist*` or `make docker-dist*` command?')
+        for dist_file in os.listdir(dist_dir):
             if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
                 cluster.copy_to_host(
-                    os.path.join(local_dist_dir, dist_file),
-                    dest_host)
+                    os.path.join(dist_dir, dist_file),
+                    cluster.master)

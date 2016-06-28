@@ -58,7 +58,8 @@ class TestPackageInstall(BaseProductTestCase):
 
         self.installer.assert_uninstalled(self.cluster.master, msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[1], msg=output)
-        self.installer.assert_installed(self, self.cluster.slaves[0], msg=output)
+        self.installer.assert_installed(self, self.cluster.slaves[0],
+                                        msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[2],
                                         msg=output)
 
