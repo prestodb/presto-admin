@@ -50,35 +50,15 @@ class TestPackageInstall(BaseProductTestCase):
         self.installer.assert_uninstalled(self.cluster.slaves[0], msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[2], msg=output)
 
-    def test_install_exclude_coord(self):
+    def test_install_exclude_nodes(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         output = self.run_prestoadmin('package install /mnt/presto-admin/'
-                                      '%(rpm)s -x %(master)s', rpm=rpm_name)
-
-        self.installer.assert_uninstalled(self.cluster.master, msg=output)
-        for slave in self.cluster.slaves:
-            self.installer.assert_installed(self, slave, msg=output)
-
-    def test_install_exclude_worker(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
-        output = self.run_prestoadmin('package install /mnt/presto-admin/'
-                                      '%(rpm)s -x %(slave1)s', rpm=rpm_name)
-        self.installer.assert_uninstalled(self.cluster.slaves[0], msg=output)
-        self.installer.assert_installed(self, self.cluster.slaves[1],
-                                        msg=output)
-        self.installer.assert_installed(self, self.cluster.master, msg=output)
-        self.installer.assert_installed(self, self.cluster.slaves[2],
-                                        msg=output)
-
-    def test_install_exclude_workers(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
-        output = self.run_prestoadmin('package install /mnt/presto-admin/'
-                                      '%(rpm)s -x %(slave1)s,%(slave2)s',
+                                      '%(rpm)s -x %(master)s,%(slave2)s',
                                       rpm=rpm_name)
 
-        self.installer.assert_uninstalled(self.cluster.slaves[0], msg=output)
+        self.installer.assert_uninstalled(self.cluster.master, msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[1], msg=output)
-        self.installer.assert_installed(self, self.cluster.master, msg=output)
+        self.installer.assert_installed(self, self.cluster.slaves[0], msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[2],
                                         msg=output)
 
