@@ -45,9 +45,9 @@ class TestInstallation(BaseProductTestCase):
         super(TestInstallation, self).setUp()
         self.pa_installer = PrestoadminInstaller(self)
         self.setup_cluster(NoHadoopBareImageProvider(), self.BARE_CLUSTER)
-        dist_dir = self.pa_installer._build_dist_if_necessary(self.cluster)
-        self.pa_installer._copy_dist_to_host(self.cluster, dist_dir,
-                                             self.cluster.master)
+        self.pa_installer.copy_dist_to_master(
+            self.cluster,
+            self.cluster.get_dist_dir(unique=False))
 
     @attr('smoketest')
     @docker_only
