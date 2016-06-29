@@ -317,6 +317,14 @@ def parser_for_options():
         help=SUPPRESS_HELP
     )
 
+    parser.add_option(
+        '--force',
+        action='store_true',
+        dest='force',
+        default=False,
+        help=SUPPRESS_HELP
+    )
+
     #
     # Add in options which are also destined to show up as `env` vars.
     #

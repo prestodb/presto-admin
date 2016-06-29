@@ -15,8 +15,7 @@
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase, \
-    docker_only
+from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -27,40 +26,68 @@ class TestPackageInstall(BaseProductTestCase):
         self.upload_topology()
         self.installer = StandalonePrestoInstaller(self)
 
-    @attr('smoketest')
-    def test_package_install(self):
-        rpm_name = self.installer.copy_presto_rpm_to_master()
-        output = self.run_prestoadmin('package install '
-                                      '/mnt/presto-admin/%(rpm)s',
-                                      rpm=rpm_name)
+    def tearDown(self):
+        self._assert_uninstall()
+        super(TestPackageInstall, self).tearDown()
+
+    def _assert_uninstall(self):
+        output = self.run_prestoadmin('package uninstall presto-server-rpm --force')
         for container in self.cluster.all_hosts():
-            self.installer.assert_installed(self, container,
-                                            msg=output)
+            self.installer.assert_uninstalled(container, msg=output)
+
+    @attr('smoketest')
+    def test_package_installer(self):
+        rpm_name = self.installer.copy_presto_rpm_to_master()
+
+        # install
+        output = self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s', rpm=rpm_name)
+        for container in self.cluster.all_hosts():
+            self.installer.assert_installed(self, container, msg=output)
+
+        # uninstall
+        output = self.run_prestoadmin('package uninstall presto-server-rpm')
+        for container in self.cluster.all_hosts():
+            self.installer.assert_uninstalled(container, msg=output)
 
     def test_install_using_dash_h(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
+
+        # install onto master and slave2
         output = self.run_prestoadmin('package install /mnt/presto-admin/'
                                       '%(rpm)s -H %(master)s,%(slave2)s',
                                       rpm=rpm_name)
 
-        self.installer.assert_installed(self, self.cluster.master,
-                                        msg=output)
-        self.installer.assert_installed(self, self.cluster.slaves[1],
-                                        msg=output)
+        self.installer.assert_installed(self, self.cluster.master, msg=output)
+        self.installer.assert_installed(self, self.cluster.slaves[1], msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[0], msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[2], msg=output)
 
+        # uninstall on slave2
+        output = self.run_prestoadmin('package uninstall presto-server-rpm -H %(slave2)s')
+        self.installer.assert_installed(self, self.cluster.master, msg=output)
+        for container in self.cluster.slaves:
+            self.installer.assert_uninstalled(container, msg=output)
+
+        # uninstall on rest
+        output = self.run_prestoadmin('package uninstall presto-server-rpm --force')
+        for container in self.cluster.all_hosts():
+            self.installer.assert_uninstalled(container, msg=output)
+
     def test_install_exclude_nodes(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
-        output = self.run_prestoadmin('package install /mnt/presto-admin/'
-                                      '%(rpm)s -x %(master)s,%(slave2)s',
+        output = self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s -x %(master)s,%(slave2)s',
                                       rpm=rpm_name)
 
+        # install
         self.installer.assert_uninstalled(self.cluster.master, msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[1], msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[0], msg=output)
-        self.installer.assert_installed(self, self.cluster.slaves[2],
-                                        msg=output)
+        self.installer.assert_installed(self, self.cluster.slaves[2], msg=output)
+
+        # uninstall
+        output = self.run_prestoadmin('package uninstall presto-server-rpm -x %(master)s,%(slave2)s')
+        for container in self.cluster.all_hosts():
+            self.installer.assert_uninstalled(container, msg=output)
 
     def test_install_invalid_path(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
@@ -92,6 +119,16 @@ class TestPackageInstall(BaseProductTestCase):
                                  'hecking package dependencies. Equivalent\n'
                                  '            to adding --nodeps flag to rpm '
                                  '-i.\n\n')
+
+    def test_install_already_uninstalled(self):
+        output = self.run_prestoadmin('package uninstall some_rpm -H %(master)s', raise_error=False)
+        expected = self.escape_for_regex(self.replace_keywords(
+            '\n\nAborting.\nFatal error: [%(master)s] Package is not installed',
+            **self.installer.get_keywords()))
+        self.assertRegexpMatchesLineByLine(
+            output.splitlines(),
+            expected.splitlines()
+        )
 
     def test_install_already_installed(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()

@@ -29,6 +29,7 @@ Commands:
     mode list
     mode select
     package install
+    package uninstall
     plugin add_jar
     script run
     server install

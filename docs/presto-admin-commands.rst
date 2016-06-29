@@ -319,6 +319,31 @@ Example
     sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
 
 
+*****************
+package uninstall
+*****************
+
+::
+
+    presto-admin package uninstall rpm_package_name [--nodeps]
+
+This command uninstalls an rpm package from all the nodes in the cluster. Similar to ``server uninstall`` the cluster
+topology is obtained from the file ``/etc/opt/prestoadmin/config.json``. If this file is missing, then the command
+prompts for user input to get the topology information.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm installed should ignore checking any package
+dependencies.
+
+.. WARNING:: Using ``--nodeps`` can result in uninstalling the rpm even when dependant packages are installed. It may
+end up with a broken rpm installation.
+
+Example
+-------
+::
+
+    sudo ./presto-admin package uninstall jdk
+
+
 **************
 plugin add_jar
 **************

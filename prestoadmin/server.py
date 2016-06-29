@@ -24,7 +24,7 @@ from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once, with_settings, parallel
 from fabric.operations import run, os
 from fabric.tasks import execute
-from fabric.utils import warn, error
+from fabric.utils import warn, error, abort
 from retrying import retry
 
 from prestoadmin import configure_cmds
@@ -160,20 +160,14 @@ def uninstall():
     """
     stop()
 
-    nodeps = ''
-    if env.nodeps:
-        nodeps = ' --nodeps'
-
-    # currently we have two rpm names out so we need this retry
-    with quiet():
-        ret = sudo('rpm -e%s presto' % (nodeps))
-        if ret.succeeded:
-            print('Package uninstalled successfully on: ' + env.host)
-            return
-
-    ret = sudo('rpm -e%s presto-server-rpm' % (nodeps))
-    if ret.succeeded:
-        print('Package uninstalled successfully on: ' + env.host)
+    if package.is_rpm_installed('presto'):
+        package.rpm_uninstall('presto')
+    elif package.is_rpm_installed('presto-server'):
+        package.rpm_uninstall('presto-server')
+    elif package.is_rpm_installed('presto-server-rpm'):
+        package.rpm_uninstall('presto-server-rpm')
+    else:
+        abort('Unable to uninstall package on: ' + env.host)
 
 
 @task

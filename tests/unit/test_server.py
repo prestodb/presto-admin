@@ -66,30 +66,17 @@ class TestInstall(BaseUnitCase):
         mock_sudo.assert_called_with('getent passwd presto', quiet=True)
 
     @patch('prestoadmin.server.check_presto_version')
-    @patch('prestoadmin.server.sudo')
-    def test_uninstall_is_called(self, mock_sudo, mock_version_check):
+    @patch('prestoadmin.package.rpm_uninstall')
+    def test_uninstall_is_called(self, mock_package_rpm_uninstall, mock_version_check):
         env.host = "any_host"
-        env.nodeps = False
-        mock_sudo.side_effect = self.mock_fail_then_succeed()
+        mock_package_rpm_uninstall.side_effect = [False, True]
 
         server.uninstall()
 
         mock_version_check.assert_called_with()
-        mock_sudo.assert_any_call('rpm -e presto')
-        mock_sudo.assert_called_with('rpm -e presto-server-rpm')
-
-    @patch('prestoadmin.server.check_presto_version')
-    @patch('prestoadmin.server.sudo')
-    def test_uninstall_with_nodeps(self, mock_sudo, mock_version_check):
-        env.host = 'any_host'
-        env.nodeps = True
-        mock_sudo.side_effect = self.mock_fail_then_succeed()
-
-        server.uninstall()
-
-        mock_version_check.assert_called_with()
-        mock_sudo.assert_any_call('rpm -e --nodeps presto')
-        mock_sudo.assert_called_with('rpm -e --nodeps presto-server-rpm')
+        mock_package_rpm_uninstall.assert_called_with_call('presto')
+        mock_package_rpm_uninstall.assert_called_with('presto-server')
+        self.assertTrue(mock_package_rpm_uninstall.call_count == 2)
 
     @patch('prestoadmin.util.remote_config_util.lookup_in_config')
     @patch('prestoadmin.server.run')

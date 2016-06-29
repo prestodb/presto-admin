@@ -5,44 +5,24 @@ Warning: [slave2] Presto is not installed.
 Warning: [master] Presto is not installed.
 
 
-Warning: [slave1] Presto is not installed.
-
-
 Warning: [slave3] Presto is not installed.
 
 
-Fatal error: [slave2] sudo() received nonzero return code 1 while executing!
+Warning: [slave1] Presto is not installed.
 
-Requested: rpm -e presto-server-rpm
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto-server-rpm"
 
-Aborting.
-[slave2] out: error: package presto-server-rpm is not installed
-[slave2] out:
-
-Fatal error: [master] sudo() received nonzero return code 1 while executing!
-
-Requested: rpm -e presto-server-rpm
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto-server-rpm"
+Fatal error: [slave2] Unable to uninstall package on: slave2
 
 Aborting.
-[master] out: error: package presto-server-rpm is not installed
-[master] out:
 
-Fatal error: [slave1] sudo() received nonzero return code 1 while executing!
-
-Requested: rpm -e presto-server-rpm
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto-server-rpm"
+Fatal error: [slave3] Unable to uninstall package on: slave3
 
 Aborting.
-[slave1] out: error: package presto-server-rpm is not installed
-[slave1] out:
 
-Fatal error: [slave3] sudo() received nonzero return code 1 while executing!
-
-Requested: rpm -e presto-server-rpm
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "rpm -e presto-server-rpm"
+Fatal error: [master] Unable to uninstall package on: master
 
 Aborting.
-[slave3] out: error: package presto-server-rpm is not installed
-[slave3] out:
+
+Fatal error: [slave1] Unable to uninstall package on: slave1
+
+Aborting.

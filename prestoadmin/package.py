@@ -30,7 +30,7 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.fabricapi import get_host_list
 
 _LOGGER = logging.getLogger(__name__)
-__all__ = ['install']
+__all__ = ['install', 'uninstall']
 
 
 @task
@@ -90,39 +90,75 @@ def deploy(local_path=None):
 
 
 def _rpm_install(package_path):
+    nodeps = _nodeps_rpm_option()
+
+    if 'java8_home' not in env or env.java8_home is None:
+        return sudo('rpm -i %s%s' % (nodeps, package_path))
+    else:
+        with shell_env(JAVA8_HOME='%s' % env.java8_home):
+            return sudo('rpm -i %s%s' % (nodeps, package_path))
+
+
+def _nodeps_rpm_option():
     nodeps = ''
     if env.nodeps:
         nodeps = '--nodeps '
-
-    if 'java8_home' not in env or env.java8_home is None:
-        ret = sudo('rpm -i %s%s' % (nodeps, package_path))
-    else:
-        with shell_env(JAVA8_HOME='%s' % env.java8_home):
-            ret = sudo('rpm -i %s%s' % (nodeps, package_path))
-
-    return ret
+    return nodeps
 
 
 def rpm_install(rpm_name):
     _LOGGER.info("Installing the rpm")
-    package_path = os.path.join(constants.REMOTE_PACKAGES_PATH, rpm_name)
-    ret = _rpm_install(package_path)
-    if ret.succeeded:
+    if _rpm_install(_rpm_path(rpm_name)).succeeded:
         print("Package installed successfully on: " + env.host)
+
+
+def _rpm_path(rpm_filename):
+    return os.path.join(constants.REMOTE_PACKAGES_PATH, rpm_filename)
 
 
 def rpm_upgrade(rpm_name):
     _LOGGER.info("Upgrading the rpm")
+    rpm_path = _rpm_path(rpm_name)
+    package_name = sudo('rpm -qp --queryformat \'%%{NAME}\' %s' % rpm_path,
+                        quiet=True)
 
-    nodeps = ''
-    if env.nodeps:
-        nodeps = '--nodeps '
+    if not package_name.succeeded:
+        abort("Corrupted RPM file: %s" % rpm_path)
 
-    package_path = os.path.join(constants.REMOTE_PACKAGES_PATH, rpm_name)
-    package_name = sudo('rpm -qp --queryformat \'%%{NAME}\' %s'
-                        % package_path, quiet=True)
+    if _rpm_uninstall(package_name).succeeded:
+        if _rpm_install(rpm_path).succeeded:
+            print("Package upgraded successfully on: " + env.host)
 
-    ret_uninstall = sudo('rpm -e %s%s' % (nodeps, package_name))
-    ret_install = _rpm_install(package_path)
-    if ret_uninstall.succeeded and ret_install.succeeded:
-        print("Package upgraded successfully on: " + env.host)
+
+@task
+@runs_once
+@requires_config(StandaloneConfig)
+def uninstall(rpm_name):
+    """
+    Uninstall the rpm package from the cluster
+
+    Args:
+        rpm_name: Name of the rpm to be uninstalled
+        --nodeps (optional): Flag to indicate if rpm uninstall) should ignore checking package dependencies. Equivalent
+            to adding --nodeps flag to rpm -e.
+        --force (optional): Flag to indicate that rpm uninstall should not fail if package is not installed.
+    """
+    return execute(rpm_uninstall, rpm_name, hosts=get_host_list())
+
+
+def rpm_uninstall(package_name):
+    _LOGGER.info("Uninstalling the rpm")
+
+    if not is_rpm_installed(package_name):
+        if not env.force:
+            abort('Package is not installed: ' % package_name)
+    elif _rpm_uninstall(package_name).succeeded:
+        print("Package uninstalled successfully on: " + env.host)
+
+
+def is_rpm_installed(package_name):
+    return sudo('rpm -qi %s' % package_name, quiet=True).succeeded
+
+
+def _rpm_uninstall(package_name):
+    return sudo('rpm -e %s%s' % (_nodeps_rpm_option(), package_name))
