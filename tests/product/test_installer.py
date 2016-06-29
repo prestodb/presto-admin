@@ -42,26 +42,8 @@ class TestInstaller(BaseProductTestCase):
         self.centos_container.tear_down()
 
     @attr('smoketest')
-    def test_online_installer(self):
-        self.pa_installer._build_installer_in_docker(self.centos_container,
-                                                     online_installer=True,
-                                                     unique=True)
+    def test_installer(self):
         self.__verify_third_party_dir(False)
-        self.pa_installer.install(
-            dist_dir=self.centos_container.get_dist_dir(unique=True))
-        self.run_prestoadmin('--help', raise_error=True)
-
-    @attr('smoketest', 'offline_installer')
-    def test_offline_installer(self):
-        self.pa_installer._build_installer_in_docker(
-            self.centos_container, online_installer=False, unique=True)
-        self.__verify_third_party_dir(True)
-        self.centos_container.exec_cmd_on_host(
-            # IMPORTANT: ifdown eth0 fails silently without taking the
-            # interface down if the NET_ADMIN capability isn't set for the
-            # container. ifconfig eth0 down accomplishes the same thing, but
-            # results in a failure if it fails.
-            self.centos_container.master, 'ifconfig eth0 down')
         self.pa_installer.install(
             dist_dir=self.centos_container.get_dist_dir(unique=True))
         self.run_prestoadmin('--help', raise_error=True)
