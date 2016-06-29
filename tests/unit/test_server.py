@@ -70,6 +70,7 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.server.sudo')
     def test_uninstall_is_called(self, mock_sudo, mock_version_check):
         env.host = "any_host"
+        env.nodeps = False
         mock_sudo.side_effect = self.mock_fail_then_succeed()
 
         server.uninstall()
@@ -77,6 +78,19 @@ class TestInstall(BaseUnitCase):
         mock_version_check.assert_called_with()
         mock_sudo.assert_any_call('rpm -e presto')
         mock_sudo.assert_called_with('rpm -e presto-server-rpm')
+
+    @patch('prestoadmin.server.check_presto_version')
+    @patch('prestoadmin.server.sudo')
+    def test_uninstall_with_nodeps(self, mock_sudo, mock_version_check):
+        env.host = 'any_host'
+        env.nodeps = True
+        mock_sudo.side_effect = self.mock_fail_then_succeed()
+
+        server.uninstall()
+
+        mock_version_check.assert_called_with()
+        mock_sudo.assert_any_call('rpm -e --nodeps presto')
+        mock_sudo.assert_called_with('rpm -e --nodeps presto-server-rpm')
 
     @patch('prestoadmin.util.remote_config_util.lookup_in_config')
     @patch('prestoadmin.server.run')

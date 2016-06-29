@@ -368,7 +368,7 @@ server install
 **************
 ::
 
-    presto-admin server install <local_path>
+    presto-admin server install <local_path> [--nodeps]
 
 This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The ``local_path`` should be accessible by ``presto-admin``.
 The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
@@ -377,6 +377,10 @@ The general configurations for Presto's coordinator and workers are taken from t
 
 The connectors directory ``/etc/opt/prestoadmin/connectors/`` should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
 The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``server install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm installed should ignore checking any package dependencies.
+
+.. WARNING:: Using ``--nodeps`` can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm installation.
 
 Example
 -------
@@ -476,10 +480,12 @@ server uninstall
 ****************
 ::
 
-    presto-admin server uninstall
+    presto-admin server uninstall [--nodeps]
 
 This command stops the Presto server if running on the cluster and uninstalls the Presto rpm. The uninstall command removes any presto
 related files deployed during ``server install`` but retains the Presto logs at ``/var/log/presto``.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm uninstalled should ignore checking any package dependencies.
 
 Example
 -------
@@ -493,7 +499,7 @@ server upgrade
 **************
 ::
 
-    presto-admin server upgrade path/to/new/package.rpm [local_config_dir]
+    presto-admin server upgrade path/to/new/package.rpm [local_config_dir] [--nodeps]
 
 This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM at
 ``path/to/new/package.rpm``, preserving the existing configuration on the cluster. The existing
@@ -506,6 +512,10 @@ This command can also be used to downgrade the Presto installation, if the RPM a
 
 Note that if the configuration files on the cluster differ from the presto-admin configuration
 files found in ``/etc/opt/prestoadmin``, the presto-admin configuration files are not updated.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm upgrade should ignore checking any package dependencies.
+
+.. WARNING:: Using ``--nodeps`` can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm upgrade.
 
 Example
 -------

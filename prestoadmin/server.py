@@ -107,7 +107,12 @@ def install(local_path):
     jvm.config
 
     Parameters:
-        local_path - Absolute path to the presto rpm to be installed
+        local_path -            Absolute path to the presto rpm to be installed
+
+        --nodeps -              (optional) Flag to indicate if server install
+                                should ignore checking Presto rpm package
+                                dependencies. Equivalent to adding --nodeps
+                                flag to rpm -i.
     """
     package.check_if_valid_rpm(local_path)
     return execute(deploy_install_configure, local_path, hosts=get_host_list())
@@ -149,17 +154,27 @@ def wait_for_presto_user():
 def uninstall():
     """
     Uninstall Presto after stopping the services on all nodes
+
+    Parameters:
+        --nodeps -              (optional) Flag to indicate if server uninstall
+                                should ignore checking Presto rpm package
+                                dependencies. Equivalent to adding --nodeps
+                                flag to rpm -e.
     """
     stop()
 
+    nodeps = ''
+    if env.nodeps:
+        nodeps = ' --nodeps'
+
     # currently we have two rpm names out so we need this retry
     with quiet():
-        ret = sudo('rpm -e presto')
+        ret = sudo('rpm -e%s presto' % (nodeps))
         if ret.succeeded:
             print('Package uninstalled successfully on: ' + env.host)
             return
 
-    ret = sudo('rpm -e presto-server-rpm')
+    ret = sudo('rpm -e%s presto-server-rpm' % (nodeps))
     if ret.succeeded:
         print('Package uninstalled successfully on: ' + env.host)
 
@@ -190,6 +205,11 @@ def upgrade(new_rpm_path, local_config_dir=None, overwrite=False):
                                 directory is used.
     :param overwrite -          (optional) if set to True then existing
                                 configuration will be orerwriten.
+
+    :param --nodeps -           (optional) Flag to indicate if server upgrade
+                                should ignore checking Presto rpm package
+                                dependencies. Equivalent to adding --nodeps
+                                flag to rpm -U.
     """
     stop()
 

@@ -558,7 +558,9 @@ def show_commands(docstring, format, code=0):
 def run_tasks(task_list):
     for name, args, kwargs, arg_hosts, arg_roles, arg_excl_hosts in task_list:
         try:
-            if state.env.nodeps and name.strip() != 'package.install':
+            nodeps_tasks = ['package.install', 'server.uninstall',
+                            'server.install', 'server.upgrade']
+            if state.env.nodeps and name.strip() not in nodeps_tasks:
                 sys.stderr.write('Invalid argument --nodeps to task: %s\n'
                                  % name)
                 display_command(name, 2)
