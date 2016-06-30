@@ -30,7 +30,7 @@ from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.fabricapi import get_host_list
 
 _LOGGER = logging.getLogger(__name__)
-__all__ = ['install']
+__all__ = ['install', 'uninstall']
 
 
 @task
@@ -126,3 +126,23 @@ def rpm_upgrade(rpm_name):
     ret_install = _rpm_install(package_path)
     if ret_uninstall.succeeded and ret_install.succeeded:
         print("Package upgraded successfully on: " + env.host)
+
+
+@task
+@runs_once
+@requires_config(StandaloneConfig)
+def uninstall(rpm_name):
+    """
+    Install the rpm package on the cluster
+
+    Args:
+        rpm_name: Name of the rpm to be uninstalled
+    """
+    return execute(rpm_uninstall, rpm_name, hosts=get_host_list())
+
+
+def rpm_uninstall(rpm_name):
+    _LOGGER.info("Uninstalling the rpm")
+    ret = sudo('rpm -e %s' % (rpm_name))
+    if ret.succeeded:
+        print("Package uninstalled successfully on: " + env.host)

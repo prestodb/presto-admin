@@ -1,6 +1,7 @@
 .PHONY: clean-all clean clean-eggs clean-build clean-pyc clean-test-containers clean-test \
 	clean-docs lint smoke test test-all test-rpm coverage docs open-docs release release-builds \
-	dist dist-online dist-offline wheel install precommit
+	dist dist-online dist-offline wheel install precommit \
+	docker-dist docker-dist-online docker-dist-offline
 
 help:
 	@echo "precommit - run \`quick' tests and tasks that should pass or succeed prior to pushing"
@@ -25,6 +26,9 @@ help:
 	@echo "dist - package and build installer that requires an Internet connection"
 	@echo "dist-online - package and build installer that requires an Internet connection"
 	@echo "dist-offline - package and build installer that does not require an Internet connection"
+	@echo "docker-dist - package and build installer (within a docker container) that requires an Internet connection"
+	@echo "docker-dist-online - package and build installer (within a docker container) that requires an Internet connection"
+	@echo "docker-dist-offline - package and build installer (within a docker container) that does not require an Internet connection"
 	@echo "wheel - build wheel only"
 	@echo "install - install the package to the active Python's site-packages"
 
@@ -120,6 +124,14 @@ dist-online: clean-build clean-pyc
 dist-offline: clean-build clean-pyc
 	python setup.py bdist_prestoadmin
 	ls -l dist
+
+docker-dist: docker-dist-online
+
+docker-dist-online: clean-build clean-pyc
+	docker run --rm -v `pwd`:/workdir -w /workdir -u `id -u`:`id -g` teradatalabs/presto-admin-devenv:1 make dist-online
+
+docker-dist-offline: clean-build clean-pyc
+	docker run --rm -v `pwd`:/workdir -w /workdir -u `id -u`:`id -g` teradatalabs/presto-admin-devenv:1 make dist-offline
 
 wheel: clean
 	python setup.py bdist_wheel

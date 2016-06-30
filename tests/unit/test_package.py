@@ -136,3 +136,10 @@ class TestPackage(BaseUnitCase):
                                     constants.REMOTE_PACKAGES_PATH,
                                     use_sudo=True,
                                     temp_dir='/tmp')
+
+    @patch('prestoadmin.package.sudo')
+    def test_uninstall(self, mock_sudo):
+        env.host = 'any_host'
+        self.remove_runs_once_flag(package.install)
+        package.uninstall('any_rpm')
+        mock_sudo.assert_called_with('rpm -e any_rpm')
