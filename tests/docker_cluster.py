@@ -36,7 +36,7 @@ from tests.product.constants import \
     DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT, \
     BASE_TD_IMAGE_NAME
 
-DIST_DIR = os.path.join(main_dir, 'tmp/installer')
+DIST_DIR = os.path.join(main_dir, 'dist')
 
 
 class DockerCluster(BaseCluster):
