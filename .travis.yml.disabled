@@ -18,7 +18,7 @@ env:
     - PRODUCT_TEST_GROUP=6
     - PRODUCT_TEST_GROUP=7
 before_script:
-  - pip install --upgrade pip==6.1.1
+  - pip install --upgrade pip==7.1.2
   - pip install -r requirements.txt
   - make docker-images
 install: 
