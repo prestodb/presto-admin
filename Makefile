@@ -83,7 +83,7 @@ test: clean-test
 
 TEST_SUITE?=tests.product
 
-test-all: clean-test docker-images
+test-all: clean-test docker-images docker-dist
 	tox -- -s tests.unit
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'

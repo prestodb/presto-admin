@@ -64,7 +64,7 @@ class PrestoadminInstaller(BaseInstaller):
                     'prestoadmin-*.tar.bz2')) == 0):
             self.testcase.fail(
                 'Unable to find presto-admin package. Have you run one of '
-                '`make dist*` or `make docker-dist*` command?')
+                '`make dist*` or `make docker-dist*`?')
         for dist_file in os.listdir(dist_dir):
             if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
                 cluster.copy_to_host(
