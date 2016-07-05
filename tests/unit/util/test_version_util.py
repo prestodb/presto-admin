@@ -56,11 +56,13 @@ class TestVersionRange(BaseUnitCase):
 
     def test_strip_td(self):
         self.assertEquals((0, 123), VersionRange.strip_td_suffix((0, '123t')))
+        self.assertEquals((0, 123, 1, 0), VersionRange.strip_td_suffix((0, 123, 't', 1, 0)))
 
     def test_contains_teradata(self):
         vr = VersionRange((0,), (0, 128))
         self.assertIn((0, '115t'), vr)
         self.assertIn(('0', '115t'), vr)
+        self.assertIn((0, 125, 't', 0, 1), vr)
 
 
 class TestVersionRangeSet(BaseUnitCase):
@@ -135,3 +137,11 @@ class TestVersionUtils(BaseUnitCase):
     def test_split(self):
         self.assertEqual(['1', '2', '3'], split_version(' \t 1.2.3  \t '))
         self.assertEqual(['0', '115t'], split_version('0.115t'))
+
+    def test_new_teradata_version(self):
+        self.assertEqual(
+            (0, 148, 't'), strip_tag(('0', '148', 't'))
+        )
+        self.assertEqual(
+            (0, 148, 't', 0, 1), strip_tag(('0', '148', 't', '0', '1'))
+        )

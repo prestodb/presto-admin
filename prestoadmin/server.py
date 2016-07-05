@@ -17,7 +17,6 @@ Module for installing, monitoring and controlling presto server
 using presto-admin
 """
 import logging
-import re
 import sys
 
 from fabric.api import task, sudo, env, quiet
@@ -81,8 +80,6 @@ NODE_INFO_PER_URI_SQL = VersionRangeList(
 EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from ' \
                   'system.runtime.nodes WHERE node_id = \'%s\''
 CONNECTOR_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
-PRESTO_RPM_MIN_REQUIRED_VERSION = 103
-PRESTO_TD_RPM = ['101t']
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -329,25 +326,6 @@ def check_presto_version():
         not_installed_str = 'Presto is not installed.'
         warn(not_installed_str)
         return not_installed_str
-
-    version = get_presto_version()
-    if version in PRESTO_TD_RPM:
-        return ''
-
-    matched = re.search('(\d+)\.(\d+)t?([-\.]SNAPSHOT)?', version)
-    if not matched:
-        incorrect_version_str = 'Incorrect presto version:  %s,' % version
-        warn(incorrect_version_str)
-        return incorrect_version_str
-
-    minor_version = matched.group(2)
-
-    if int(minor_version) < PRESTO_RPM_MIN_REQUIRED_VERSION:
-        incorrect_version_str = 'Presto version is %s, version >= 0.%d ' \
-                                'required.' % \
-                                (version, PRESTO_RPM_MIN_REQUIRED_VERSION)
-        warn(incorrect_version_str)
-        return incorrect_version_str
 
     return ''
 

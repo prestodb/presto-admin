@@ -26,6 +26,18 @@ def split_version(version_string):
     return version_string.strip().split('.')
 
 
+# New versions of the Teradata RPM are of the form 0.148.t.x.y, so the 't'
+# can be not attached to the preceding version number, and we want to
+# preserve it.
+def intOrT(x):
+    try:
+        return int(x)
+    except ValueError as e:
+        if x is 't':
+            return x
+        raise e
+
+
 def strip_tag(version):
     """
     Strip trailing non-numeric components from a version leaving the Teradata
@@ -34,6 +46,9 @@ def strip_tag(version):
     ['1', 'TWO', '3'] -> raises a ValueError
     ['0', '115t', 'SNAPSHOT'] -> (0, '115t')
     ['ZERO', '123t'] -> raises a ValueError
+    ['0', '148', 't'] => (0, 148, 't')
+    ['0', '148', 't', 0, 1] => (0, 148, 't', 0, 1)
+    ['0', '148', 't', 0, 1, 'SNAPSHOT'] => (0, 148, 't', 0, 1)
 
     This checks the components of the version from least to most significant.
     Tags are only allowed at the least significant place in a version number,
@@ -54,7 +69,7 @@ def strip_tag(version):
     while True:
         try:
             rightmost = result[-1]
-            int(rightmost)
+            intOrT(rightmost)
             # Once we find the right-most/least significant component that
             # can be represented as an int (doesn't raise a ValueError), break
             # out of the loop.
@@ -98,7 +113,7 @@ def strip_tag(version):
     if is_teradata:
         result = [int(x) for x in result[:-1]] + [result[-1]]
     else:
-        result = [int(x) for x in result]
+        result = [intOrT(x) for x in result]
 
     return tuple(result)
 
@@ -148,15 +163,15 @@ class VersionRange(object):
 
     @staticmethod
     def strip_td_suffix(version):
-        last_component = version[-1]
-        if isinstance(last_component, int):
-            return version
+        new_version = ()
+        for component in version:
+            if TD_VERSION.match(str(component)):
+                new_last = component[:-1]
+                new_version += (int(new_last),)
+            elif component is not 't':
+                new_version += (int(component),)
 
-        if TD_VERSION.match(last_component):
-            new_last = last_component[:-1]
-            return version[:-1] + (int(new_last),)
-
-        return version
+        return new_version
 
     @staticmethod
     def pad_tuple(tup, length, pad):
