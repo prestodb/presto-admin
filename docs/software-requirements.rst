@@ -2,19 +2,9 @@
 Software Requirements
 =====================
 
-**Operating System**
-
-* RedHat Linux version 6.x
+**Operating Systems**
+* RedHat Linux version 6.x		
 * CentOS (equivalent to above)
-
-**Hadoop distributions**
-
-* HDP 2.x OR
-* CDH 5.x
-
-**Java**
-
-* Oracle Java 1.8 JRE (64-bit) (Required for Presto. See :ref:`java-installation-label`)
 
 **Python**
 
