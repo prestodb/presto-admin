@@ -151,7 +151,7 @@ def rpm_uninstall(package_name):
 
     if not is_rpm_installed(package_name):
         if not env.force:
-            abort('Package is not installed: ' % package_name)
+            abort('Package is not installed: ' + package_name)
     elif _rpm_uninstall(package_name).succeeded:
         print("Package uninstalled successfully on: " + env.host)
 
