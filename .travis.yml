@@ -1,0 +1,17 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+sudo: required
+services:
+  - docker
+env:
+install: 
+  - pip install --upgrade pip==6.1.1
+  - pip install -r requirements.txt
+before_script:
+  - make docker-images
+script: 
+  - make clean lint dist docs 
+  - nosetests --with-timer --timer-ok 60s --timer-warning 300s -s tests.unit
+  - nosetests --with-timer --timer-ok 60s --timer-warning 300s -s tests.integration
