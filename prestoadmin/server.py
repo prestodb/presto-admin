@@ -19,7 +19,7 @@ using presto-admin
 import logging
 import sys
 
-from fabric.api import task, sudo, env, quiet
+from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
 from fabric.decorators import runs_once, with_settings, parallel
 from fabric.operations import run, os
