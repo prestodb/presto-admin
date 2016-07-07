@@ -32,5 +32,3 @@ To install, configure and run Presto Admin on an Amazon EMR cluster, follow the 
 		  ::
 
 		   sudo </path/to/presto-admin> -i </path/to/your.pem> <presto_admin_command>
-
-	- If you are using Presto Admin to install Presto server, make sure you download and use the Presto Server RPM built for RPM Package Manager version > 4.6. Such an RPM should be one of the artifacts you downloaded.
