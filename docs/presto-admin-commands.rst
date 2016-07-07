@@ -334,8 +334,7 @@ prompts for user input to get the topology information.
 This command takes an optional ``--nodeps`` flag which indicates if the rpm installed should ignore checking any package
 dependencies.
 
-.. WARNING:: Using ``--nodeps`` can result in uninstalling the rpm even when dependant packages are installed. It may
-end up with a broken rpm installation.
+.. WARNING:: Using ``--nodeps`` can result in uninstalling the rpm even when dependant packages are installed. It may end up with a broken rpm installation.
 
 Example
 -------
