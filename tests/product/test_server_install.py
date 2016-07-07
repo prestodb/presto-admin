@@ -56,7 +56,10 @@ install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
                                        'configurations on: slave1 ',
                                        'Deploying configuration on: slave2',
                                        'Deploying tpch.properties connector '
-                                       'configurations on: slave2 ']
+                                       'configurations on: slave2 ',
+                                       'Using rpm_specifier as a local path',
+                                       'Fetching local presto rpm at path: .*',
+                                       'Found existing rpm at: .*']
 
 install_with_worker_pa_master_out = ['Deploying rpm on master...',
                                      'Deploying rpm on slave1...',
@@ -89,7 +92,10 @@ install_with_worker_pa_master_out = ['Deploying rpm on master...',
                                      'configurations on: slave2 ',
                                      'Deploying configuration on: master',
                                      'Deploying tpch.properties connector '
-                                     'configurations on: master ']
+                                     'configurations on: master ',
+                                     'Using rpm_specifier as a local path',
+                                     'Fetching local presto rpm at path: .*',
+                                     'Found existing rpm at: .*']
 
 installed_all_hosts_output = ['Deploying rpm on master...',
                               'Deploying rpm on slave1...',
@@ -114,7 +120,10 @@ installed_all_hosts_output = ['Deploying rpm on master...',
                               'configurations on: slave2 ',
                               'Deploying configuration on: master',
                               'Deploying tpch.properties connector '
-                              'configurations on: master ']
+                              'configurations on: master ',
+                              'Using rpm_specifier as a local path',
+                              'Fetching local presto rpm at path: .*',
+                              'Found existing rpm at: .*']
 
 
 class TestServerInstall(BaseProductTestCase):
@@ -193,7 +202,7 @@ query.max-memory=50GB\n"""
         expected = installed_all_hosts_output
 
         actual = cmd_output.splitlines()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertRegexpMatchesLineByLine(actual, expected)
 
         for container in self.cluster.all_hosts():
             installer.assert_installed(self, container)
@@ -211,7 +220,7 @@ query.max-memory=50GB\n"""
         expected = installed_all_hosts_output
 
         actual = cmd_output.splitlines()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertRegexpMatchesLineByLine(actual, expected)
 
         for container in self.cluster.all_hosts():
             installer.assert_installed(self, container)
@@ -228,7 +237,7 @@ query.max-memory=50GB\n"""
         expected = install_with_worker_pa_master_out
 
         actual = cmd_output.splitlines()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertRegexpMatchesLineByLine(actual, expected)
 
         self.assert_installed_with_configs(
             self.cluster.slaves[0],
@@ -246,7 +255,7 @@ query.max-memory=50GB\n"""
         expected = install_with_ext_host_pa_master_out
 
         actual = cmd_output.splitlines()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertRegexpMatchesLineByLine(actual, expected)
 
         self.assert_installed_with_configs(
             self.cluster.slaves[0],
@@ -276,10 +285,13 @@ query.max-memory=50GB\n"""
                     'connector configurations on: master ',
                     'Deploying configuration on: slave1',
                     'Deploying jmx.properties, tpch.properties '
-                    'connector configurations on: slave1 ']
+                    'connector configurations on: slave1 ',
+                    'Using rpm_specifier as a local path',
+                    'Fetching local presto rpm at path: .*',
+                    'Found existing rpm at: .*']
 
         actual = cmd_output.splitlines()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertRegexpMatchesLineByLine(actual, expected)
 
         for container in [self.cluster.master,
                           self.cluster.slaves[0]]:
@@ -316,16 +328,19 @@ query.max-memory=50GB\n"""
             ips[self.cluster.master],
             r'Deploying jmx.properties, tpch.properties '
             r'connector configurations on: ' +
-            ips[self.cluster.master],
+            ips[self.cluster.master] + r' ',
             r'Deploying configuration on: ' +
             ips[self.cluster.slaves[0]],
             r'Deploying jmx.properties, tpch.properties '
             r'connector configurations on: ' +
-            ips[self.cluster.slaves[0]]]
+            ips[self.cluster.slaves[0]] + r' ',
+            r'Using rpm_specifier as a local path',
+            r'Fetching local presto rpm at path: .*',
+            r'Found existing rpm at: .*']
 
         cmd_output.sort()
         expected.sort()
-        self.assertRegexpMatchesLineByLine(expected, cmd_output)
+        self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
         self.assert_installed_with_regex_configs(
             self.cluster.master,
@@ -359,7 +374,7 @@ query.max-memory=50GB\n"""
                     r'multi-node cluster: \[localhost\] '
                     r'Enter host names or IP addresses for worker nodes '
                     r'separated by spaces: '
-                    r'\[localhost\] Deploying rpm on .*\.\.\.',
+                    r'\[localhost\] Using rpm_specifier as a local path',
                     r'Package deployed successfully on: ' +
                     self.cluster.internal_master,
                     r'Package installed successfully on: ' +
@@ -378,7 +393,11 @@ query.max-memory=50GB\n"""
                     r'Deploying jmx.properties, tpch.properties connector '
                     r'configurations on: ' +
                     self.cluster.internal_slaves[0],
-                    r'Deploying rpm on .*\.\.\.']
+                    r'Deploying rpm on .*\.\.\.',
+                    r'Deploying rpm on .*\.\.\.',
+                    r'Fetching local presto rpm at path: .*',
+                    r'Found existing rpm at: .*'
+                    ]
 
         self.assertRegexpMatchesLineByLine(actual, expected)
         for container in [self.cluster.master,
@@ -412,7 +431,7 @@ query.max-memory=50GB\n"""
                     r'multi-node cluster: \[localhost\] '
                     r'Enter host names or IP addresses for worker nodes '
                     r'separated by spaces: '
-                    r'\[localhost\] Deploying rpm on .*\.\.\.',
+                    r'\[localhost\] Using rpm_specifier as a local path',
                     r'Package deployed successfully on: ' +
                     ips[self.cluster.master],
                     r'Package installed successfully on: ' +
@@ -425,13 +444,16 @@ query.max-memory=50GB\n"""
                     ips[self.cluster.master],
                     r'Deploying tpch.properties connector '
                     r'configurations on: ' +
-                    ips[self.cluster.master],
+                    ips[self.cluster.master] + r' ',
                     r'Deploying configuration on: ' +
                     ips[self.cluster.slaves[0]],
                     r'Deploying tpch.properties connector '
                     r'configurations on: ' +
-                    ips[self.cluster.slaves[0]],
-                    r'Deploying rpm on .*\.\.\.']
+                    ips[self.cluster.slaves[0]] + r' ',
+                    r'Deploying rpm on .*\.\.\.',
+                    r'Deploying rpm on .*\.\.\.',
+                    r'Fetching local presto rpm at path: .*',
+                    r'Found existing rpm at: .*']
 
         cmd_output.sort()
         expected.sort()
