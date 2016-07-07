@@ -153,9 +153,11 @@ class TestPackage(BaseUnitCase):
         env.force = False
         mock_is_rpm_installed.return_value = False
 
-        with self.assertRaises(SystemExit) as cm:
+        try:
             package.rpm_uninstall('anyrpm')
-        self.assertEqual(cm.exception.message, '[any_host] Package is not installed: anyrpm')
+            self.fail('expected exception to be raised here')
+        except SystemExit, e:
+            self.assertEqual(e.message, '[any_host] Package is not installed: anyrpm')
 
     @patch('prestoadmin.package.is_rpm_installed')
     @patch('prestoadmin.package.sudo')
