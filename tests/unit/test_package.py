@@ -157,7 +157,6 @@ class TestPackage(BaseUnitCase):
             package.rpm_uninstall('anyrpm')
         self.assertEqual(cm.exception.message, '[any_host] Package is not installed')
 
-
     @patch('prestoadmin.package._is_rpm_installed')
     @patch('prestoadmin.package.sudo')
     def test_rpm_uninstall_non_existing_with_force(self, mock_sudo, mock_is_rpm_installed):
