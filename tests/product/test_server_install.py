@@ -17,8 +17,10 @@ import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util import constants
+
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR, JAVA_VERSION_DIR, \
     DEFAULT_JAVA_DIR
@@ -146,7 +148,7 @@ query.max-memory=50GB\n"""
 
     def setUp(self):
         super(TestServerInstall, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
 
     def assert_common_configs(self, container):
         installer = StandalonePrestoInstaller(self)

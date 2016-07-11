@@ -26,15 +26,12 @@ from nose.tools import nottest
 
 from prestoadmin.util import constants
 from tests.base_test_case import BaseTestCase
-from tests.configurable_cluster import ConfigurableCluster
-from tests.docker_cluster import DockerCluster, DockerClusterException
+from tests.docker_cluster import DockerCluster
 
-from tests.product.mode_installers import StandaloneModeInstaller, \
-    YarnSliderModeInstaller
-from tests.product.prestoadmin_installer import PrestoadminInstaller
+from tests.configurable_cluster import ConfigurableCluster
+from tests.product.cluster_types import cluster_types
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
-from tests.product.topology_installer import TopologyInstaller
-from tests.product.yarn_slider.slider_installer import SliderInstaller
+
 
 PRESTO_VERSION = r'.+'
 RETRY_TIMEOUT = 120
@@ -42,29 +39,6 @@ RETRY_INTERVAL = 5
 
 
 class BaseProductTestCase(BaseTestCase):
-    STANDALONE_BARE_CLUSTER = 'bare'
-    BARE_CLUSTER = 'bare'
-    PA_ONLY_CLUSTER = 'pa_only_standalone'
-    STANDALONE_PRESTO_CLUSTER = 'presto'
-
-    PA_ONLY_YS_CLUSTER = 'pa_only_ys'
-    PA_SLIDER_CLUSTER = 'pa_slider'
-
-    _cluster_types = {
-        BARE_CLUSTER: [],
-        PA_ONLY_CLUSTER: [PrestoadminInstaller,
-                          StandaloneModeInstaller],
-        STANDALONE_PRESTO_CLUSTER: [PrestoadminInstaller,
-                                    StandaloneModeInstaller,
-                                    TopologyInstaller,
-                                    StandalonePrestoInstaller],
-        PA_ONLY_YS_CLUSTER: [PrestoadminInstaller,
-                             YarnSliderModeInstaller],
-        PA_SLIDER_CLUSTER: [PrestoadminInstaller,
-                            YarnSliderModeInstaller,
-                            SliderInstaller]
-    }
-
     default_workers_config_ = """coordinator=false
 discovery.uri=http://master:8080
 http-server.http.port=8080
@@ -134,19 +108,11 @@ query.max-memory=50GB\n"""
         self.cluster = None
         self.default_keywords = {}
 
-    def _run_installers(self, installers):
-        cluster = self.cluster
-        for installer in installers:
-            dependencies = installer.get_dependencies()
-
-            for dependency in dependencies:
-                dependency.assert_installed(self)
-
-            installer_instance = installer(self)
-            installer_instance.install()
-
-            self.default_keywords.update(installer_instance.get_keywords())
-            cluster.postinstall(installer)
+    def tearDown(self):
+        self.restore_stdout_stderr_keep_open()
+        if self.cluster:
+            self.cluster.tear_down()
+        super(BaseProductTestCase, self).tearDown()
 
     def _apply_post_install_hooks(self, installers):
         for installer in installers:
@@ -158,12 +124,7 @@ query.max-memory=50GB\n"""
             self.default_keywords.update(installer_instance.get_keywords())
 
     def setup_cluster(self, bare_image_provider, cluster_type):
-        try:
-            installers = self._cluster_types[cluster_type]
-        except KeyError:
-            self.fail(
-                '%s is not a valid cluster type. Valid cluster types are %s' %
-                (cluster_type, ', '.join(self._cluster_types.keys())))
+        installers = cluster_types[cluster_type]
 
         config_filename = ConfigurableCluster.check_for_cluster_config()
 
@@ -172,42 +133,22 @@ query.max-memory=50GB\n"""
                 config_filename, self,
                 StandalonePrestoInstaller.assert_installed)
         else:
-            try:
-                self.cluster, bare_cluster = DockerCluster.start_cluster(
-                    bare_image_provider, cluster_type)
+            self.cluster, bare_cluster = DockerCluster.start_cluster(
+                bare_image_provider, cluster_type)
 
-                # If we've found images and started a non-bare cluster, the
-                # containers have already had the installers applied to them.
-                # We do need to get the test environment in sync with the
-                # containers by calling the following two functions.
-                #
-                # Once that's done, the cluster and test environment is in the
-                # same state it would be as if we'd called _run_installers on
-                # a bare cluster, and we can return.
-                #
-                # We do this to save the cost of running the installers on the
-                # docker containers every time we run a test. In practice,
-                # that turns out to be a fairly expensive thing to do.
-                if not bare_cluster:
-                    self._apply_post_install_hooks(installers)
-                    self._update_replacement_keywords(installers)
-                    return
-            except DockerClusterException as e:
-                self.fail(e.msg)
-
-        # If we got a bare cluster back, we need to run the installers on it.
-        # applying the post-install hooks and updating the replacement
-        # keywords is handled internally in _run_installers.
-        self._run_installers(installers)
-
-        if isinstance(self.cluster, DockerCluster):
-            self.cluster.commit_images(bare_image_provider, cluster_type)
-
-    def tearDown(self):
-        self.restore_stdout_stderr_keep_open()
-        if self.cluster:
-            self.cluster.tear_down()
-        super(BaseProductTestCase, self).tearDown()
+            # If we've found images and started a non-bare cluster, the
+            # containers have already had the installers applied to them.
+            # We do need to get the test environment in sync with the
+            # containers by calling the following two functions.
+            #
+            # We do this to save the cost of running the installers on the
+            # docker containers every time we run a test. In practice,
+            # that turns out to be a fairly expensive thing to do.
+            if not bare_cluster:
+                self._apply_post_install_hooks(installers)
+                self._update_replacement_keywords(installers)
+            else:
+                raise RuntimeError("Docker images have not been created")
 
     def dump_and_cp_topology(self, topology, cluster=None):
         if not cluster:

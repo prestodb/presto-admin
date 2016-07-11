@@ -20,6 +20,7 @@ import prestoadmin
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -27,8 +28,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
     def setUp(self):
         super(TestServerUpgrade, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.dummy_installer = StandalonePrestoInstaller(
             self, (os.path.join(prestoadmin.main_dir, 'tests', 'product',
                                 'resources'), 'dummy-rpm.rpm'))

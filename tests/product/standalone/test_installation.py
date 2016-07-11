@@ -22,6 +22,7 @@ from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.docker_cluster import DockerCluster
 from tests.product.constants import DEFAULT_DOCKER_MOUNT_POINT, \
@@ -44,7 +45,7 @@ class TestInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestInstallation, self).setUp()
         self.pa_installer = PrestoadminInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider(), self.BARE_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_BARE_CLUSTER)
         dist_dir = self.pa_installer._build_dist_if_necessary(self.cluster)
         self.pa_installer._copy_dist_to_host(self.cluster, dist_dir,
                                              self.cluster.master)

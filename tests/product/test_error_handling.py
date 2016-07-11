@@ -15,16 +15,16 @@
 """
 System tests for error handling in presto-admin
 """
-
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 
 
 class TestErrorHandling(BaseProductTestCase):
 
     def setUp(self):
         super(TestErrorHandling, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
 
     def test_wrong_arguments_parallel(self):

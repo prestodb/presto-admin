@@ -24,8 +24,9 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, PRESTO_PACKAGE
 
-from tests.product.base_product_case import BaseProductTestCase
 from tests.hdp_bare_image_provider import HdpBareImageProvider
+from tests.product.base_product_case import BaseProductTestCase
+from tests.product.cluster_types import YARN_SLIDER_PA_AND_SLIDER_CLUSTER
 from tests.product.yarn_slider.slider_presto_installer import \
     SliderPrestoInstaller
 
@@ -36,7 +37,7 @@ HDFS_PORT = 8020
 class TestServerInstall(BaseProductTestCase):
     def setUp(self):
         super(TestServerInstall, self).setUp()
-        self.setup_cluster(HdpBareImageProvider(), self.PA_SLIDER_CLUSTER)
+        self.setup_cluster(HdpBareImageProvider(), YARN_SLIDER_PA_AND_SLIDER_CLUSTER)
         self.installer = SliderPrestoInstaller(self)
         self.await_hdfs()
 

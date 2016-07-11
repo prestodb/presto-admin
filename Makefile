@@ -1,6 +1,6 @@
 .PHONY: clean-all clean clean-eggs clean-build clean-pyc clean-test-containers clean-test \
-	clean-docs lint smoke test test-all test-rpm coverage docs open-docs release release-builds \
-	dist dist-online dist-offline wheel install precommit
+	clean-docs lint smoke test test-all test-images test-rpm docker-images coverage docs \
+	open-docs release release-builds dist dist-online dist-offline wheel install precommit
 
 help:
 	@echo "precommit - run \`quick' tests and tasks that should pass or succeed prior to pushing"
@@ -16,7 +16,9 @@ help:
 	@echo "smoke - run tests annotated with attr smoke using nosetests"
 	@echo "test - run tests quickly with Python 2.6 and 2.7"
 	@echo "test-all - run tests on every Python version with tox. Specify TEST_SUITE env variable to run only a given suite."
+	@echo "test-images - create product test image(s). Specify IMAGE_NAMES env variable to create only certain images."
 	@echo "test-rpm - run tests for the RPM package"
+	@echo "docker-images - pull docker image(s). Specify DOCKER_IMAGE_NAME env variable for specific image."
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "open-docs - open the root document (index.html) using xdg-open"
@@ -84,11 +86,15 @@ test-all: clean-test docker-images
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
 
+IMAGE_NAMES?="all"
+
+test-images: docker-images presto-server-rpm.rpm
+	python tests/product/image_builder.py ${IMAGE_NAMES}
 
 docker-images:
 	docker pull teradatalabs/centos6-ssh-oj8
 
-test-rpm: clean-test
+test-rpm: clean-test test-images
 	tox -e py26 -- -s tests.rpm -a '!quarantine'
 
 coverage:

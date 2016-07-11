@@ -24,6 +24,7 @@ from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
@@ -31,8 +32,7 @@ class TestConfiguration(BaseProductTestCase):
 
     def setUp(self):
         super(TestConfiguration, self).setUp()
-        self.setup_cluster(
-            NoHadoopBareImageProvider(), self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.write_test_configs(self.cluster)
 
     def deploy_and_assert_default_config(self):

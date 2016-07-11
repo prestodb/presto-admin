@@ -119,9 +119,8 @@ class StandalonePrestoInstaller(BaseInstaller):
         rpm_path = os.path.join(prestoadmin.main_dir,
                                 rpm_filename)
         urllib.urlretrieve(
-            'https://repository.sonatype.org/service/local/artifact/maven'
-            '/content?r=central-proxy&g=com.facebook.presto'
-            '&a=presto-server-rpm&e=rpm&v=RELEASE', rpm_path)
+            'http://search.maven.org/remotecontent?filepath=com/facebook/presto/'
+            'presto-server-rpm/0.148/presto-server-rpm-0.148.rpm', rpm_path)
         return rpm_filename
 
     @staticmethod

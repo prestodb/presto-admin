@@ -27,6 +27,7 @@ from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import run_sql
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, PrestoError
+from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -36,8 +37,7 @@ class TestCollect(BaseProductTestCase):
 
     @attr('smoketest')
     def test_collect_logs_basic(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         actual = self.run_prestoadmin('collect logs')
 
@@ -69,8 +69,7 @@ class TestCollect(BaseProductTestCase):
 
     @attr('smoketest')
     def test_collect_system_info_basic(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         actual = self.run_prestoadmin('collect system_info')
         self.test_basic_system_info(actual)
@@ -113,7 +112,7 @@ class TestCollect(BaseProductTestCase):
 
     def test_collect_system_info_dash_h_coord_worker(self):
         self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+                           STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         actual = self.run_prestoadmin('collect system_info '
                                       '-H %(master)s,%(slave1)s')
@@ -124,7 +123,7 @@ class TestCollect(BaseProductTestCase):
 
     def test_collect_system_info_dash_x_two_workers(self):
         self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+                           STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         actual = self.run_prestoadmin('collect system_info '
                                       '-x %(slave2)s,%(slave3)s')
@@ -135,7 +134,7 @@ class TestCollect(BaseProductTestCase):
 
     def test_system_info_pa_separate_node(self):
         installer = StandalonePrestoInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         topology = {"coordinator": "slave1",
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -149,8 +148,7 @@ class TestCollect(BaseProductTestCase):
 
     @attr('smoketest')
     def test_collect_query_info(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         sql_to_run = 'SELECT * FROM system.runtime.nodes WHERE 1234 = 1234'
         query_id = self.retry(lambda: self.get_query_id(sql_to_run))
@@ -169,7 +167,7 @@ class TestCollect(BaseProductTestCase):
 
     def test_query_info_pa_separate_node(self):
         installer = StandalonePrestoInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         topology = {"coordinator": "slave1",
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -207,8 +205,7 @@ class TestCollect(BaseProductTestCase):
             return row[0]
 
     def test_query_info_invalid_id(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         invalid_id = '1234_invalid'
         actual = self.run_prestoadmin('collect query_info ' + invalid_id,
@@ -220,13 +217,11 @@ class TestCollect(BaseProductTestCase):
         self.assertEqual(actual, expected)
 
     def test_collect_logs_server_stopped(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self._assert_no_logs_downloaded()
 
     def test_collect_system_info_server_stopped(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         actual = self.run_prestoadmin('collect system_info', raise_error=False)
         message = '\nFatal error: [%s] Unable to access node ' \
                   'information. Please check that server is up with ' \
@@ -257,8 +252,7 @@ class TestCollect(BaseProductTestCase):
             'cp %s .; tar xvf %s' % (OUTPUT_FILENAME_FOR_LOGS, log_filename))
 
     def test_collect_logs_nonstandard_location(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         version = self.cluster.exec_cmd_on_host(
             self.cluster.master,
             'rpm -q --qf \"%{VERSION}\\n\" presto-server-rpm'
@@ -295,14 +289,12 @@ class TestCollect(BaseProductTestCase):
                                      '/opt/prestoadmin/logs/%s/*' % host)
 
     def test_collect_logs_server_not_installed(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
         self._assert_no_logs_downloaded()
 
     def test_collect_logs_multiple_server_logs(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         self.cluster.write_content_to_host('Stuff that I logged!',
                                            'var/log/presto/server.log-2',

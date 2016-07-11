@@ -20,6 +20,7 @@ from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.cluster_types import YARN_SLIDER_PA_CLUSTER
 from tests.product.yarn_slider.slider_installer import SliderInstaller
 from tests.product.yarn_slider.pa_slider_config import cluster_config, \
     docker_config, get_config, upload_config
@@ -31,8 +32,7 @@ from prestoadmin.yarn_slider.config import HOST, DIR, SLIDER_USER, \
 class TestSliderInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestSliderInstallation, self).setUp()
-        self.setup_cluster(
-            NoHadoopBareImageProvider(), self.PA_ONLY_YS_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), YARN_SLIDER_PA_CLUSTER)
 
     def _get_interactive_config(self, conf):
         cluster_conf = cluster_config(conf)

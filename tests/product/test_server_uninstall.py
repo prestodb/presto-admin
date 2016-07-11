@@ -18,6 +18,7 @@ from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
 from tests.product.constants import LOCAL_RESOURCES_DIR
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.prestoadmin_installer import PrestoadminInstaller
@@ -36,8 +37,7 @@ class TestServerUninstall(BaseProductTestCase):
 
     @attr('smoketest')
     def test_uninstall(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
@@ -60,8 +60,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.assert_path_removed(container, '/etc/init.d/presto')
 
     def test_uninstall_when_server_down(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
 
@@ -87,7 +86,7 @@ class TestServerUninstall(BaseProductTestCase):
         self.assertEqualIgnoringOrder(expected, output)
 
     def test_uninstall_lost_host(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         pa_installer = PrestoadminInstaller(self)
         pa_installer.install()
         topology = {"coordinator": self.cluster.internal_slaves[0],
@@ -120,8 +119,7 @@ class TestServerUninstall(BaseProductTestCase):
             self.assert_uninstalled_dirs_removed(container)
 
     def test_uninstall_with_dir_readonly(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
@@ -149,7 +147,7 @@ class TestServerUninstall(BaseProductTestCase):
 
     @docker_only
     def test_uninstall_as_non_sudo(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
         self.installer.install()
 

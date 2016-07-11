@@ -23,14 +23,14 @@ from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
 from constants import LOCAL_RESOURCES_DIR
 
 
 class TestAuthentication(BaseProductTestCase):
     def setUp(self):
         super(TestAuthentication, self).setUp()
-        self.setup_cluster(
-            NoHadoopBareImageProvider(), self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
 
     success_output = (
         'Deploying tpch.properties connector configurations on: slave1 \n'

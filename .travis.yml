@@ -6,12 +6,50 @@ sudo: required
 services:
   - docker
 env:
-install: 
+  global:
+    - PA_TEST_ONLINE_INSTALLER=true
+    - PYTHONPATH=$(pwd)
+    - LONG_PRODUCT_TESTS="tests/product/test_server_install.py tests/product/test_status.py tests/product/test_collect.py tests/product/test_connectors.py tests/product/test_control.py tests/product/test_server_uninstall.py"
+  matrix:
+    - OTHER_TESTS=true
+    - SHORT_PRODUCT_TEST_GROUP=0
+    - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN="tests/product/test_server_install.py"
+    - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_status.py"
+    - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_collect.py tests/product/test_server_uninstall.py"
+    - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_connectors.py"
+    - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_control.py"
+install:
   - pip install --upgrade pip==6.1.1
   - pip install -r requirements.txt
 before_script:
   - make docker-images
-script: 
-  - make clean lint dist docs 
-  - nosetests --with-timer --timer-ok 60s --timer-warning 300s -s tests.unit
-  - nosetests --with-timer --timer-ok 60s --timer-warning 300s -s tests.integration
+  - make presto-server-rpm.rpm
+script:
+  - |
+    if [ -v SHORT_PRODUCT_TEST_GROUP ]; then
+      ALL_PRODUCT_TESTS=$(find tests/product/ -name 'test_*py' | grep -v __init__ | xargs wc -l | sort -n | head -n -1 | awk '{print $2}' | tr '\n' ' ') &&
+      for LONG_PRODUCT_TEST in ${LONG_PRODUCT_TESTS[@]}; do
+        ALL_PRODUCT_TESTS=${ALL_PRODUCT_TESTS//$LONG_PRODUCT_TEST/};
+        if [ $? -ne 0 ]; then
+          exit 1
+        fi
+      done &&
+      SHORT_PRODUCT_TESTS=$(echo $ALL_PRODUCT_TESTS | tr ' ' '\n' | awk "NR % 1 == $SHORT_PRODUCT_TEST_GROUP" | tr '\n' ' ') &&
+      make test-images &&
+      nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${SHORT_PRODUCT_TESTS};
+    elif [ -v LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN ]; then
+      export IMAGE_NAMES="standalone_presto_admin" &&
+      make test-images &&
+      nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN};
+    elif [ -v LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO ]; then
+      export IMAGE_NAMES="standalone_presto standalone_presto_admin" &&
+      make test-images &&
+      nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO};
+    elif [ -v OTHER_TESTS ]; then
+      make clean lint dist docs test-rpm &&
+      nosetests -s tests.unit &&
+      nosetests -s tests.integration;
+    else
+      echo "Unknown test" &&
+      exit 1;
+    fi

@@ -20,22 +20,23 @@ from nose.plugins.attrib import attr
 from prestoadmin.server import RETRY_TIMEOUT
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
 class TestControl(BaseProductTestCase):
+    def setUp(self):
+        super(TestControl, self).setUp()
 
     @attr('smoketest')
     def test_server_start_stop_simple(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.assert_simple_start_stop(self.expected_start(),
                                       self.expected_stop())
 
     @attr('smoketest')
     def test_server_restart_simple(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         expected_output = self.expected_stop()[:] + self.expected_start()[:]
         self.assert_simple_server_restart(expected_output)
 
@@ -49,7 +50,7 @@ class TestControl(BaseProductTestCase):
         self.assert_service_fails_without_presto('restart')
 
     def assert_service_fails_without_presto(self, service):
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
         # Start without Presto installed
         start_output = self.run_prestoadmin('server %s' % service,
@@ -59,14 +60,12 @@ class TestControl(BaseProductTestCase):
                                       '\n'.join(start_output))
 
     def test_server_start_one_host_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.assert_start_with_one_host_started(
             self.cluster.internal_slaves[0])
 
     def test_server_start_all_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start').splitlines()
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
@@ -79,8 +78,7 @@ class TestControl(BaseProductTestCase):
         )
 
     def test_server_stop_not_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
 
         stop_output = self.run_prestoadmin('server stop').splitlines()
         not_started_hosts = self.cluster.all_internal_hosts()
@@ -90,18 +88,16 @@ class TestControl(BaseProductTestCase):
         )
 
     def test_server_stop_coordinator_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.assert_one_host_stopped(self.cluster.internal_master)
 
     def test_server_stop_worker_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.assert_one_host_stopped(self.cluster.internal_slaves[0])
 
     def test_server_restart_nothing_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
+
         # Restart when the servers aren't started
         expected_output = self.expected_stop(
             not_running=self.cluster.all_internal_hosts())[:] +\
@@ -109,8 +105,8 @@ class TestControl(BaseProductTestCase):
         self.assert_simple_server_restart(expected_output, running_host='')
 
     def test_server_restart_coordinator_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
+
         # Restart when a coordinator is started but workers aren't
         not_running_hosts = self.cluster.all_internal_hosts()[:]
         not_running_hosts.remove(self.cluster.internal_master)
@@ -120,8 +116,8 @@ class TestControl(BaseProductTestCase):
             expected_output, running_host=self.cluster.internal_master)
 
     def test_server_restart_worker_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
+
         # Restart when one worker is started, but nothing else
         not_running_hosts = self.cluster.all_internal_hosts()[:]
         not_running_hosts.remove(self.cluster.internal_slaves[0])
@@ -133,7 +129,7 @@ class TestControl(BaseProductTestCase):
 
     def test_start_stop_restart_coordinator_down(self):
         installer = StandalonePrestoInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -144,7 +140,7 @@ class TestControl(BaseProductTestCase):
 
     def test_start_stop_restart_worker_down(self):
         installer = StandalonePrestoInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         topology = {"coordinator": "slave1",
                     "workers": ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -154,8 +150,7 @@ class TestControl(BaseProductTestCase):
             self.cluster.internal_slaves[0])
 
     def test_server_start_twice(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start').splitlines()
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
@@ -236,8 +231,7 @@ class TestControl(BaseProductTestCase):
             '\n'.join(expected_output).splitlines())
 
     def test_start_restart_config_file_error(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
 
         # Remove a required config file so that the server can't start
         self.cluster.exec_cmd_on_host(

@@ -15,14 +15,16 @@
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.base_product_case import BaseProductTestCase, \
+    docker_only
+from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
 class TestPackageInstall(BaseProductTestCase):
     def setUp(self):
         super(TestPackageInstall, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
         self.installer = StandalonePrestoInstaller(self)
 

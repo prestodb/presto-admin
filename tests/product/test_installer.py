@@ -25,6 +25,7 @@ from prestoadmin import main_dir
 from tests.docker_cluster import DockerCluster
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
@@ -32,7 +33,7 @@ class TestInstaller(BaseProductTestCase):
 
     def setUp(self):
         super(TestInstaller, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.BARE_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_BARE_CLUSTER)
         self.centos_container = \
             self.__create_and_start_single_centos_container()
         self.pa_installer = PrestoadminInstaller(self)

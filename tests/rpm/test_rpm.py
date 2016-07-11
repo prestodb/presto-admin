@@ -19,15 +19,15 @@ Product tests for generating an online and offline installer for presto-admin
 import os
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.cluster_types import STANDALONE_PA_CLUSTER, STANDALONE_PRESTO_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.test_server_install import relocate_default_java
 
 
 class TestRpm(BaseProductTestCase):
     def setUp(self):
-
         super(TestRpm, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), self.PA_ONLY_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
 
     @docker_only
     def test_install_fails_java8_not_found(self):
@@ -71,15 +71,14 @@ class TestRpm(BaseProductTestCase):
 
     @docker_only
     def test_server_starts_no_java8_variable(self):
-        self.setup_cluster(NoHadoopBareImageProvider(),
-                           self.STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_script_from_prestoadmin_dir('rm /etc/presto/env.sh')
         # tests that no error is encountered
         self.run_prestoadmin('server start')
 
     @docker_only
     def test_started_with_presto_user(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), 'presto')
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         start_output = self.run_prestoadmin('server start').splitlines()
         process_per_host = self.get_process_per_host(start_output)
 
