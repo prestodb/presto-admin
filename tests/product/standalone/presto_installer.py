@@ -18,7 +18,6 @@ Module for installing presto on a cluster.
 
 import fnmatch
 import os
-import urllib
 
 import prestoadmin
 
@@ -102,26 +101,9 @@ class StandalonePrestoInstaller(BaseInstaller):
             cluster = self.testcase.cluster
 
         rpm_path = os.path.join(self.rpm_dir, self.rpm_name)
-        try:
-            cluster.copy_to_host(rpm_path, cluster.master)
-            self._check_if_corrupted_rpm(self.rpm_name, cluster)
-        except OSError:
-            print 'Downloading RPM again'
-            # try to download the RPM again if it's corrupt (but only once)
-            StandalonePrestoInstaller._download_rpm()
-            cluster.copy_to_host(rpm_path, cluster.master)
-            self._check_if_corrupted_rpm(self.rpm_name, cluster)
+        cluster.copy_to_host(rpm_path, cluster.master)
+        self._check_if_corrupted_rpm(self.rpm_name, cluster)
         return self.rpm_name
-
-    @staticmethod
-    def _download_rpm():
-        rpm_filename = 'presto-server-rpm.rpm'
-        rpm_path = os.path.join(prestoadmin.main_dir,
-                                rpm_filename)
-        urllib.urlretrieve(
-            'http://search.maven.org/remotecontent?filepath=com/facebook/presto/'
-            'presto-server-rpm/0.148/presto-server-rpm-0.148.rpm', rpm_path)
-        return rpm_filename
 
     @staticmethod
     def _detect_presto_rpm():
@@ -136,11 +118,7 @@ class StandalonePrestoInstaller(BaseInstaller):
             # are multiple RPMs, the last one is probably the latest
             rpm_name = sorted(rpm_names)[-1]
         else:
-            try:
-                rpm_name = StandalonePrestoInstaller._download_rpm()
-            except:
-                # retry once
-                rpm_name = StandalonePrestoInstaller._download_rpm()
+            raise OSError(1, 'Presto RPM not detected.')
 
         return prestoadmin.main_dir, rpm_name
 
