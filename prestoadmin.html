@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin package &mdash; presto-admin 1.3 documentation</title>
+    <title>prestoadmin package &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="index.html" />
     <link rel="up" title="prestoadmin" href="modules.html" />
     <link rel="next" title="prestoadmin.standalone package" href="prestoadmin.standalone.html" />
     <link rel="prev" title="prestoadmin" href="modules.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">prestoadmin</a> &raquo;</li> 
       </ul>
     </div>  
@@ -278,7 +278,7 @@ to deploy on the presto cluster</p>
 <dd><p>Bases: <a class="reference internal" href="#prestoadmin.node.Node" title="prestoadmin.node.Node"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.node.Node</span></code></a></p>
 <dl class="attribute">
 <dt id="prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES">
-<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'true', 'discovery-server.enabled': 'true', 'http-server.http.port': '8080', 'node-scheduler.include-coordinator': 'false', 'query.max-memory-per-node': '8GB'}, 'node.properties': {'plugin.dir': '/usr/lib/presto/lib/plugin', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data'}}</em><a class="headerlink" href="#prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-XX:ReservedCodeCacheSize=512M', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'true', 'discovery-server.enabled': 'true', 'http-server.http.port': '8080', 'node-scheduler.include-coordinator': 'false', 'query.max-memory-per-node': '8GB'}, 'node.properties': {'node.launcher-log-file': '/var/log/presto/launcher.log', 'node.server-log-file': '/var/log/presto/server.log', 'node.data-dir': '/var/lib/presto/data', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'plugin.dir': '/usr/lib/presto/lib/plugin'}}</em><a class="headerlink" href="#prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -344,6 +344,11 @@ to deploy on the presto cluster</p>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="prestoadmin.deploy.secure_create_file">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">secure_create_file</code><span class="sig-paren">(</span><em>filepath</em>, <em>user_group</em>, <em>mode=600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#secure_create_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.secure_create_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="prestoadmin.deploy.workers">
 <code class="descclassname">prestoadmin.deploy.</code><code class="descname">workers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#workers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.workers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deploy workers configuration to the worker nodes.
@@ -352,7 +357,7 @@ This will not deploy configuration for a coordinator that is also a worker</p>
 
 <dl class="function">
 <dt id="prestoadmin.deploy.write_to_remote_file">
-<code class="descclassname">prestoadmin.deploy.</code><code class="descname">write_to_remote_file</code><span class="sig-paren">(</span><em>text</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#write_to_remote_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.write_to_remote_file" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">write_to_remote_file</code><span class="sig-paren">(</span><em>text</em>, <em>filepath</em>, <em>owner</em>, <em>mode=600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#write_to_remote_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.write_to_remote_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -640,6 +645,26 @@ to adding &#8211;nodeps flag to rpm -i.</li>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="prestoadmin.package.uninstall">
+<code class="descclassname">prestoadmin.package.</code><code class="descname">uninstall</code><a class="reference internal" href="_modules/prestoadmin/package.html#uninstall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.package.uninstall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uninstall the rpm package from the cluster</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rpm_name</strong> &#8211; Name of the rpm to be uninstalled</li>
+<li><strong>--nodeps</strong> (<em>optional</em>) &#8211; Flag to indicate if rpm uninstall) should ignore checking package dependencies. Equivalent
+to adding &#8211;nodeps flag to rpm -e.</li>
+<li><strong>--force</strong> (<em>optional</em>) &#8211; Flag to indicate that rpm uninstall should not fail if package is not installed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="module-prestoadmin.plugin">
 <span id="prestoadmin-plugin-module"></span><h2>prestoadmin.plugin module<a class="headerlink" href="#module-prestoadmin.plugin" title="Permalink to this headline">¶</a></h2>
@@ -819,7 +844,13 @@ jvm.config</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>- Absolute path to the presto rpm to be installed</strong> (<em>local_path</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>-            Absolute path to the presto rpm to be installed</strong> (<em>local_path</em>) &#8211; </li>
+<li><strong>-</strong> (<em>--nodeps</em>) &#8211; should ignore checking Presto rpm package
+dependencies. Equivalent to adding &#8211;nodeps
+flag to rpm -i.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -829,6 +860,16 @@ jvm.config</p>
 <dt id="prestoadmin.server.uninstall">
 <code class="descclassname">prestoadmin.server.</code><code class="descname">uninstall</code><a class="reference internal" href="_modules/prestoadmin/server.html#uninstall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.uninstall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uninstall Presto after stopping the services on all nodes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>-</strong> (<em>--nodeps</em>) &#8211; should ignore checking Presto rpm package
+dependencies. Equivalent to adding &#8211;nodeps
+flag to rpm -e.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -846,11 +887,17 @@ collected configuration back out to the hosts on the cluster.</p>
 <p>Note that the configuration files in /etc/opt/prestoadmin are not updated
 during upgrade.</p>
 <dl class="docutils">
-<dt>:param local_package_path - Absolute path to the presto rpm to be</dt>
-<dd>installed</dd>
+<dt>:param new_rpm_path -       The path to the new Presto RPM to</dt>
+<dd>install</dd>
 <dt>:param local_config_dir -   (optional) Directory to store the cluster</dt>
 <dd>configuration in. If not specified, a temp
 directory is used.</dd>
+<dt>:param overwrite -          (optional) if set to True then existing</dt>
+<dd>configuration will be orerwriten.</dd>
+<dt>:param &#8211;nodeps -           (optional) Flag to indicate if server upgrade</dt>
+<dd>should ignore checking Presto rpm package
+dependencies. Equivalent to adding &#8211;nodeps
+flag to rpm -U.</dd>
 </dl>
 </dd></dl>
 
@@ -910,7 +957,7 @@ to deploy on the presto cluster</p>
 <dd><p>Bases: <a class="reference internal" href="#prestoadmin.node.Node" title="prestoadmin.node.Node"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.node.Node</span></code></a></p>
 <dl class="attribute">
 <dt id="prestoadmin.workers.Worker.DEFAULT_PROPERTIES">
-<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'false', 'query.max-memory-per-node': '8GB', 'http-server.http.port': '8080'}, 'node.properties': {'plugin.dir': '/usr/lib/presto/lib/plugin', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data'}}</em><a class="headerlink" href="#prestoadmin.workers.Worker.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-XX:ReservedCodeCacheSize=512M', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'false', 'query.max-memory-per-node': '8GB', 'http-server.http.port': '8080'}, 'node.properties': {'node.launcher-log-file': '/var/log/presto/launcher.log', 'node.server-log-file': '/var/log/presto/server.log', 'node.data-dir': '/var/lib/presto/data', 'node.environment': 'presto', 'plugin.config-dir': '/etc/presto/catalog', 'plugin.dir': '/usr/lib/presto/lib/plugin'}}</em><a class="headerlink" href="#prestoadmin.workers.Worker.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -987,14 +1034,11 @@ to deploy on the presto cluster</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -1016,7 +1060,7 @@ to deploy on the presto cluster</p>
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li> 
       </ul>
     </div>

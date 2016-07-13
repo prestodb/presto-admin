@@ -9,4 +9,3 @@ configurations to use this release with other versions of Presto.
 General Fixes
 -------------
 * Change ``make dist`` to build the online installer by default 
-

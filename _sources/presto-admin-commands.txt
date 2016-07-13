@@ -105,6 +105,8 @@ configurations:
 
     node.environment=presto
     node.data-dir=/var/lib/presto/data
+    node.launcher-log-file=/var/log/presto/launcher.log
+    node.server-log-file=/var/log/presto/server.log
     plugin.config-dir=/etc/presto/catalog
     plugin.dir=/usr/lib/presto/lib/plugin
 
@@ -120,6 +122,7 @@ configurations:
     -XX:+HeapDumpOnOutOfMemoryError
     -XX:+UseGCOverheadLimit
     -XX:OnOutOfMemoryError=kill -9 %p
+    -XX:ReservedCodeCacheSize=512M
     -DHADOOP_USER_NAME=hive
 
 *config.properties*
@@ -163,12 +166,15 @@ following ``jvm.config`` to ``/etc/opt/prestoadmin/coordinator``
     -XX:+HeapDumpOnOutOfMemoryError
     -XX:+UseGCOverheadLimit
     -XX:OnOutOfMemoryError=kill -9 %p
+    -XX:ReservedCodeCacheSize=512M
 
 Further, add the following ``node.properties`` to
 ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers``: ::
 
     node.environment=test
     node.data-dir=/var/lib/presto/data
+    node.launcher-log-file=/var/log/presto/launcher.log
+    node.server-log-file=/var/log/presto/server.log
     plugin.config-dir=/etc/presto/catalog
     plugin.dir=/usr/lib/presto/lib/plugin
 
@@ -313,6 +319,30 @@ Example
     sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
 
 
+*****************
+package uninstall
+*****************
+
+::
+
+    presto-admin package uninstall rpm_package_name [--nodeps]
+
+This command uninstalls an rpm package from all the nodes in the cluster. Similar to ``server uninstall`` the cluster
+topology is obtained from the file ``/etc/opt/prestoadmin/config.json``. If this file is missing, then the command
+prompts for user input to get the topology information.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm installed should ignore checking any package
+dependencies.
+
+.. WARNING:: Using ``--nodeps`` can result in uninstalling the rpm even when dependant packages are installed. It may end up with a broken rpm installation.
+
+Example
+-------
+::
+
+    sudo ./presto-admin package uninstall jdk
+
+
 **************
 plugin add_jar
 **************
@@ -362,7 +392,7 @@ server install
 **************
 ::
 
-    presto-admin server install <local_path>
+    presto-admin server install <local_path> [--nodeps]
 
 This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The ``local_path`` should be accessible by ``presto-admin``.
 The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
@@ -371,6 +401,10 @@ The general configurations for Presto's coordinator and workers are taken from t
 
 The connectors directory ``/etc/opt/prestoadmin/connectors/`` should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
 The ``server install`` command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to ``server install``, then by default the tpch connector is configured. See `connector add`_ on how to add connector configuration files after installation.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm installed should ignore checking any package dependencies.
+
+.. WARNING:: Using ``--nodeps`` can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm installation.
 
 Example
 -------
@@ -470,10 +504,12 @@ server uninstall
 ****************
 ::
 
-    presto-admin server uninstall
+    presto-admin server uninstall [--nodeps]
 
 This command stops the Presto server if running on the cluster and uninstalls the Presto rpm. The uninstall command removes any presto
 related files deployed during ``server install`` but retains the Presto logs at ``/var/log/presto``.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm uninstalled should ignore checking any package dependencies.
 
 Example
 -------
@@ -487,24 +523,30 @@ server upgrade
 **************
 ::
 
-    presto-admin server upgrade local_package_path [local_config_dir]
+    presto-admin server upgrade path/to/new/package.rpm [local_config_dir] [--nodeps]
 
-This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM specified
-by ``local_package_path``, preserving the existing configuration on the cluster. The existing
+This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM at
+``path/to/new/package.rpm``, preserving the existing configuration on the cluster. The existing
 cluster configuration is saved locally to local_config_dir (which defaults to a temporary
-folder if not specified).
+folder if not specified). The path can either be absolute or relative to the current
+directory.
 
-This command can also be used to downgrade the Presto installation, if the RPM at ``local_package_path``
-is an earlier version than the Presto installed on the cluster.
+This command can also be used to downgrade the Presto installation, if the RPM at
+``path/to/new/package.rpm`` is an earlier version than the Presto installed on the cluster.
 
 Note that if the configuration files on the cluster differ from the presto-admin configuration
 files found in ``/etc/opt/prestoadmin``, the presto-admin configuration files are not updated.
+
+This command takes an optional ``--nodeps`` flag which indicates if the rpm upgrade should ignore checking any package dependencies.
+
+.. WARNING:: Using ``--nodeps`` can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm upgrade.
 
 Example
 -------
 ::
 
-    sudo ./presto-admin server upgrade new-rpm.rpm /tmp/cluster-configuration
+    sudo ./presto-admin server upgrade path/to/new/package.rpm /tmp/cluster-configuration
+    sudo ./presto-admin server upgrade /path/to/new/package.rpm /tmp/cluster-configuration
 
 
 *************

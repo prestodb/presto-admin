@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installing the Presto Server &mdash; presto-admin 1.3 documentation</title>
+    <title>Installing the Presto Server &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="../index.html" />
     <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
     <link rel="next" title="Running Presto Queries" href="presto-cli-installation.html" />
     <link rel="prev" title="Installing Java 8" href="java-installation.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="java-installation.html" title="Installing Java 8"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
       </ul>
@@ -57,7 +57,7 @@
             
   <div class="section" id="installing-the-presto-server">
 <span id="presto-server-installation-label"></span><h1>Installing the Presto Server<a class="headerlink" href="#installing-the-presto-server" title="Permalink to this headline">¶</a></h1>
-<p>Prerequisites: <a class="reference internal" href="presto-admin-installation.html#presto-admin-installation-label"><span>Installing Presto Admin</span></a>, <a class="reference internal" href="java-installation.html#java-installation-label"><span>Installing Java 8</span></a> and <a class="reference internal" href="presto-admin-configuration.html#presto-admin-configuration-label"><span>Configuring Presto-Admin</span></a></p>
+<p>Prerequisites: <a class="reference internal" href="presto-admin-installation.html#presto-admin-installation-label"><span class="std std-ref">Installing Presto Admin</span></a>, <a class="reference internal" href="java-installation.html#java-installation-label"><span class="std std-ref">Installing Java 8</span></a> and <a class="reference internal" href="presto-admin-configuration.html#presto-admin-configuration-label"><span class="std std-ref">Configuring Presto-Admin</span></a></p>
 <p>To install the Presto query engine on a cluster of nodes using <code class="docutils literal"><span class="pre">presto-admin</span></code>:</p>
 <ol class="arabic">
 <li><p class="first">Download <code class="docutils literal"><span class="pre">presto-server-rpm-VERSION.ARCH.rpm</span></code></p>
@@ -65,17 +65,21 @@
 <li><p class="first">Copy the RPM to a location accessible by <code class="docutils literal"><span class="pre">presto-admin</span></code>.</p>
 </li>
 <li><p class="first">Run the following command to install Presto:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo ./presto-admin server install &lt;local_path_to_rpm&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo ./presto-admin server install &lt;local_path_to_rpm&gt;
 </pre></div>
 </div>
 </li>
 </ol>
 <p>Presto! Presto is now installed on the coordinator and workers specified in your <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code> file.</p>
 <p>The default port for Presto is 8080.  If that port is already in use on your cluster, you will not be able to start Presto.
-In order to change the port that Presto uses, proceed to <a class="reference internal" href="presto-port-configuration.html#presto-port-configuration-label"><span>Configuring the Presto Port</span></a>.</p>
+In order to change the port that Presto uses, proceed to <a class="reference internal" href="presto-port-configuration.html#presto-port-configuration-label"><span class="std std-ref">Configuring the Presto Port</span></a>.</p>
+<p>There are additional configuration properties described at <a class="reference internal" href="presto-configuration.html#presto-configuration-label"><span class="std std-ref">Configuring Presto</span></a> that
+must be changed for optimal performance. These configuration changes can be done either
+before or after starting the Presto server and running queries for the first time, though
+all configuration changes require a restart of the Presto servers.</p>
 <ol class="arabic" start="4">
 <li><p class="first">Now, you are ready to start Presto:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo ./presto-admin server start
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo ./presto-admin server start
 </pre></div>
 </div>
 </li>
@@ -105,14 +109,11 @@ In order to change the port that Presto uses, proceed to <a class="reference int
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -134,7 +135,7 @@ In order to change the port that Presto uses, proceed to <a class="reference int
         <li class="right" >
           <a href="java-installation.html" title="Installing Java 8"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
       </ul>

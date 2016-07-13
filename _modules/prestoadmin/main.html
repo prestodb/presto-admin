@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.main &mdash; presto-admin 1.3 documentation</title>
+    <title>prestoadmin.main &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -47,38 +47,38 @@
           <div class="body" role="main">
             
   <h1>Source code for prestoadmin.main</h1><div class="highlight"><pre>
-<span class="c"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="c">##</span>
-<span class="c"># This file was copied from Fabric-1.8.0 with some modifications.</span>
-<span class="c">#</span>
-<span class="c"># This distribution of fabric is distributed under the following BSD license:</span>
-<span class="c">#</span>
-<span class="c">#  Copyright (c) 2009, Christian Vest Hansen and Jeffrey E. Forcier</span>
-<span class="c">#  All rights reserved.</span>
-<span class="c">#</span>
-<span class="c">#  Redistribution and use in source and binary forms, with or without</span>
-<span class="c">#  modification, are permitted provided that the following conditions are met:</span>
-<span class="c">#</span>
-<span class="c">#      * Redistributions of source code must retain the above copyright notice,</span>
-<span class="c">#        this list of conditions and the following disclaimer.</span>
-<span class="c">#      * Redistributions in binary form must reproduce the above copyright</span>
-<span class="c">#        notice, this list of conditions and the following disclaimer in the</span>
-<span class="c">#        documentation and/or other materials provided with the distribution.</span>
-<span class="c">#</span>
-<span class="c">#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
-<span class="c">#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
-<span class="c">#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</span>
-<span class="c">#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE</span>
-<span class="c">#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</span>
-<span class="c">#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</span>
-<span class="c">#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</span>
-<span class="c">#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</span>
-<span class="c">#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</span>
-<span class="c">#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</span>
-<span class="c">#  POSSIBILITY OF SUCH DAMAGE.</span>
-<span class="c">#</span>
-<span class="c">##</span>
+<span class="c1">##</span>
+<span class="c1"># This file was copied from Fabric-1.8.0 with some modifications.</span>
+<span class="c1">#</span>
+<span class="c1"># This distribution of fabric is distributed under the following BSD license:</span>
+<span class="c1">#</span>
+<span class="c1">#  Copyright (c) 2009, Christian Vest Hansen and Jeffrey E. Forcier</span>
+<span class="c1">#  All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1">#  Redistribution and use in source and binary forms, with or without</span>
+<span class="c1">#  modification, are permitted provided that the following conditions are met:</span>
+<span class="c1">#</span>
+<span class="c1">#      * Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#        this list of conditions and the following disclaimer.</span>
+<span class="c1">#      * Redistributions in binary form must reproduce the above copyright</span>
+<span class="c1">#        notice, this list of conditions and the following disclaimer in the</span>
+<span class="c1">#        documentation and/or other materials provided with the distribution.</span>
+<span class="c1">#</span>
+<span class="c1">#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1">#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1">#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</span>
+<span class="c1">#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE</span>
+<span class="c1">#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</span>
+<span class="c1">#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</span>
+<span class="c1">#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</span>
+<span class="c1">#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</span>
+<span class="c1">#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</span>
+<span class="c1">#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</span>
+<span class="c1">#  POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="c1">##</span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -101,7 +101,7 @@
 <span class="kn">import</span> <span class="nn">textwrap</span>
 <span class="kn">import</span> <span class="nn">types</span>
 
-<span class="c"># For checking callables against the API, &amp; easy mocking</span>
+<span class="c1"># For checking callables against the API, &amp; easy mocking</span>
 <span class="kn">from</span> <span class="nn">fabric</span> <span class="kn">import</span> <span class="n">api</span><span class="p">,</span> <span class="n">state</span>
 <span class="kn">from</span> <span class="nn">fabric.contrib</span> <span class="kn">import</span> <span class="n">console</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">project</span>
 
@@ -117,8 +117,8 @@
 <span class="kn">from</span> <span class="nn">prestoadmin.util.hiddenoptgroup</span> <span class="kn">import</span> <span class="n">HiddenOptionGroup</span>
 <span class="kn">from</span> <span class="nn">prestoadmin.util.parser</span> <span class="kn">import</span> <span class="n">LoggingOptionParser</span>
 
-<span class="c"># One-time calculation of &quot;all internal callables&quot; to avoid doing this on every</span>
-<span class="c"># check of a given fabfile callable (in is_classic_task()).</span>
+<span class="c1"># One-time calculation of &quot;all internal callables&quot; to avoid doing this on every</span>
+<span class="c1"># check of a given fabfile callable (in is_classic_task()).</span>
 <span class="n">_modules</span> <span class="o">=</span> <span class="p">[</span><span class="n">api</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">console</span><span class="p">]</span>
 <span class="n">_internals</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="nb">filter</span><span class="p">(</span><span class="nb">callable</span><span class="p">,</span> <span class="nb">vars</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
                     <span class="n">_modules</span><span class="p">,</span> <span class="p">[])</span>
@@ -127,11 +127,11 @@
 
 <span class="k">def</span> <span class="nf">_get_presto_env_options</span><span class="p">():</span>
     <span class="n">new_env_options</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">env_options</span><span class="p">)</span>
-    <span class="n">commands_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;fabfile&#39;</span><span class="p">,</span> <span class="s">&#39;parallel&#39;</span><span class="p">,</span> <span class="s">&#39;rcfile&#39;</span><span class="p">,</span> <span class="s">&#39;skip_bad_hosts&#39;</span><span class="p">,</span>
-                          <span class="s">&#39;warn_only&#39;</span><span class="p">,</span> <span class="s">&#39;always_use_pty&#39;</span><span class="p">,</span> <span class="s">&#39;skip_unknown_tasks&#39;</span><span class="p">,</span>
-                          <span class="s">&#39;abort_on_prompts&#39;</span><span class="p">,</span> <span class="s">&#39;pool_size&#39;</span><span class="p">,</span>
-                          <span class="s">&#39;eagerly_disconnect&#39;</span><span class="p">,</span> <span class="s">&#39;ssh_config_path&#39;</span><span class="p">]</span>
-    <span class="n">commands_to_hide</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;--roles&#39;</span><span class="p">,</span> <span class="s">&#39;--shell&#39;</span><span class="p">,</span> <span class="s">&#39;--linewise&#39;</span><span class="p">,</span> <span class="s">&#39;--show&#39;</span><span class="p">,</span> <span class="s">&#39;--hide&#39;</span><span class="p">]</span>
+    <span class="n">commands_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fabfile&#39;</span><span class="p">,</span> <span class="s1">&#39;parallel&#39;</span><span class="p">,</span> <span class="s1">&#39;rcfile&#39;</span><span class="p">,</span> <span class="s1">&#39;skip_bad_hosts&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;warn_only&#39;</span><span class="p">,</span> <span class="s1">&#39;always_use_pty&#39;</span><span class="p">,</span> <span class="s1">&#39;skip_unknown_tasks&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;abort_on_prompts&#39;</span><span class="p">,</span> <span class="s1">&#39;pool_size&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;eagerly_disconnect&#39;</span><span class="p">,</span> <span class="s1">&#39;ssh_config_path&#39;</span><span class="p">]</span>
+    <span class="n">commands_to_hide</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--roles&#39;</span><span class="p">,</span> <span class="s1">&#39;--shell&#39;</span><span class="p">,</span> <span class="s1">&#39;--linewise&#39;</span><span class="p">,</span> <span class="s1">&#39;--show&#39;</span><span class="p">,</span> <span class="s1">&#39;--hide&#39;</span><span class="p">]</span>
     <span class="n">new_env_options</span> <span class="o">=</span> \
         <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">new_env_options</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">dest</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">commands_to_remove</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">env_option</span> <span class="ow">in</span> <span class="n">new_env_options</span><span class="p">:</span>
@@ -143,7 +143,7 @@
 <span class="n">presto_env_options</span> <span class="o">=</span> <span class="n">_get_presto_env_options</span><span class="p">()</span>
 
 
-<span class="c"># Module recursion cache</span>
+<span class="c1"># Module recursion cache</span>
 <span class="k">class</span> <span class="nc">_ModuleCache</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set-like object operating on modules and storing __name__s internally.</span>
@@ -173,9 +173,9 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">is_classic</span> <span class="o">=</span> <span class="p">(</span>
             <span class="nb">callable</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">func</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_internals</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span>
-            <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span>
+            <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
         <span class="p">)</span>
-    <span class="c"># Handle poorly behaved __eq__ implementations</span>
+    <span class="c1"># Handle poorly behaved __eq__ implementations</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
         <span class="n">is_classic</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="k">return</span> <span class="n">is_classic</span></div>
@@ -191,39 +191,39 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">importer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">importer</span> <span class="o">=</span> <span class="nb">__import__</span>
-    <span class="c"># Get directory and fabfile name</span>
+    <span class="c1"># Get directory and fabfile name</span>
     <span class="n">directory</span><span class="p">,</span> <span class="n">fabfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="c"># If the directory isn&#39;t in the PYTHONPATH, add it so our import will work</span>
+    <span class="c1"># If the directory isn&#39;t in the PYTHONPATH, add it so our import will work</span>
     <span class="n">added_to_path</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="n">index</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="k">if</span> <span class="n">directory</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
         <span class="n">added_to_path</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="c"># If the directory IS in the PYTHONPATH, move it to the front temporarily,</span>
-    <span class="c"># otherwise other fabfiles -- like Fabric&#39;s own -- may scoop the intended</span>
-    <span class="c"># one.</span>
+    <span class="c1"># If the directory IS in the PYTHONPATH, move it to the front temporarily,</span>
+    <span class="c1"># otherwise other fabfiles -- like Fabric&#39;s own -- may scoop the intended</span>
+    <span class="c1"># one.</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c"># Store index for later restoration</span>
+            <span class="c1"># Store index for later restoration</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="c"># Add to front, then remove from original position</span>
+            <span class="c1"># Add to front, then remove from original position</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
             <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="c"># Perform the import (trimming off the .py)</span>
+    <span class="c1"># Perform the import (trimming off the .py)</span>
     <span class="n">imported</span> <span class="o">=</span> <span class="n">importer</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fabfile</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="c"># Remove directory from path if we added it ourselves (just to be neat)</span>
+    <span class="c1"># Remove directory from path if we added it ourselves (just to be neat)</span>
     <span class="k">if</span> <span class="n">added_to_path</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c"># Put back in original index if we moved it</span>
+    <span class="c1"># Put back in original index if we moved it</span>
     <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
         <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="c"># Actually load tasks</span>
+    <span class="c1"># Actually load tasks</span>
     <span class="n">docstring</span><span class="p">,</span> <span class="n">new_style</span><span class="p">,</span> <span class="n">classic</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="n">load_tasks_from_module</span><span class="p">(</span><span class="n">imported</span><span class="p">)</span>
     <span class="n">tasks</span> <span class="o">=</span> <span class="n">new_style</span> <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">new_style_tasks</span> <span class="k">else</span> <span class="n">classic</span>
-    <span class="c"># Clean up after ourselves</span>
+    <span class="c1"># Clean up after ourselves</span>
     <span class="n">_seen</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">docstring</span><span class="p">,</span> <span class="n">tasks</span></div>
 
@@ -232,16 +232,16 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Handles loading all of the tasks for a given `imported` module</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Obey the use of &lt;module&gt;.__all__ if it is present</span>
+    <span class="c1"># Obey the use of &lt;module&gt;.__all__ if it is present</span>
     <span class="n">imported_vars</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">imported</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s">&quot;__all__&quot;</span> <span class="ow">in</span> <span class="n">imported_vars</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;__all__&quot;</span> <span class="ow">in</span> <span class="n">imported_vars</span><span class="p">:</span>
         <span class="n">imported_vars</span> <span class="o">=</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">imported_vars</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span>
-                         <span class="n">imported_vars</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">imported_vars</span><span class="p">[</span><span class="s">&quot;__all__&quot;</span><span class="p">]]</span>
+                         <span class="n">imported_vars</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">imported_vars</span><span class="p">[</span><span class="s2">&quot;__all__&quot;</span><span class="p">]]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">imported_vars</span> <span class="o">=</span> <span class="n">imported_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-    <span class="c"># Return a two-tuple value.  First is the documentation, second is a</span>
-    <span class="c"># dictionary of callables only (and don&#39;t include Fab operations or</span>
-    <span class="c"># underscored callables)</span>
+    <span class="c1"># Return a two-tuple value.  First is the documentation, second is a</span>
+    <span class="c1"># dictionary of callables only (and don&#39;t include Fab operations or</span>
+    <span class="c1"># underscored callables)</span>
     <span class="n">new_style</span><span class="p">,</span> <span class="n">classic</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="n">extract_tasks</span><span class="p">(</span><span class="n">imported_vars</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">imported</span><span class="o">.</span><span class="n">__doc__</span><span class="p">,</span> <span class="n">new_style</span><span class="p">,</span> <span class="n">classic</span><span class="p">,</span> <span class="n">default</span></div>
 
@@ -253,23 +253,23 @@
     <span class="n">new_style_tasks</span> <span class="o">=</span> <span class="n">_Dict</span><span class="p">()</span>
     <span class="n">classic_tasks</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">default_task</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">if</span> <span class="s">&#39;new_style_tasks&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;new_style_tasks&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">:</span>
         <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">new_style_tasks</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">imported_vars</span><span class="p">:</span>
         <span class="n">name</span><span class="p">,</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">tup</span>
         <span class="k">if</span> <span class="n">is_task_object</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
             <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">new_style_tasks</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="c"># Use instance.name if defined</span>
-            <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s">&#39;undefined&#39;</span><span class="p">:</span>
+            <span class="c1"># Use instance.name if defined</span>
+            <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;undefined&#39;</span><span class="p">:</span>
                 <span class="n">new_style_tasks</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
                 <span class="n">new_style_tasks</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
-            <span class="c"># Handle aliasing</span>
+            <span class="c1"># Handle aliasing</span>
             <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">aliases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">aliases</span><span class="p">:</span>
                     <span class="n">new_style_tasks</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
-            <span class="c"># Handle defaults</span>
+            <span class="c1"># Handle defaults</span>
             <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_default</span><span class="p">:</span>
                 <span class="n">default_task</span> <span class="o">=</span> <span class="n">obj</span>
         <span class="k">elif</span> <span class="n">is_classic_task</span><span class="p">(</span><span class="n">tup</span><span class="p">):</span>
@@ -289,12 +289,12 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determine if the provided value is a task module</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># return (type(a) is types.ModuleType and</span>
-    <span class="c">#        any(map(is_task_object, vars(a).values())))</span>
+    <span class="c1"># return (type(a) is types.ModuleType and</span>
+    <span class="c1">#        any(map(is_task_object, vars(a).values())))</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">)</span> <span class="ow">and</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_seen</span><span class="p">:</span>
-        <span class="c"># Flag module as seen</span>
+        <span class="c1"># Flag module as seen</span>
         <span class="n">_seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="c"># Signal that we need to check it out</span>
+        <span class="c1"># Signal that we need to check it out</span>
         <span class="k">return</span> <span class="bp">True</span></div>
 
 
@@ -316,64 +316,72 @@
 
 <span class="sd">    On this parser, you must call parser.parse_args()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#</span>
-    <span class="c"># Initialize</span>
-    <span class="c">#</span>
+    <span class="c1">#</span>
+    <span class="c1"># Initialize</span>
+    <span class="c1">#</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">LoggingOptionParser</span><span class="p">(</span>
-        <span class="n">usage</span><span class="o">=</span><span class="s">&#39;presto-admin [options] &lt;command&gt; [arg]&#39;</span><span class="p">,</span>
-        <span class="n">version</span><span class="o">=</span><span class="s">&#39;presto-admin </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">__version__</span><span class="p">,</span>
-        <span class="n">epilog</span><span class="o">=</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">list_commands</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&#39;normal&#39;</span><span class="p">)))</span>
+        <span class="n">usage</span><span class="o">=</span><span class="s1">&#39;presto-admin [options] &lt;command&gt; [arg]&#39;</span><span class="p">,</span>
+        <span class="n">version</span><span class="o">=</span><span class="s1">&#39;presto-admin </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">__version__</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">list_commands</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;normal&#39;</span><span class="p">)))</span>
 
-    <span class="c">#</span>
-    <span class="c"># Define options that don&#39;t become `env` vars (typically ones which cause</span>
-    <span class="c"># Fabric to do something other than its normal execution, such as</span>
-    <span class="c"># --version)</span>
-    <span class="c">#</span>
+    <span class="c1">#</span>
+    <span class="c1"># Define options that don&#39;t become `env` vars (typically ones which cause</span>
+    <span class="c1"># Fabric to do something other than its normal execution, such as</span>
+    <span class="c1"># --version)</span>
+    <span class="c1">#</span>
 
-    <span class="c"># Display info about a specific command</span>
+    <span class="c1"># Display info about a specific command</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
-        <span class="s">&#39;-d&#39;</span><span class="p">,</span>
-        <span class="s">&#39;--display&#39;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s">&#39;display&#39;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;-d&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;--display&#39;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;display&#39;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;print detailed information about command&#39;</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;print detailed information about command&#39;</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
-        <span class="s">&#39;--extended-help&#39;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s">&#39;extended_help&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;--extended-help&#39;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;extended_help&#39;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;print out all options, including advanced ones&#39;</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;print out all options, including advanced ones&#39;</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
-        <span class="s">&#39;-I&#39;</span><span class="p">,</span>
-        <span class="s">&#39;--initial-password-prompt&#39;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;-I&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;--initial-password-prompt&#39;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&quot;Force password prompt up-front&quot;</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Force password prompt up-front&quot;</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
-        <span class="s">&#39;--nodeps&#39;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s">&#39;nodeps&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;--nodeps&#39;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;nodeps&#39;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="n">SUPPRESS_HELP</span>
     <span class="p">)</span>
 
-    <span class="c">#</span>
-    <span class="c"># Add in options which are also destined to show up as `env` vars.</span>
-    <span class="c">#</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
+        <span class="s1">&#39;--force&#39;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;force&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">SUPPRESS_HELP</span>
+    <span class="p">)</span>
 
-    <span class="n">advanced_options</span> <span class="o">=</span> <span class="n">HiddenOptionGroup</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s">&quot;Advanced Options&quot;</span><span class="p">,</span>
+    <span class="c1">#</span>
+    <span class="c1"># Add in options which are also destined to show up as `env` vars.</span>
+    <span class="c1">#</span>
+
+    <span class="n">advanced_options</span> <span class="o">=</span> <span class="n">HiddenOptionGroup</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s2">&quot;Advanced Options&quot;</span><span class="p">,</span>
                                          <span class="n">suppress_help</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-    <span class="c"># Hide most of the options from the help text so it&#39;s simpler. Need to</span>
-    <span class="c"># document the other options, however.</span>
-    <span class="n">commands_to_show</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]</span>
+    <span class="c1"># Hide most of the options from the help text so it&#39;s simpler. Need to</span>
+    <span class="c1"># document the other options, however.</span>
+    <span class="n">commands_to_show</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">presto_env_options</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">option</span><span class="o">.</span><span class="n">dest</span> <span class="ow">in</span> <span class="n">commands_to_show</span><span class="p">:</span>
@@ -382,25 +390,25 @@
             <span class="n">advanced_options</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="n">option</span><span class="p">)</span>
 
     <span class="n">advanced_options</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
-        <span class="s">&#39;--serial&#39;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s">&#39;serial&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;--serial&#39;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;serial&#39;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&quot;default to serial execution method&quot;</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;default to serial execution method&quot;</span>
     <span class="p">)</span>
 
-    <span class="c"># Allow setting of arbitrary env vars at runtime.</span>
+    <span class="c1"># Allow setting of arbitrary env vars at runtime.</span>
     <span class="n">advanced_options</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
-        <span class="s">&#39;--set&#39;</span><span class="p">,</span>
-        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;KEY=VALUE,...&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s">&#39;env_settings&#39;</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;--set&#39;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;KEY=VALUE,...&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;env_settings&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="n">SUPPRESS_HELP</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option_group</span><span class="p">(</span><span class="n">advanced_options</span><span class="p">)</span>
 
-    <span class="c"># Return parser</span>
+    <span class="c1"># Return parser</span>
     <span class="k">return</span> <span class="n">parser</span></div>
 
 
@@ -433,9 +441,9 @@
     <span class="n">tasks</span><span class="p">,</span> <span class="n">collections</span> <span class="o">=</span> <span class="n">_sift_tasks</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">collection</span> <span class="ow">in</span> <span class="n">collections</span><span class="p">:</span>
         <span class="n">module</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">collection</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&#39;default&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">):</span>
             <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
-        <span class="n">tasks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">collection</span><span class="p">,</span> <span class="n">x</span><span class="p">)),</span>
+        <span class="n">tasks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">collection</span><span class="p">,</span> <span class="n">x</span><span class="p">)),</span>
                      <span class="n">_task_names</span><span class="p">(</span><span class="n">module</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">tasks</span>
 
@@ -451,29 +459,29 @@
 <span class="k">def</span> <span class="nf">_normal_list</span><span class="p">(</span><span class="n">docstrings</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">task_names</span> <span class="o">=</span> <span class="n">_task_names</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">commands</span><span class="p">)</span>
-    <span class="c"># Want separator between name, description to be straight col</span>
+    <span class="c1"># Want separator between name, description to be straight col</span>
     <span class="n">max_len</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)),</span> <span class="n">task_names</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">sep</span> <span class="o">=</span> <span class="s">&#39;  &#39;</span>
-    <span class="n">trail</span> <span class="o">=</span> <span class="s">&#39;...&#39;</span>
+    <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;  &#39;</span>
+    <span class="n">trail</span> <span class="o">=</span> <span class="s1">&#39;...&#39;</span>
     <span class="n">max_width</span> <span class="o">=</span> <span class="n">_pty_size</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">trail</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">task_names</span><span class="p">:</span>
         <span class="n">docstring</span> <span class="o">=</span> <span class="n">_print_docstring</span><span class="p">(</span><span class="n">docstrings</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">docstring</span><span class="p">:</span>
             <span class="n">lines</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">docstring</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
             <span class="n">first_line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            <span class="c"># Truncate it if it&#39;s longer than N chars</span>
+            <span class="c1"># Truncate it if it&#39;s longer than N chars</span>
             <span class="n">size</span> <span class="o">=</span> <span class="n">max_width</span> <span class="o">-</span> <span class="p">(</span><span class="n">max_len</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">trail</span><span class="p">))</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">:</span>
                 <span class="n">first_line</span> <span class="o">=</span> <span class="n">first_line</span><span class="p">[:</span><span class="n">size</span><span class="p">]</span> <span class="o">+</span> <span class="n">trail</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">max_len</span><span class="p">)</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">first_line</span>
-        <span class="c"># Or nothing (so just the name)</span>
+        <span class="c1"># Or nothing (so just the name)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">name</span>
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">indent</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">result</span>
 
 
-<span class="n">COMMANDS_HEADER</span> <span class="o">=</span> <span class="s">&#39;Commands:&#39;</span>
+<span class="n">COMMANDS_HEADER</span> <span class="o">=</span> <span class="s1">&#39;Commands:&#39;</span>
 
 
 <div class="viewcode-block" id="list_commands"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.list_commands">[docs]</a><span class="k">def</span> <span class="nf">list_commands</span><span class="p">(</span><span class="n">docstring</span><span class="p">,</span> <span class="n">format_</span><span class="p">):</span>
@@ -485,20 +493,20 @@
 <span class="sd">    ``format_`` should conform to the options specified in</span>
 <span class="sd">    ``LIST_FORMAT_OPTIONS``, e.g. ``&quot;short&quot;``, ``&quot;normal&quot;``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Short-circuit with simple short output</span>
-    <span class="k">if</span> <span class="n">format_</span> <span class="o">==</span> <span class="s">&quot;short&quot;</span><span class="p">:</span>
+    <span class="c1"># Short-circuit with simple short output</span>
+    <span class="k">if</span> <span class="n">format_</span> <span class="o">==</span> <span class="s2">&quot;short&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_task_names</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">commands</span><span class="p">)</span>
-    <span class="c"># Otherwise, handle more verbose modes</span>
+    <span class="c1"># Otherwise, handle more verbose modes</span>
     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c"># Docstring at top, if applicable</span>
+    <span class="c1"># Docstring at top, if applicable</span>
     <span class="k">if</span> <span class="n">docstring</span><span class="p">:</span>
-        <span class="n">trailer</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">docstring</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s">&quot;&quot;</span>
+        <span class="n">trailer</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">docstring</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">docstring</span> <span class="o">+</span> <span class="n">trailer</span><span class="p">)</span>
     <span class="n">header</span> <span class="o">=</span> <span class="n">COMMANDS_HEADER</span>
     <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">_normal_list</span><span class="p">()</span>
     <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span></div>
 
 
@@ -506,32 +514,32 @@
     <span class="n">details</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">__doc__</span>
-        <span class="k">else</span> <span class="s">&#39;No docstring provided&#39;</span><span class="p">]</span>
+        <span class="k">else</span> <span class="s1">&#39;No docstring provided&#39;</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">details</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">details</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="display_command"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.display_command">[docs]</a><span class="k">def</span> <span class="nf">display_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Print command function&#39;s docstring, then exit. Invoked with -d/--display.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Sanity check</span>
+    <span class="c1"># Sanity check</span>
     <span class="n">command</span> <span class="o">=</span> <span class="n">crawl</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">commands</span><span class="p">)</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">,</span> <span class="s">&quot; &quot;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">command</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Task &#39;</span><span class="si">%s</span><span class="s">&#39; does not appear to exist. Valid task names:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span>
-        <span class="n">abort</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_normal_list</span><span class="p">(</span><span class="bp">False</span><span class="p">))))</span>
-    <span class="c"># get the presented docstring if found</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Task &#39;</span><span class="si">%s</span><span class="s2">&#39; does not appear to exist. Valid task names:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span>
+        <span class="n">abort</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_normal_list</span><span class="p">(</span><span class="bp">False</span><span class="p">))))</span>
+    <span class="c1"># get the presented docstring if found</span>
     <span class="n">task_details</span> <span class="o">=</span> <span class="n">get_task_docstring</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">task_details</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Displaying detailed information for task &#39;</span><span class="si">%s</span><span class="s">&#39;:&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Displaying detailed information for task &#39;</span><span class="si">%s</span><span class="s2">&#39;:&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="k">print</span><span class="p">(</span><span class="n">indent</span><span class="p">(</span><span class="n">task_details</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
-    <span class="c"># Or print notice if not</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="c1"># Or print notice if not</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;No detailed information available for task &#39;</span><span class="si">%s</span><span class="s">&#39;:&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;No detailed information available for task &#39;</span><span class="si">%s</span><span class="s2">&#39;:&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">code</span><span class="p">)</span></div>
 
 
@@ -556,7 +564,7 @@
 
     <span class="k">while</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">arguments</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">possible_cmds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="c"># the rest of are all arguments to the cmd</span>
+            <span class="c1"># the rest of are all arguments to the cmd</span>
             <span class="k">break</span>
         <span class="k">if</span> <span class="n">arguments</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">possible_cmds</span><span class="p">:</span>
             <span class="n">invalid_command_error</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
@@ -566,12 +574,12 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">possible_cmds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">invalid_command_error</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
 
-    <span class="n">cmds</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arguments</span><span class="p">[:</span><span class="n">pos</span><span class="p">]),</span> <span class="n">arguments</span><span class="p">[</span><span class="n">pos</span><span class="p">:],</span> <span class="p">{},</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[])]</span>
+    <span class="n">cmds</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arguments</span><span class="p">[:</span><span class="n">pos</span><span class="p">]),</span> <span class="n">arguments</span><span class="p">[</span><span class="n">pos</span><span class="p">:],</span> <span class="p">{},</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[])]</span>
     <span class="k">return</span> <span class="n">cmds</span></div>
 
 
 <div class="viewcode-block" id="invalid_command_error"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.invalid_command_error">[docs]</a><span class="k">def</span> <span class="nf">invalid_command_error</span><span class="p">(</span><span class="n">arguments</span><span class="p">):</span>
-    <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s">&quot;Command not found:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">indent</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arguments</span><span class="p">)))</span></div>
+    <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;Command not found:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">indent</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arguments</span><span class="p">)))</span></div>
 
 
 <div class="viewcode-block" id="update_output_levels"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.update_output_levels">[docs]</a><span class="k">def</span> <span class="nf">update_output_levels</span><span class="p">(</span><span class="n">show</span><span class="p">,</span> <span class="n">hide</span><span class="p">):</span>
@@ -584,23 +592,25 @@
 <span class="sd">    sets the values to ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">show</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">show</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
             <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="k">if</span> <span class="n">hide</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hide</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hide</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
             <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span></div>
 
 
 <div class="viewcode-block" id="show_commands"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.show_commands">[docs]</a><span class="k">def</span> <span class="nf">show_commands</span><span class="p">(</span><span class="n">docstring</span><span class="p">,</span> <span class="n">format</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">list_commands</span><span class="p">(</span><span class="n">docstring</span><span class="p">,</span> <span class="n">format</span><span class="p">)))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">list_commands</span><span class="p">(</span><span class="n">docstring</span><span class="p">,</span> <span class="n">format</span><span class="p">)))</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">code</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="run_tasks"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.run_tasks">[docs]</a><span class="k">def</span> <span class="nf">run_tasks</span><span class="p">(</span><span class="n">task_list</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">arg_hosts</span><span class="p">,</span> <span class="n">arg_roles</span><span class="p">,</span> <span class="n">arg_excl_hosts</span> <span class="ow">in</span> <span class="n">task_list</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">nodeps</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;package.install&#39;</span><span class="p">:</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Invalid argument --nodeps to task: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span>
+            <span class="n">nodeps_tasks</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;package.install&#39;</span><span class="p">,</span> <span class="s1">&#39;server.uninstall&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;server.install&#39;</span><span class="p">,</span> <span class="s1">&#39;server.upgrade&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">nodeps</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">nodeps_tasks</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Invalid argument --nodeps to task: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span>
                                  <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
                 <span class="n">display_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
@@ -613,8 +623,8 @@
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">is_arguments_error</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
-                <span class="k">print</span><span class="p">(</span><span class="s">&quot;Incorrect number of arguments to task.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
-                <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Incorrect number of arguments to task&#39;</span><span class="p">,</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Incorrect number of arguments to task.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Incorrect number of arguments to task&#39;</span><span class="p">,</span>
                               <span class="n">exc_info</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
                 <span class="n">display_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -630,24 +640,24 @@
 <span class="sd">    It should be noted that the way bash et. al. do command line parsing, those</span>
 <span class="sd">    single quotes are required.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">escaped_sep</span> <span class="o">=</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">sep</span>
+    <span class="n">escaped_sep</span> <span class="o">=</span> <span class="s1">r&#39;\</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">sep</span>
 
     <span class="k">if</span> <span class="n">escaped_sep</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argstr</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">argstr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
 
     <span class="n">before</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">after</span> <span class="o">=</span> <span class="n">argstr</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">escaped_sep</span><span class="p">)</span>
-    <span class="n">startlist</span> <span class="o">=</span> <span class="n">before</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>  <span class="c"># a regular split is fine here</span>
+    <span class="n">startlist</span> <span class="o">=</span> <span class="n">before</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>  <span class="c1"># a regular split is fine here</span>
     <span class="n">unfinished</span> <span class="o">=</span> <span class="n">startlist</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">startlist</span> <span class="o">=</span> <span class="n">startlist</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="c"># recurse because there may be more escaped separators</span>
+    <span class="c1"># recurse because there may be more escaped separators</span>
     <span class="n">endlist</span> <span class="o">=</span> <span class="n">_escape_split</span><span class="p">(</span><span class="n">sep</span><span class="p">,</span> <span class="n">after</span><span class="p">)</span>
 
-    <span class="c"># finish building the escaped value. we use endlist[0] becaue the first</span>
-    <span class="c"># part of the string sent in recursion is the rest of the escaped value.</span>
+    <span class="c1"># finish building the escaped value. we use endlist[0] becaue the first</span>
+    <span class="c1"># part of the string sent in recursion is the rest of the escaped value.</span>
     <span class="n">unfinished</span> <span class="o">+=</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">endlist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">startlist</span> <span class="o">+</span> <span class="p">[</span><span class="n">unfinished</span><span class="p">]</span> <span class="o">+</span> <span class="n">endlist</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c"># put together all the parts</span>
+    <span class="k">return</span> <span class="n">startlist</span> <span class="o">+</span> <span class="p">[</span><span class="n">unfinished</span><span class="p">]</span> <span class="o">+</span> <span class="n">endlist</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># put together all the parts</span>
 
 
 <span class="k">def</span> <span class="nf">_to_boolean</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
@@ -662,28 +672,28 @@
 <span class="sd">    Args:</span>
 <span class="sd">        string: the string to parse</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">string</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">string</span> <span class="o">==</span> <span class="s">&#39;True&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">string</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">string</span> <span class="o">==</span> <span class="s1">&#39;True&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">True</span>
-    <span class="k">elif</span> <span class="n">string</span> <span class="ow">is</span> <span class="bp">False</span> <span class="ow">or</span> <span class="n">string</span> <span class="o">==</span> <span class="s">&#39;False&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">string</span> <span class="ow">is</span> <span class="bp">False</span> <span class="ow">or</span> <span class="n">string</span> <span class="o">==</span> <span class="s1">&#39;False&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">False</span>
 
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;invalid boolean string: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">string</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid boolean string: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">string</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_handle_generic_set_env_vars</span><span class="p">(</span><span class="n">non_default_options</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">non_default_options</span><span class="p">,</span> <span class="s">&#39;env_settings&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">non_default_options</span><span class="p">,</span> <span class="s1">&#39;env_settings&#39;</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">non_default_options</span>
 
-    <span class="c"># Allow setting of arbitrary env keys.</span>
-    <span class="c"># This comes *before* the &quot;specific&quot; env_options so that those may</span>
-    <span class="c"># override these ones. Specific should override generic, if somebody</span>
-    <span class="c"># was silly enough to specify the same key in both places.</span>
-    <span class="c"># E.g. &quot;fab --set shell=foo --shell=bar&quot; should have env.shell set to</span>
-    <span class="c"># &#39;bar&#39;, not &#39;foo&#39;.</span>
-    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">_escape_split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="n">non_default_options</span><span class="o">.</span><span class="n">env_settings</span><span class="p">):</span>
-        <span class="n">pair</span> <span class="o">=</span> <span class="n">_escape_split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="n">pair</span><span class="p">)</span>
-        <span class="c"># &quot;--set x&quot; =&gt; set env.x to True</span>
-        <span class="c"># &quot;--set x=&quot; =&gt; set env.x to &quot;&quot;</span>
+    <span class="c1"># Allow setting of arbitrary env keys.</span>
+    <span class="c1"># This comes *before* the &quot;specific&quot; env_options so that those may</span>
+    <span class="c1"># override these ones. Specific should override generic, if somebody</span>
+    <span class="c1"># was silly enough to specify the same key in both places.</span>
+    <span class="c1"># E.g. &quot;fab --set shell=foo --shell=bar&quot; should have env.shell set to</span>
+    <span class="c1"># &#39;bar&#39;, not &#39;foo&#39;.</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">_escape_split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">non_default_options</span><span class="o">.</span><span class="n">env_settings</span><span class="p">):</span>
+        <span class="n">pair</span> <span class="o">=</span> <span class="n">_escape_split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="n">pair</span><span class="p">)</span>
+        <span class="c1"># &quot;--set x&quot; =&gt; set env.x to True</span>
+        <span class="c1"># &quot;--set x=&quot; =&gt; set env.x to &quot;&quot;</span>
         <span class="n">key</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -694,34 +704,34 @@
         <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="n">non_default_options_dict</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">non_default_options</span><span class="p">)</span>
-    <span class="k">del</span> <span class="n">non_default_options_dict</span><span class="p">[</span><span class="s">&#39;env_settings&#39;</span><span class="p">]</span>
+    <span class="k">del</span> <span class="n">non_default_options_dict</span><span class="p">[</span><span class="s1">&#39;env_settings&#39;</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">Values</span><span class="p">(</span><span class="n">non_default_options_dict</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="validate_hosts"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.validate_hosts">[docs]</a><span class="k">def</span> <span class="nf">validate_hosts</span><span class="p">(</span><span class="n">cli_hosts</span><span class="p">,</span> <span class="n">config_path</span><span class="p">):</span></div>
-    <span class="c"># If there&#39;s no config file to validate against, don&#39;t. This would happen</span>
-    <span class="c"># in the case of a task that doesn&#39;t define a callback that loads config.</span>
+<div class="viewcode-block" id="validate_hosts"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.validate_hosts">[docs]</a><span class="k">def</span> <span class="nf">validate_hosts</span><span class="p">(</span><span class="n">cli_hosts</span><span class="p">,</span> <span class="n">config_path</span><span class="p">):</span>
+    <span class="c1"># If there&#39;s no config file to validate against, don&#39;t. This would happen</span>
+    <span class="c1"># in the case of a task that doesn&#39;t define a callback that loads config.</span>
     <span class="k">if</span> <span class="n">config_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="k">return</span>
 
-    <span class="c"># At this point, state.env.conf_hosts contains the hosts that we loaded</span>
-    <span class="c"># from the configuration, if any.</span>
-    <span class="n">cli_host_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">cli_hosts</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">))</span>
-    <span class="k">if</span> <span class="s">&#39;conf_hosts&#39;</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">:</span>
+    <span class="c1"># At this point, state.env.conf_hosts contains the hosts that we loaded</span>
+    <span class="c1"># from the configuration, if any.</span>
+    <span class="n">cli_host_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">cli_hosts</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s1">&#39;conf_hosts&#39;</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">:</span>
         <span class="n">conf_hosts</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">conf_hosts</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cli_host_set</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">conf_hosts</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Hosts defined in --hosts/-H must be &#39;</span>
-                                     <span class="s">&#39;present in </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config_path</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;Hosts defined in --hosts/-H must be &#39;</span>
+                                     <span class="s1">&#39;present in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config_path</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
-            <span class="s">&#39;Hosts cannot be defined with --hosts/-H when no hosts are listed &#39;</span>
-            <span class="s">&#39;in the configuration file </span><span class="si">%s</span><span class="s">. Correct the configuration file or &#39;</span>
-            <span class="s">&#39;run the command again without the --hosts or -H option.&#39;</span> <span class="o">%</span>
-            <span class="n">config_path</span><span class="p">)</span>
+            <span class="s1">&#39;Hosts cannot be defined with --hosts/-H when no hosts are listed &#39;</span>
+            <span class="s1">&#39;in the configuration file </span><span class="si">%s</span><span class="s1">. Correct the configuration file or &#39;</span>
+            <span class="s1">&#39;run the command again without the --hosts or -H option.&#39;</span> <span class="o">%</span>
+            <span class="n">config_path</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_update_env</span><span class="p">(</span><span class="n">default_options</span><span class="p">,</span> <span class="n">non_default_options</span><span class="p">,</span> <span class="n">load_config_callback</span><span class="p">):</span>
-    <span class="c"># Fill in the state with the default values</span>
+    <span class="c1"># Fill in the state with the default values</span>
     <span class="k">for</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">default_options</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
@@ -730,45 +740,45 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">config_path</span> <span class="o">=</span> <span class="bp">None</span>
 
-    <span class="c"># Save env.hosts from the config into another env variable for validation.</span>
-    <span class="c"># _handle_generic_set_env_vars will overwrite it if --set hosts=...</span>
-    <span class="c"># is present.</span>
+    <span class="c1"># Save env.hosts from the config into another env variable for validation.</span>
+    <span class="c1"># _handle_generic_set_env_vars will overwrite it if --set hosts=...</span>
+    <span class="c1"># is present.</span>
     <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">hosts</span><span class="p">:</span>
         <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">conf_hosts</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">hosts</span>
 
     <span class="n">non_default_options</span> <span class="o">=</span> <span class="n">_handle_generic_set_env_vars</span><span class="p">(</span><span class="n">non_default_options</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">hosts</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-        <span class="c"># Take advantage of the fact that if there was a generic --set option</span>
-        <span class="c"># for hosts, it&#39;s still an unsplit, comma separated string rather than</span>
-        <span class="c"># a list, which is what it would be after loading hosts from a config</span>
-        <span class="c"># file.</span>
+        <span class="c1"># Take advantage of the fact that if there was a generic --set option</span>
+        <span class="c1"># for hosts, it&#39;s still an unsplit, comma separated string rather than</span>
+        <span class="c1"># a list, which is what it would be after loading hosts from a config</span>
+        <span class="c1"># file.</span>
         <span class="n">validate_hosts</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">hosts</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
 
-    <span class="c"># Go back through and add the non-default values (e.g. the values that</span>
-    <span class="c"># were set on the CLI)</span>
+    <span class="c1"># Go back through and add the non-default values (e.g. the values that</span>
+    <span class="c1"># were set on the CLI)</span>
     <span class="k">for</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">non_default_options</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="c"># raise error if hosts not in topology</span>
-        <span class="k">if</span> <span class="n">opt</span> <span class="o">==</span> <span class="s">&#39;hosts&#39;</span><span class="p">:</span>
+        <span class="c1"># raise error if hosts not in topology</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="o">==</span> <span class="s1">&#39;hosts&#39;</span><span class="p">:</span>
             <span class="n">validate_hosts</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
 
         <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
-    <span class="c"># Handle --hosts, --roles, --exclude-hosts (comma separated string =&gt;</span>
-    <span class="c"># list)</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;hosts&#39;</span><span class="p">,</span> <span class="s">&#39;roles&#39;</span><span class="p">,</span> <span class="s">&#39;exclude_hosts&#39;</span><span class="p">]:</span>
+    <span class="c1"># Handle --hosts, --roles, --exclude-hosts (comma separated string =&gt;</span>
+    <span class="c1"># list)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;hosts&#39;</span><span class="p">,</span> <span class="s1">&#39;roles&#39;</span><span class="p">,</span> <span class="s1">&#39;exclude_hosts&#39;</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-    <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s">&#39;running&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;running&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="n">update_output_levels</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">show</span><span class="p">,</span> <span class="n">hide</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">hide</span><span class="p">)</span>
     <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">skip_bad_hosts</span> <span class="o">=</span> <span class="bp">True</span>
 
-    <span class="c"># env.conf_hosts is an implementation detail of the option parsing and</span>
-    <span class="c"># validation. Hide it from the world.</span>
-    <span class="k">if</span> <span class="s">&#39;conf_hosts&#39;</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">:</span>
-        <span class="k">del</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="s">&#39;conf_hosts&#39;</span><span class="p">]</span>
+    <span class="c1"># env.conf_hosts is an implementation detail of the option parsing and</span>
+    <span class="c1"># validation. Hide it from the world.</span>
+    <span class="k">if</span> <span class="s1">&#39;conf_hosts&#39;</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="s1">&#39;conf_hosts&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="get_default_options"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.get_default_options">[docs]</a><span class="k">def</span> <span class="nf">get_default_options</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">non_default_options</span><span class="p">):</span>
@@ -795,10 +805,10 @@
 <span class="k">def</span> <span class="nf">_get_config_callback</span><span class="p">(</span><span class="n">commands_to_run</span><span class="p">):</span>
     <span class="n">config_callback</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">commands_to_run</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Multiple commands are not supported&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Multiple commands are not supported&#39;</span><span class="p">)</span>
 
     <span class="n">c</span> <span class="o">=</span> <span class="n">commands_to_run</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">module</span><span class="p">,</span> <span class="n">command</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">module</span><span class="p">,</span> <span class="n">command</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
 
     <span class="n">module_dict</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">commands</span><span class="p">[</span><span class="n">module</span><span class="p">]</span>
     <span class="n">command_callable</span> <span class="o">=</span> <span class="n">module_dict</span><span class="p">[</span><span class="n">command</span><span class="p">]</span>
@@ -811,56 +821,56 @@
     <span class="k">return</span> <span class="n">config_callback</span>
 
 
-<div class="viewcode-block" id="parse_and_validate_commands"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.parse_and_validate_commands">[docs]</a><span class="k">def</span> <span class="nf">parse_and_validate_commands</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span></div>
-    <span class="c"># Find local fabfile path or abort</span>
-    <span class="n">fabfile</span> <span class="o">=</span> <span class="s">&quot;prestoadmin&quot;</span>
+<div class="viewcode-block" id="parse_and_validate_commands"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.parse_and_validate_commands">[docs]</a><span class="k">def</span> <span class="nf">parse_and_validate_commands</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+    <span class="c1"># Find local fabfile path or abort</span>
+    <span class="n">fabfile</span> <span class="o">=</span> <span class="s2">&quot;prestoadmin&quot;</span>
 
-    <span class="c"># Store absolute path to fabfile in case anyone needs it</span>
+    <span class="c1"># Store absolute path to fabfile in case anyone needs it</span>
     <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">real_fabfile</span> <span class="o">=</span> <span class="n">fabfile</span>
 
-    <span class="c"># Load fabfile (which calls its module-level code, including</span>
-    <span class="c"># tweaks to env values) and put its commands in the shared commands</span>
-    <span class="c"># dict</span>
+    <span class="c1"># Load fabfile (which calls its module-level code, including</span>
+    <span class="c1"># tweaks to env values) and put its commands in the shared commands</span>
+    <span class="c1"># dict</span>
     <span class="n">docstring</span><span class="p">,</span> <span class="n">callables</span> <span class="o">=</span> <span class="n">load_fabfile</span><span class="p">(</span><span class="n">fabfile</span><span class="p">)</span>
     <span class="n">state</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">callables</span><span class="p">)</span>
 
-    <span class="c"># Parse command line options</span>
+    <span class="c1"># Parse command line options</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">parser_for_options</span><span class="p">()</span>
 
-    <span class="c"># Unless you pass in values, optparse fills in the default values for all</span>
-    <span class="c"># of the options. We want to save the version of the options without</span>
-    <span class="c"># default values, because that takes precedence over all other env vars.</span>
+    <span class="c1"># Unless you pass in values, optparse fills in the default values for all</span>
+    <span class="c1"># of the options. We want to save the version of the options without</span>
+    <span class="c1"># default values, because that takes precedence over all other env vars.</span>
     <span class="n">non_default_options</span><span class="p">,</span> <span class="n">arguments</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">Values</span><span class="p">())</span>
     <span class="n">options</span><span class="p">,</span> <span class="n">arguments</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
     <span class="n">default_options</span> <span class="o">=</span> <span class="n">get_default_options</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">non_default_options</span><span class="p">)</span>
 
-    <span class="c"># Handle regular args vs -- args</span>
+    <span class="c1"># Handle regular args vs -- args</span>
     <span class="n">arguments</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">largs</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">rargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s">&quot;Arbitrary remote shell commands not supported.&quot;</span><span class="p">)</span>
-        <span class="n">show_commands</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&#39;normal&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Arbitrary remote shell commands not supported.&quot;</span><span class="p">)</span>
+        <span class="n">show_commands</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;normal&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">extended_help</span><span class="p">:</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">print_extended_help</span><span class="p">()</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="c"># If user didn&#39;t specify any commands to run, show help</span>
+    <span class="c1"># If user didn&#39;t specify any commands to run, show help</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">arguments</span><span class="p">:</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># don&#39;t consider this an error</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># don&#39;t consider this an error</span>
 
-    <span class="c"># Parse arguments into commands to run (plus args/kwargs/hosts)</span>
+    <span class="c1"># Parse arguments into commands to run (plus args/kwargs/hosts)</span>
     <span class="n">commands_to_run</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">commands_to_run</span> <span class="o">=</span> <span class="n">parse_arguments</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">commands</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">NameError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
-        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Unable to parse arguments&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to parse arguments&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="c"># Handle show (command-specific help) option</span>
+    <span class="c1"># Handle show (command-specific help) option</span>
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="p">:</span>
         <span class="n">display_command</span><span class="p">(</span><span class="n">commands_to_run</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
 
@@ -872,14 +882,14 @@
 
     <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">warn_only</span> <span class="o">=</span> <span class="bp">False</span>
 
-    <span class="c"># Initial password prompt, if requested</span>
+    <span class="c1"># Initial password prompt, if requested</span>
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">initial_password_prompt</span><span class="p">:</span>
-        <span class="n">prompt</span> <span class="o">=</span> <span class="s">&quot;Initial value for env.password: &quot;</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot;Initial value for env.password: &quot;</span>
         <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getpass</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 
-    <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="s">&#39;tasks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">commands_to_run</span><span class="p">]</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="s1">&#39;tasks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">commands_to_run</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">commands_to_run</span>
+    <span class="k">return</span> <span class="n">commands_to_run</span></div>
 
 
 <div class="viewcode-block" id="load_config"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.load_config">[docs]</a><span class="k">def</span> <span class="nf">load_config</span><span class="p">(</span><span class="n">load_config_callback</span><span class="p">):</span>
@@ -907,26 +917,26 @@
 <span class="sd">    above scheme.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="c"># No exception, inspect the next value.</span>
+        <span class="c1"># No exception, inspect the next value.</span>
         <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">continue</span>
 
-        <span class="c"># The value is a dict resulting from calling fabric.tasks.execute.</span>
-        <span class="c"># Check the results recursively</span>
+        <span class="c1"># The value is a dict resulting from calling fabric.tasks.execute.</span>
+        <span class="c1"># Check the results recursively</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
             <span class="n">exit_code</span> <span class="o">=</span> <span class="n">_exit_code</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">exit_code</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">exit_code</span>
             <span class="k">continue</span>
 
-        <span class="c"># In any case where things were OK above, we&#39;ve continued the loop. At</span>
-        <span class="c"># this point, we know something failed.</span>
+        <span class="c1"># In any case where things were OK above, we&#39;ve continued the loop. At</span>
+        <span class="c1"># this point, we know something failed.</span>
         <span class="k">return</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="mi">0</span>
 
 
-<span class="nd">@entry_point</span><span class="p">(</span><span class="s">&#39;presto-admin&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">__version__</span><span class="p">,</span>
-             <span class="n">log_file_path</span><span class="o">=</span><span class="s">&quot;presto-admin.log&quot;</span><span class="p">,</span>
+<span class="nd">@entry_point</span><span class="p">(</span><span class="s1">&#39;presto-admin&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">__version__</span><span class="p">,</span>
+             <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;presto-admin.log&quot;</span><span class="p">,</span>
              <span class="n">application_class</span><span class="o">=</span><span class="n">FabricApplication</span><span class="p">)</span>
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.main.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -934,14 +944,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">commands_to_run</span> <span class="o">=</span> <span class="n">parse_and_validate_commands</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
 
-    <span class="n">names</span> <span class="o">=</span> <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">commands_to_run</span><span class="p">)</span>
-    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Commands to run: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">names</span><span class="p">)</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">commands_to_run</span><span class="p">)</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Commands to run: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">names</span><span class="p">)</span>
 
-    <span class="c"># At this point all commands must exist, so execute them in order.</span>
+    <span class="c1"># At this point all commands must exist, so execute them in order.</span>
     <span class="k">return</span> <span class="n">_exit_code</span><span class="p">(</span><span class="n">run_tasks</span><span class="p">(</span><span class="n">commands_to_run</span><span class="p">))</span></div>
 
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </pre></div>
 
@@ -953,14 +963,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -976,7 +983,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

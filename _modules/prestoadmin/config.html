@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.config &mdash; presto-admin 1.3 documentation</title>
+    <title>prestoadmin.config &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -47,19 +47,19 @@
           <div class="body" role="main">
             
   <h1>Source code for prestoadmin.config</h1><div class="highlight"><pre>
-<span class="c"># -*- coding: utf-8 -*-</span>
-<span class="c">#</span>
-<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
-<span class="c"># you may not use this file except in compliance with the License.</span>
-<span class="c"># You may obtain a copy of the License at</span>
-<span class="c">#</span>
-<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
-<span class="c">#</span>
-<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
-<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
-<span class="c"># See the License for the specific language governing permissions and</span>
-<span class="c"># limitations under the License.</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module for reading, writing, and processing configuration files</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -72,26 +72,26 @@
 <span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span>\
     <span class="n">ConfigFileNotFoundError</span>
 
-<span class="n">COMMENT_CHARS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="s">&#39;#&#39;</span><span class="p">]</span>
+<span class="n">COMMENT_CHARS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">]</span>
 <span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_conf_from_json_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.get_conf_from_json_file">[docs]</a><span class="k">def</span> <span class="nf">get_conf_from_json_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_file</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">conf_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">{}</span>
             <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">conf_file</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConfigFileNotFoundError</span><span class="p">(</span>
-            <span class="n">config_path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s">&quot;Missing configuration file </span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span>
+            <span class="n">config_path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Missing configuration file </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span>
             <span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="get_conf_from_properties_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.get_conf_from_properties_file">[docs]</a><span class="k">def</span> <span class="nf">get_conf_from_properties_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_file</span><span class="p">:</span>
         <span class="n">props</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">conf_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -102,44 +102,44 @@
 
 
 <div class="viewcode-block" id="split_to_pair"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.split_to_pair">[docs]</a><span class="k">def</span> <span class="nf">split_to_pair</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
-    <span class="n">split_line</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">r&#39;\s*(?&lt;!</span><span class="se">\\</span><span class="s">):\s*|\s*(?&lt;!</span><span class="se">\\</span><span class="s">)=\s*|(?&lt;!</span><span class="se">\\</span><span class="s">)\s+&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span>
+    <span class="n">split_line</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">r&#39;\s*(?&lt;!</span><span class="se">\\</span><span class="s1">):\s*|\s*(?&lt;!</span><span class="se">\\</span><span class="s1">)=\s*|(?&lt;!</span><span class="se">\\</span><span class="s1">)\s+&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span>
                           <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_line</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
-            <span class="n">line</span> <span class="o">+</span> <span class="s">&quot; is not in the expected format: &lt;property&gt;=&lt;value&gt;, &quot;</span>
-                   <span class="s">&quot;&lt;property&gt;:&lt;value&gt; or &lt;property&gt; &lt;value&gt;&quot;</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; is not in the expected format: &lt;property&gt;=&lt;value&gt;, &quot;</span>
+                   <span class="s2">&quot;&lt;property&gt;:&lt;value&gt; or &lt;property&gt; &lt;value&gt;&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">split_line</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="get_conf_from_config_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.get_conf_from_config_file">[docs]</a><span class="k">def</span> <span class="nf">get_conf_from_config_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_file</span><span class="p">:</span>
         <span class="n">settings</span> <span class="o">=</span> <span class="n">conf_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">settings</span></div>
 
 
 <div class="viewcode-block" id="json_to_string"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.json_to_string">[docs]</a><span class="k">def</span> <span class="nf">json_to_string</span><span class="p">(</span><span class="n">conf</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="write_conf_to_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.write_conf_to_file">[docs]</a><span class="k">def</span> <span class="nf">write_conf_to_file</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span></div>
-    <span class="c"># Note: this function expects conf to be flat</span>
-    <span class="c"># either a dict for .properties file or a list for .config</span>
+<div class="viewcode-block" id="write_conf_to_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.write_conf_to_file">[docs]</a><span class="k">def</span> <span class="nf">write_conf_to_file</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="c1"># Note: this function expects conf to be flat</span>
+    <span class="c1"># either a dict for .properties file or a list for .config</span>
     <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s">&quot;.properties&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.properties&quot;</span><span class="p">:</span>
         <span class="n">write_properties_file</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s">&quot;.config&quot;</span><span class="p">:</span>
-        <span class="n">write_config_file</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.config&quot;</span><span class="p">:</span>
+        <span class="n">write_config_file</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="write_properties_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.write_properties_file">[docs]</a><span class="k">def</span> <span class="nf">write_properties_file</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">conf</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-        <span class="n">output</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">=</span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="write_config_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.config.write_config_file">[docs]</a><span class="k">def</span> <span class="nf">write_config_file</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
     <span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
 
@@ -153,7 +153,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
 
 
@@ -176,14 +176,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -199,7 +196,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

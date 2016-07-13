@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Presto-Admin Commands &mdash; presto-admin 1.3 documentation</title>
+    <title>Presto-Admin Commands &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="index.html" />
     <link rel="up" title="User Guide" href="user-guide.html" />
     <link rel="next" title="Presto-Admin Command-Line Options" href="presto-admin-cli-options.html" />
     <link rel="prev" title="SSH Configuration" href="ssh-configuration.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
       </ul>
     </div>  
@@ -58,35 +58,35 @@
 <h1>Presto-Admin Commands<a class="headerlink" href="#presto-admin-commands" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="collect-logs">
 <span id="id1"></span><h2>collect logs<a class="headerlink" href="#collect-logs" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin collect logs
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">collect</span> <span class="n">logs</span>
 </pre></div>
 </div>
 <p>This command gathers Presto server logs and launcher logs from the <code class="docutils literal"><span class="pre">/var/log/presto/</span></code> directory across the cluster along with the
 <code class="docutils literal"><span class="pre">/var/log/prestoadmin/presto-admin.log</span></code> and creates a tar file. The final tar output will be saved at <code class="docutils literal"><span class="pre">/tmp/presto-debug-logs.tar.bz2</span></code>.</p>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin collect logs
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">collect</span> <span class="n">logs</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="collect-query-info">
 <span id="id2"></span><h2>collect query_info<a class="headerlink" href="#collect-query-info" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin collect query_info &lt;query_id&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">collect</span> <span class="n">query_info</span> <span class="o">&lt;</span><span class="n">query_id</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>This command gathers information about a Presto query identified by the given <code class="docutils literal"><span class="pre">query_id</span></code> and stores that information in a JSON file.
 The output file will be saved at <code class="docutils literal"><span class="pre">/tmp/presto-debug/query_info_&lt;query_id&gt;.json</span></code>.</p>
 <div class="section" id="id3">
 <h3>Example<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin collect query_info 20150525_234711_00000_7qwaz
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">collect</span> <span class="n">query_info</span> <span class="mi">20150525</span><span class="n">_234711_00000_7qwaz</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="collect-system-info">
 <span id="id4"></span><h2>collect system_info<a class="headerlink" href="#collect-system-info" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin collect system_info
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">collect</span> <span class="n">system_info</span>
 </pre></div>
 </div>
 <p>This command gathers various system specific information from the cluster. The information is saved in a tar file at <code class="docutils literal"><span class="pre">/tmp/presto-debug-sysinfo.tar.bz2</span></code>.
@@ -100,14 +100,14 @@ The gathered information includes:</p>
 </div></blockquote>
 <div class="section" id="id5">
 <h3>Example<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin collect system_info
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">collect</span> <span class="n">system_info</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="configuration-deploy">
 <span id="configuration-deploy-label"></span><h2>configuration deploy<a class="headerlink" href="#configuration-deploy" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin configuration deploy [coordinator|workers]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">configuration</span> <span class="n">deploy</span> <span class="p">[</span><span class="n">coordinator</span><span class="o">|</span><span class="n">workers</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command deploys <a class="reference external" href="https://prestodb.io/docs/current/installation/deployment.html">Presto configuration files</a>
@@ -141,10 +141,12 @@ generated. If any required files are absent when you run configuration deploy,
 a default configuration will be deployed. Below are the default
 configurations:</p>
 <p><em>node.properties</em></p>
-<div class="highlight-python"><div class="highlight"><pre>node.environment=presto
-node.data-dir=/var/lib/presto/data
-plugin.config-dir=/etc/presto/catalog
-plugin.dir=/usr/lib/presto/lib/plugin
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">node</span><span class="o">.</span><span class="n">environment</span><span class="o">=</span><span class="n">presto</span>
+<span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="o">-</span><span class="nb">dir</span><span class="o">=/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">data</span>
+<span class="n">node</span><span class="o">.</span><span class="n">launcher</span><span class="o">-</span><span class="n">log</span><span class="o">-</span><span class="n">file</span><span class="o">=/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">launcher</span><span class="o">.</span><span class="n">log</span>
+<span class="n">node</span><span class="o">.</span><span class="n">server</span><span class="o">-</span><span class="n">log</span><span class="o">-</span><span class="n">file</span><span class="o">=/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">server</span><span class="o">.</span><span class="n">log</span>
+<span class="n">plugin</span><span class="o">.</span><span class="n">config</span><span class="o">-</span><span class="nb">dir</span><span class="o">=/</span><span class="n">etc</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">catalog</span>
+<span class="n">plugin</span><span class="o">.</span><span class="n">dir</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">plugin</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -152,46 +154,47 @@ plugin.dir=/usr/lib/presto/lib/plugin
 <p class="last">Do not change the value of plugin.config-dir=/etc/presto/catalog as it is necessary for presto to be able to find the catalog directory when Presto has been installed by RPM.</p>
 </div>
 <p><em>jvm.config</em></p>
-<div class="highlight-python"><div class="highlight"><pre>-server
--Xmx16G
--XX:-UseBiasedLocking
--XX:+UseG1GC
--XX:+ExplicitGCInvokesConcurrent
--XX:+HeapDumpOnOutOfMemoryError
--XX:+UseGCOverheadLimit
--XX:OnOutOfMemoryError=kill -9 %p
--DHADOOP_USER_NAME=hive
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">server</span>
+<span class="o">-</span><span class="n">Xmx16G</span>
+<span class="o">-</span><span class="n">XX</span><span class="p">:</span><span class="o">-</span><span class="n">UseBiasedLocking</span>
+<span class="o">-</span><span class="n">XX</span><span class="p">:</span><span class="o">+</span><span class="n">UseG1GC</span>
+<span class="o">-</span><span class="n">XX</span><span class="p">:</span><span class="o">+</span><span class="n">ExplicitGCInvokesConcurrent</span>
+<span class="o">-</span><span class="n">XX</span><span class="p">:</span><span class="o">+</span><span class="n">HeapDumpOnOutOfMemoryError</span>
+<span class="o">-</span><span class="n">XX</span><span class="p">:</span><span class="o">+</span><span class="n">UseGCOverheadLimit</span>
+<span class="o">-</span><span class="n">XX</span><span class="p">:</span><span class="n">OnOutOfMemoryError</span><span class="o">=</span><span class="n">kill</span> <span class="o">-</span><span class="mi">9</span> <span class="o">%</span><span class="n">p</span>
+<span class="o">-</span><span class="n">XX</span><span class="p">:</span><span class="n">ReservedCodeCacheSize</span><span class="o">=</span><span class="mi">512</span><span class="n">M</span>
+<span class="o">-</span><span class="n">DHADOOP_USER_NAME</span><span class="o">=</span><span class="n">hive</span>
 </pre></div>
 </div>
 <p><em>config.properties</em></p>
 <p>For workers:</p>
-<div class="highlight-python"><div class="highlight"><pre>coordinator=false
-discovery.uri=http://&lt;coordinator&gt;:8080
-http-server.http.port=8080
-query.max-memory-per-node=8GB
-query.max-memory=50GB
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">coordinator</span><span class="o">=</span><span class="n">false</span>
+<span class="n">discovery</span><span class="o">.</span><span class="n">uri</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">coordinator</span><span class="o">&gt;</span><span class="p">:</span><span class="mi">8080</span>
+<span class="n">http</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">port</span><span class="o">=</span><span class="mi">8080</span>
+<span class="n">query</span><span class="o">.</span><span class="n">max</span><span class="o">-</span><span class="n">memory</span><span class="o">-</span><span class="n">per</span><span class="o">-</span><span class="n">node</span><span class="o">=</span><span class="mi">8</span><span class="n">GB</span>
+<span class="n">query</span><span class="o">.</span><span class="n">max</span><span class="o">-</span><span class="n">memory</span><span class="o">=</span><span class="mi">50</span><span class="n">GB</span>
 </pre></div>
 </div>
 <p>For coordinator:</p>
-<div class="highlight-python"><div class="highlight"><pre>coordinator=true
-discovery-server.enabled=true
-discovery.uri=http://&lt;coordinator&gt;:8080
-http-server.http.port=8080
-node-scheduler.include-coordinator=false
-query.max-memory-per-node=8GB
-query.max-memory=50GB
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">coordinator</span><span class="o">=</span><span class="n">true</span>
+<span class="n">discovery</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">enabled</span><span class="o">=</span><span class="n">true</span>
+<span class="n">discovery</span><span class="o">.</span><span class="n">uri</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">coordinator</span><span class="o">&gt;</span><span class="p">:</span><span class="mi">8080</span>
+<span class="n">http</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">port</span><span class="o">=</span><span class="mi">8080</span>
+<span class="n">node</span><span class="o">-</span><span class="n">scheduler</span><span class="o">.</span><span class="n">include</span><span class="o">-</span><span class="n">coordinator</span><span class="o">=</span><span class="n">false</span>
+<span class="n">query</span><span class="o">.</span><span class="n">max</span><span class="o">-</span><span class="n">memory</span><span class="o">-</span><span class="n">per</span><span class="o">-</span><span class="n">node</span><span class="o">=</span><span class="mi">8</span><span class="n">GB</span>
+<span class="n">query</span><span class="o">.</span><span class="n">max</span><span class="o">-</span><span class="n">memory</span><span class="o">=</span><span class="mi">50</span><span class="n">GB</span>
 
-# if the coordinator is also a worker, it will have the following property instead
-node-scheduler.include-coordinator=true
+<span class="c1"># if the coordinator is also a worker, it will have the following property instead</span>
+<span class="n">node</span><span class="o">-</span><span class="n">scheduler</span><span class="o">.</span><span class="n">include</span><span class="o">-</span><span class="n">coordinator</span><span class="o">=</span><span class="n">true</span>
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="installation/presto-port-configuration.html#presto-port-configuration-label"><span>Configuring the Presto Port</span></a> for details on http port configuration.</p>
+<p>See <a class="reference internal" href="installation/presto-port-configuration.html#presto-port-configuration-label"><span class="std std-ref">Configuring the Presto Port</span></a> for details on http port configuration.</p>
 <div class="section" id="id6">
 <h3>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <p>If you want to change the jvm configuration on the coordinator and the
 <code class="docutils literal"><span class="pre">node.environment</span></code> property from <code class="docutils literal"><span class="pre">node.properties</span></code> on all nodes, add the
 following <code class="docutils literal"><span class="pre">jvm.config</span></code> to <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code></p>
-<div class="highlight-none"><div class="highlight"><pre>-server
+<div class="highlight-none"><div class="highlight"><pre><span></span>-server
 -Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
@@ -199,18 +202,21 @@ following <code class="docutils literal"><span class="pre">jvm.config</span></co
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
 -XX:OnOutOfMemoryError=kill -9 %p
+-XX:ReservedCodeCacheSize=512M
 </pre></div>
 </div>
 <p>Further, add the following <code class="docutils literal"><span class="pre">node.properties</span></code> to
 <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code> and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre>node.environment=test
-node.data-dir=/var/lib/presto/data
-plugin.config-dir=/etc/presto/catalog
-plugin.dir=/usr/lib/presto/lib/plugin
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">node</span><span class="o">.</span><span class="n">environment</span><span class="o">=</span><span class="n">test</span>
+<span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="o">-</span><span class="nb">dir</span><span class="o">=/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">data</span>
+<span class="n">node</span><span class="o">.</span><span class="n">launcher</span><span class="o">-</span><span class="n">log</span><span class="o">-</span><span class="n">file</span><span class="o">=/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">launcher</span><span class="o">.</span><span class="n">log</span>
+<span class="n">node</span><span class="o">.</span><span class="n">server</span><span class="o">-</span><span class="n">log</span><span class="o">-</span><span class="n">file</span><span class="o">=/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">server</span><span class="o">.</span><span class="n">log</span>
+<span class="n">plugin</span><span class="o">.</span><span class="n">config</span><span class="o">-</span><span class="nb">dir</span><span class="o">=/</span><span class="n">etc</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">catalog</span>
+<span class="n">plugin</span><span class="o">.</span><span class="n">dir</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">presto</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">plugin</span>
 </pre></div>
 </div>
 <p>Then run:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin configuration deploy
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">configuration</span> <span class="n">deploy</span>
 </pre></div>
 </div>
 <p>This will distribute to the coordinator a default <code class="docutils literal"><span class="pre">config.properties</span></code>, the new
@@ -218,7 +224,7 @@ plugin.dir=/usr/lib/presto/lib/plugin
 receive the default <code class="docutils literal"><span class="pre">config.properties</span></code> and <code class="docutils literal"><span class="pre">jvm.config</span></code>, and the same
 <code class="docutils literal"><span class="pre">node.properties</span></code> as the coordinator.</p>
 <p>If instead you just want to update the coordinator configuration, run:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin configuration deploy coordinator
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">configuration</span> <span class="n">deploy</span> <span class="n">coordinator</span>
 </pre></div>
 </div>
 <p>This will leave the workers configuration as it was, but update the
@@ -227,21 +233,21 @@ coordinator&#8217;s configuration</p>
 </div>
 <div class="section" id="configuration-show">
 <h2>configuration show<a class="headerlink" href="#configuration-show" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin configuration show [node|jvm|config|log]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">configuration</span> <span class="n">show</span> <span class="p">[</span><span class="n">node</span><span class="o">|</span><span class="n">jvm</span><span class="o">|</span><span class="n">config</span><span class="o">|</span><span class="n">log</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command prints the contents of the Presto configuration files deployed in the cluster. It takes an optional configuration name argument for the configuration files node.properties, jvm.config, config.properties and log.properties. For missing configuration files a warning will be printed except for log.properties file, since it is an optional configuration file in your Presto cluster.</p>
 <p>If no argument is specified, then all four configurations will be printed.</p>
 <div class="section" id="id7">
 <h3>Example<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin configuration show node
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">configuration</span> <span class="n">show</span> <span class="n">node</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="connector-add">
 <span id="id8"></span><h2>connector add<a class="headerlink" href="#connector-add" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin connector add [&lt;name&gt;]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">connector</span> <span class="n">add</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command is used to deploy connector configurations to the Presto cluster.
@@ -255,7 +261,7 @@ cluster. To deploy all connectors in the connectors configuration directory,
 leave the name argument out.</p>
 <p>In order to query using the newly added connector, you need to restart the
 Presto server (see <a class="reference internal" href="#server-restart">server restart</a>):</p>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 <div class="section" id="id9">
@@ -264,15 +270,15 @@ Presto server (see <a class="reference internal" href="#server-restart">server r
 <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/connectors/jmx.properties</span></code> with the content
 <code class="docutils literal"><span class="pre">connector.name=jmx</span></code>.
 Then run:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin connector add jmx
-sudo ./presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">connector</span> <span class="n">add</span> <span class="n">jmx</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 <p>If you have two connectors in the configuration directory, for example
 <code class="docutils literal"><span class="pre">jmx.properties</span></code> and <code class="docutils literal"><span class="pre">dummy.properties</span></code>, and would like to deploy both at
 once, you could run</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin connector add
-sudo ./presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">connector</span> <span class="n">add</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 </div>
@@ -282,9 +288,9 @@ sudo ./presto-admin server restart
 added to the Presto plugin location using the <code class="docutils literal"><span class="pre">plugin</span> <span class="pre">add_jar</span></code> command before
 running the <code class="docutils literal"><span class="pre">connector</span> <span class="pre">add</span></code> command.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin plugin add_jar my_connector.jar my_connector
-sudo ./presto-admin connector add my_connector
-sudo ./presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">plugin</span> <span class="n">add_jar</span> <span class="n">my_connector</span><span class="o">.</span><span class="n">jar</span> <span class="n">my_connector</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">connector</span> <span class="n">add</span> <span class="n">my_connector</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">add_jar</span></code> command assumes the default plugin location of
@@ -296,7 +302,7 @@ custom connector&#8217;s documentation for the properties to specify.</p>
 </div>
 <div class="section" id="connector-remove">
 <h2>connector remove<a class="headerlink" href="#connector-remove" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin connector remove &lt;name&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">connector</span> <span class="n">remove</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>The connector remove command is used to remove a connector from your presto
@@ -304,21 +310,21 @@ cluster configuration. Running the command will remove the connector from all
 nodes in the Presto cluster. Additionally, it will remove the local
 configuration file for the connector.</p>
 <p>In order for the change to take effect, you will need to restart services.</p>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 <div class="section" id="id10">
 <h3>Example<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <p>For example: To remove the jmx connector, run</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin connector remove jmx
-sudo ./presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">connector</span> <span class="n">remove</span> <span class="n">jmx</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="package-install">
 <h2>package install<a class="headerlink" href="#package-install" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin package install local_path [--nodeps]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">package</span> <span class="n">install</span> <span class="n">local_path</span> <span class="p">[</span><span class="o">--</span><span class="n">nodeps</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command copies any rpm from <code class="docutils literal"><span class="pre">local_path</span></code> to all the nodes in the cluster and installs it. Similar to <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> the cluster topology is obtained from the file <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. If this file is missing, then the command prompts for user input to get the topology information.</p>
@@ -329,24 +335,45 @@ sudo ./presto-admin server restart
 </div>
 <div class="section" id="id11">
 <h3>Example<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin package install /tmp/jdk-8u45-linux-x64.rpm
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">package</span> <span class="n">install</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">jdk</span><span class="o">-</span><span class="mi">8</span><span class="n">u45</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">x64</span><span class="o">.</span><span class="n">rpm</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="package-uninstall">
+<h2>package uninstall<a class="headerlink" href="#package-uninstall" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">package</span> <span class="n">uninstall</span> <span class="n">rpm_package_name</span> <span class="p">[</span><span class="o">--</span><span class="n">nodeps</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This command uninstalls an rpm package from all the nodes in the cluster. Similar to <code class="docutils literal"><span class="pre">server</span> <span class="pre">uninstall</span></code> the cluster
+topology is obtained from the file <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. If this file is missing, then the command
+prompts for user input to get the topology information.</p>
+<p>This command takes an optional <code class="docutils literal"><span class="pre">--nodeps</span></code> flag which indicates if the rpm installed should ignore checking any package
+dependencies.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Using <code class="docutils literal"><span class="pre">--nodeps</span></code> can result in uninstalling the rpm even when dependant packages are installed. It may end up with a broken rpm installation.</p>
+</div>
+<div class="section" id="id12">
+<h3>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">package</span> <span class="n">uninstall</span> <span class="n">jdk</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="plugin-add-jar">
 <h2>plugin add_jar<a class="headerlink" href="#plugin-add-jar" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin plugin add_jar &lt;local-path&gt; &lt;plugin-name&gt; [&lt;plugin-dir&gt;]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">plugin</span> <span class="n">add_jar</span> <span class="o">&lt;</span><span class="n">local</span><span class="o">-</span><span class="n">path</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">plugin</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">plugin</span><span class="o">-</span><span class="nb">dir</span><span class="o">&gt;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command deploys the jar at <code class="docutils literal"><span class="pre">local-path</span></code> to the plugin directory for
 <code class="docutils literal"><span class="pre">plugin-name</span></code>.  By default <code class="docutils literal"><span class="pre">/usr/lib/presto/lib/plugin</span></code> is used as the
 top-level plugin directory. To deploy the jar to a different location, use the
 optional <code class="docutils literal"><span class="pre">plugin-dir</span></code> argument.</p>
-<div class="section" id="id12">
-<h3>Example<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin plugin add_jar connector.jar my_connector
-sudo ./presto-admin plugin add_jar connector.jar my_connector /my/plugin/dir
+<div class="section" id="id13">
+<h3>Example<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">plugin</span> <span class="n">add_jar</span> <span class="n">connector</span><span class="o">.</span><span class="n">jar</span> <span class="n">my_connector</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">plugin</span> <span class="n">add_jar</span> <span class="n">connector</span><span class="o">.</span><span class="n">jar</span> <span class="n">my_connector</span> <span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">plugin</span><span class="o">/</span><span class="nb">dir</span>
 </pre></div>
 </div>
 <p>The first example will deploy connector.jar to
@@ -356,38 +383,43 @@ The second example will deploy it to <code class="docutils literal"><span class=
 </div>
 <div class="section" id="script-run">
 <h2>script run<a class="headerlink" href="#script-run" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin script run &lt;local-path-to-script&gt; [&lt;remote-dir-to-put-script&gt;]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">script</span> <span class="n">run</span> <span class="o">&lt;</span><span class="n">local</span><span class="o">-</span><span class="n">path</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">script</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">remote</span><span class="o">-</span><span class="nb">dir</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">put</span><span class="o">-</span><span class="n">script</span><span class="o">&gt;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command can be used to run an arbitrary script on a cluster. It copies the
 script from its local location to the specified remote directory (defaults to
 /tmp), makes the file executable, and runs it.</p>
-<div class="section" id="id13">
-<h3>Example<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin script run /my/local/script.sh
-sudo ./presto-admin script run /my/local/script.sh /remote/dir
+<div class="section" id="id14">
+<h3>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">script</span> <span class="n">run</span> <span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">script</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">script</span> <span class="n">run</span> <span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">script</span><span class="o">.</span><span class="n">sh</span> <span class="o">/</span><span class="n">remote</span><span class="o">/</span><span class="nb">dir</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="server-install">
 <span id="server-install-label"></span><h2>server install<a class="headerlink" href="#server-install" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server install &lt;local_path&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">install</span> <span class="o">&lt;</span><span class="n">local_path</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">--</span><span class="n">nodeps</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command copies the presto-server rpm from <code class="docutils literal"><span class="pre">local_path</span></code> to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The <code class="docutils literal"><span class="pre">local_path</span></code> should be accessible by <code class="docutils literal"><span class="pre">presto-admin</span></code>.
-The topology used to configure the nodes are obtained from <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. See <a class="reference internal" href="installation/presto-admin-configuration.html#presto-admin-configuration-label"><span>Configuring Presto-Admin</span></a> on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.</p>
+The topology used to configure the nodes are obtained from <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. See <a class="reference internal" href="installation/presto-admin-configuration.html#presto-admin-configuration-label"><span class="std std-ref">Configuring Presto-Admin</span></a> on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.</p>
 <p>The general configurations for Presto&#8217;s coordinator and workers are taken from the directories <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code> and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers</span></code> respectively. If these directories or any required configuration files are absent when you run <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code>, a default configuration will be deployed. See <a class="reference internal" href="#configuration-deploy">configuration deploy</a> for details.</p>
 <p>The connectors directory <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/connectors/</span></code> should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
 The <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> command will configure the cluster with all the connectors in the directory. If the directory does not exist or is empty prior to <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code>, then by default the tpch connector is configured. See <a class="reference internal" href="#id8">connector add</a> on how to add connector configuration files after installation.</p>
-<div class="section" id="id14">
-<h3>Example<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server install /tmp/presto.rpm
+<p>This command takes an optional <code class="docutils literal"><span class="pre">--nodeps</span></code> flag which indicates if the rpm installed should ignore checking any package dependencies.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Using <code class="docutils literal"><span class="pre">--nodeps</span></code> can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm installation.</p>
+</div>
+<div class="section" id="id15">
+<h3>Example<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">install</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">presto</span><span class="o">.</span><span class="n">rpm</span>
 </pre></div>
 </div>
 <p><strong>Standalone RPM Install</strong></p>
 <p>If you want to do a single node installation where coordinator and worker are co-located, you can just use:</p>
-<div class="highlight-python"><div class="highlight"><pre>rpm -i presto.rpm
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rpm</span> <span class="o">-</span><span class="n">i</span> <span class="n">presto</span><span class="o">.</span><span class="n">rpm</span>
 </pre></div>
 </div>
 <p>This will deploy the necessary configurations for the presto-server to operate in single-node mode.</p>
@@ -395,33 +427,33 @@ The <code class="docutils literal"><span class="pre">server</span> <span class="
 </div>
 <div class="section" id="server-restart">
 <span id="server-restart-label"></span><h2>server restart<a class="headerlink" href="#server-restart" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 <p>This command first stops any Presto servers running and then starts them. A status check is performed on the entire cluster and is reported at the end.</p>
-<div class="section" id="id15">
-<h3>Example<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server restart
+<div class="section" id="id16">
+<h3>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="server-start">
 <span id="server-start-label"></span><h2>server start<a class="headerlink" href="#server-start" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server start
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">start</span>
 </pre></div>
 </div>
 <p>This command starts the Presto servers on the cluster. A status check is performed on the entire cluster and is reported at the end.</p>
-<div class="section" id="id16">
-<h3>Example<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server start
+<div class="section" id="id17">
+<h3>Example<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">start</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="server-status">
-<span id="id17"></span><h2>server status<a class="headerlink" href="#server-status" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server status
+<span id="id18"></span><h2>server status<a class="headerlink" href="#server-status" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">status</span>
 </pre></div>
 </div>
 <p>This command prints the status information of Presto in the cluster. This command will
@@ -437,69 +469,77 @@ fail to report the correct status if the Presto installed is older than version 
 </ul>
 </dd>
 </dl>
-<div class="section" id="id18">
-<h3>Example<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server status
+<div class="section" id="id19">
+<h3>Example<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">status</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="server-stop">
 <h2>server stop<a class="headerlink" href="#server-stop" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server stop
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">stop</span>
 </pre></div>
 </div>
 <p>This command stops the Presto servers on the cluster.</p>
-<div class="section" id="id19">
-<h3>Example<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server stop
+<div class="section" id="id20">
+<h3>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">stop</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="server-uninstall">
 <h2>server uninstall<a class="headerlink" href="#server-uninstall" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server uninstall
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">uninstall</span> <span class="p">[</span><span class="o">--</span><span class="n">nodeps</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This command stops the Presto server if running on the cluster and uninstalls the Presto rpm. The uninstall command removes any presto
 related files deployed during <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> but retains the Presto logs at <code class="docutils literal"><span class="pre">/var/log/presto</span></code>.</p>
-<div class="section" id="id20">
-<h3>Example<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server uninstall
+<p>This command takes an optional <code class="docutils literal"><span class="pre">--nodeps</span></code> flag which indicates if the rpm uninstalled should ignore checking any package dependencies.</p>
+<div class="section" id="id21">
+<h3>Example<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">uninstall</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="server-upgrade">
 <h2>server upgrade<a class="headerlink" href="#server-upgrade" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin server upgrade local_package_path [local_config_dir]
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">upgrade</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">new</span><span class="o">/</span><span class="n">package</span><span class="o">.</span><span class="n">rpm</span> <span class="p">[</span><span class="n">local_config_dir</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">nodeps</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM specified
-by <code class="docutils literal"><span class="pre">local_package_path</span></code>, preserving the existing configuration on the cluster. The existing
+<p>This command upgrades the Presto RPM on all of the nodes in the cluster to the RPM at
+<code class="docutils literal"><span class="pre">path/to/new/package.rpm</span></code>, preserving the existing configuration on the cluster. The existing
 cluster configuration is saved locally to local_config_dir (which defaults to a temporary
-folder if not specified).</p>
-<p>This command can also be used to downgrade the Presto installation, if the RPM at <code class="docutils literal"><span class="pre">local_package_path</span></code>
-is an earlier version than the Presto installed on the cluster.</p>
+folder if not specified). The path can either be absolute or relative to the current
+directory.</p>
+<p>This command can also be used to downgrade the Presto installation, if the RPM at
+<code class="docutils literal"><span class="pre">path/to/new/package.rpm</span></code> is an earlier version than the Presto installed on the cluster.</p>
 <p>Note that if the configuration files on the cluster differ from the presto-admin configuration
 files found in <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin</span></code>, the presto-admin configuration files are not updated.</p>
-<div class="section" id="id21">
-<h3>Example<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server upgrade new-rpm.rpm /tmp/cluster-configuration
+<p>This command takes an optional <code class="docutils literal"><span class="pre">--nodeps</span></code> flag which indicates if the rpm upgrade should ignore checking any package dependencies.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Using <code class="docutils literal"><span class="pre">--nodeps</span></code> can result in installing the rpm even with any missing dependencies, so you may end up with a broken rpm upgrade.</p>
+</div>
+<div class="section" id="id22">
+<h3>Example<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">upgrade</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">new</span><span class="o">/</span><span class="n">package</span><span class="o">.</span><span class="n">rpm</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">cluster</span><span class="o">-</span><span class="n">configuration</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">upgrade</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">new</span><span class="o">/</span><span class="n">package</span><span class="o">.</span><span class="n">rpm</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">cluster</span><span class="o">-</span><span class="n">configuration</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="topology-show">
 <h2>topology show<a class="headerlink" href="#topology-show" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>presto-admin topology show
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">topology</span> <span class="n">show</span>
 </pre></div>
 </div>
 <p>This command shows the current topology configuration for the cluster (including the coordinators, workers, SSH port, and SSH username).</p>
-<div class="section" id="id22">
-<h3>Example<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin topology show
+<div class="section" id="id23">
+<h3>Example<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">topology</span> <span class="n">show</span>
 </pre></div>
 </div>
 </div>
@@ -548,44 +588,48 @@ files found in <code class="docutils literal"><span class="pre">/etc/opt/prestoa
 <li><a class="reference internal" href="#id11">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#plugin-add-jar">plugin add_jar</a><ul>
+<li><a class="reference internal" href="#package-uninstall">package uninstall</a><ul>
 <li><a class="reference internal" href="#id12">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#script-run">script run</a><ul>
+<li><a class="reference internal" href="#plugin-add-jar">plugin add_jar</a><ul>
 <li><a class="reference internal" href="#id13">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#server-install">server install</a><ul>
+<li><a class="reference internal" href="#script-run">script run</a><ul>
 <li><a class="reference internal" href="#id14">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#server-restart">server restart</a><ul>
+<li><a class="reference internal" href="#server-install">server install</a><ul>
 <li><a class="reference internal" href="#id15">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#server-start">server start</a><ul>
+<li><a class="reference internal" href="#server-restart">server restart</a><ul>
 <li><a class="reference internal" href="#id16">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#server-status">server status</a><ul>
-<li><a class="reference internal" href="#id18">Example</a></li>
+<li><a class="reference internal" href="#server-start">server start</a><ul>
+<li><a class="reference internal" href="#id17">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#server-stop">server stop</a><ul>
+<li><a class="reference internal" href="#server-status">server status</a><ul>
 <li><a class="reference internal" href="#id19">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#server-uninstall">server uninstall</a><ul>
+<li><a class="reference internal" href="#server-stop">server stop</a><ul>
 <li><a class="reference internal" href="#id20">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#server-upgrade">server upgrade</a><ul>
+<li><a class="reference internal" href="#server-uninstall">server uninstall</a><ul>
 <li><a class="reference internal" href="#id21">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#topology-show">topology show</a><ul>
+<li><a class="reference internal" href="#server-upgrade">server upgrade</a><ul>
 <li><a class="reference internal" href="#id22">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#topology-show">topology show</a><ul>
+<li><a class="reference internal" href="#id23">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -608,14 +652,11 @@ files found in <code class="docutils literal"><span class="pre">/etc/opt/prestoa
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -637,7 +678,7 @@ files found in <code class="docutils literal"><span class="pre">/etc/opt/prestoa
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" >User Guide</a> &raquo;</li> 
       </ul>
     </div>

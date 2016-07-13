@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installing Java 8 &mdash; presto-admin 1.3 documentation</title>
+    <title>Installing Java 8 &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="../index.html" />
     <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
     <link rel="next" title="Installing the Presto Server" href="presto-server-installation.html" />
     <link rel="prev" title="Configuring Presto-Admin" href="presto-admin-configuration.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="presto-admin-configuration.html" title="Configuring Presto-Admin"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
       </ul>
@@ -57,7 +57,7 @@
             
   <div class="section" id="installing-java-8">
 <span id="java-installation-label"></span><h1>Installing Java 8<a class="headerlink" href="#installing-java-8" title="Permalink to this headline">¶</a></h1>
-<p>Prerequisites: <a class="reference internal" href="presto-admin-installation.html#presto-admin-installation-label"><span>Installing Presto Admin</span></a> and <a class="reference internal" href="presto-admin-configuration.html#presto-admin-configuration-label"><span>Configuring Presto-Admin</span></a></p>
+<p>Prerequisites: <a class="reference internal" href="presto-admin-installation.html#presto-admin-installation-label"><span class="std std-ref">Installing Presto Admin</span></a> and <a class="reference internal" href="presto-admin-configuration.html#presto-admin-configuration-label"><span class="std std-ref">Configuring Presto-Admin</span></a></p>
 <p>The Oracle Java 1.8 JRE (64-bit), update 45 or higher, is a prerequisite for Presto. If a suitable 64-bit version of Oracle Java 8 is already installed on the cluster, you can skip this step.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -72,7 +72,7 @@ it is acceptable to set the default Java to be Java 8, you can use <code class="
 <li><p class="first">Copy the RPM to a location accessible by <code class="docutils literal"><span class="pre">presto-admin</span></code>.</p>
 </li>
 <li><p class="first">Run the following command to install Java 8 on each node in the Presto cluster:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo ./presto-admin package install &lt;local_path_to_java_rpm&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo ./presto-admin package install &lt;local_path_to_java_rpm&gt;
 </pre></div>
 </div>
 </li>
@@ -80,6 +80,10 @@ it is acceptable to set the default Java to be Java 8, you can use <code class="
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The <code class="docutils literal"><span class="pre">server-install-label</span></code> will look for your Oracle Java 1.8 installation at locations where Java is normally installed when using the binary or the RPM based installer. Otherwise, you need to have an environment variable called <code class="docutils literal"><span class="pre">JAVA8_HOME</span></code> set with your Java 1.8 install path. If <code class="docutils literal"><span class="pre">JAVA8_HOME</span></code> is not set or is pointing to an incompatible version of Java, the installer will look for the <code class="docutils literal"><span class="pre">JAVA_HOME</span></code> environment variable for a compatible version of Java. If neither of these environmental variables is set with a compatible version, and <code class="docutils literal"><span class="pre">presto-admin</span></code> fails to find Java 8 at any of the normal installation locations, then <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> will fail. After successfully running <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code> you can find the Java being used by Presto at <code class="docutils literal"><span class="pre">/etc/presto/env.sh</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you have installed the JDK, <code class="docutils literal"><span class="pre">JAVA8_HOME</span></code> should be set so refer to the <code class="docutils literal"><span class="pre">jre</span></code> subdirectory of the JDK.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -109,14 +113,11 @@ it is acceptable to set the default Java to be Java 8, you can use <code class="
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -138,7 +139,7 @@ it is acceptable to set the default Java to be Java 8, you can use <code class="
         <li class="right" >
           <a href="presto-admin-configuration.html" title="Configuring Presto-Admin"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
       </ul>

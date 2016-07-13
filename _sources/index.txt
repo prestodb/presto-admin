@@ -22,7 +22,6 @@ Content
    :maxdepth: 3
 
    software-requirements
-   hardware-requirements
    user-guide
    contributing
    release

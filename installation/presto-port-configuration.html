@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Configuring the Presto Port &mdash; presto-admin 1.3 documentation</title>
+    <title>Configuring the Presto Port &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="../index.html" />
     <link rel="up" title="User Guide" href="../user-guide.html" />
     <link rel="next" title="SSH Configuration" href="../ssh-configuration.html" />
     <link rel="prev" title="Advanced Installation Options" href="advanced-installation-options.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="advanced-installation-options.html" title="Advanced Installation Options"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
       </ul>
     </div>  
@@ -59,25 +59,25 @@
 <p>By default, Presto uses 8080 for the HTTP port. If the port is already in use on any given node on your cluster, Presto will not start on that node(s).</p>
 <p>To configure the server to use a different port:</p>
 <p>1. Select a port that is free on all of the nodes. You can check if a port is already in use on a node by running the following on that node:</p>
-<div class="highlight-python"><div class="highlight"><pre>netstat -an |grep 8081 |grep LISTEN
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">netstat</span> <span class="o">-</span><span class="n">an</span> <span class="o">|</span><span class="n">grep</span> <span class="mi">8081</span> <span class="o">|</span><span class="n">grep</span> <span class="n">LISTEN</span>
 </pre></div>
 </div>
 <p>It will return nothing if port 8081 is free.</p>
 <ol class="arabic simple" start="2">
 <li>Modify the following properties in <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator/config.properties</span></code> and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers/config.properties</span></code>:</li>
 </ol>
-<div class="highlight-python"><div class="highlight"><pre>http-server.http.port=&lt;port&gt;
-discovery.uri=http://&lt;coordinator_ip_or_host&gt;:&lt;port&gt;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">http</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">port</span><span class="o">=&lt;</span><span class="n">port</span><span class="o">&gt;</span>
+<span class="n">discovery</span><span class="o">.</span><span class="n">uri</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">coordinator_ip_or_host</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <ol class="arabic" start="3">
 <li><p class="first">Run the following command to deploy the configuration change to the cluster:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin configuration deploy
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">configuration</span> <span class="n">deploy</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Restart the Presto servers so that the changes get picked up:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo ./presto-admin server restart
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">restart</span>
 </pre></div>
 </div>
 </li>
@@ -106,14 +106,11 @@ discovery.uri=http://&lt;coordinator_ip_or_host&gt;:&lt;port&gt;
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -135,7 +132,7 @@ discovery.uri=http://&lt;coordinator_ip_or_host&gt;:&lt;port&gt;
         <li class="right" >
           <a href="advanced-installation-options.html" title="Advanced Installation Options"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.3 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li> 
       </ul>
     </div>

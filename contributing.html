@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Contributing &mdash; presto-admin 1.3 documentation</title>
+    <title>Contributing &mdash; presto-admin 1.4 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.3 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.4 documentation" href="index.html" />
     <link rel="next" title="Release Notes" href="release.html" />
     <link rel="prev" title="Presto-Admin Command-Line Options" href="presto-admin-cli-options.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="presto-admin-cli-options.html" title="Presto-Admin Command-Line Options"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -102,19 +102,19 @@ articles, and such.</p>
 <li><p class="first">Fork the <cite>presto-admin</cite> repo on GitHub, <a class="reference external" href="https://github.com/prestodb/presto-admin">https://github.com/prestodb/presto-admin</a>.</p>
 </li>
 <li><p class="first">Clone your fork locally:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ git clone git@github.com:your_name_here/presto-admin.git
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone git@github.com:your_name_here/presto-admin.git
 </pre></div>
 </div>
 </li>
 <li><p class="first">Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ mkvirtualenv prestoadmin
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ mkvirtualenv prestoadmin
 $ cd prestoadmin/
 $ python setup.py develop
 </pre></div>
 </div>
 </li>
 <li><p class="first">Create a branch for local development:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ git checkout -b name-of-your-bugfix-or-feature
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git checkout -b name-of-your-bugfix-or-feature
 </pre></div>
 </div>
 <p>Now you can make your changes locally.</p>
@@ -122,7 +122,7 @@ $ python setup.py develop
 </ol>
 <p>5. When you&#8217;re done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox.
 To run tests, you need docker installed. You may also need to pip install wheel into your virtualenv. To install and start docker use:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ wget -qO- https://get.docker.com/ | sh
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ wget -qO- https://get.docker.com/ | sh
 
 # Add current user to Docker group to run without sudo
 $ sudo gpasswd -a ${USER} docker
@@ -130,13 +130,13 @@ $ sudo service docker restart
 </pre></div>
 </div>
 <p>Now, to run presto-admin tests:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ make lint
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ make lint
 $ make test-all
 </pre></div>
 </div>
 <ol class="arabic" start="6">
 <li><p class="first">Commit your changes and push your branch to GitHub:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ git add .
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git add .
 $ git commit -m &quot;Your detailed description of your changes.&quot;
 $ git push origin name-of-your-bugfix-or-feature
 </pre></div>
@@ -197,14 +197,11 @@ feature to the presto-admin/docs.</li>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -226,7 +223,7 @@ feature to the presto-admin/docs.</li>
         <li class="right" >
           <a href="presto-admin-cli-options.html" title="Presto-Admin Command-Line Options"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.3 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
