@@ -18,6 +18,7 @@ Product tests for start/stop/restart of presto-admin server
 from nose.plugins.attrib import attr
 
 from prestoadmin.server import RETRY_TIMEOUT
+from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
@@ -113,7 +114,7 @@ class TestControl(BaseProductTestCase):
         expected_output = self.expected_stop(
             not_running=not_running_hosts) + self.expected_start()[:]
         self.assert_simple_server_restart(
-            expected_output, running_host=self.cluster.internal_master)
+            expected_output, running_host=self.cluster.internal_master, pa_raise_error=False)
 
     def test_server_restart_worker_started(self):
         self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
@@ -125,7 +126,8 @@ class TestControl(BaseProductTestCase):
             not_running=not_running_hosts) + self.expected_start()[:]
         self.assert_simple_server_restart(
             expected_output,
-            running_host=self.cluster.internal_slaves[0])
+            running_host=self.cluster.internal_slaves[0],
+            pa_raise_error=False)
 
     def test_start_stop_restart_coordinator_down(self):
         installer = StandalonePrestoInstaller(self)
@@ -134,17 +136,12 @@ class TestControl(BaseProductTestCase):
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
         installer.install(coordinator='slave1')
-        self.assert_start_stop_restart_down_node(
+        self.assert_start_stop_restart_coordinator_down(
             self.cluster.slaves[0],
             self.cluster.internal_slaves[0])
 
     def test_start_stop_restart_worker_down(self):
-        installer = StandalonePrestoInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
-        topology = {"coordinator": "slave1",
-                    "workers": ["master", "slave2", "slave3"]}
-        self.upload_topology(topology=topology)
-        installer.install(coordinator='slave1')
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.assert_start_stop_restart_down_node(
             self.cluster.slaves[0],
             self.cluster.internal_slaves[0])
@@ -167,6 +164,61 @@ class TestControl(BaseProductTestCase):
         alive_hosts.remove(self.cluster.internal_slaves[0])
         expected.extend(self.expected_port_error(alive_hosts))
         self.assertRegexpMatchesLineByLine(start_with_error, expected)
+
+    def assert_start_stop_restart_coordinator_down(self, coordinator, coordinator_internal):
+        self.cluster.stop_host(coordinator)
+        alive_hosts = self.cluster.all_internal_hosts()[:]
+        alive_hosts.remove(self.cluster.get_down_hostname(coordinator_internal))
+
+        # test server start
+        start_output = self.run_prestoadmin('server start', raise_error=False)
+
+        # when the coordinator is down, you can't confirm that the server is started
+        # on any of the nodes
+        expected_start = self.expected_start(failed_hosts=alive_hosts)
+        for host in alive_hosts:
+            expected_start.append(self.expected_no_status_message(host))
+        expected_start.append(self.down_node_connection_error(coordinator_internal))
+        for message in expected_start:
+            self.assertRegexpMatches(start_output, message, 'expected %s \n '
+                                                            'actual %s' % (message, start_output))
+
+        process_per_host = self.get_process_per_host(start_output.splitlines())
+        self.assert_started(process_per_host)
+
+        # test server stop
+        stop_output = self.run_prestoadmin('server stop', raise_error=False)
+        self.assertRegexpMatches(
+            stop_output,
+            self.down_node_connection_error(coordinator_internal)
+        )
+        expected_stop = self.expected_stop(running=alive_hosts)
+        for message in expected_stop:
+            self.assertRegexpMatches(stop_output, message, 'expected %s \n '
+                                                           'actual %s' % (message, stop_output))
+        self.assert_stopped(process_per_host)
+        expected_stop = self.expected_stop(running=[],
+                                           not_running=alive_hosts)
+        self.assertEqual(len(stop_output.splitlines()),
+                         self.expected_down_node_output_size(expected_stop))
+
+        # test server restart
+        restart_output = self.run_prestoadmin(
+            'server restart', raise_error=False)
+        self.assertRegexpMatches(
+            restart_output,
+            self.down_node_connection_error(coordinator_internal)
+        )
+        expected_restart = list(
+            set(expected_stop[:] + expected_start[:]))
+        for host in alive_hosts:
+            expected_restart += [r'\[%s\] out: ' % host]
+        for message in expected_restart:
+            self.assertRegexpMatches(restart_output, message, 'expected %s \n'
+                                                              ' actual %s' % (message, restart_output))
+        restart_output = restart_output.splitlines()
+        process_per_host = self.get_process_per_host(restart_output)
+        self.assert_started(process_per_host)
 
     def assert_start_stop_restart_down_node(self, down_node,
                                             down_internal_node):
@@ -219,7 +271,7 @@ class TestControl(BaseProductTestCase):
             expected_restart += [r'\[%s\] out: ' % host]
         for message in expected_restart:
             self.assertRegexpMatches(restart_output, message, 'expected %s \n'
-                                     ' actual %s' % (message, restart_output))
+                                                              ' actual %s' % (message, restart_output))
         restart_output = restart_output.splitlines()
         self.assertEqual(len(restart_output),
                          self.expected_down_node_output_size(expected_restart))
@@ -229,40 +281,6 @@ class TestControl(BaseProductTestCase):
     def expected_down_node_output_size(self, expected_output):
         return self.len_down_node_error + len(
             '\n'.join(expected_output).splitlines())
-
-    def test_start_restart_config_file_error(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-
-        # Remove a required config file so that the server can't start
-        self.cluster.exec_cmd_on_host(
-            self.cluster.master,
-            'mv /etc/presto/config.properties '
-            '/etc/presto/config.properties.bak')
-
-        started_hosts = self.cluster.all_internal_hosts()
-        started_hosts.remove(self.cluster.internal_master)
-        expected_start = self.expected_start(
-            start_success=started_hosts)
-        error_msg = self.escape_for_regex(self.replace_keywords(
-            '[%(master)s] out: Starting presto\n'
-            '[%(master)s] out: ERROR: Config file is missing: '
-            '/etc/presto/config.properties\n'
-            '[%(master)s] out:\n\n'
-            'Fatal error: [%(master)s] sudo() received nonzero return code 4 '
-            'while executing!\n\n'
-            'Requested: set -m; /etc/init.d/presto start\n'
-            'Executed: sudo -S -p \'sudo password:\'  /bin/bash -l -c '
-            '"set -m; /etc/init.d/presto start"\n\n'
-            'Aborting.\n'
-        )).splitlines()
-        expected_start += error_msg
-        expected_stop = self.expected_stop(
-            not_running=[self.cluster.internal_master])
-        self.assert_simple_start_stop(expected_start, expected_stop,
-                                      pa_raise_error=False)
-        expected_restart = expected_stop[:] + expected_start[:]
-        self.assert_simple_server_restart(expected_restart,
-                                          pa_raise_error=False)
 
     def assert_simple_start_stop(self, expected_start, expected_stop,
                                  pa_raise_error=True):
@@ -283,7 +301,7 @@ class TestControl(BaseProductTestCase):
                 'server start', raise_error=pa_raise_error)
         elif running_host:
             start_output = self.run_prestoadmin('server start -H %s'
-                                                % running_host)
+                                                % running_host, raise_error=pa_raise_error)
         else:
             start_output = ''
 
@@ -301,8 +319,7 @@ class TestControl(BaseProductTestCase):
         self.assert_started(process_per_host)
 
     def assert_start_with_one_host_started(self, host):
-        start_output = self.run_prestoadmin('server start -H %s' % host) \
-            .splitlines()
+        start_output = self.run_prestoadmin('server start -H %s' % host).splitlines()
         process_per_host = self.get_process_per_host(start_output)
         self.assert_started(process_per_host)
 
@@ -341,6 +358,12 @@ class TestControl(BaseProductTestCase):
                            r' Port 8080 already in use' % (host, host), r'',
                            r'', r'Aborting.']
         return return_str
+
+    def expected_no_status_message(self, host=None):
+        return ('Could not verify server status for: %s\n'
+                'This could mean that the server failed to start or that there was no coordinator or worker up.'
+                ' Please check ' + constants.DEFAULT_PRESTO_SERVER_LOG_FILE + ' and ' +
+                constants.DEFAULT_PRESTO_LAUNCHER_LOG_FILE) % host
 
     def expected_start(self, start_success=None, already_started=None,
                        failed_hosts=None):

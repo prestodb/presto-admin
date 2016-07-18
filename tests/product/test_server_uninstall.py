@@ -95,6 +95,7 @@ class TestServerUninstall(BaseProductTestCase):
                                 self.cluster.internal_slaves[2]]}
         self.upload_topology(topology)
         self.installer.install()
+
         start_output = self.run_prestoadmin('server start')
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)

@@ -27,8 +27,7 @@ class TestRemoteConfigUtil(BaseTestCase):
 
         self.assertRaisesRegexp(
             ConfigurationError,
-            'Configuration file /etc/presto/config.properties does not exist '
-            'on host any_host',
+            'Could not access config file /etc/presto/config.properties on host any_host',
             lookup_port, 'any_host'
         )
 
@@ -94,8 +93,7 @@ class TestRemoteConfigUtil(BaseTestCase):
 
         self.assertRaisesRegexp(
             ConfigurationError,
-            'Configuration file /etc/presto/node.properties does not exist '
-            'on host any_host',
+            'Could not access config file /etc/presto/node.properties on host any_host',
             lookup_string_config, 'config.to.lookup', NODE_CONFIG_FILE,
             'any_host'
         )

@@ -24,7 +24,7 @@ from mock import patch, call, MagicMock
 from prestoadmin import server
 from prestoadmin.util.fabricapi import get_host_list
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.server import INIT_SCRIPTS, SLEEP_INTERVAL
+from prestoadmin.server import INIT_SCRIPTS
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
@@ -33,8 +33,9 @@ from tests.unit.base_unit_case import BaseUnitCase
 
 
 class TestInstall(BaseUnitCase):
-    SERVER_FAIL_MSG = 'Server failed to start on: failed_node1' \
-                      '\nPlease check ' \
+    SERVER_FAIL_MSG = 'Could not verify server status for: failed_node1\n' \
+                      'This could mean that the server failed to start or that there was no coordinator or worker up.' \
+                      ' Please check ' \
                       + constants.DEFAULT_PRESTO_SERVER_LOG_FILE + ' and ' + \
                       constants.DEFAULT_PRESTO_LAUNCHER_LOG_FILE
 
@@ -84,11 +85,11 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.sudo')
     @patch.object(PrestoClient, 'execute_query')
-    @patch('prestoadmin.server.error')
+    @patch('prestoadmin.server.warn')
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.is_port_in_use')
     def test_server_start_fail(self, mock_port_in_use,
-                               mock_version_check, mock_error,
+                               mock_version_check, mock_warn,
                                mock_execute, mock_sudo, mock_run, mock_config):
         old_retry_timeout = server.RETRY_TIMEOUT
         server.RETRY_TIMEOUT = 1
@@ -100,18 +101,18 @@ class TestInstall(BaseUnitCase):
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
-        mock_error.assert_called_with(self.SERVER_FAIL_MSG)
+        mock_warn.assert_called_with(self.SERVER_FAIL_MSG)
         server.RETRY_TIMEOUT = old_retry_timeout
 
     @patch('prestoadmin.server.sudo')
-    @patch.object(PrestoClient, 'execute_query')
+    @patch('prestoadmin.server.check_server_status')
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.is_port_in_use')
     def test_server_start(self, mock_port_in_use, mock_version_check,
-                          mock_execute, mock_sudo):
-        mock_execute.return_value = True
+                          mock_check_status, mock_sudo):
         env.host = 'good_node'
         mock_version_check.return_value = ''
+        mock_check_status.return_value = True
         mock_port_in_use.return_value = 0
         server.start()
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
@@ -175,11 +176,11 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.util.remote_config_util.lookup_in_config')
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
-    @patch('prestoadmin.server.error')
+    @patch('prestoadmin.server.warn')
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.is_port_in_use')
     def test_server_restart_fail(self, mock_port_in_use, mock_version_check,
-                                 mock_error, mock_status, mock_sudo,
+                                 mock_warn, mock_status, mock_sudo,
                                  mock_config):
         mock_status.return_value = False
         mock_config.return_value = None
@@ -191,7 +192,7 @@ class TestInstall(BaseUnitCase):
         mock_sudo.assert_any_call('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
 
-        mock_error.assert_called_with(self.SERVER_FAIL_MSG)
+        mock_warn.assert_called_with(self.SERVER_FAIL_MSG)
 
     @patch('prestoadmin.util.remote_config_util.lookup_port')
     @patch('prestoadmin.server.sudo')
@@ -238,19 +239,38 @@ class TestInstall(BaseUnitCase):
         file_manager.write.assert_called_with("connector.name=tpch")
 
     @patch('prestoadmin.server.run')
-    def test_check_success_status(self, mock_sleep):
-        client_mock = MagicMock(PrestoClient)
-        client_mock.execute_query.side_effect = [False, True]
-        self.assertEqual(server.check_server_status(client_mock), True)
+    @patch('prestoadmin.server.lookup_string_config')
+    @patch.object(PrestoClient, 'execute_query')
+    @patch.object(PrestoClient, 'get_rows')
+    def test_check_success_status(self, mock_get_rows, mock_execute, string_config_mock, mock_run):
+        env.roledefs = {
+            'coordinator': ['Node1'],
+            'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
+            'all': ['Node1', 'Node2', 'Node3', 'Node4']
+        }
+        env.hosts = env.roledefs['all']
+        env.host = 'Node1'
+        string_config_mock.return_value = 'Node1'
+        mock_execute.return_value = False
+        mock_get_rows.return_value = [['Node2', 'some stuff'], ['Node1', 'some other stuff']]
+        self.assertEqual(server.check_server_status(), True)
 
     @patch('prestoadmin.server.run')
-    def test_check_success_fail(self,  mock_sleep):
-        old_retry_timeout = server.RETRY_TIMEOUT
-        server.RETRY_TIMEOUT = SLEEP_INTERVAL + 1
-        client_mock = MagicMock(PrestoClient)
-        client_mock.execute_query.side_effect = [False, False]
-        self.assertEqual(server.check_server_status(client_mock), False)
-        server.RETRY_TIMEOUT = old_retry_timeout
+    @patch('prestoadmin.server.lookup_string_config')
+    @patch.object(PrestoClient, 'execute_query')
+    @patch.object(PrestoClient, 'get_rows')
+    def test_check_success_fail(self, mock_get_rows, mock_execute, string_config_mock, mock_run):
+        env.roledefs = {
+            'coordinator': ['Node1'],
+            'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
+            'all': ['Node1', 'Node2', 'Node3', 'Node4']
+        }
+        env.hosts = env.roledefs['all']
+        env.host = 'Node1'
+        string_config_mock.return_value = 'Node1'
+        mock_execute.return_value = False
+        mock_get_rows.return_value = []
+        self.assertEqual(server.check_server_status(), False)
 
     @patch('prestoadmin.server.execute')
     @patch('prestoadmin.server.run_sql')

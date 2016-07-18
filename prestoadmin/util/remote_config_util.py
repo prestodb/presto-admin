@@ -86,7 +86,7 @@ def lookup_in_config(config_key, config_file, host):
                                warn_only=True, host=host)[host]
 
     if isinstance(config_value, Exception) or config_value.return_code == 2:
-        raise ConfigurationError('Configuration file %s does not exist on '
+        raise ConfigurationError('Could not access config file %s on '
                                  'host %s' % (config_file, host))
 
     return config_value

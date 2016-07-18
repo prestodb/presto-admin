@@ -18,6 +18,7 @@ using presto-admin
 """
 import logging
 import sys
+from tempfile import mkdtemp
 
 from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
@@ -27,23 +28,21 @@ from fabric.tasks import execute
 from fabric.utils import warn, error, abort
 from retrying import retry
 
+import util.filesystem
 from prestoadmin import configure_cmds
 from prestoadmin import connector
 from prestoadmin import package
-from prestoadmin.util.version_util import VersionRange, VersionRangeList, \
-    split_version, strip_tag
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.standalone.config import StandaloneConfig, \
     PRESTO_STANDALONE_USER_GROUP
-from prestoadmin.util.base_config import requires_config
 from prestoadmin.util import constants
-from prestoadmin.util.exception import ConfigFileNotFoundError
+from prestoadmin.util.base_config import requires_config
+from prestoadmin.util.exception import ConfigFileNotFoundError, ConfigurationError
 from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
 from prestoadmin.util.remote_config_util import lookup_port, \
-    lookup_server_log_file, lookup_launcher_log_file
-
-from tempfile import mkdtemp
-import util.filesystem
+    lookup_server_log_file, lookup_launcher_log_file, lookup_string_config
+from prestoadmin.util.version_util import VersionRange, VersionRangeList, \
+    split_version, strip_tag
 
 __all__ = ['install', 'uninstall', 'upgrade', 'start', 'stop', 'restart',
            'status']
@@ -231,17 +230,18 @@ def service(control=None):
 
 
 def check_status_for_control_commands():
-    client = PrestoClient(env.host, env.user)
+
     print('Waiting to make sure we can connect to the Presto server on %s, '
           'please wait. This check will time out after %d minutes if the '
           'server does not respond.'
           % (env.host, (RETRY_TIMEOUT / 60)))
-    if check_server_status(client):
+    if check_server_status():
         print('Server started successfully on: ' + env.host)
     else:
-        error('Server failed to start on: ' + env.host +
-              '\nPlease check ' + lookup_server_log_file(env.host) + ' and ' +
-              lookup_launcher_log_file(env.host))
+        warn('Could not verify server status for: ' + env.host +
+             '\nThis could mean that the server failed to start or that there was no coordinator or worker up. '
+             'Please check ' + lookup_server_log_file(env.host) + ' and ' +
+             lookup_launcher_log_file(env.host))
 
 
 def is_port_in_use(host):
@@ -342,7 +342,7 @@ def get_presto_version():
         return version
 
 
-def check_server_status(client):
+def check_server_status():
     """
     Checks if server is running for env.host. Retries connecting to server
     until server is up or till RETRY_TIMEOUT is reached
@@ -353,18 +353,33 @@ def check_server_status(client):
     Returns:
         True or False
     """
-    result = True
     time = 0
+
+    if len(get_coordinator_role()) < 1:
+        warn('No coordinator defined.  Cannot verify server status.')
+    client = PrestoClient(get_coordinator_role()[0], env.user)
+    node_id = lookup_string_config('node.id', os.path.join(constants.REMOTE_CONF_DIR, 'node.properties'), env.host)
     while time < RETRY_TIMEOUT:
-        result = client.execute_query(SYSTEM_RUNTIME_NODES)
-        if not result:
+        try:
+            client.execute_query(SYSTEM_RUNTIME_NODES)
+        except ConfigurationError as e:
+            _LOGGER.warn(e)
+            break
+        if not _is_in_rows(node_id, client.get_rows()):
             run('sleep %d' % SLEEP_INTERVAL)
             _LOGGER.debug('Status retrieval for the server failed after '
                           'waiting for %d seconds. Retrying...' % time)
             time += SLEEP_INTERVAL
         else:
-            break
-    return result
+            return True
+    return False
+
+
+def _is_in_rows(value, rows):
+    for row in rows:
+        if value in row:
+            return True
+    return False
 
 
 def run_sql(client, sql):
