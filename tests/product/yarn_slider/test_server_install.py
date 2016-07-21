@@ -33,6 +33,15 @@ from tests.product.yarn_slider.slider_presto_installer import \
 HDFS_PORT = 8020
 
 
+# If this test class is un-quarantined or run despite being quarantined,
+# the tests will fail because the image builder does not support creating the images
+# used by this class.
+#
+# This is the only class that uses HdpBareImageProvider(), so supporting
+# these images would require adding a pull of the large bare hdp images.
+# The image builder is typically invoked to build all images, so users would
+# be forced to do the unnecessary work of pulling the hdp images before building
+# the test images.
 @attr('quarantine')
 class TestServerInstall(BaseProductTestCase):
     def setUp(self):

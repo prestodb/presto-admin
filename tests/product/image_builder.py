@@ -79,6 +79,8 @@ class ImageBuilder:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+
+    # Update the Makefile to list supported images if more are added
     parser.add_argument("image_type", metavar="image_type", type=str, nargs="+",
                         choices=["standalone_presto", "standalone_presto_admin",
                                  "standalone_bare", "yarn_slider_presto_admin",

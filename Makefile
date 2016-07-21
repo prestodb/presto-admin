@@ -89,6 +89,9 @@ test-all: clean-test docker-images
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
 
+# Can take any space-separated combination of:
+# standalone_presto, standalone_presto_admin, standalone_bare,
+# yarn_slider_presto_admin, all
 IMAGE_NAMES?="all"
 
 test-images: docker-images presto-server-rpm.rpm
