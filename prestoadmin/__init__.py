@@ -17,10 +17,9 @@
 
 import os
 import sys
+import prestoadmin._version
 
 from fabric.api import env
-
-__version__ = '1.4'  # Make sure to update setup.py too
 
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
@@ -30,6 +29,8 @@ from prestoadmin.mode import get_mode, for_mode, MODE_STANDALONE, \
         MODE_SLIDER  # noqa
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError  # noqa
+
+__version__ = prestoadmin._version.__version__
 
 #
 # Subcommands common to all modes. If anybody knows why fabric_patches is in

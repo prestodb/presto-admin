@@ -24,6 +24,11 @@ except ImportError:
     from distutils.core import setup
 
 from packaging.bdist_prestoadmin import bdist_prestoadmin
+from release import release
+
+# Import this from util instead of prestoadmin because prestoadmin has third
+# party dependencies that can't be resolved by setup.py. Util should not.
+from util import __version__
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
@@ -90,7 +95,7 @@ PyPIRCCommand._get_rc_file = get_custom_rc_file
 setup(
     name='prestoadmin',
     # Make sure to update version in prestoadmin/__init__.py
-    version='1.4',
+    version=__version__,
     description="Presto-admin installs, configures, and manages Presto " + \
                 "installations.",
     long_description=readme + '\n\n' + history,
@@ -109,7 +114,7 @@ setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: APLv2 License',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
@@ -117,6 +122,7 @@ setup(
     ],
     test_suite='tests',
     tests_require=test_requirements,
-    cmdclass={'bdist_prestoadmin': bdist_prestoadmin},
+    cmdclass={'bdist_prestoadmin': bdist_prestoadmin,
+              'release': release},
     entry_points={'console_scripts': ['presto-admin = prestoadmin.main:main']}
 )
