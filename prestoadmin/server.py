@@ -26,7 +26,7 @@ from fabric.decorators import runs_once, with_settings, parallel
 from fabric.operations import run, os
 from fabric.tasks import execute
 from fabric.utils import warn, error, abort
-from retrying import retry
+from retrying import retry, RetryError
 
 import util.filesystem
 from prestoadmin import configure_cmds
@@ -49,7 +49,6 @@ __all__ = ['install', 'uninstall', 'upgrade', 'start', 'stop', 'restart',
 
 INIT_SCRIPTS = '/etc/init.d/presto'
 RETRY_TIMEOUT = 120
-SLEEP_INTERVAL = 10
 SYSTEM_RUNTIME_NODES = 'select * from system.runtime.nodes'
 
 
@@ -353,26 +352,24 @@ def check_server_status():
     Returns:
         True or False
     """
-    time = 0
-
     if len(get_coordinator_role()) < 1:
         warn('No coordinator defined.  Cannot verify server status.')
     client = PrestoClient(get_coordinator_role()[0], env.user)
     node_id = lookup_string_config('node.id', os.path.join(constants.REMOTE_CONF_DIR, 'node.properties'), env.host)
-    while time < RETRY_TIMEOUT:
+
+    try:
+        return query_server_for_status(client, node_id)
+    except RetryError:
+        return False
+
+
+@retry(stop_max_delay=RETRY_TIMEOUT * 1000, wait_fixed=5000, retry_on_result=lambda result: result is False)
+def query_server_for_status(client, node_id):
         try:
             client.execute_query(SYSTEM_RUNTIME_NODES)
         except ConfigurationError as e:
             _LOGGER.warn(e)
-            break
-        if not _is_in_rows(node_id, client.get_rows()):
-            run('sleep %d' % SLEEP_INTERVAL)
-            _LOGGER.debug('Status retrieval for the server failed after '
-                          'waiting for %d seconds. Retrying...' % time)
-            time += SLEEP_INTERVAL
-        else:
-            return True
-    return False
+        return _is_in_rows(node_id, client.get_rows())
 
 
 def _is_in_rows(value, rows):

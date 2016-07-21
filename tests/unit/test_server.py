@@ -84,16 +84,14 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.util.remote_config_util.lookup_in_config')
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.sudo')
-    @patch.object(PrestoClient, 'execute_query')
+    @patch('prestoadmin.server.query_server_for_status')
     @patch('prestoadmin.server.warn')
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.is_port_in_use')
     def test_server_start_fail(self, mock_port_in_use,
                                mock_version_check, mock_warn,
-                               mock_execute, mock_sudo, mock_run, mock_config):
-        old_retry_timeout = server.RETRY_TIMEOUT
-        server.RETRY_TIMEOUT = 1
-        mock_execute.return_value = False
+                               mock_query_for_status, mock_sudo, mock_run, mock_config):
+        mock_query_for_status.return_value = False
         env.host = "failed_node1"
         mock_version_check.return_value = ''
         mock_port_in_use.return_value = 0
@@ -102,7 +100,6 @@ class TestInstall(BaseUnitCase):
         mock_sudo.assert_called_with('set -m; ' + INIT_SCRIPTS + ' start')
         mock_version_check.assert_called_with()
         mock_warn.assert_called_with(self.SERVER_FAIL_MSG)
-        server.RETRY_TIMEOUT = old_retry_timeout
 
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.check_server_status')
@@ -257,9 +254,8 @@ class TestInstall(BaseUnitCase):
 
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.lookup_string_config')
-    @patch.object(PrestoClient, 'execute_query')
-    @patch.object(PrestoClient, 'get_rows')
-    def test_check_success_fail(self, mock_get_rows, mock_execute, string_config_mock, mock_run):
+    @patch('prestoadmin.server.query_server_for_status')
+    def test_check_success_fail(self, mock_query_for_status, string_config_mock, mock_run):
         env.roledefs = {
             'coordinator': ['Node1'],
             'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
@@ -268,8 +264,7 @@ class TestInstall(BaseUnitCase):
         env.hosts = env.roledefs['all']
         env.host = 'Node1'
         string_config_mock.return_value = 'Node1'
-        mock_execute.return_value = False
-        mock_get_rows.return_value = []
+        mock_query_for_status.return_value = False
         self.assertEqual(server.check_server_status(), False)
 
     @patch('prestoadmin.server.execute')
