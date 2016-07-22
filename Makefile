@@ -75,7 +75,7 @@ lint:
 presto-server-rpm.rpm:
 	wget 'https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&g=com.facebook.presto&a=presto-server-rpm&e=rpm&v=RELEASE' -O $@
 
-smoke: clean-test docker-images
+smoke: clean-test test-images
 	tox -e py26 -- -a smoketest,'!quarantine'
 
 test: clean-test
@@ -84,7 +84,7 @@ test: clean-test
 
 TEST_SUITE?=tests.product
 
-test-all: clean-test docker-images
+test-all: clean-test test-images
 	tox -- -s tests.unit
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
