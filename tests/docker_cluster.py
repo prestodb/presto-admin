@@ -18,25 +18,38 @@ Test writers should use this module for all of their docker related needs
 and not directly call into the docker-py API.
 """
 
+import errno
+import os
+import shutil
 import subprocess
 import sys
-import shutil
-import os
-import errno
 import uuid
 from time import sleep
 
 from docker import Client
 from docker.errors import APIError
 from docker.utils.utils import kwargs_from_env
+from retrying import retry
 
 from prestoadmin import main_dir
 from tests.base_cluster import BaseCluster
 from tests.product.constants import \
-    DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT, \
-    BASE_TD_IMAGE_NAME
+    DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT
 
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
+
+_DOCKER_START_TIMEOUT = 30000
+_DOCKER_START_WAIT = 1000
+
+ENSURE_STARTED_OPT_OUT_IMAGES = [
+    'ubuntu:14.04'
+]
+
+
+class NotStartedException(Exception):
+    def __init__(self, hosts):
+        super(NotStartedException, self).__init__("Hosts not yet started %s" %
+                                                  ", ".join(hosts))
 
 
 class DockerCluster(BaseCluster):
@@ -69,7 +82,6 @@ class DockerCluster(BaseCluster):
         kwargs['timeout'] = 300
         self.client = Client(**kwargs)
 
-        self._DOCKER_START_TIMEOUT = 30
         DockerCluster.__check_if_docker_exists()
 
     def all_hosts(self):
@@ -249,31 +261,23 @@ class DockerCluster(BaseCluster):
                 % additions_to_etc_hosts
             )
 
+    @retry(stop_max_delay=_DOCKER_START_TIMEOUT, wait_fixed=_DOCKER_START_WAIT)
     def _ensure_docker_containers_started(self, image):
-        centos_based_images = [BASE_TD_IMAGE_NAME]
-
-        timeout = 0
-        is_host_started = {}
+        host_started = {}
         for host in self.all_hosts():
-            is_host_started[host] = False
-        while timeout < self._DOCKER_START_TIMEOUT:
-            for host in self.all_hosts():
-                atomic_is_started = True
-                atomic_is_started &= \
-                    self.client.inspect_container(host)['State']['Running']
-                if image in centos_based_images or \
-                        image.startswith(self.IMAGE_NAME_BASE):
-                    atomic_is_started &= \
-                        self._are_centos_container_services_up(host)
-                is_host_started[host] = atomic_is_started
-            if not DockerCluster._are_all_hosts_started(is_host_started):
-                timeout += 1
-                sleep(1)
-            else:
-                break
-        if timeout is self._DOCKER_START_TIMEOUT:
-            raise DockerClusterException(
-                'Docker container timed out on start.' + str(is_host_started))
+            host_started[host] = False
+        for host in host_started.keys():
+            if host_started[host]:
+                continue
+            is_started = True
+            is_started &= \
+                self.client.inspect_container(host)['State']['Running']
+            if is_started and image not in ENSURE_STARTED_OPT_OUT_IMAGES:
+                is_started &= self._are_centos_container_services_up(host)
+            host_started[host] = is_started
+        not_started = [host for (host, started) in host_started.items() if not started]
+        if len(not_started):
+            raise NotStartedException(not_started)
 
     @staticmethod
     def _are_all_hosts_started(host_started_map):
