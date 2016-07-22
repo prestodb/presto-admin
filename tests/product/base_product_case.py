@@ -20,18 +20,16 @@ other utilities
 import json
 import os
 import re
-from time import sleep
 
 from nose.tools import nottest
+from retrying import Retrying
 
 from prestoadmin.util import constants
 from tests.base_test_case import BaseTestCase
-from tests.docker_cluster import DockerCluster
-
 from tests.configurable_cluster import ConfigurableCluster
+from tests.docker_cluster import DockerCluster
 from tests.product.cluster_types import cluster_types
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
-
 
 PRESTO_VERSION = r'.+'
 RETRY_TIMEOUT = 120
@@ -444,17 +442,9 @@ query.max-memory=50GB\n"""
 
     def retry(self, method_to_check, retry_timeout=RETRY_TIMEOUT,
               retry_interval=RETRY_INTERVAL):
-        time_spent_waiting = 0
-        while time_spent_waiting <= retry_timeout:
-            try:
-                result = method_to_check()
-                # No exception thrown, success
-                return result
-            except (AssertionError, PrestoError, OSError):
-                pass
-            sleep(retry_interval)
-            time_spent_waiting += retry_interval
-        return method_to_check()
+        return Retrying(stop_max_delay=retry_timeout * 1000,
+                        wait_fixed=retry_interval * 1000) \
+                .call(method_to_check)
 
     def down_node_connection_error(self, host):
         hostname = self.cluster.get_down_hostname(host)
