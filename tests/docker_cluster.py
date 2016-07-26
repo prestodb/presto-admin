@@ -144,7 +144,6 @@ class DockerCluster(BaseCluster):
         self._create_and_start_containers(master_image, slave_image,
                                           cmd, **kwargs)
         self._ensure_docker_containers_started(master_image)
-        sleep(3)
 
     def tear_down(self):
         for container_name in self.all_hosts():
