@@ -28,17 +28,6 @@ from tests.docker_cluster import DockerCluster
 from tests.product.constants import DEFAULT_DOCKER_MOUNT_POINT, \
     DEFAULT_LOCAL_MOUNT_POINT
 
-install_py26_script = """\
-set -e
-echo "deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main" \
-    > /etc/apt/sources.list.d/fkrull-deadsnakes-trusty.list
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
-    DB82666C
-sudo apt-get update
-sudo apt-get -y install python2.6
-ln -s /usr/bin/python2.6 /usr/bin/python
-"""
-
 
 class TestInstallation(BaseProductTestCase):
 
@@ -94,21 +83,18 @@ class TestInstallation(BaseProductTestCase):
     @attr('smoketest', 'offline_installer')
     @docker_only
     def test_install_on_wrong_os_offline_installer(self):
-        image = 'ubuntu'
-        tag = '14.04'
-        host = image + '-master'
+        image = 'teradatalabs/ubuntu-trusty-python2.6'
+        tag = 'latest'
+        host = 'wrong-os-master'
         ubuntu_container = DockerCluster(host, [], DEFAULT_LOCAL_MOUNT_POINT,
                                          DEFAULT_DOCKER_MOUNT_POINT)
+
+        if not DockerCluster._check_for_images(image, image, tag):
+            raise RuntimeError("Docker images have not been created")
+
         try:
-            ubuntu_container.fetch_image_if_not_present(image, tag)
             ubuntu_container.start_containers(
                 image + ':' + tag, cmd='tail -f /var/log/bootstrap.log')
-
-            self.retry(lambda: ubuntu_container.run_script_on_host(
-                install_py26_script, ubuntu_container.master))
-
-            ubuntu_container.exec_cmd_on_host(
-                ubuntu_container.master, 'sudo apt-get -y install wget')
 
             self.assertRaisesRegexp(
                 OSError,

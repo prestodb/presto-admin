@@ -97,8 +97,12 @@ IMAGE_NAMES?="all"
 test-images: docker-images presto-server-rpm.rpm
 	python tests/product/image_builder.py ${IMAGE_NAMES}
 
+DOCKER_IMAGES := \
+	teradatalabs/centos6-ssh-oj8 \
+	teradatalabs/ubuntu-trusty-python2.6
+
 docker-images:
-	docker pull teradatalabs/centos6-ssh-oj8
+	for image in $(DOCKER_IMAGES); do docker pull $$image || exit 1; done
 
 test-rpm: clean-test test-images
 	tox -e py26 -- -s tests.rpm -a '!quarantine'
