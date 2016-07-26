@@ -40,7 +40,7 @@ _DOCKER_START_TIMEOUT = 30000
 _DOCKER_START_WAIT = 1000
 
 NO_WAIT_SSH_IMAGES = [
-    'ubuntu:14.04'
+    'teradatalabs/ubuntu-trusty-python2.6:latest'
 ]
 
 
@@ -119,12 +119,6 @@ class DockerCluster(BaseCluster):
         except OSError:
             sys.exit('Docker is not installed. Try installing it with '
                      'presto-admin/bin/install-docker.sh.')
-
-    def fetch_image_if_not_present(self, image, tag=None):
-        if not tag and not self.client.images(image):
-            self._execute_and_wait(self.client.pull, image)
-        elif tag and not self._is_image_present_locally(image, tag):
-            self._execute_and_wait(self.client.pull, image, tag)
 
     def _is_image_present_locally(self, image_name, tag):
         image_name_and_tag = image_name + ':' + tag
