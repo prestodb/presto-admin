@@ -185,7 +185,7 @@ http-server.http.port=8090"""
         return statuses
 
     def status_fail_msg(self, actual_output, expected_regexp):
-        log_tail = self.fetch_log_tail(lines=1000)
+        log_tail = self.fetch_log_tail(lines=100)
 
         return (
             '=== ACTUAL OUTPUT ===\n%s\n=== DID NOT MATCH REGEXP ===\n%s\n'
@@ -223,8 +223,13 @@ http-server.http.port=8090"""
             self.assertRegexpMatches, cmd_output, expected_regex)
 
     def _server_status_with_retries(self, check_connectors=False):
-        return self.retry(lambda: self._get_status_until_coordinator_updated(
-            check_connectors))
+        try:
+            return self.retry(lambda: self._get_status_until_coordinator_updated(
+                check_connectors), 180, 0)
+        except PrestoError as e:
+            self.assertLazyMessage(
+                self.status_fail_msg(e.message, "Ran out of time retrying status"),
+                self.fail("PrestoError %s" % (e.message,)))
 
     def _get_status_until_coordinator_updated(self, check_connectors=False):
         status_output = self.run_prestoadmin('server status')
