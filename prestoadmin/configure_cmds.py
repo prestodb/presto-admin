@@ -94,7 +94,7 @@ def deploy_all(source_directory, should_warn=True):
             continue
         remote_config_file = os.path.join(constants.REMOTE_CONF_DIR, file_name)
         put_secure(PRESTO_STANDALONE_USER_GROUP, 0600, local_config_file,
-                   remote_config_file)
+                   remote_config_file, use_sudo=True)
 
 
 def fetch_all(target_directory, allow_overwrite=False):
@@ -116,7 +116,7 @@ def configuration_fetch(file_name, config_destination, should_warn=True):
                  % (env.host, remote_file_path))
         return None
     else:
-        get(remote_file_path, config_destination)
+        get(remote_file_path, config_destination, use_sudo=True)
         return remote_file_path
 
 

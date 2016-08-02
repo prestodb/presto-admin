@@ -466,7 +466,7 @@ def get_ext_ip_of_node(client):
     node_properties_file = os.path.join(constants.REMOTE_CONF_DIR,
                                         'node.properties')
     with settings(hide('stdout')):
-        node_uuid = run('sed -n s/^node.id=//p ' + node_properties_file)
+        node_uuid = sudo('sed -n s/^node.id=//p ' + node_properties_file)
     external_ip_row = execute_external_ip_sql(client, node_uuid)
     external_ip = ''
     if len(external_ip_row) > 1:

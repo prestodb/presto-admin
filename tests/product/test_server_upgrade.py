@@ -84,8 +84,8 @@ class TestServerUpgrade(BaseProductTestCase):
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
         self.upgrade_and_assert_success(path_on_cluster)
 
-    def upgrade_and_assert_success(self, path_on_cluster):
-        self.run_prestoadmin('server upgrade ' + path_on_cluster)
+    def upgrade_and_assert_success(self, path_on_cluster, extra_arguments=''):
+        self.run_prestoadmin('server upgrade ' + path_on_cluster + extra_arguments)
         self.assert_upgraded_to_dummy_rpm(self.cluster.all_hosts())
 
     @docker_only
@@ -145,6 +145,21 @@ class TestServerUpgrade(BaseProductTestCase):
 
         self.run_prestoadmin('server upgrade ' + path_on_cluster)
         self.assert_dummy_properties(self.cluster.slaves[1])
+
+    def test_upgrade_non_root_user(self):
+        self.upload_topology(
+            {"coordinator": "master",
+             "workers": ["slave1", "slave2", "slave3"],
+             "username": "app-admin"}
+        )
+        self.run_prestoadmin('configuration deploy -p password')
+        for container in self.cluster.all_hosts():
+            self.real_installer.assert_installed(self, container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
+
+        path_on_cluster = self.copy_upgrade_rpm_to_cluster()
+        self.upgrade_and_assert_success(path_on_cluster, extra_arguments=' -p password')
 
     def add_dummy_properties_to_host(self, host):
         self.cluster.write_content_to_host(

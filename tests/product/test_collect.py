@@ -22,7 +22,7 @@ from nose.plugins.attrib import attr
 from nose.tools import nottest
 
 from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
-    PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO
+    PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO, TMP_PRESTO_DEBUG_REMOTE
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import run_sql
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
@@ -100,7 +100,7 @@ class TestCollect(BaseProductTestCase):
                                    'connector_info.txt')
         self.assert_path_exists(self.cluster.master,
                                 conn_file_name)
-        version_file_name = path.join(TMP_PRESTO_DEBUG, 'version_info.txt')
+        version_file_name = path.join(TMP_PRESTO_DEBUG_REMOTE, 'version_info.txt')
         for host in hosts:
             self.assert_path_exists(host, version_file_name)
         slave0_system_info_loc = path.join(
@@ -329,3 +329,21 @@ class TestCollect(BaseProductTestCase):
                                    self.cluster.internal_master,)
         self.assert_path_exists(self.cluster.master,
                                 os.path.join(master_path, 'server.log-2'))
+
+    def test_collect_non_root_user(self):
+        self.setup_cluster(NoHadoopBareImageProvider(), self.STANDALONE_PRESTO_CLUSTER)
+        self.upload_topology(
+            {"coordinator": "master",
+             "workers": ["slave1", "slave2", "slave3"],
+             "username": "app-admin"}
+        )
+
+        self.run_script_from_prestoadmin_dir(
+            './presto-admin server start -p password')
+
+        self.run_script_from_prestoadmin_dir(
+            './presto-admin collect logs -p password')
+
+        actual = self.run_script_from_prestoadmin_dir(
+            './presto-admin collect system_info -p password')
+        self.test_basic_system_info(actual)

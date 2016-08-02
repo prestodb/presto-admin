@@ -345,3 +345,21 @@ class TestConfiguration(BaseProductTestCase):
         self.assertRaisesRegexp(
             OSError, "User presto does not exist", self.run_prestoadmin,
             'configuration deploy')
+
+    def test_configuration_show_non_sudo_user(self):
+        self.upload_topology(
+            {"coordinator": "master",
+             "workers": ["slave1", "slave2", "slave3"],
+             "username": "app-admin"}
+        )
+        for host in self.cluster.all_hosts():
+            self.cluster.exec_cmd_on_host(host, 'rm -rf /etc/presto')
+
+        self.run_prestoadmin('configuration deploy -p password')
+
+        # configuration show default configuration
+        output = self.run_prestoadmin('configuration show -p password')
+        with open(os.path.join(LOCAL_RESOURCES_DIR,
+                               'configuration_show_default.txt'), 'r') as f:
+            expected = f.read()
+        self.assertRegexpMatches(output, expected)

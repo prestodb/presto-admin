@@ -308,14 +308,14 @@ class TestInstall(BaseUnitCase):
         self.assertEqual(('IP4', False, ''),
                          server.collect_node_information())
 
-    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.sudo')
     def test_get_external_ip(self, mock_nodeuuid):
         client_mock = MagicMock(PrestoClient)
         client_mock.execute_query.return_value = True
         client_mock.get_rows = lambda: [['IP']]
         self.assertEqual(server.get_ext_ip_of_node(client_mock), 'IP')
 
-    @patch('prestoadmin.server.run')
+    @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.warn')
     def test_warn_external_ip(self, mock_warn, mock_nodeuuid):
         env.host = 'node'

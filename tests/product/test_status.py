@@ -127,6 +127,17 @@ http-server.http.port=8090"""
 
         self.check_status(status_output, self.base_status(), 8090)
 
+    def test_status_non_root_user(self):
+        self.setup_cluster(NoHadoopBareImageProvider(), self.STANDALONE_PRESTO_CLUSTER)
+        self.upload_topology(
+            {"coordinator": "master",
+             "workers": ["slave1", "slave2", "slave3"],
+             "username": "app-admin"}
+        )
+        self.run_prestoadmin('server start -p password')
+        status_output = self._server_status_with_retries(check_connectors=True, extra_arguments=' -p password')
+        self.check_status(status_output, self.base_status())
+
     def base_status(self, topology=None):
         ips = self.cluster.get_ip_address_dict()
         if not topology:
@@ -225,12 +236,12 @@ http-server.http.port=8090"""
             lambda: self.status_fail_msg(cmd_output, expected_regex),
             self.assertRegexpMatches, cmd_output, expected_regex)
 
-    def _server_status_with_retries(self, check_connectors=False):
+    def _server_status_with_retries(self, check_connectors=False, extra_arguments=''):
         return self.retry(lambda: self._get_status_until_coordinator_updated(
-            check_connectors))
+            check_connectors, extra_arguments=extra_arguments))
 
-    def _get_status_until_coordinator_updated(self, check_connectors=False):
-        status_output = self.run_prestoadmin('server status')
+    def _get_status_until_coordinator_updated(self, check_connectors=False, extra_arguments=''):
+        status_output = self.run_prestoadmin('server status' + extra_arguments)
         if 'the coordinator has not yet discovered this node' in status_output:
             raise PrestoError('Coordinator has not discovered all nodes yet: '
                               '%s' % status_output)
