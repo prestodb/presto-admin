@@ -25,7 +25,8 @@ import requests
 from prestoadmin import collect
 from prestoadmin.collect import TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, PRESTOADMIN_LOG_DIR, \
-    OUTPUT_FILENAME_FOR_LOGS, OUTPUT_FILENAME_FOR_SYS_INFO
+    OUTPUT_FILENAME_FOR_LOGS, OUTPUT_FILENAME_FOR_SYS_INFO, \
+    TMP_PRESTO_DEBUG_REMOTE
 import prestoadmin
 from tests.unit.base_unit_case import BaseUnitCase
 
@@ -68,7 +69,7 @@ class TestCollect(BaseUnitCase):
 
         collect.get_files(remote_path, local_path)
 
-        get_mock.assert_called_with(remote_path, path_with_host_name, True)
+        get_mock.assert_called_with(remote_path, path_with_host_name, use_sudo=True)
 
     @patch("prestoadmin.collect.os.path.exists")
     @patch("prestoadmin.collect.warn")
@@ -201,7 +202,7 @@ class TestCollect(BaseUnitCase):
                              server_version_mock,
                              append_mock, get_files_mock):
         downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, "sysinfo")
-        version_info_file_name = path.join(TMP_PRESTO_DEBUG,
+        version_info_file_name = path.join(TMP_PRESTO_DEBUG_REMOTE,
                                            "version_info.txt")
 
         platform_info = "platform abcd"
@@ -214,8 +215,8 @@ class TestCollect(BaseUnitCase):
 
         collect.get_system_info(downloaded_sys_info_loc)
 
-        exists_mock.assert_any_call(TMP_PRESTO_DEBUG)
-        run_collect_mock.assert_any_call('mkdir ' + TMP_PRESTO_DEBUG)
+        exists_mock.assert_any_call(TMP_PRESTO_DEBUG_REMOTE)
+        run_collect_mock.assert_any_call('mkdir ' + TMP_PRESTO_DEBUG_REMOTE)
 
         exists_mock.assert_any_call(version_info_file_name)
 

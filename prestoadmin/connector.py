@@ -54,7 +54,7 @@ def gather_connectors(local_config_dir, allow_overwrite=False):
                            "option to overwrite." % local_catalog_dir)
     ensure_directory_exists(local_catalog_dir)
     if files.exists(constants.REMOTE_CATALOG_DIR):
-        return get(constants.REMOTE_CATALOG_DIR, local_catalog_dir)
+        return get(constants.REMOTE_CATALOG_DIR, local_catalog_dir, use_sudo=True)
     else:
         return []
 

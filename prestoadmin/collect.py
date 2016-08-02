@@ -44,6 +44,7 @@ from util.constants import PRESTOADMIN_LOG_DIR
 
 
 TMP_PRESTO_DEBUG = '/tmp/presto-debug/'
+TMP_PRESTO_DEBUG_REMOTE = '/tmp/presto-debug-remote'
 OUTPUT_FILENAME_FOR_LOGS = '/tmp/presto-debug-logs.tar.bz2'
 OUTPUT_FILENAME_FOR_SYS_INFO = '/tmp/presto-debug-sysinfo.tar.bz2'
 PRESTOADMIN_LOG_NAME = 'presto-admin.log'
@@ -108,7 +109,7 @@ def get_files(remote_path, local_path):
     _LOGGER.debug('local path used ' + path_with_host_name)
 
     try:
-        get(remote_path, path_with_host_name, True)
+        get(remote_path, path_with_host_name, use_sudo=True)
     except SystemExit:
         warn('remote path ' + remote_path + ' not found on ' + env.host)
 
@@ -209,10 +210,10 @@ def system_info():
 
 def get_system_info(download_location):
 
-    if not exists(TMP_PRESTO_DEBUG):
-        run("mkdir " + TMP_PRESTO_DEBUG)
+    if not exists(TMP_PRESTO_DEBUG_REMOTE):
+        run("mkdir " + TMP_PRESTO_DEBUG_REMOTE)
 
-    version_file_name = os.path.join(TMP_PRESTO_DEBUG, 'version_info.txt')
+    version_file_name = os.path.join(TMP_PRESTO_DEBUG_REMOTE, 'version_info.txt')
 
     if exists(version_file_name):
         run('rm -f ' + version_file_name)

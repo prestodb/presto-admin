@@ -137,7 +137,7 @@ class TestConfigureCmds(BaseUnitCase):
         get_files = set()
         put_files = set()
 
-        def get(remote_path, local_path):
+        def get(remote_path, local_path, **kwargs):
             get_files.add((local_path, remote_path))
 
         def put(local_path, remote_path, **kwargs):

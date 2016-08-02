@@ -562,3 +562,22 @@ query.max-memory=50GB\n"""
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
+
+    def test_install_non_root_user(self):
+        installer = StandalonePrestoInstaller(self)
+        self.upload_topology(
+            {"coordinator": "master",
+             "workers": ["slave1", "slave2", "slave3"],
+             "username": "app-admin"}
+        )
+
+        rpm_name = installer.copy_presto_rpm_to_master(cluster=self.cluster)
+        self.write_test_configs(self.cluster)
+        self.run_prestoadmin(
+            'server install ' + os.path.join(self.cluster.mount_dir, rpm_name) + ' -p password'
+        )
+
+        for container in self.cluster.all_hosts():
+            installer.assert_installed(self, container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)

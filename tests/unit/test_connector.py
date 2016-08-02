@@ -195,7 +195,7 @@ class TestConnector(BaseUnitCase):
         files_exists.return_value = True
         connector.gather_connectors('local_config_dir')
         get_mock.assert_called_once_with(
-            constants.REMOTE_CATALOG_DIR, 'local_config_dir/any_host/catalog')
+            constants.REMOTE_CATALOG_DIR, 'local_config_dir/any_host/catalog', use_sudo=True)
 
         # if remote catalog dir does not exist
         get_mock.reset_mock()

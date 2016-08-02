@@ -419,3 +419,31 @@ for the change to take effect
     def _assert_connectors_loaded(self, expected_connectors):
         self.retry(lambda: self.assertEqual(expected_connectors,
                                             self.get_connector_info()))
+
+    def test_connector_add_remove_non_sudo_user(self):
+        self.setup_cluster_assert_connectors()
+        self.upload_topology(
+            {"coordinator": "master",
+             "workers": ["slave1", "slave2", "slave3"],
+             "username": "app-admin"}
+        )
+
+        self.run_prestoadmin('connector remove tpch -p password')
+        self.assert_path_removed(self.cluster.master,
+                                 os.path.join(constants.CONNECTORS_DIR,
+                                              'tpch.properties'))
+        for host in self.cluster.all_hosts():
+            self.assert_path_removed(host,
+                                     os.path.join(constants.REMOTE_CATALOG_DIR,
+                                                  'tcph.properties'))
+
+        self.cluster.write_content_to_host(
+            'connector.name=jmx',
+            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            self.cluster.master
+        )
+        self.run_prestoadmin('connector add -p password')
+        self.run_prestoadmin('server restart -p password')
+        for host in self.cluster.all_hosts():
+            self.assert_has_jmx_connector(host)
+        self._assert_connectors_loaded([['system'], ['jmx']])
