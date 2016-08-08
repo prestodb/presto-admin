@@ -16,6 +16,7 @@
 Tests the presto install
 """
 import os
+import tempfile
 
 from fabric.api import env
 from fabric.operations import _AttributeString
@@ -41,28 +42,289 @@ class TestInstall(BaseUnitCase):
 
     def setUp(self):
         self.remove_runs_once_flag(server.status)
+        self.remove_runs_once_flag(server.install)
         self.maxDiff = None
         super(TestInstall, self).setUp(capture_output=True)
 
     @patch('prestoadmin.server.package.check_if_valid_rpm')
+    def check_corrupt_rpm_removed_and_returns_none(self, mock_valid_rpm, is_absolute_path):
+        mock_valid_rpm.side_effect = SystemExit('...Corrupted RPM...')
+        fd = -1
+        absolute_path_corrupt_rpm = None
+        try:
+            fd, absolute_path_corrupt_rpm = tempfile.mkstemp()
+            if is_absolute_path:
+                local_finder = server.LocalPrestoRpmFinder(absolute_path_corrupt_rpm)
+            else:
+                relative_path_corrupt_rpm = os.path.basename(absolute_path_corrupt_rpm)
+                local_finder = server.LocalPrestoRpmFinder(relative_path_corrupt_rpm)
+            self.assertTrue(local_finder.find_local_presto_rpm() is None)
+            self.assertTrue(mock_valid_rpm.called)
+        finally:
+            os.close(fd)
+            self.assertRaises(OSError, os.remove, absolute_path_corrupt_rpm)
+
+    def test_check_corrupt_rpm_at_absolute_path_is_removed_and_returns_none(self):
+        self.check_corrupt_rpm_removed_and_returns_none(is_absolute_path=True)
+
+    def test_check_corrupt_rpm_at_relative_path_is_removed_and_returns_none(self):
+        self.check_corrupt_rpm_removed_and_returns_none(is_absolute_path=False)
+
+    @patch('prestoadmin.server.package.check_if_valid_rpm')
+    def check_nonexistent_rpm_returns_none(self, mock_valid_rpm, is_absolute_path):
+        mock_valid_rpm.side_effect = SystemExit('...File does not exist...')
+        fd = -1
+        absolute_path_nonexistent_rpm = None
+        try:
+            fd, absolute_path_nonexistent_rpm = tempfile.mkstemp()
+            if is_absolute_path:
+                local_finder = server.LocalPrestoRpmFinder(absolute_path_nonexistent_rpm)
+            else:
+                relative_path_nonexistent_rpm = os.path.basename(absolute_path_nonexistent_rpm)
+                local_finder = server.LocalPrestoRpmFinder(relative_path_nonexistent_rpm)
+        finally:
+            os.close(fd)
+            os.remove(absolute_path_nonexistent_rpm)
+        self.assertTrue(local_finder.find_local_presto_rpm() is None)
+
+    def test_check_nonexistent_rpm_at_absolute_path_returns_none(self):
+        self.check_nonexistent_rpm_returns_none(is_absolute_path=True)
+
+    def test_check_nonexistent_rpm_at_relative_path_returns_none(self):
+        self.check_nonexistent_rpm_returns_none(is_absolute_path=False)
+
+    @patch('prestoadmin.server.package.check_if_valid_rpm')
+    def check_find_valid_rpm_returns_absolute_path(self, mock_valid_rpm, is_absolute_path):
+        fd = -1
+        absolute_path_valid_rpm = None
+        try:
+            fd, absolute_path_valid_rpm = tempfile.mkstemp()
+            if is_absolute_path:
+                local_finder = server.LocalPrestoRpmFinder(absolute_path_valid_rpm)
+            else:
+                relative_path_valid_rpm = os.path.basename(absolute_path_valid_rpm)
+                local_finder = server.LocalPrestoRpmFinder(relative_path_valid_rpm)
+            self.assertEqual(local_finder.find_local_presto_rpm(), absolute_path_valid_rpm)
+            self.assertTrue(mock_valid_rpm.called)
+        finally:
+            os.close(fd)
+            os.remove(absolute_path_valid_rpm)
+
+    def test_check_find_valid_rpm_at_absolute_path_returns_absolute_path(self):
+        self.check_find_valid_rpm_returns_absolute_path(is_absolute_path=True)
+
+    def test_check_find_valid_rpm_at_relative_path_returns_absolute_path(self):
+        self.check_find_valid_rpm_returns_absolute_path(is_absolute_path=False)
+
+    @patch('prestoadmin.server.urllib2.urlopen')
+    def check_content_length(self, mock_urlopen, is_header_present):
+        url_response = MagicMock()
+        if is_header_present:
+            url_response.info.return_value = {'Content-Length': '123'}
+        else:
+            url_response.info.return_value = {}
+
+        mock_urlopen.return_value = url_response
+        url_handler = server.UrlHandler('https://www.google.com')
+        if is_header_present:
+            self.assertEqual(url_handler.get_content_length(), 123)
+        else:
+            self.assertTrue(url_handler.get_content_length() is None)
+
+    def test_get_content_length_returns_content_length(self):
+        self.check_content_length(is_header_present=True)
+
+    def test_get_content_length_missing_header_returns_none(self):
+        self.check_content_length(is_header_present=False)
+
+    @patch('prestoadmin.server.urllib2.urlopen')
+    def check_download_file_name(self, mock_urlopen, is_header_present, is_version_present):
+        url_response = MagicMock()
+        if is_header_present:
+            url_response.info.return_value = {'Content-Disposition': 'attachment; filename="test.txt"'}
+        else:
+            url_response.info.return_value = {}
+        mock_urlopen.return_value = url_response
+        url_handler = server.UrlHandler('https://www.google.com')
+        if is_header_present:
+            self.assertEqual(url_handler.get_download_file_name(), 'test.txt')
+        else:
+            if is_version_present:
+                self.assertEqual(url_handler.get_download_file_name('0.148'), 'presto-server-rpm-0.148.rpm')
+            else:
+                self.assertEqual(url_handler.get_download_file_name(), server.DEFAULT_RPM_NAME)
+
+    def test_get_download_file_name_without_version_returns_header_file_name(self):
+        self.check_download_file_name(is_header_present=True, is_version_present=False)
+
+    def test_get_download_file_name_with_version_returns_header_file_name(self):
+        self.check_download_file_name(is_header_present=True, is_version_present=True)
+
+    def test_get_download_file_name_not_in_header_without_version_returns_default_name(self):
+        self.check_download_file_name(is_header_present=False, is_version_present=False)
+
+    def test_get_download_file_name_not_in_header_with_version_returns_default_name(self):
+        self.check_download_file_name(is_header_present=False, is_version_present=True)
+
+    @patch('prestoadmin.server.UrlHandler')
+    def test_download_rpm(self, mock_url_handler):
+        instance_url_handler = mock_url_handler.return_value
+        instance_url_handler.read_block.side_effect = ['abc', 'def', None]
+        instance_url_handler.get_content_length.return_value = 6
+        fd = -1
+        absolute_path_valid_rpm = None
+        try:
+            fd, absolute_path_valid_rpm = tempfile.mkstemp()
+            instance_url_handler.get_download_file_name.return_value = os.path.basename(absolute_path_valid_rpm)
+            downloader = server.PrestoRpmDownloader(instance_url_handler)
+            downloader.download_rpm('0.148')
+            instance_url_handler.get_download_file_name.assert_called_with('0.148')
+            with open(absolute_path_valid_rpm) as download_file:
+                self.assertEqual(download_file.read(), 'abcdef')
+        finally:
+            os.close(fd)
+            os.remove(absolute_path_valid_rpm)
+
+    def check_version(self, version, expect_valid):
+        rpm_fetcher = server.PrestoRpmFetcher(version)
+        is_valid_version = rpm_fetcher.check_valid_version()
+        if expect_valid:
+            self.assertTrue(is_valid_version)
+        else:
+            self.assertFalse(is_valid_version)
+
+    def test_check_version_empty_string_fails(self):
+        self.check_version('', False)
+
+    def test_check_version_major_succeeds(self):
+        self.check_version('1', True)
+
+    def test_check_version_major_extra_period_fails(self):
+        self.check_version('1.', False)
+
+    def test_check_version_minor_succeeds(self):
+        self.check_version('1.2', True)
+
+    def test_check_version_minor_extra_period_fails(self):
+        self.check_version('1.2.', False)
+
+    def test_check_version_patch_succeeds(self):
+        self.check_version('1.2.3', True)
+
+    def test_check_version_patch_extra_period_fails(self):
+        self.check_version('1.2.3.', False)
+
+    def test_check_version_multiple_numbers_succeeds(self):
+        self.check_version('111.222.333', True)
+
+    def test_check_version_with_dashes_fails(self):
+        self.check_version('1-2-3', False)
+
+    def test_check_version_extra_fields_fails(self):
+        self.check_version('1.2.3.4', False)
+
+    @staticmethod
+    def set_up_specifier_find_and_download_mocks(mock_download_rpm, mock_find_local, rpm_path, location=None):
+        if location == 'local':
+            mock_find_local.return_value = rpm_path
+        elif location == 'download':
+            mock_download_rpm.return_value = rpm_path
+            mock_find_local.return_value = None
+        elif location == 'none':
+            mock_download_rpm.return_value = None
+            mock_find_local.return_value = None
+        else:
+            exit('Cannot mock because of invalid location: %s' % location)
+
+    def call_and_assert_install_with_rpm_specifier(self, mock_download_rpm, mock_check_rpm, mock_execute, location,
+                                                   rpm_specifier, rpm_path):
+        if location == 'local' or location == 'download':
+            server.install(rpm_specifier)
+            if location == 'local':
+                mock_download_rpm.assert_not_called()
+            else:
+                self.assertTrue(mock_download_rpm.called)
+            mock_check_rpm.assert_called_with(rpm_path)
+            mock_execute.assert_called_with(server.deploy_install_configure,
+                                            rpm_path, hosts=get_host_list())
+        elif location == 'none':
+            self.assertRaises(SystemExit, server.install, rpm_specifier)
+            mock_check_rpm.assert_not_called()
+            mock_execute.assert_not_called()
+        else:
+            exit('Cannot assert because of invalid location: %s' % location)
+
     @patch('prestoadmin.server.execute')
-    def test_install_server(self, mock_execute, mock_check_rpm):
-        local_path = "/any/path/rpm"
-        server.install(local_path)
-        mock_check_rpm.assert_called_with(local_path)
-        mock_execute.assert_called_with(server.deploy_install_configure,
-                                        local_path, hosts=get_host_list())
+    @patch('prestoadmin.server.package.check_if_valid_rpm')
+    @patch('prestoadmin.server.LocalPrestoRpmFinder.find_local_presto_rpm')
+    @patch('prestoadmin.server.PrestoRpmDownloader.download_rpm')
+    def check_rpm_specifier_with_location(self, mock_download_rpm, mock_find_local,
+                                          mock_check_rpm, mock_execute, rpm_specifier, location=None):
+        # This function should not mock the UrlHandler class so that urls will be opened
+        # This checks that the urls that the installer tries to reach are still valid
+        rpm_path = '/path/to/download_or_found/rpm'
+        TestInstall.set_up_specifier_find_and_download_mocks(mock_download_rpm, mock_find_local, rpm_path, location)
+        self.call_and_assert_install_with_rpm_specifier(mock_download_rpm, mock_check_rpm, mock_execute, location,
+                                                        rpm_specifier, rpm_path)
+
+    def test_specifier_as_latest_download(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='latest', location='download')
+
+    def test_specifier_as_latest_found_locally(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='latest', location='local')
+
+    def test_specifier_as_latest_not_located(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='latest', location='none')
+
+    def test_specifier_as_url_download(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='http://search.maven.org/remotecontent?filepath=com/'
+                                                             'facebook/presto/presto-server-rpm/0.148/'
+                                                             'presto-server-rpm-0.148.rpm',
+                                               location='download')
+
+    def test_specifier_as_url_found_locally(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='http://search.maven.org/remotecontent?filepath=com/'
+                                                             'facebook/presto/presto-server-rpm/0.148/'
+                                                             'presto-server-rpm-0.148.rpm',
+                                               location='local')
+
+    def test_specifier_as_url_not_located(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='http://search.maven.org/remotecontent?filepath=com/'
+                                                             'facebook/presto/presto-server-rpm/0.148/'
+                                                             'presto-server-rpm-0.148.rpm',
+                                               location='none')
+
+    def test_specifier_as_version_download(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='0.144.6', location='download')
+
+    def test_specifier_as_version_found_locally(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='0.144.6', location='local')
+
+    def test_specifier_as_version_not_located(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='0.144.6', location='none')
+
+    def test_specifier_as_local_path_without_file_scheme_found_locally(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='/path/to/rpm', location='local')
+
+    def test_specifier_as_local_path_without_file_scheme_not_located(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='/path/to/rpm', location='none')
+
+    def test_specifier_as_local_path_with_file_scheme_found_locally(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='file:///path/to/rpm', location='local')
+
+    def test_specifier_as_local_path_with_file_scheme_not_located(self):
+        self.check_rpm_specifier_with_location(rpm_specifier='file:///path/to/rpm', location='none')
 
     @patch('prestoadmin.server.sudo')
     @patch('prestoadmin.server.package.deploy_install')
     @patch('prestoadmin.server.update_configs')
     def test_deploy_install_configure(self, mock_update, mock_install,
                                       mock_sudo):
-        local_path = "/any/path/rpm"
+        rpm_specifier = "/any/path/rpm"
         mock_sudo.side_effect = self.mock_fail_then_succeed()
 
-        server.deploy_install_configure(local_path)
-        mock_install.assert_called_with(local_path)
+        server.deploy_install_configure(rpm_specifier)
+        mock_install.assert_called_with(rpm_specifier)
         self.assertTrue(mock_update.called)
         mock_sudo.assert_called_with('getent passwd presto', quiet=True)
 

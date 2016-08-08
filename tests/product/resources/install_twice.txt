@@ -1,3 +1,6 @@
+Using rpm_specifier as a local path
+Fetching local presto rpm at path: .*
+Found existing rpm at: .*
 
 Fatal error: [%(slave2)s] sudo() received nonzero return code 1 while executing!
 

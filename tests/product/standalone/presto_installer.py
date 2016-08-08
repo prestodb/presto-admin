@@ -109,7 +109,7 @@ class StandalonePrestoInstaller(BaseInstaller):
     def _detect_presto_rpm():
         """
         Detects the Presto RPM in the main directory of presto-admin.
-        Returns the name of the RPM, if it exists, else returns None.
+        Returns the name of the RPM, if it exists, else raises an OSError.
         """
         rpm_names = fnmatch.filter(os.listdir(prestoadmin.main_dir),
                                    PRESTO_RPM_GLOB)
