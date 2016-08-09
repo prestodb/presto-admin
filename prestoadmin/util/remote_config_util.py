@@ -82,7 +82,7 @@ def lookup_string_config(config_value, config_file, host, default=''):
 def lookup_in_config(config_key, config_file, host):
     with settings(hide('stdout', 'warnings', 'aborts')):
         config_value = execute(sudo, 'grep %s= %s' % (config_key, config_file),
-                               user='presto', group='presto',
+                               user='presto',
                                warn_only=True, host=host)[host]
 
     if isinstance(config_value, Exception) or config_value.return_code == 2:
