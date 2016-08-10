@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.configure_cmds &mdash; presto-admin 1.4 documentation</title>
+    <title>prestoadmin.configure_cmds &mdash; presto-admin 1.4.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.4',
+        VERSION:     '1.4.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.4 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.4.1 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -143,7 +143,7 @@
             <span class="k">continue</span>
         <span class="n">remote_config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
         <span class="n">put_secure</span><span class="p">(</span><span class="n">PRESTO_STANDALONE_USER_GROUP</span><span class="p">,</span> <span class="mo">0600</span><span class="p">,</span> <span class="n">local_config_file</span><span class="p">,</span>
-                   <span class="n">remote_config_file</span><span class="p">)</span>
+                   <span class="n">remote_config_file</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">fetch_all</span><span class="p">(</span><span class="n">target_directory</span><span class="p">,</span> <span class="n">allow_overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
@@ -165,7 +165,7 @@
                  <span class="o">%</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">remote_file_path</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">get</span><span class="p">(</span><span class="n">remote_file_path</span><span class="p">,</span> <span class="n">config_destination</span><span class="p">)</span>
+        <span class="n">get</span><span class="p">(</span><span class="n">remote_file_path</span><span class="p">,</span> <span class="n">config_destination</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">remote_file_path</span>
 
 
@@ -244,7 +244,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.util.remote_config_util &mdash; presto-admin 1.4 documentation</title>
+    <title>prestoadmin.util.remote_config_util &mdash; presto-admin 1.4.1 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.4',
+        VERSION:     '1.4.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.4 documentation" href="../../../index.html" />
+    <link rel="top" title="presto-admin 1.4.1 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -131,7 +131,7 @@
 <div class="viewcode-block" id="lookup_in_config"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.remote_config_util.lookup_in_config">[docs]</a><span class="k">def</span> <span class="nf">lookup_in_config</span><span class="p">(</span><span class="n">config_key</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s1">&#39;stdout&#39;</span><span class="p">,</span> <span class="s1">&#39;warnings&#39;</span><span class="p">,</span> <span class="s1">&#39;aborts&#39;</span><span class="p">)):</span>
         <span class="n">config_value</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">sudo</span><span class="p">,</span> <span class="s1">&#39;grep </span><span class="si">%s</span><span class="s1">= </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config_key</span><span class="p">,</span> <span class="n">config_file</span><span class="p">),</span>
-                               <span class="n">user</span><span class="o">=</span><span class="s1">&#39;presto&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;presto&#39;</span><span class="p">,</span>
+                               <span class="n">user</span><span class="o">=</span><span class="s1">&#39;presto&#39;</span><span class="p">,</span>
                                <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)[</span><span class="n">host</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config_value</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">)</span> <span class="ow">or</span> <span class="n">config_value</span><span class="o">.</span><span class="n">return_code</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -169,7 +169,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

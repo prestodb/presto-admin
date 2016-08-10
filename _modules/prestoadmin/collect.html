@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.collect &mdash; presto-admin 1.4 documentation</title>
+    <title>prestoadmin.collect &mdash; presto-admin 1.4.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.4',
+        VERSION:     '1.4.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.4 documentation" href="../../index.html" />
+    <link rel="top" title="presto-admin 1.4.1 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -93,6 +93,7 @@
 
 
 <span class="n">TMP_PRESTO_DEBUG</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug/&#39;</span>
+<span class="n">TMP_PRESTO_DEBUG_REMOTE</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug-remote&#39;</span>
 <span class="n">OUTPUT_FILENAME_FOR_LOGS</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug-logs.tar.bz2&#39;</span>
 <span class="n">OUTPUT_FILENAME_FOR_SYS_INFO</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug-sysinfo.tar.bz2&#39;</span>
 <span class="n">PRESTOADMIN_LOG_NAME</span> <span class="o">=</span> <span class="s1">&#39;presto-admin.log&#39;</span>
@@ -157,7 +158,7 @@
     <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;local path used &#39;</span> <span class="o">+</span> <span class="n">path_with_host_name</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">get</span><span class="p">(</span><span class="n">remote_path</span><span class="p">,</span> <span class="n">path_with_host_name</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">get</span><span class="p">(</span><span class="n">remote_path</span><span class="p">,</span> <span class="n">path_with_host_name</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;remote path &#39;</span> <span class="o">+</span> <span class="n">remote_path</span> <span class="o">+</span> <span class="s1">&#39; not found on &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
 
@@ -258,10 +259,10 @@
 
 <span class="k">def</span> <span class="nf">get_system_info</span><span class="p">(</span><span class="n">download_location</span><span class="p">):</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG</span><span class="p">):</span>
-        <span class="n">run</span><span class="p">(</span><span class="s2">&quot;mkdir &quot;</span> <span class="o">+</span> <span class="n">TMP_PRESTO_DEBUG</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG_REMOTE</span><span class="p">):</span>
+        <span class="n">run</span><span class="p">(</span><span class="s2">&quot;mkdir &quot;</span> <span class="o">+</span> <span class="n">TMP_PRESTO_DEBUG_REMOTE</span><span class="p">)</span>
 
-    <span class="n">version_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG</span><span class="p">,</span> <span class="s1">&#39;version_info.txt&#39;</span><span class="p">)</span>
+    <span class="n">version_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG_REMOTE</span><span class="p">,</span> <span class="s1">&#39;version_info.txt&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">version_file_name</span><span class="p">):</span>
         <span class="n">run</span><span class="p">(</span><span class="s1">&#39;rm -f &#39;</span> <span class="o">+</span> <span class="n">version_file_name</span><span class="p">)</span>
@@ -321,7 +322,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
