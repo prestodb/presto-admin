@@ -6,26 +6,31 @@ SSH Configuration
 
 In order to run ``presto-admin``, the node that is running ``presto-admin`` must be able to connect to all of the nodes running Presto via SSH. ``presto-admin`` makes the SSH connection with the username and port specified in ``/etc/opt/prestoadmin/config.json``. Even if you have a single-node installation, ``ssh username@localhost`` needs to work properly.
 
-There are two ways to configure SSH: with keys so that you can use passwordless SSH, or with passwords. If your cluster already has passwordless SSH configured, you can skip this step. If you are intending to use ``presto-admin`` with passwords, take a look at the documentation below, because there are several ways to specify the password.
+There are two ways to configure SSH: with keys so that you can use passwordless SSH, or with passwords. If your cluster already has passwordless SSH configured for the username ``user``, you can skip this step if the username is root, otherwise the root public key (id_rsa.pub) needs to be appended to the non-root username’s authorized_keys file. If you are intending to use ``presto-admin`` with passwords, take a look at the documentation below, because there are several ways to specify the password.
 
 Using ``presto-admin`` with passwordless SSH
 --------------------------------------------
-In order to set up passwordless SSH, you must first generate keys with no passphrase on the node running ``presto-admin``:
+In order to set up passwordless SSH, you must first login as username on the presto-admin node and generate keys with no passphrase on the node running ``presto-admin``:
 ::
 
  ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
 
-Copy the public key to all of the coordinator and worker nodes:
+While logged in as username, copy the public key to all of the coordinator and worker nodes:
 ::
 
  ssh <username>@<ip> "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
  scp ~/.ssh/id_rsa.pub <username>@<ip>:~/.ssh/id_rsa.pub
 
-Log into all of those nodes and copy the public key to the authorized key file:
+Log into all of those nodes and append the public key to the authorized key file:
 ::
 
  ssh <username>@<ip> "cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 
+For non-root username, log into all of those nodes and append the root user public key to the username authorized key file, provided the passwordless ssh has been setup for root user.:
+::
+
+   ssh <username>@<ip> "sudo cat /root/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+ 
 Once you have passwordless SSH set up, you can just run ``presto-admin`` commands as they appear in the documentation. If your private key is not in ``~/.ssh``, it is possible to specify one or several private keys using the -i CLI option:
 
 ::
@@ -33,7 +38,7 @@ Once you have passwordless SSH set up, you can just run ``presto-admin`` command
  sudo ./presto-admin <command> -i <path_to_private_key> -i <path_to_second_private_key>
 
 
-Please also note that it is not common for servers to allow passwordless SSH to root because of security concerns, so it is preferable for your SSH user not to be root.
+Please also note that it is not common for servers to allow passwordless SSH for root because of security concerns, so it is preferable for the SSH user not to be root.
 
 Using ``presto-admin`` with SSH passwords
 -----------------------------------------

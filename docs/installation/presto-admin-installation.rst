@@ -8,6 +8,12 @@ Installing Presto Admin
 .. NOTE::
      For Amazon EMR, use the online installer instead of the offline installer (see :ref:`advanced-installation-options-label`).
 
+.. NOTE::
+   Omit the use of ‘sudo’ when the prestoadmin scripts and presto-admin commands when the root user is selected as the prestoadmin user.
+
+.. NOTE::
+   The sudo setup for a non-root user has a security hole where the presto-admin non-root user requires the ability to run /bin/bash as root. The IT organization will need to take the appropriate steps to address this security hole and select which user will be the presto-admin user.
+     
 To install ``presto-admin``:
  
 1. Copy the installer ``prestoadmin-1.4-SNAPSHOT-offline.tar.bz2`` to the location where you want
@@ -22,7 +28,7 @@ To install ``presto-admin``:
 
 The installation script will create a ``presto-admin-install`` directory and an
 executable ``presto-admin`` script. Make sure to run the installation script
-with sudo.
+with sudo when the presto-admin user is non-root.
 
 3. Verify that ``presto-admin`` was installed properly by running the
 ``presto-admin`` help.  Please note that it is necessary to run all
