@@ -62,6 +62,14 @@
 <p class="first admonition-title">Note</p>
 <p class="last">For Amazon EMR, use the online installer instead of the offline installer (see <a class="reference internal" href="advanced-installation-options.html#advanced-installation-options-label"><span class="std std-ref">Advanced Installation Options</span></a>).</p>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Omit the use of ‘sudo’ when the prestoadmin scripts and presto-admin commands when the root user is selected as the prestoadmin user.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The sudo setup for a non-root user has a security hole where the presto-admin non-root user requires the ability to run /bin/bash as root. The IT organization will need to take the appropriate steps to address this security hole and select which user will be the presto-admin user.</p>
+</div>
 <p>To install <code class="docutils literal"><span class="pre">presto-admin</span></code>:</p>
 <p>1. Copy the installer <code class="docutils literal"><span class="pre">prestoadmin-1.4-SNAPSHOT-offline.tar.bz2</span></code> to the location where you want
 <code class="docutils literal"><span class="pre">presto-admin</span></code> to run. The recommended installation location is <code class="docutils literal"><span class="pre">/opt</span></code>. Note that <code class="docutils literal"><span class="pre">presto-admin</span></code> does not have to be on the same node(s) where Presto will run, though it does need to have SSH access to all of the nodes in the cluster.</p>
@@ -73,7 +81,7 @@ $ sudo ./install-prestoadmin.sh
 </div>
 <p>The installation script will create a <code class="docutils literal"><span class="pre">presto-admin-install</span></code> directory and an
 executable <code class="docutils literal"><span class="pre">presto-admin</span></code> script. Make sure to run the installation script
-with sudo.</p>
+with sudo when the presto-admin user is non-root.</p>
 <p>3. Verify that <code class="docutils literal"><span class="pre">presto-admin</span></code> was installed properly by running the
 <code class="docutils literal"><span class="pre">presto-admin</span></code> help.  Please note that it is necessary to run all
 <code class="docutils literal"><span class="pre">presto-admin</span></code> commands with sudo:</p>

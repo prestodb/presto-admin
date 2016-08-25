@@ -57,27 +57,31 @@
   <div class="section" id="ssh-configuration">
 <span id="ssh-configuration-label"></span><h1>SSH Configuration<a class="headerlink" href="#ssh-configuration" title="Permalink to this headline">¶</a></h1>
 <p>In order to run <code class="docutils literal"><span class="pre">presto-admin</span></code>, the node that is running <code class="docutils literal"><span class="pre">presto-admin</span></code> must be able to connect to all of the nodes running Presto via SSH. <code class="docutils literal"><span class="pre">presto-admin</span></code> makes the SSH connection with the username and port specified in <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. Even if you have a single-node installation, <code class="docutils literal"><span class="pre">ssh</span> <span class="pre">username&#64;localhost</span></code> needs to work properly.</p>
-<p>There are two ways to configure SSH: with keys so that you can use passwordless SSH, or with passwords. If your cluster already has passwordless SSH configured, you can skip this step. If you are intending to use <code class="docutils literal"><span class="pre">presto-admin</span></code> with passwords, take a look at the documentation below, because there are several ways to specify the password.</p>
+<p>There are two ways to configure SSH: with keys so that you can use passwordless SSH, or with passwords. If your cluster already has passwordless SSH configured for the username <code class="docutils literal"><span class="pre">user</span></code>, you can skip this step if the username is root, otherwise the root public key (id_rsa.pub) needs to be appended to the non-root username’s authorized_keys file. If you are intending to use <code class="docutils literal"><span class="pre">presto-admin</span></code> with passwords, take a look at the documentation below, because there are several ways to specify the password.</p>
 <div class="section" id="using-presto-admin-with-passwordless-ssh">
 <h2>Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with passwordless SSH<a class="headerlink" href="#using-presto-admin-with-passwordless-ssh" title="Permalink to this headline">¶</a></h2>
-<p>In order to set up passwordless SSH, you must first generate keys with no passphrase on the node running <code class="docutils literal"><span class="pre">presto-admin</span></code>:</p>
+<p>In order to set up passwordless SSH, you must first login as username on the presto-admin node and generate keys with no passphrase on the node running <code class="docutils literal"><span class="pre">presto-admin</span></code>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span><span class="o">-</span><span class="n">keygen</span> <span class="o">-</span><span class="n">t</span> <span class="n">rsa</span> <span class="o">-</span><span class="n">P</span> <span class="s1">&#39;&#39;</span> <span class="o">-</span><span class="n">f</span> <span class="o">~/.</span><span class="n">ssh</span><span class="o">/</span><span class="n">id_rsa</span>
 </pre></div>
 </div>
-<p>Copy the public key to all of the coordinator and worker nodes:</p>
+<p>While logged in as username, copy the public key to all of the coordinator and worker nodes:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">&lt;</span><span class="n">username</span><span class="o">&gt;@&lt;</span><span class="n">ip</span><span class="o">&gt;</span> <span class="s2">&quot;mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh&quot;</span>
 <span class="n">scp</span> <span class="o">~/.</span><span class="n">ssh</span><span class="o">/</span><span class="n">id_rsa</span><span class="o">.</span><span class="n">pub</span> <span class="o">&lt;</span><span class="n">username</span><span class="o">&gt;@&lt;</span><span class="n">ip</span><span class="o">&gt;</span><span class="p">:</span><span class="o">~/.</span><span class="n">ssh</span><span class="o">/</span><span class="n">id_rsa</span><span class="o">.</span><span class="n">pub</span>
 </pre></div>
 </div>
-<p>Log into all of those nodes and copy the public key to the authorized key file:</p>
+<p>Log into all of those nodes and append the public key to the authorized key file:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">&lt;</span><span class="n">username</span><span class="o">&gt;@&lt;</span><span class="n">ip</span><span class="o">&gt;</span> <span class="s2">&quot;cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys&quot;</span>
+</pre></div>
+</div>
+<p>For non-root username, log into all of those nodes and append the root user public key to the username authorized key file, provided the passwordless ssh has been setup for root user.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">&lt;</span><span class="n">username</span><span class="o">&gt;@&lt;</span><span class="n">ip</span><span class="o">&gt;</span> <span class="s2">&quot;sudo cat /root/.ssh/id_dsa.pub &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys&quot;</span>
 </pre></div>
 </div>
 <p>Once you have passwordless SSH set up, you can just run <code class="docutils literal"><span class="pre">presto-admin</span></code> commands as they appear in the documentation. If your private key is not in <code class="docutils literal"><span class="pre">~/.ssh</span></code>, it is possible to specify one or several private keys using the -i CLI option:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">i</span> <span class="o">&lt;</span><span class="n">path_to_private_key</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">i</span> <span class="o">&lt;</span><span class="n">path_to_second_private_key</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>Please also note that it is not common for servers to allow passwordless SSH to root because of security concerns, so it is preferable for your SSH user not to be root.</p>
+<p>Please also note that it is not common for servers to allow passwordless SSH for root because of security concerns, so it is preferable for the SSH user not to be root.</p>
 </div>
 <div class="section" id="using-presto-admin-with-ssh-passwords">
 <h2>Using <code class="docutils literal"><span class="pre">presto-admin</span></code> with SSH passwords<a class="headerlink" href="#using-presto-admin-with-ssh-passwords" title="Permalink to this headline">¶</a></h2>

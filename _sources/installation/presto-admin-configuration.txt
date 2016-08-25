@@ -13,14 +13,15 @@ In order to use ``presto-admin`` to manage software on a cluster of nodes,
 you must specify a configuration for ``presto-admin``. This configuration
 indicates the nodes on which to install as well as other credentials.
 
-To set up a configuration, create a file ``/etc/opt/prestoadmin/config.json``
-with the content below as appropriate for your cluster setup. Replace the
-variables denoted with brackets <> with actual values enclosed in double
-quotations. The user specified by ``username`` must have sudo access on all
-the Presto nodes, and ``presto-admin`` also must be able to login to all of
-the nodes via SSH as that user (see :ref:`ssh-configuration-label` for details
-on how to set that up). The file should be owned by root with R/W permissions
-(i.e. 622).
+To set up a configuration, create a file
+``/etc/opt/prestoadmin/config.json`` with the content below as
+appropriate for your cluster setup. Replace the variables denoted with
+brackets <> with actual values enclosed in double quotations. The user
+specified by ``username`` must have sudo access, unless the username
+is root, on all the Presto nodes, and ``presto-admin`` also must be
+able to login to all of the nodes via SSH as that user (see
+:ref:`ssh-configuration-label` for details on how to set that up). The
+file should be owned by root with R/W permissions (i.e. 622).
 
 Configuration for Amazon EMR 
 ----------------------------

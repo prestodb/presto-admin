@@ -65,14 +65,15 @@ clusters.</p>
 <p>In order to use <code class="docutils literal"><span class="pre">presto-admin</span></code> to manage software on a cluster of nodes,
 you must specify a configuration for <code class="docutils literal"><span class="pre">presto-admin</span></code>. This configuration
 indicates the nodes on which to install as well as other credentials.</p>
-<p>To set up a configuration, create a file <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>
-with the content below as appropriate for your cluster setup. Replace the
-variables denoted with brackets &lt;&gt; with actual values enclosed in double
-quotations. The user specified by <code class="docutils literal"><span class="pre">username</span></code> must have sudo access on all
-the Presto nodes, and <code class="docutils literal"><span class="pre">presto-admin</span></code> also must be able to login to all of
-the nodes via SSH as that user (see <a class="reference internal" href="../ssh-configuration.html#ssh-configuration-label"><span class="std std-ref">SSH Configuration</span></a> for details
-on how to set that up). The file should be owned by root with R/W permissions
-(i.e. 622).</p>
+<p>To set up a configuration, create a file
+<code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code> with the content below as
+appropriate for your cluster setup. Replace the variables denoted with
+brackets &lt;&gt; with actual values enclosed in double quotations. The user
+specified by <code class="docutils literal"><span class="pre">username</span></code> must have sudo access, unless the username
+is root, on all the Presto nodes, and <code class="docutils literal"><span class="pre">presto-admin</span></code> also must be
+able to login to all of the nodes via SSH as that user (see
+<a class="reference internal" href="../ssh-configuration.html#ssh-configuration-label"><span class="std std-ref">SSH Configuration</span></a> for details on how to set that up). The
+file should be owned by root with R/W permissions (i.e. 622).</p>
 <div class="section" id="configuration-for-amazon-emr">
 <h2>Configuration for Amazon EMR<a class="headerlink" href="#configuration-for-amazon-emr" title="Permalink to this headline">¶</a></h2>
 <p>Use the following configuration as a template for Amazon EMR:</p>
