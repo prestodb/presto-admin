@@ -117,7 +117,7 @@ class BaseCluster(object):
         pass
 
     @abc.abstractmethod
-    def run_script_on_host(self, script_contents, host):
+    def run_script_on_host(self, script_contents, host, tty=True):
         pass
 
     @abc.abstractmethod
@@ -126,4 +126,13 @@ class BaseCluster(object):
 
     @abc.abstractmethod
     def copy_to_host(self, source_path, host, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def get_rpm_cache_dir(self):
+        """Return directory where to cache the presto RPM. For DockerCluster
+        this can be the mount directory but for ConfigurableCluster where
+        RPM upload involves large latency it has to be a directory that doesn't
+        get torn down before every test.
+        """
         pass

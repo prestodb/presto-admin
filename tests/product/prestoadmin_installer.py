@@ -24,6 +24,7 @@ import os
 import prestoadmin
 
 from tests.base_installer import BaseInstaller
+from tests.configurable_cluster import ConfigurableCluster
 from tests.product.constants import LOCAL_RESOURCES_DIR
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 
@@ -51,14 +52,11 @@ class PrestoadminInstaller(BaseInstaller):
         if not dist_dir:
             dist_dir = self._build_dist_if_necessary(cluster)
         self._copy_dist_to_host(cluster, dist_dir, cluster.master)
-        cluster.copy_to_host(
-            LOCAL_RESOURCES_DIR + "/install-admin.sh", cluster.master)
-        cluster.exec_cmd_on_host(
-            cluster.master,
-            'chmod +x ' + cluster.mount_dir + "/install-admin.sh"
-        )
-        cluster.exec_cmd_on_host(
-            cluster.master, cluster.mount_dir + "/install-admin.sh")
+        with open(LOCAL_RESOURCES_DIR + "/install-admin.sh", 'r') as file_obj:
+            script = ''.join(file_obj.readlines())
+
+        script = script.format(cluster.mount_dir)
+        cluster.run_script_on_host(script, cluster.master, tty=False)
 
     @staticmethod
     def assert_installed(testcase, msg=None):
@@ -80,8 +78,11 @@ class PrestoadminInstaller(BaseInstaller):
     def _build_installer_in_docker(self, cluster, online_installer=None,
                                    unique=False):
         if online_installer is None:
-            paTestOnlineInstaller = os.environ.get('PA_TEST_ONLINE_INSTALLER')
-            online_installer = paTestOnlineInstaller is not None
+            pa_test_online_installer = os.environ.get('PA_TEST_ONLINE_INSTALLER')
+            online_installer = pa_test_online_installer is not None
+
+        if isinstance(cluster, ConfigurableCluster):
+            online_installer = True
 
         container_name = 'installer'
         cluster_type = 'installer_builder'

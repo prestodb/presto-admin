@@ -24,12 +24,12 @@ import paramiko
 from subprocess import check_call
 import tempfile
 import yaml
+import uuid
 
 from prestoadmin import main_dir
 from tests.base_cluster import BaseCluster
 
 CONFIG_FILE_GLOB = r'*.yaml'
-DEFAULT_MOUNT_POINT = '/mnt/presto-admin'
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 
 
@@ -48,7 +48,11 @@ class ConfigurableCluster(BaseCluster):
     slaves: ['172.16.1.11', '172.16.1.12', '172.16.1.13']
     user: root
     teardown_existing_cluster: true
+    key_path: /path/to/cluster-key.pem
+    mount_point: /home/ec2-user/presto-admin
+    rpm_cache_dir: /home/ec2-user/presto-rpm-cache
     """
+
     def __init__(self, config_filename):
         with open(os.path.join(main_dir, config_filename)) as config_file:
             config = yaml.load(config_file)
@@ -64,10 +68,14 @@ class ConfigurableCluster(BaseCluster):
         self.internal_master = 'master'
         self.internal_slaves = ['slave1', 'slave2', 'slave3']
         self.user = config['user']
-        from tests.product import user_password
-        self.password = user_password
+
+        self.key_path = config['key_path']
+        if not os.path.exists(self.key_path):
+            raise Exception('Key path specified {0} does not exist.'.format(self.key_path))
+
         self.config = config
-        self.mount_dir = DEFAULT_MOUNT_POINT
+        self.mount_dir = config['mount_point']
+        self.rpm_cache_dir = config['rpm_cache_dir']
 
     @staticmethod
     def check_for_cluster_config():
@@ -99,6 +107,7 @@ class ConfigurableCluster(BaseCluster):
             service presto stop
             rpm -e presto-server-rpm
             rm -rf /opt/prestoadmin
+            rm -rf /opt/prestoadmin*.tar.bz2
             rm -rf /etc/opt/prestoadmin
             rm -rf /tmp/presto-debug
             rm -rf /etc/presto/
@@ -140,6 +149,11 @@ class ConfigurableCluster(BaseCluster):
 
     def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
                          tty=False):
+        # Ensure command is invoked with sudo since EMR's login user is ec2-user
+        # If sudo is already present in the command then no error will occur
+        # as arbitrary nesting of sudo is allowed
+        cmd = 'sudo ' + cmd
+
         if user is None:
             user = self.user
         # We need to execute the commands on the external, not internal, host.
@@ -148,11 +162,11 @@ class ConfigurableCluster(BaseCluster):
             host = self.all_hosts()[index]
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host, username=user, password=self.password,
+        ssh.connect(host, username=user, key_filename=self.key_path,
                     timeout=180)
         stdin, stdout, stderr = ssh.exec_command(cmd, get_pty=True)
         stdin.close()
-        output = ''.join(stdout.readlines()).replace('\r', '')\
+        output = ''.join(stdout.readlines()).replace('\r', '') \
             .encode('ascii', 'ignore')
         exit_status = stdout.channel.recv_exit_status()
         ssh.close()
@@ -162,23 +176,23 @@ class ConfigurableCluster(BaseCluster):
 
     @staticmethod
     def start_bare_cluster(config_filename, testcase, assert_installed):
-        centos_cluster = ConfigurableCluster(config_filename)
-        if 'teardown_existing_cluster' in centos_cluster.config \
-                and centos_cluster.config['teardown_existing_cluster']:
-            centos_cluster.tear_down()
-        elif centos_cluster._presto_is_installed(testcase, assert_installed):
+        cluster = ConfigurableCluster(config_filename)
+        if 'teardown_existing_cluster' in cluster.config \
+                and cluster.config['teardown_existing_cluster']:
+            cluster.tear_down()
+        elif cluster._presto_is_installed(testcase, assert_installed):
             raise Exception('Cluster already has Presto installed, '
                             'either uninstall Presto or specify '
                             '\'teardown_existing_cluster: true\' in the '
                             'cluster.yaml file.')
-        return centos_cluster
+        return cluster
 
-    def run_script_on_host(self, script_contents, host):
+    def run_script_on_host(self, script_contents, host, tty=True):
         temp_script = '/tmp/tmp.sh'
         self.write_content_to_host('#!/bin/bash\n%s' % script_contents,
                                    temp_script, host)
         self.exec_cmd_on_host(host, 'chmod +x %s' % temp_script)
-        return self.exec_cmd_on_host(host, temp_script, tty=True)
+        return self.exec_cmd_on_host(host, temp_script, tty=tty)
 
     def write_content_to_host(self, content, remote_path, host):
         with tempfile.NamedTemporaryFile('w', dir='/tmp', delete=False) \
@@ -194,29 +208,46 @@ class ConfigurableCluster(BaseCluster):
             dest_path = os.path.join(self.mount_dir,
                                      os.path.basename(source_path))
         self.exec_cmd_on_host(host, 'mkdir -p ' + os.path.dirname(dest_path))
+        self.exec_cmd_on_host(host, 'chown {0}:{0} {1}'.format(self.user, os.path.dirname(dest_path)))
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host, username=self.user, password=self.password,
+        ssh.connect(host, username=self.user, key_filename=self.key_path,
                     timeout=180)
+
+        # Upload to dummy location because paramiko doesn't allow SFTP using
+        # sudo when logged in as a non root user
+        dummy_path = '/tmp/{0}/{1}'.format(str(uuid.uuid1()), os.path.basename(dest_path))
+        self.exec_cmd_on_host(host, 'mkdir -p {0}'.format(os.path.dirname(dummy_path)))
+        self.exec_cmd_on_host(host, 'chown {0}:{0} {1}'.format(self.user, os.path.dirname(dummy_path)))
         sftp = ssh.open_sftp()
-        sftp.put(source_path, dest_path)
+        sftp.put(source_path, dummy_path)
         sftp.close()
+
+        # Move to final location using sudo
+        self.exec_cmd_on_host(host, 'mv {0} {1}'.format(dummy_path, dest_path))
+
+        # Remove dummy path directory
+        self.exec_cmd_on_host(host, 'rm -rf {0}'.format(os.path.dirname(dummy_path)))
+
         ssh.close()
 
+    # Since ConfigurableCluster is configured using external IPs, those act as
+    # hosts and so the dict returned contains an identity mapping from external IPs
+    # to external IPs in addition to internal host to internal IP mappings
     def get_ip_address_dict(self):
-        hosts_file = self.exec_cmd_on_host(self.master, 'cat /etc/hosts')\
-            .splitlines()
         ip_addresses = {}
-        for host in self.all_hosts():
-            ip_addresses[host] = self._get_ip_from_hosts_file(hosts_file, host)
+        for ip in self.all_hosts():
+            ip_addresses[ip] = ip
 
+        hosts_file = self.exec_cmd_on_host(self.master, 'cat /etc/hosts').splitlines()
         for internal_host in self.all_internal_hosts():
             ip_addresses[internal_host] = self._get_ip_from_hosts_file(
                 hosts_file, internal_host)
         return ip_addresses
 
-    def _get_ip_from_hosts_file(self, hosts_file, host):
+    @staticmethod
+    def _get_ip_from_hosts_file(hosts_file, host):
         for line in hosts_file:
             if host in line:
                 return line.split(' ')[0]
@@ -227,8 +258,11 @@ class ConfigurableCluster(BaseCluster):
             try:
                 assert_installed(testcase, host, cluster=self)
             except AssertionError:
-                return True
-        return False
+                return False
+        return True
 
     def postinstall(self, installer):
         pass
+
+    def get_rpm_cache_dir(self):
+        return self.rpm_cache_dir

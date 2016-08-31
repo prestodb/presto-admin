@@ -79,6 +79,7 @@ class DockerCluster(BaseCluster):
             kwargs['tls'].assert_hostname = False
         kwargs['timeout'] = 300
         self.client = Client(**kwargs)
+        self.user = 'root'
 
         DockerCluster.__check_if_docker_exists()
 
@@ -397,12 +398,12 @@ class DockerCluster(BaseCluster):
                                self._get_slave_image_name(bare_image_provider,
                                                           cluster_type))
 
-    def run_script_on_host(self, script_contents, host):
+    def run_script_on_host(self, script_contents, host, tty=True):
         temp_script = '/tmp/tmp.sh'
         self.write_content_to_host('#!/bin/bash\n%s' % script_contents,
                                    temp_script, host)
         self.exec_cmd_on_host(host, 'chmod +x %s' % temp_script)
-        return self.exec_cmd_on_host(host, temp_script, tty=True)
+        return self.exec_cmd_on_host(host, temp_script, tty=tty)
 
     def write_content_to_host(self, content, path, host):
         filename = os.path.basename(path)
@@ -451,6 +452,9 @@ class DockerCluster(BaseCluster):
         hook = _post_install_hooks.get(installer, None)
         if hook:
             hook(self)
+
+    def get_rpm_cache_dir(self):
+        return self.mount_dir
 
 
 class DockerClusterException(Exception):
