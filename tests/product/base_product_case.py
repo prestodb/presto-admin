@@ -130,6 +130,7 @@ query.max-memory=50GB\n"""
             self.cluster = ConfigurableCluster.start_bare_cluster(
                 config_filename, self,
                 StandalonePrestoInstaller.assert_installed)
+            BaseProductTestCase.run_installers(self.cluster, installers, self)
         else:
             self.cluster, bare_cluster = DockerCluster.start_cluster(
                 bare_image_provider, cluster_type)
@@ -147,6 +148,22 @@ query.max-memory=50GB\n"""
                 self._update_replacement_keywords(installers)
             else:
                 raise RuntimeError("Docker images have not been created")
+
+    # Do not call this method directory from tests or anywhere other than the BaseInstaller
+    # implementation classes.
+    @staticmethod
+    def run_installers(cluster, installers, testcase):
+        for installer in installers:
+            dependencies = installer.get_dependencies()
+
+            for dependency in dependencies:
+                dependency.assert_installed(testcase)
+
+            installer_instance = installer(testcase)
+            installer_instance.install()
+
+            testcase.default_keywords.update(installer_instance.get_keywords())
+            cluster.postinstall(installer)
 
     def dump_and_cp_topology(self, topology, cluster=None):
         if not cluster:
@@ -205,7 +222,8 @@ query.max-memory=50GB\n"""
         command = self.replace_keywords(command, cluster=cluster, **kwargs)
         return cluster.exec_cmd_on_host(
             cluster.master,
-            "/opt/prestoadmin/presto-admin %s" % command,
+            "/opt/prestoadmin/presto-admin --user {user} {cmd}".format(
+                user=cluster.user, cmd=command),
             raise_error=raise_error
         )
 

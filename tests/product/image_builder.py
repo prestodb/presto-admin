@@ -15,20 +15,6 @@ class ImageBuilder:
         self.testcase.default_keywords = {}
         self.testcase.cluster = None
 
-    def _run_installers(self, installers):
-        cluster = self.testcase.cluster
-        for installer in installers:
-            dependencies = installer.get_dependencies()
-
-            for dependency in dependencies:
-                dependency.assert_installed(self.testcase)
-
-            installer_instance = installer(self.testcase)
-            installer_instance.install()
-
-            self.testcase.default_keywords.update(installer_instance.get_keywords())
-            cluster.postinstall(installer)
-
     def _setup_image(self, bare_image_provider, cluster_type):
         installers = cluster_types[cluster_type]
 
@@ -42,7 +28,7 @@ class ImageBuilder:
         # If we got a non-bare cluster back, that means the image already exists
         # and we created the cluster using that image.
         if bare_cluster:
-            self._run_installers(installers)
+            BaseProductTestCase.run_installers(self.testcase.cluster, installers, self.testcase)
 
             if isinstance(self.testcase.cluster, DockerCluster):
                 self.testcase.cluster.commit_images(bare_image_provider, cluster_type)

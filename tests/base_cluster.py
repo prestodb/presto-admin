@@ -117,7 +117,17 @@ class BaseCluster(object):
         pass
 
     @abc.abstractmethod
-    def run_script_on_host(self, script_contents, host):
+    def run_script_on_host(self, script_contents, host, tty=True):
+        """Create a script on the remote host with the given content and execute it.
+
+        NOTE: if tty is set to True then the results of the execution on stdout will
+        have ^M (carriage return) at the end of every line. If doing string
+        comparison of the output, turn off tty.
+
+        :param script_contents: a string with the script contents
+        :param host: the host where to execute the script
+        :param tty: whether to execute the script with tty enabled
+        """
         pass
 
     @abc.abstractmethod
@@ -126,4 +136,13 @@ class BaseCluster(object):
 
     @abc.abstractmethod
     def copy_to_host(self, source_path, host, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def get_rpm_cache_dir(self):
+        """Return directory where to cache the presto RPM. For DockerCluster
+        this can be the mount directory but for ConfigurableCluster where
+        RPM upload involves large latency it has to be a directory that doesn't
+        get torn down before every test.
+        """
         pass
