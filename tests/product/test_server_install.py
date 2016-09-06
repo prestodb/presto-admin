@@ -17,19 +17,13 @@ import os
 from nose.plugins.attrib import attr
 
 from prestoadmin.util.local_config_util import get_connectors_directory
+
+from tests.product import relocate_jdk_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
-from tests.product.constants import LOCAL_RESOURCES_DIR, JAVA_VERSION_DIR, \
-    DEFAULT_JAVA_DIR
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
-
-
-def relocate_default_java(cluster, destination):
-    for container in cluster.all_hosts():
-        cluster.exec_cmd_on_host(
-            container, "mv %s %s" % (DEFAULT_JAVA_DIR, destination))
-    return os.path.join(destination, JAVA_VERSION_DIR)
+from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
 install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
@@ -60,66 +54,66 @@ install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
                                        'Fetching local presto rpm at path: .*',
                                        'Found existing rpm at: .*']
 
-install_with_worker_pa_master_out = ['Deploying rpm on master...',
-                                     'Deploying rpm on slave1...',
-                                     'Deploying rpm on slave2...',
-                                     'Deploying rpm on slave3...',
+install_with_worker_pa_master_out = ['Deploying rpm on {master}...',
+                                     'Deploying rpm on {slave1}...',
+                                     'Deploying rpm on {slave2}...',
+                                     'Deploying rpm on {slave3}...',
                                      'Package deployed successfully on: '
-                                     'slave3',
+                                     '{slave3}',
                                      'Package installed successfully on: '
-                                     'slave3',
+                                     '{slave3}',
                                      'Package deployed successfully on: '
-                                     'slave1',
+                                     '{slave1}',
                                      'Package installed successfully on: '
-                                     'slave1',
+                                     '{slave1}',
                                      'Package deployed successfully on: '
-                                     'master',
+                                     '{master}',
                                      'Package installed successfully on: '
-                                     'master',
+                                     '{master}',
                                      'Package deployed successfully on: '
-                                     'slave2',
+                                     '{slave2}',
                                      'Package installed successfully on: '
-                                     'slave2',
-                                     'Deploying configuration on: slave3',
+                                     '{slave2}',
+                                     'Deploying configuration on: {slave3}',
                                      'Deploying tpch.properties connector '
-                                     'configurations on: slave3 ',
-                                     'Deploying configuration on: slave1',
+                                     'configurations on: {slave3} ',
+                                     'Deploying configuration on: {slave1}',
                                      'Deploying tpch.properties connector '
-                                     'configurations on: slave1 ',
-                                     'Deploying configuration on: slave2',
+                                     'configurations on: {slave1} ',
+                                     'Deploying configuration on: {slave2}',
                                      'Deploying tpch.properties connector '
-                                     'configurations on: slave2 ',
-                                     'Deploying configuration on: master',
+                                     'configurations on: {slave2} ',
+                                     'Deploying configuration on: {master}',
                                      'Deploying tpch.properties connector '
-                                     'configurations on: master ',
+                                     'configurations on: {master} ',
                                      'Using rpm_specifier as a local path',
                                      'Fetching local presto rpm at path: .*',
                                      'Found existing rpm at: .*']
 
-installed_all_hosts_output = ['Deploying rpm on master...',
-                              'Deploying rpm on slave1...',
-                              'Deploying rpm on slave2...',
-                              'Deploying rpm on slave3...',
-                              'Package deployed successfully on: slave3',
-                              'Package installed successfully on: slave3',
-                              'Package deployed successfully on: slave1',
-                              'Package installed successfully on: slave1',
-                              'Package deployed successfully on: master',
-                              'Package installed successfully on: master',
-                              'Package deployed successfully on: slave2',
-                              'Package installed successfully on: slave2',
-                              'Deploying configuration on: slave3',
+installed_all_hosts_output = ['Deploying rpm on {master}...',
+                              'Deploying rpm on {slave1}...',
+                              'Deploying rpm on {slave2}...',
+                              'Deploying rpm on {slave3}...',
+                              'Package deployed successfully on: {slave3}',
+                              'Package installed successfully on: {slave3}',
+                              'Package deployed successfully on: {slave1}',
+                              'Package installed successfully on: {slave1}',
+                              'Package deployed successfully on: {master}',
+                              'Package installed successfully on: {master}',
+                              'Package deployed successfully on: {slave2}',
+                              'Package installed successfully on: {slave2}',
+                              'Deploying configuration on: {slave3}',
                               'Deploying tpch.properties connector '
-                              'configurations on: slave3 ',
-                              'Deploying configuration on: slave1',
+                              'configurations on: {slave3} ',
+                              'Deploying configuration on: {slave1}',
                               'Deploying tpch.properties connector '
-                              'configurations on: slave1 ',
-                              'Deploying configuration on: slave2',
+                              'configurations on: {slave1} ',
+                              'Deploying configuration on: {slave2}',
                               'Deploying tpch.properties connector '
-                              'configurations on: slave2 ',
-                              'Deploying configuration on: master',
+                              'configurations on: {slave2} ',
+                              'Deploying configuration on: {master}',
                               'Deploying tpch.properties connector '
-                              'configurations on: master ',
+                              'configurations on: {master} ',
                               'Using rpm_specifier as a local path',
                               'Fetching local presto rpm at path: .*',
                               'Found existing rpm at: .*']
@@ -158,13 +152,13 @@ query.max-memory=50GB\n"""
         super(TestServerInstall, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
 
-    def assert_common_configs(self, container):
+    def assert_common_configs(self, host):
         installer = StandalonePrestoInstaller(self)
-        installer.assert_installed(self, container)
-        self.assert_file_content(container, '/etc/presto/jvm.config',
+        installer.assert_installed(self, host)
+        self.assert_file_content(host, '/etc/presto/jvm.config',
                                  self.default_jvm_config_)
-        self.assert_node_config(container, self.default_node_properties_)
-        self.assert_has_default_connector(container)
+        self.assert_node_config(host, self.default_node_properties_)
+        self.assert_has_default_connector(host)
 
     def assert_installed_with_configs(self, master, slaves):
         self.assert_common_configs(master)
@@ -191,23 +185,23 @@ query.max-memory=50GB\n"""
     @attr('smoketest')
     def test_install_with_java8_home(self):
         installer = StandalonePrestoInstaller(self)
-        new_java_home = relocate_default_java(self.cluster, '/usr')
 
-        topology = {"coordinator": "master",
-                    "workers": ["slave1", "slave2", "slave3"],
-                    "java8_home": new_java_home}
-        self.upload_topology(topology)
+        with relocate_jdk_directory(self.cluster, '/usr') as new_java_home:
+            topology = {"coordinator": "master",
+                        "workers": ["slave1", "slave2", "slave3"],
+                        "java8_home": new_java_home}
+            self.upload_topology(topology)
 
-        cmd_output = installer.install()
-        expected = installed_all_hosts_output
+            cmd_output = installer.install()
+            expected = self.format_err_msgs_with_internal_hosts(installed_all_hosts_output)
 
-        actual = cmd_output.splitlines()
-        self.assertRegexpMatchesLineByLine(actual, expected)
+            actual = cmd_output.splitlines()
+            self.assertRegexpMatchesLineByLine(actual, expected)
 
-        for container in self.cluster.all_hosts():
-            installer.assert_installed(self, container)
-            self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            for host in self.cluster.all_hosts():
+                installer.assert_installed(self, host)
+                self.assert_has_default_config(host)
+                self.assert_has_default_connector(host)
 
     def test_install_ext_host_is_pa_master(self):
         installer = StandalonePrestoInstaller(self)
@@ -267,8 +261,8 @@ query.max-memory=50GB\n"""
     def test_install_when_topology_has_ips(self):
         installer = StandalonePrestoInstaller(self)
         ips = self.cluster.get_ip_address_dict()
-        topology = {"coordinator": ips[self.cluster.master],
-                    "workers": [ips[self.cluster.slaves[0]]]}
+        topology = {"coordinator": ips[self.cluster.internal_master],
+                    "workers": [ips[self.cluster.internal_slaves[0]]]}
         self.upload_topology(topology)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
@@ -278,26 +272,26 @@ query.max-memory=50GB\n"""
 
         cmd_output = installer.install().splitlines()
         expected = [
-            r'Deploying rpm on %s...' % ips[self.cluster.master],
-            r'Deploying rpm on %s...' % ips[self.cluster.slaves[0]],
-            r'Package deployed successfully on: ' + ips[
-                self.cluster.master],
-            r'Package installed successfully on: ' + ips[
-                self.cluster.master],
+            r'Deploying rpm on %s...' % ips[self.cluster.internal_master],
+            r'Deploying rpm on %s...' % ips[self.cluster.internal_slaves[0]],
             r'Package deployed successfully on: ' +
-            ips[self.cluster.slaves[0]],
+            ips[self.cluster.internal_master],
             r'Package installed successfully on: ' +
-            ips[self.cluster.slaves[0]],
+            ips[self.cluster.internal_master],
+            r'Package deployed successfully on: ' +
+            ips[self.cluster.internal_slaves[0]],
+            r'Package installed successfully on: ' +
+            ips[self.cluster.internal_slaves[0]],
             r'Deploying configuration on: ' +
-            ips[self.cluster.master],
+            ips[self.cluster.internal_master],
             r'Deploying jmx.properties, tpch.properties '
             r'connector configurations on: ' +
-            ips[self.cluster.master] + r' ',
+            ips[self.cluster.internal_master] + r' ',
             r'Deploying configuration on: ' +
-            ips[self.cluster.slaves[0]],
+            ips[self.cluster.internal_slaves[0]],
             r'Deploying jmx.properties, tpch.properties '
             r'connector configurations on: ' +
-            ips[self.cluster.slaves[0]] + r' ',
+            ips[self.cluster.internal_slaves[0]] + r' ',
             r'Using rpm_specifier as a local path',
             r'Fetching local presto rpm at path: .*',
             r'Found existing rpm at: .*']
@@ -309,9 +303,8 @@ query.max-memory=50GB\n"""
         self.assert_installed_with_regex_configs(
             self.cluster.master,
             [self.cluster.slaves[0]])
-        for container in [self.cluster.master,
-                          self.cluster.slaves[0]]:
-            self.assert_has_jmx_connector(container)
+        for host in [self.cluster.master, self.cluster.slaves[0]]:
+            self.assert_has_jmx_connector(host)
 
     def test_install_interactive(self):
         installer = StandalonePrestoInstaller(self)
@@ -323,10 +316,16 @@ query.max-memory=50GB\n"""
         rpm_name = installer.copy_presto_rpm_to_master()
         self.write_test_configs(self.cluster)
 
+        additional_keywords = {
+            'user': self.cluster.user,
+            'rpm_dir': self.cluster.get_rpm_cache_dir(),
+            'rpm': rpm_name
+        }
+
         cmd_output = self.run_script_from_prestoadmin_dir(
-            'echo -e "root\n22\n%(master)s\n%(slave1)s\n" | '
-            './presto-admin server install /mnt/presto-admin/%(rpm)s ',
-            rpm=rpm_name)
+            'echo -e "%(user)s\n22\n%(master)s\n%(slave1)s\n" | '
+            './presto-admin server install %(rpm_dir)s/%(rpm)s ',
+            **additional_keywords)
 
         actual = cmd_output.splitlines()
         expected = [r'Enter user name for SSH connection to all nodes: '
@@ -390,23 +389,21 @@ query.max-memory=50GB\n"""
             self.down_node_connection_error(down_node)
         )
 
-        for container in [self.cluster.master,
-                          self.cluster.slaves[1],
-                          self.cluster.slaves[2]]:
-            self.assert_common_configs(container)
+        for host in [self.cluster.master,
+                     self.cluster.slaves[1],
+                     self.cluster.slaves[2]]:
+            self.assert_common_configs(host)
             self.assert_file_content(
-                container,
+                host,
                 '/etc/presto/config.properties',
-                self.default_workers_config_with_slave1_.replace(
-                    down_node, self.cluster.get_down_hostname(down_node)
-                )
+                self.default_workers_config_with_slave1_
             )
 
     def test_install_twice(self):
         installer = StandalonePrestoInstaller(self)
         self.upload_topology()
         cmd_output = installer.install()
-        expected = installed_all_hosts_output
+        expected = self.format_err_msgs_with_internal_hosts(installed_all_hosts_output)
 
         actual = cmd_output.splitlines()
         self.assertRegexpMatchesLineByLine(actual, expected)
@@ -444,10 +441,20 @@ query.max-memory=50GB\n"""
         rpm_name = installer.copy_presto_rpm_to_master(cluster=self.cluster)
         self.write_test_configs(self.cluster)
         self.run_prestoadmin(
-            'server install ' + os.path.join(self.cluster.mount_dir, rpm_name) + ' -p password'
+            'server install {rpm_dir}/{name} -p password'.format(
+                rpm_dir=self.cluster.get_rpm_cache_dir(), name=rpm_name)
         )
 
         for container in self.cluster.all_hosts():
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
+
+    def format_err_msgs_with_internal_hosts(self, msgs):
+        formatted_msg = []
+        for msg in msgs:
+            formatted_msg.append(msg.format(master=self.cluster.internal_master,
+                                            slave1=self.cluster.internal_slaves[0],
+                                            slave2=self.cluster.internal_slaves[1],
+                                            slave3=self.cluster.internal_slaves[2]))
+        return formatted_msg

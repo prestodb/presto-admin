@@ -21,7 +21,7 @@ from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER, STANDALONE_PRESTO_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
-from tests.product.test_server_install import relocate_default_java
+from tests.product.test_server_install import relocate_jdk_directory
 
 
 class TestRpm(BaseProductTestCase):
@@ -32,42 +32,41 @@ class TestRpm(BaseProductTestCase):
     @docker_only
     def test_install_fails_java8_not_found(self):
         installer = StandalonePrestoInstaller(self)
-        relocate_default_java(self.cluster, '/usr')
+        with relocate_jdk_directory(self.cluster, '/usr'):
+            self.upload_topology()
+            cmd_output = installer.install(pa_raise_error=False)
+            actual = cmd_output.splitlines()
+            num_failures = 0
+            for line in enumerate(actual):
+                if str(line).find('Error: Required Java version'
+                                  ' could not be found') != -1:
+                    num_failures += 1
 
-        self.upload_topology()
-        cmd_output = installer.install(pa_raise_error=False)
-        actual = cmd_output.splitlines()
-        num_failures = 0
-        for line in enumerate(actual):
-            if str(line).find('Error: Required Java version'
-                              ' could not be found') != -1:
-                num_failures += 1
+            self.assertEqual(4, num_failures)
 
-        self.assertEqual(4, num_failures)
-
-        for container in self.cluster.all_hosts():
-            installer.assert_uninstalled(container)
+            for container in self.cluster.all_hosts():
+                installer.assert_uninstalled(container)
 
     @docker_only
     def test_server_starts_java8_in_bin_java(self):
         installer = StandalonePrestoInstaller(self)
 
-        new_java_home = relocate_default_java(self.cluster, '/usr')
-        java_bin = os.path.join(new_java_home, 'bin', 'java')
+        with relocate_jdk_directory(self.cluster, '/usr') as new_java_home:
+            java_bin = os.path.join(new_java_home, 'bin', 'java')
 
-        for container in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(
-                container, 'ln -s %s /bin/java' % (java_bin,))
+            for container in self.cluster.all_hosts():
+                self.cluster.exec_cmd_on_host(
+                    container, 'ln -s %s /bin/java' % (java_bin,))
 
-        self.upload_topology()
+            self.upload_topology()
 
-        installer.install()
+            installer.install()
 
-        # starts successfully with java8_home set
-        output = self.run_prestoadmin('server start')
-        self.assertFalse(
-            'Warning: No value found for JAVA8_HOME. Default Java will be '
-            'used.' in output)
+            # starts successfully with java8_home set
+            output = self.run_prestoadmin('server start')
+            self.assertFalse(
+                'Warning: No value found for JAVA8_HOME. Default Java will be '
+                'used.' in output)
 
     @docker_only
     def test_server_starts_no_java8_variable(self):

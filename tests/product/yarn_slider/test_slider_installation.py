@@ -19,7 +19,7 @@ Product tests for installing Apache Slider
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase
+from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import YARN_SLIDER_PA_CLUSTER
 from tests.product.yarn_slider.slider_installer import SliderInstaller
 from tests.product.yarn_slider.pa_slider_config import cluster_config, \
@@ -91,19 +91,22 @@ class TestSliderInstallation(BaseProductTestCase):
 
         SliderInstaller.assert_installed(self, conf)
 
+    @docker_only
     @attr('smoketest')
     def test_slider_install(self):
-        self.run_with_config(get_config())
+        self.run_with_config(get_config(self.cluster))
 
+    @docker_only
     def test_slider_install_interactive(self):
-        self.run_interactive(get_config())
+        self.run_interactive(get_config(self.cluster))
 
+    @docker_only
     def test_slider_install_localhost(self):
         self.run_with_config(
-            get_config(override={HOST: ('localhost', self.cluster.master)}))
+            get_config(self.cluster, override={HOST: ('localhost', self.cluster.master)}))
 
+    @docker_only
     def test_slider_install_interactive_ip(self):
         ips = self.cluster.get_ip_address_dict()
         self.run_interactive(
-            get_config(override={HOST: (ips[self.cluster.master],
-                                        self.cluster.master)}))
+            get_config(self.cluster, override={HOST: (ips[self.cluster.master], self.cluster.master)}))

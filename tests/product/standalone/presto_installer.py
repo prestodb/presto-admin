@@ -96,7 +96,8 @@ class StandalonePrestoInstaller(BaseInstaller):
 
         rpm_path = os.path.join(self.rpm_dir, self.rpm_name)
         if not self._check_rpm_already_uploaded(self.rpm_name, cluster):
-            cluster.copy_to_host(rpm_path, cluster.master)
+            cluster.copy_to_host(rpm_path, cluster.master, dest_path=os.path.join(cluster.get_rpm_cache_dir(),
+                                                                                  self.rpm_name))
         self._check_if_corrupted_rpm(self.rpm_name, cluster)
         return self.rpm_name
 

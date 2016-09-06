@@ -37,10 +37,6 @@ except KeyError:
     print "base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
     sys.exit(1)
 
-
-JAVA_VERSION_DIR = 'jdk1.8.0_102'
-DEFAULT_JAVA_DIR = os.path.join('/usr', 'java', JAVA_VERSION_DIR)
-
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
                                    'tests/product/resources/')
 
