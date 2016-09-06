@@ -104,14 +104,18 @@ class ConfigurableCluster(BaseCluster):
 
     def tear_down(self):
         for host in self.all_hosts():
+            # Remove the rm -rf /var/log/presto when the following issue
+            # is resolved https://github.com/prestodb/presto-admin/issues/226
             script = """
             service presto stop
             rpm -e presto-server-rpm
             rm -rf /opt/prestoadmin
             rm -rf /opt/prestoadmin*.tar.bz2
             rm -rf /etc/opt/prestoadmin
-            rm -rf /tmp/presto-debug
             rm -rf /etc/presto/
+            rm -rf /tmp/presto-debug
+            rm -rf /tmp/presto-debug-remote
+            rm -rf /var/log/presto
             rm -rf %s
             """ % self.mount_dir
             self.run_script_on_host(script, host)

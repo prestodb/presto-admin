@@ -22,26 +22,26 @@ from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
-topology_with_slave1_coord = """{'coordinator': u'slave1',
+topology_with_slave1_coord = """{{'coordinator': u'slave1',
  'port': 22,
- 'username': 'root',
+ 'username': '{user}',
  'workers': [u'master',
              u'slave2',
-             u'slave3']}
+             u'slave3']}}
 """
 
-normal_topology = """{'coordinator': u'master',
+normal_topology = """{{'coordinator': u'master',
  'port': 22,
- 'username': 'root',
+ 'username': '{user}',
  'workers': [u'slave1',
              u'slave2',
-             u'slave3']}
+             u'slave3']}}
 """
 
-local_topology = """{'coordinator': 'localhost',
+local_topology = """{{'coordinator': 'localhost',
  'port': 22,
- 'username': 'root',
- 'workers': ['localhost']}
+ 'username': '{user}',
+ 'workers': ['localhost']}}
 """
 
 
@@ -55,13 +55,13 @@ class TestTopologyShow(BaseProductTestCase):
     def test_topology_show(self):
         self.upload_topology()
         actual = self.run_prestoadmin('topology show')
-        expected = normal_topology
+        expected = normal_topology.format(user=self.cluster.user)
         self.assertEqual(expected, actual)
 
     def test_topology_show_empty_config(self):
         self.dump_and_cp_topology(topology={})
         actual = self.run_prestoadmin('topology show')
-        self.assertEqual(local_topology, actual)
+        self.assertEqual(local_topology.format(user=self.cluster.user), actual)
 
     def test_topology_show_bad_json(self):
         self.cluster.copy_to_host(

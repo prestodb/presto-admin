@@ -24,7 +24,7 @@ from nose.plugins.attrib import attr
 from prestoadmin import main_dir
 from tests.docker_cluster import DockerCluster
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase
+from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
 from tests.product.constants import BASE_IMAGES_TAG
 from tests.product.prestoadmin_installer import PrestoadminInstaller
@@ -54,6 +54,7 @@ class TestInstaller(BaseProductTestCase):
         self.run_prestoadmin('--help', raise_error=True)
 
     @attr('smoketest', 'offline_installer')
+    @docker_only
     def test_offline_installer(self):
         self.pa_installer._build_installer_in_docker(
             self.centos_container, online_installer=False, unique=True)

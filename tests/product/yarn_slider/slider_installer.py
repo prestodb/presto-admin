@@ -18,7 +18,6 @@ Installer for Apache Slider
 
 import os
 
-
 from prestoadmin.yarn_slider.config import HOST, DIR
 
 from tests.base_installer import BaseInstaller
@@ -36,7 +35,7 @@ class SliderInstaller(BaseInstaller):
 
     def __init__(self, testcase, override=None):
         self.testcase = testcase
-        self.conf = get_config(override)
+        self.conf = get_config(self.testcase.cluster, override)
 
     @staticmethod
     def get_dependencies():
@@ -53,7 +52,9 @@ class SliderInstaller(BaseInstaller):
         return docker_config(self.conf)
 
     @staticmethod
-    def assert_installed(testcase, conf=get_config()):
+    def assert_installed(testcase, conf=None):
+        if not conf:
+            conf = get_config(testcase.cluster)
         docker_conf = docker_config(conf)
         testcase.assert_path_exists(docker_conf[HOST],
                                     os.path.join(docker_conf[DIR], 'LICENSE'))

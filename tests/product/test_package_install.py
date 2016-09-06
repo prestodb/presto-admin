@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
@@ -42,7 +44,8 @@ class TestPackageInstall(BaseProductTestCase):
         rpm_name = self.installer.copy_presto_rpm_to_master()
 
         # install
-        output = self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s', rpm=rpm_name)
+        output = self.run_prestoadmin('package install %(rpm)s',
+                                      rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
         for container in self.cluster.all_hosts():
             self.installer.assert_installed(self, container, msg=output)
 
@@ -55,9 +58,8 @@ class TestPackageInstall(BaseProductTestCase):
         rpm_name = self.installer.copy_presto_rpm_to_master()
 
         # install onto master and slave2
-        output = self.run_prestoadmin('package install /mnt/presto-admin/'
-                                      '%(rpm)s -H %(master)s,%(slave2)s',
-                                      rpm=rpm_name)
+        output = self.run_prestoadmin('package install %(rpm)s -H %(master)s,%(slave2)s',
+                                      rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
 
         self.installer.assert_installed(self, self.cluster.master, msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[1], msg=output)
@@ -77,8 +79,8 @@ class TestPackageInstall(BaseProductTestCase):
 
     def test_install_exclude_nodes(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
-        output = self.run_prestoadmin('package install /mnt/presto-admin/%(rpm)s -x %(master)s,%(slave2)s',
-                                      rpm=rpm_name)
+        output = self.run_prestoadmin('package install %(rpm)s -x %(master)s,%(slave2)s',
+                                      rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
 
         # install
         self.installer.assert_uninstalled(self.cluster.master, msg=output)
@@ -103,8 +105,9 @@ class TestPackageInstall(BaseProductTestCase):
                                 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%(rpm)s -H %(master)s',
-            rpm=rpm_name, raise_error=False)
+            'package install %(rpm)s -H %(master)s',
+            rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name),
+            raise_error=False)
         expected = self.replace_keywords("""
 Fatal error: [%(master)s] sudo() received nonzero return code 1 while \
 executing!
@@ -136,8 +139,8 @@ Package deployed successfully on: %(master)s
                                 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(
-            'package install /mnt/presto-admin/%(rpm)s -H %(master)s --nodeps',
-            rpm=rpm_name
+            'package install %(rpm)s -H %(master)s --nodeps',
+            rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name)
         )
         expected = 'Deploying rpm on %(host)s...\n' \
                    'Package deployed successfully on: %(host)s\n' \

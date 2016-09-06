@@ -85,7 +85,9 @@ presto-server-rpm.rpm:
 
 smoke: clean-test-all test-images _smoke
 
-smoke-configurable-cluster: clean-test _clean_tmp _smoke
+# Configurable cluster requires the base Docker images to build the
+# presto-admin installer
+smoke-configurable-cluster: clean-test _clean_tmp docker-images _smoke
 
 _smoke:
 	tox -e py26 -- -a smoketest,'!quarantine'
@@ -98,7 +100,9 @@ TEST_SUITE?=tests.product
 
 test-all: clean-test-all test-images _test-all
 
-test-all-configurable-cluster: clean-test _clean_tmp _test-all
+# Configurable cluster requires the base Docker images to build the
+# presto-admin installer
+test-all-configurable-cluster: clean-test _clean_tmp docker-images _test-all
 
 _test-all:
 	tox -- -s tests.unit

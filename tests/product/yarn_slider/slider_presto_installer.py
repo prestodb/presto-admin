@@ -139,7 +139,7 @@ class SliderPrestoInstaller(BaseInstaller):
             SliderPrestoInstaller._get_slider_user(testcase))
 
         # Verify that slider thinks the package is installed
-        conf = get_config()
+        conf = get_config(testcase.cluster)
         slider_cmd = \
             "bash -c 'export HADOOP_CONF_DIR=%s ; %s package --list'" % (
                 conf[HADOOP_CONF], get_slider_bin(conf))

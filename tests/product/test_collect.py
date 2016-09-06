@@ -245,7 +245,7 @@ class TestCollect(BaseProductTestCase):
     def test_collect_logs_multiple_server_logs(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
-        self.cluster.write_content_to_host('Stuff that I logged!', 'var/log/presto/server.log-2', self.cluster.master)
+        self.cluster.write_content_to_host('Stuff that I logged!', '/var/log/presto/server.log-2', self.cluster.master)
         actual = self.run_prestoadmin('collect logs')
 
         expected = 'Downloading logs from all the nodes...\nlogs archive created: ' + OUTPUT_FILENAME_FOR_LOGS + '\n'

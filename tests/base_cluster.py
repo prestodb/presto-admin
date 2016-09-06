@@ -16,10 +16,13 @@
 Abstract base class for clusters
 
 BaseCluster defines the minimum set of methods that a cluster needs to
-implement in order to be userful.
+implement in order to be useful.
 """
 
 import abc
+import sys
+
+from tests.product import determine_jdk_directory
 
 
 class BaseCluster(object):
@@ -146,3 +149,18 @@ class BaseCluster(object):
         get torn down before every test.
         """
         pass
+
+    def ensure_correct_execution_environment(self):
+        """Make sure the cluster environment we're executing on conforms to our
+        expectations.
+
+        For now just check that the cluster has a single JDK installed.
+
+        :return: without error if only a single JDK is installed, otherwise exit
+        """
+        try:
+            determine_jdk_directory(self)
+        except Exception as e:
+            sys.stderr.write(e.message)
+            sys.stderr.flush()
+            sys.exit(1)

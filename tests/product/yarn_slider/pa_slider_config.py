@@ -16,16 +16,17 @@
 Module to manipulate presto-admin's slider configuration.
 """
 
+import os
 import json
 
+from tests.product import determine_jdk_directory
 from prestoadmin.yarn_slider.config import SLIDER_CONFIG_PATH, HOST, DIR, \
     SLIDER_USER, ADMIN_USER, HADOOP_CONF, SSH_PORT, \
     JAVA_HOME, APPNAME
 
-from tests.product.constants import DEFAULT_JAVA_DIR
 
-
-def get_config(override=None):
+def get_config(cluster, override=None):
+    jdk_dir = os.path.join('/usr/java', determine_jdk_directory(cluster))
     conf = {
         DIR: '/opt/slider',
         ADMIN_USER: 'root',
@@ -33,7 +34,7 @@ def get_config(override=None):
         SSH_PORT: 22,
         SLIDER_USER: 'yarn',
         HOST: 'master',
-        JAVA_HOME: DEFAULT_JAVA_DIR,
+        JAVA_HOME: jdk_dir,
         APPNAME: 'presto'
     }
 

@@ -84,6 +84,9 @@ node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
 
+    # The two strings below (down_node_connection_string and status_down_node_string) aggregate
+    # all possible error messages one might encounter when trying to perform an action when a
+    # node is not accessible. The variety in error messages comes from differences in the OS.
     down_node_connection_string = r'(\nWarning: (\[%(host)s\] )?Low level ' \
                                   r'socket error connecting to host ' \
                                   r'%(host)s on port 22: No route to host ' \
@@ -92,12 +95,20 @@ query.max-memory=50GB\n"""
                                   r'|\nWarning: (\[%(host)s] )?Timed out ' \
                                   r'trying to connect to %(host)s \(tried 1 ' \
                                   r'time\)\n\nUnderlying exception:' \
-                                  r'\n    timed out\n)'
+                                  r'\n    timed out\n)' \
+                                  r'|\nWarning: (\[%(host)s\] )?Low level ' \
+                                  r'socket error connecting to host ' \
+                                  r'%(host)s on port 22: Network is unreachable ' \
+                                  r'\(tried 1 time\)\n\nUnderlying ' \
+                                  r'exception:\n    Network is unreachable\n'
 
     status_down_node_string = r'(\tLow level socket error connecting to ' \
                               r'host %(host)s on port 22: No route to host ' \
                               r'\(tried 1 time\)|\tTimed out trying to ' \
-                              r'connect to %(host)s \(tried 1 time\))'
+                              r'connect to %(host)s \(tried 1 time\))' \
+                              r'|\tLow level socket error connecting to ' \
+                              r'host %(host)s on port 22: Network is unreachable ' \
+                              r'\(tried 1 time\)'
 
     len_down_node_error = 6
 
@@ -131,11 +142,13 @@ query.max-memory=50GB\n"""
             self.cluster = ConfigurableCluster.start_bare_cluster(
                 config_filename, self,
                 StandalonePrestoInstaller.assert_installed)
+            self.cluster.ensure_correct_execution_environment()
             BaseProductTestCase.run_installers(self.cluster, installers, self)
         else:
             bare_image_provider = bare_image_provider(BASE_IMAGES_TAG)
             self.cluster, bare_cluster = DockerCluster.start_cluster(
                 bare_image_provider, cluster_type)
+            self.cluster.ensure_correct_execution_environment()
 
             # If we've found images and started a non-bare cluster, the
             # containers have already had the installers applied to them.
