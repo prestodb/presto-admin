@@ -393,7 +393,8 @@ query.max-memory=50GB\n"""
                        retry_timeout=10,
                        retry_interval=2)
 
-    def get_process_per_host(self, output_lines):
+    @staticmethod
+    def get_process_per_host(output_lines):
         process_per_host = []
         # We found some places where we were incorrectly passing a string
         # containing the output rather than an iterable collection of lines.
@@ -432,7 +433,8 @@ query.max-memory=50GB\n"""
         test_keywords.update(**kwargs)
         return text % test_keywords
 
-    def escape_for_regex(self, expected):
+    @staticmethod
+    def escape_for_regex(expected):
         expected = expected.replace('[', '\[')
         expected = expected.replace(']', '\]')
         expected = expected.replace(')', '\)')
@@ -440,11 +442,11 @@ query.max-memory=50GB\n"""
         expected = expected.replace('+', '\+')
         return expected
 
-    def retry(self, method_to_check, retry_timeout=RETRY_TIMEOUT,
+    @staticmethod
+    def retry(method_to_check, retry_timeout=RETRY_TIMEOUT,
               retry_interval=RETRY_INTERVAL):
         return Retrying(stop_max_delay=retry_timeout * 1000,
-                        wait_fixed=retry_interval * 1000) \
-                .call(method_to_check)
+                        wait_fixed=retry_interval * 1000).call(method_to_check)
 
     def down_node_connection_error(self, host):
         hostname = self.cluster.get_down_hostname(host)

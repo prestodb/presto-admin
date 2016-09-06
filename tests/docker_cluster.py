@@ -382,9 +382,9 @@ class DockerCluster(BaseCluster):
         has_master_image = False
         has_slave_image = False
         for image in images:
-            if master_repotag in image['RepoTags']:
+            if image['RepoTags'] is not None and master_repotag in image['RepoTags']:
                 has_master_image = True
-            if slave_repotag in image['RepoTags']:
+            if image['RepoTags'] is not None and slave_repotag in image['RepoTags']:
                 has_slave_image = True
         return has_master_image and has_slave_image
 
