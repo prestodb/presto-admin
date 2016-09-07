@@ -118,6 +118,16 @@ class BaseCluster(object):
 
     @abc.abstractmethod
     def run_script_on_host(self, script_contents, host, tty=True):
+        """Create a script on the remote host with the given content and execute it.
+
+        NOTE: if tty is set to True then the results of the execution on stdout will
+        have ^M (carriage return) at the end of every line. If doing string
+        comparison of the output, turn off tty.
+
+        :param script_contents: a string with the script contents
+        :param host: the host where to execute the script
+        :param tty: whether to execute the script with tty enabled
+        """
         pass
 
     @abc.abstractmethod

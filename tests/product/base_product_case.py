@@ -149,6 +149,8 @@ query.max-memory=50GB\n"""
             else:
                 raise RuntimeError("Docker images have not been created")
 
+    # Do not call this method directory from tests or anywhere other than the BaseInstaller
+    # implementation classes.
     @staticmethod
     def run_installers(cluster, installers, testcase):
         for installer in installers:

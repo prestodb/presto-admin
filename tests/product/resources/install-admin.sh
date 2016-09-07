@@ -14,7 +14,7 @@
 
 set -e
 
-cp /{0}/prestoadmin-*.tar.bz2 /opt
+cp /{mount_dir}/prestoadmin-*.tar.bz2 /opt
 cd /opt
 tar -jxf prestoadmin-*.tar.bz2
 cd prestoadmin

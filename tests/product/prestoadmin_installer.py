@@ -53,9 +53,9 @@ class PrestoadminInstaller(BaseInstaller):
             dist_dir = self._build_dist_if_necessary(cluster)
         self._copy_dist_to_host(cluster, dist_dir, cluster.master)
         with open(LOCAL_RESOURCES_DIR + "/install-admin.sh", 'r') as file_obj:
-            script = ''.join(file_obj.readlines())
+            script = file_obj.read()
 
-        script = script.format(cluster.mount_dir)
+        script = script.format(mount_dir=cluster.mount_dir)
         cluster.run_script_on_host(script, cluster.master, tty=False)
 
     @staticmethod

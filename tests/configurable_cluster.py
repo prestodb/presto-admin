@@ -207,8 +207,9 @@ class ConfigurableCluster(BaseCluster):
         if not dest_path:
             dest_path = os.path.join(self.mount_dir,
                                      os.path.basename(source_path))
-        self.exec_cmd_on_host(host, 'mkdir -p ' + os.path.dirname(dest_path))
-        self.exec_cmd_on_host(host, 'chown {0}:{0} {1}'.format(self.user, os.path.dirname(dest_path)))
+        self.exec_cmd_on_host(host, 'mkdir -p {dir}'.format(dir=os.path.dirname(dest_path)))
+        self.exec_cmd_on_host(host, 'chown {user}:{group} {file}'.format(
+            user=self.user, group=self.user, file=os.path.dirname(dest_path)))
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -216,19 +217,22 @@ class ConfigurableCluster(BaseCluster):
                     timeout=180)
 
         # Upload to dummy location because paramiko doesn't allow SFTP using
-        # sudo when logged in as a non root user
-        dummy_path = '/tmp/{0}/{1}'.format(str(uuid.uuid1()), os.path.basename(dest_path))
-        self.exec_cmd_on_host(host, 'mkdir -p {0}'.format(os.path.dirname(dummy_path)))
-        self.exec_cmd_on_host(host, 'chown {0}:{0} {1}'.format(self.user, os.path.dirname(dummy_path)))
+        # sudo when logged in as a non root user. Due to this limitation, Fabric
+        # uses the same methodology to upload files.
+        dummy_path = '/tmp/{random_dir}/{dest_dir}'.format(
+            random_dir=str(uuid.uuid1()), dest_path=os.path.basename(dest_path))
+        self.exec_cmd_on_host(host, 'mkdir -p {dir}'.format(dir=os.path.dirname(dummy_path)))
+        self.exec_cmd_on_host(host, 'chown {user}:{group} {file}'.format(
+            user=self.user, group=self.user, file=os.path.dirname(dummy_path)))
         sftp = ssh.open_sftp()
         sftp.put(source_path, dummy_path)
         sftp.close()
 
         # Move to final location using sudo
-        self.exec_cmd_on_host(host, 'mv {0} {1}'.format(dummy_path, dest_path))
+        self.exec_cmd_on_host(host, 'mv {source} {dest}'.format(source=dummy_path, dest=dest_path))
 
         # Remove dummy path directory
-        self.exec_cmd_on_host(host, 'rm -rf {0}'.format(os.path.dirname(dummy_path)))
+        self.exec_cmd_on_host(host, 'rm -rf {dir}'.format(dir=os.path.dirname(dummy_path)))
 
         ssh.close()
 
