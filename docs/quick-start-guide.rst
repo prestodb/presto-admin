@@ -19,4 +19,4 @@ For a detailed explanation of all of the commands and their options, see :ref:`c
     installation/presto-connector-installation
     installation/presto-configuration 
     installation/troubleshooting-installation
-
+    installation/presto-admin-upgrade
