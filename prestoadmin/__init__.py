@@ -56,7 +56,7 @@ ADDITIONAL_TASK_MODULES = {
                       'connector',
                       'package',
                       'collect',
-                      'script',
+                      'file',
                       'plugin']}
 
 

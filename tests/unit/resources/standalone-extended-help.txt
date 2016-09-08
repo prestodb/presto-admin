@@ -49,11 +49,11 @@ Commands:
     configuration show
     connector add
     connector remove
+    file copy
+    file run
     package install
     package uninstall
     plugin add_jar
-    script copy
-    script run
     server install
     server restart
     server start

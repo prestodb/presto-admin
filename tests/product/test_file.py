@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Test script run
+Test file run
 """
 from nose.plugins.attrib import attr
 
@@ -22,9 +22,9 @@ from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 
 
-class TestScript(BaseProductTestCase):
+class TestFile(BaseProductTestCase):
     def setUp(self):
-        super(TestScript, self).setUp()
+        super(TestFile, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
 
@@ -34,7 +34,7 @@ class TestScript(BaseProductTestCase):
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
                                            '/opt/prestoadmin/script.sh',
                                            self.cluster.master)
-        output = self.run_prestoadmin('script run /opt/prestoadmin/script.sh')
+        output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh')
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
 [slave1] out: hello
@@ -48,7 +48,7 @@ class TestScript(BaseProductTestCase):
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
                                            '/opt/prestoadmin/script.sh',
                                            self.cluster.master)
-        output = self.run_prestoadmin('script run /opt/prestoadmin/script.sh',
+        output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh',
                                       '/opt/script.sh')
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
@@ -64,7 +64,7 @@ class TestScript(BaseProductTestCase):
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
                                            '/tmp/script.sh',
                                            self.cluster.master)
-        output = self.run_prestoadmin('script run /opt/prestoadmin/script.sh')
+        output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh')
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
 [slave1] out: hello
@@ -78,7 +78,7 @@ class TestScript(BaseProductTestCase):
         self.cluster.write_content_to_host('not a valid script',
                                            '/opt/prestoadmin/invalid.sh',
                                            self.cluster.master)
-        output = self.run_prestoadmin('script run /opt/prestoadmin/invalid.sh',
+        output = self.run_prestoadmin('file run /opt/prestoadmin/invalid.sh',
                                       raise_error=False)
         self.assertEqualIgnoringOrder(output, """
 Fatal error: [slave2] sudo() received nonzero return code 127 while executing!

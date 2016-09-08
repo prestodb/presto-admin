@@ -17,27 +17,27 @@ Tests the script module
 """
 
 from mock import patch, call
-from prestoadmin import script
+from prestoadmin import file
 
 from tests.unit.base_unit_case import BaseUnitCase
 
 
-class TestInstall(BaseUnitCase):
+class TestFile(BaseUnitCase):
 
-    @patch('prestoadmin.script.sudo')
-    @patch('prestoadmin.script.put')
+    @patch('prestoadmin.file.sudo')
+    @patch('prestoadmin.file.put')
     def test_script_basic(self, put_mock, sudo_mock):
-        script.run('/my/local/path/script.sh')
+        file.run('/my/local/path/script.sh')
         put_mock.assert_called_with('/my/local/path/script.sh',
                                     '/tmp/script.sh')
         sudo_mock.assert_has_calls(
             [call('chmod u+x /tmp/script.sh'), call('/tmp/script.sh'),
              call('rm /tmp/script.sh')], any_order=False)
 
-    @patch('prestoadmin.script.sudo')
-    @patch('prestoadmin.script.put')
+    @patch('prestoadmin.file.sudo')
+    @patch('prestoadmin.file.put')
     def test_script_specify_dir(self, put_mock, sudo_mock):
-        script.run('/my/local/path/script.sh', '/my/remote/path')
+        file.run('/my/local/path/script.sh', '/my/remote/path')
         put_mock.assert_called_with('/my/local/path/script.sh',
                                     '/my/remote/path/script.sh')
         sudo_mock.assert_has_calls(
