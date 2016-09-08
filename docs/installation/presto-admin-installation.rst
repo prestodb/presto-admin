@@ -5,27 +5,25 @@ Installing Presto Admin
 =======================
 *Prerequisites:* `Python 2.6 or Python 2.7 <https://www.python.org/downloads>`_
 
-To install ``presto-admin``:
-
 Presto Admin is packaged as an offline installer --
 ``prestoadmin-<version>-offline.tar.bz2`` -- and as an online
-installer -- ``prestoadmin-<version>-online.tar.bz2``. The offline
-installer includes all of the dependencies for ``presto-admin``, so it
-can be used on a cluster without an outside network connection. The
-offline installer is currently only supported on RedHat Linux 6.x or
-CentOS equivalent.
+installer -- ``prestoadmin-<version>-online.tar.bz2``.
 
-The online installer downloads all of the dependencies when you call
-``./install-prestoadmin.sh``. You need to use the online installer
-for installation of Presto on Amazon EMR.
+The offline installer includes all of the dependencies for
+``presto-admin``, so it can be used on a cluster without an outside
+network connection. The offline installer is currently only supported
+on RedHat Linux 6.x or CentOS equivalent.
 
-You may also need to use the online installer if you try to install
-``presto-admin`` on an operating system other than listed above,
-because some of the binary files are dependent on the system files of
-a given operating system. Be aware, though, that there may be other
-operating system dependent differences beyond the installation process
-for unsupported operating system, and ``presto-admin`` may not work.
- 
+The online installer downloads all of the dependencies when you run
+``./install-prestoadmin.sh``. You must use the online installer for
+installation of Presto on Amazon EMR and for use on any operating
+system not listed above. If you are using presto-admin on an
+unsupported operating system, there may be operating system
+dependencies beyond the installation process, and presto-admin may not
+work.
+
+To install ``presto-admin``:
+
 1. Copy the installer ``prestoadmin-<version>-offline.tar.bz2`` to the
 location where you want ``presto-admin`` to run. The recommended
 installation location is ``/opt``. Note that ``presto-admin`` does not
@@ -34,14 +32,7 @@ need to have SSH access to all of the nodes in the cluster.
 
 .. NOTE::
      For Amazon EMR, use the online installer instead of the offline installer.
-
-.. NOTE::
-   Omit the use of ‘sudo’ when the prestoadmin scripts and presto-admin commands when the root user is selected as the prestoadmin user.
-
-.. NOTE::
-   The sudo setup for a non-root user has a security hole where the presto-admin non-root user requires the ability to run /bin/bash as root. The IT organization will need to take the appropriate steps to address this security hole and select which user will be the presto-admin user.
-
-
+   
 2. Extract and sudo run the installation script from within the ``prestoadmin`` directory.
 ::
 
