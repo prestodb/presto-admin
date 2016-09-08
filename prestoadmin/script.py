@@ -18,13 +18,16 @@ Commands for running scripts on a cluster
 import logging
 from fabric.operations import put, sudo
 from fabric.decorators import task
+from fabric.api import env
 from os import path
 
 from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util.base_config import requires_config
+from prestoadmin.util.constants import REMOTE_COPY_DIR
+from prestoadmin.plugin import write
 
 _LOGGER = logging.getLogger(__name__)
-__all__ = ['run']
+__all__ = ['run', 'copy']
 
 
 @task
@@ -43,3 +46,17 @@ def run(script, remote_dir='/tmp'):
     sudo('chmod u+x %s' % remote_path)
     sudo(remote_path)
     sudo('rm %s' % remote_path)
+
+
+@task
+@requires_config(StandaloneConfig)
+def copy(local_file, remote_dir=REMOTE_COPY_DIR):
+    """
+    Copy a file to all nodes in the cluster.
+
+    Parameters:
+        local_file - The path to the file
+        remote_dir - Where to put the file on the cluster.  Default is /tmp.
+    """
+    _LOGGER.info('copying file to %s' % env.host)
+    write(local_file, remote_dir)

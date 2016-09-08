@@ -52,6 +52,7 @@ Commands:
     package install
     package uninstall
     plugin add_jar
+    script copy
     script run
     server install
     server restart
