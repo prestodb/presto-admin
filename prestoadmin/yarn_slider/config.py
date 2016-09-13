@@ -25,12 +25,12 @@ from fabric.state import env
 
 from prestoadmin.util.base_config import BaseConfig, SingleConfigItem, \
     MultiConfigItem
-from prestoadmin.util.constants import LOCAL_CONF_DIR
+from prestoadmin.util.local_config_util import get_config_directory
 from prestoadmin.util.validators import validate_host, validate_port, \
     validate_username, validate_can_connect, validate_can_sudo
 
 SLIDER_CONFIG_LOADED = 'slider_config_loaded'
-SLIDER_CONFIG_DIR = os.path.join(LOCAL_CONF_DIR, 'slider')
+SLIDER_CONFIG_DIR = os.path.join(get_config_directory(), 'slider')
 SLIDER_CONFIG_PATH = os.path.join(SLIDER_CONFIG_DIR, 'config.json')
 SLIDER_MASTER = 'slider_master'
 

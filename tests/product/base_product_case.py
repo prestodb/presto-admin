@@ -25,6 +25,7 @@ from nose.tools import nottest
 from retrying import Retrying
 
 from prestoadmin.util import constants
+from prestoadmin.util.local_config_util import get_coordinator_directory, get_workers_directory
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster
@@ -202,12 +203,12 @@ query.max-memory=50GB\n"""
         workers_config = '%s\ncoordinator=false' % config
         cluster.write_content_to_host(
             coordinator_config,
-            os.path.join(constants.COORDINATOR_DIR, 'config.properties'),
+            os.path.join(get_coordinator_directory(), 'config.properties'),
             cluster.master
         )
         cluster.write_content_to_host(
             workers_config,
-            os.path.join(constants.WORKERS_DIR, 'config.properties'),
+            os.path.join(get_workers_directory(), 'config.properties'),
             cluster.master
         )
 
@@ -287,9 +288,9 @@ query.max-memory=50GB\n"""
                               'log.properties',
                               'jvm.config']):
             if host in self.cluster.slaves:
-                config_dir = constants.WORKERS_DIR
+                config_dir = get_workers_directory()
             else:
-                config_dir = constants.COORDINATOR_DIR
+                config_dir = get_coordinator_directory()
 
             pa_file = os.path.join(config_dir, split_path[1])
 
@@ -370,9 +371,9 @@ query.max-memory=50GB\n"""
         self.assertRegexpMatches(split_properties[0], 'node.id=.*')
         actual = split_properties[1]
         if host in self.cluster.slaves:
-            conf_dir = constants.WORKERS_DIR
+            conf_dir = get_workers_directory()
         else:
-            conf_dir = constants.COORDINATOR_DIR
+            conf_dir = get_coordinator_directory()
         self.assertLazyMessage(
             lambda: self.file_content_message(actual, expected,
                                               os.path.join(conf_dir,

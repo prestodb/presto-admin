@@ -43,6 +43,7 @@ from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, ConfigurationError
 from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
+from prestoadmin.util.local_config_util import get_connectors_directory
 from prestoadmin.util.remote_config_util import lookup_port, \
     lookup_server_log_file, lookup_launcher_log_file, lookup_string_config
 from prestoadmin.util.version_util import VersionRange, VersionRangeList, \
@@ -390,7 +391,7 @@ def deploy_install_configure(local_path):
 
 
 def add_tpch_connector():
-    tpch_connector_config = os.path.join(constants.CONNECTORS_DIR,
+    tpch_connector_config = os.path.join(get_connectors_directory(),
                                          'tpch.properties')
     util.filesystem.write_to_file_if_not_exists('connector.name=tpch',
                                                 tpch_connector_config)

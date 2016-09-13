@@ -14,13 +14,6 @@
 
 """Logic at the application level for logging and exception handling"""
 
-from prestoadmin import __version__
-from prestoadmin.util import constants
-from prestoadmin.util import filesystem
-from prestoadmin.util.exception import ExceptionWithCause
-
-import __main__ as main
-
 import functools
 import logging
 import logging.config
@@ -28,6 +21,13 @@ import os
 import sys
 import traceback
 
+import __main__ as main
+
+from prestoadmin import __version__
+from prestoadmin.util import constants
+from prestoadmin.util import filesystem
+from prestoadmin.util.exception import ExceptionWithCause
+from prestoadmin.util.local_config_util import get_log_directory
 
 # Normally this would use the logger for __name__, however, this is
 # effectively the "root" logger for the application.  If this code
@@ -57,7 +57,7 @@ class Application(object):
         self.__log_file_path = log_file_path or (self.name + '.log')
         if not os.path.isabs(self.__log_file_path):
             self.__log_file_path = os.path.join(
-                constants.PRESTOADMIN_LOG_DIR,
+                get_log_directory(),
                 self.__log_file_path
             )
 

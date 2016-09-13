@@ -21,8 +21,9 @@ import os
 
 import prestoadmin
 
-PRESTOADMIN_LOG_DIR = '/var/log/prestoadmin'
-
+DEFAULT_PRESTOADMIN_LOG_DIR = '/var/log/prestoadmin'
+LOG_DIR_ENV_VARIABLE = 'PRESTO_ADMIN_LOG_DIR'
+CONFIG_DIR_ENV_VARIABLE = 'PRESTO_ADMIN_CONFIG_DIR'
 
 # Logging Config File Locations
 LOGGING_CONFIG_FILE_NAME = 'presto-admin-logging.ini'
@@ -31,11 +32,11 @@ LOGGING_CONFIG_FILE_DIRECTORIES = [
 ]
 
 # local configuration
-LOCAL_CONF_DIR = '/etc/opt/prestoadmin'
-TOPOLOGY_CONFIG_PATH = os.path.join(LOCAL_CONF_DIR, 'config.json')
-COORDINATOR_DIR = os.path.join(LOCAL_CONF_DIR, 'coordinator')
-WORKERS_DIR = os.path.join(LOCAL_CONF_DIR, 'workers')
-CONNECTORS_DIR = os.path.join(LOCAL_CONF_DIR, 'connectors')
+DEFAULT_LOCAL_CONF_DIR = '/etc/opt/prestoadmin'
+TOPOLOGY_CONFIG_FILE = 'config.json'
+COORDINATOR_DIR_NAME = 'coordinator'
+WORKERS_DIR_NAME = 'workers'
+CONNECTORS_DIR_NAME = 'connectors'
 
 # remote configuration
 REMOTE_CONF_DIR = '/etc/presto'

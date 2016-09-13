@@ -29,7 +29,7 @@ import unittest
 
 from fabric.state import env
 
-from prestoadmin.util import constants
+from prestoadmin.util.constants import LOG_DIR_ENV_VARIABLE
 
 
 class BaseTestCase(unittest.TestCase):
@@ -51,17 +51,17 @@ class BaseTestCase(unittest.TestCase):
         sys.stderr = self.test_stderr = StringIO.StringIO()
 
     def redirect_log_to_tmp(self):
-        # monkey patch the log directory constant so that
-        # we force log files to a temporary dir
-        self.__old_prestoadmin_log = constants.PRESTOADMIN_LOG_DIR
-        self.__temporary_dir_path = tempfile.mkdtemp(
-            prefix='app-int-test-'
-        )
-        constants.PRESTOADMIN_LOG_DIR = self.__temporary_dir_path
+        # put log files in a temporary dir
+        self.__old_dir = os.environ.get(LOG_DIR_ENV_VARIABLE)
+        self.__temporary_dir_path = tempfile.mkdtemp(prefix='app-int-test-')
+        os.environ[LOG_DIR_ENV_VARIABLE] = self.__temporary_dir_path
 
     def restore_log_and_delete_temp_dir(self):
-        # restore the log constant
-        constants.PRESTOADMIN_LOG_DIR = self.__old_prestoadmin_log
+        # restore the log location
+        if self.__old_dir:
+            os.environ.update({LOG_DIR_ENV_VARIABLE: self.__old_dir})
+        else:
+            os.environ.pop(LOG_DIR_ENV_VARIABLE)
 
         # clean up the temporary directory
         os.system('rm -rf ' + self.__temporary_dir_path)

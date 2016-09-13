@@ -19,11 +19,11 @@ from fabric.api import env
 
 from overrides import overrides
 
+import prestoadmin.util.fabricapi as util
 from prestoadmin import config
-from prestoadmin.util import constants
 from prestoadmin.util.base_config import BaseConfig, SingleConfigItem
 from prestoadmin.util.exception import ConfigurationError
-import prestoadmin.util.fabricapi as util
+from prestoadmin.util.local_config_util import get_topology_path
 from prestoadmin.util.validators import validate_username, validate_port, \
     validate_host
 
@@ -138,10 +138,8 @@ def validate_workers(workers):
 
 
 class StandaloneConfig(BaseConfig):
-
     def __init__(self):
-        super(StandaloneConfig, self).__init__(constants.TOPOLOGY_CONFIG_PATH,
-                                               _TOPOLOGY_CONFIG)
+        super(StandaloneConfig, self).__init__(get_topology_path(), _TOPOLOGY_CONFIG)
 
     @overrides
     def read_conf(self):

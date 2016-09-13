@@ -15,26 +15,23 @@
 import logging
 import os
 import tempfile
-
 from unittest import TestCase
 
-from prestoadmin.util.application import Application
 from prestoadmin.util import constants
+from prestoadmin.util.application import Application
+from prestoadmin.util.constants import LOG_DIR_ENV_VARIABLE
+from prestoadmin.util.local_config_util import get_log_directory
 
 EXECUTABLE_NAME = 'foo.py'
 APPLICATION_NAME = 'foo'
 
 
 class ApplicationTest(TestCase):
-
     def setUp(self):
-        # monkey patch the log directory constant so that
-        # we force log files to a temporary dir
-        self.__old_prestoadmin_log = constants.PRESTOADMIN_LOG_DIR
-        self.__temporary_dir_path = tempfile.mkdtemp(
-            prefix='app-int-test-'
-        )
-        constants.PRESTOADMIN_LOG_DIR = self.__temporary_dir_path
+        # put log files in a temporary dir
+        self.__old_prestoadmin_log = get_log_directory()
+        self.__temporary_dir_path = tempfile.mkdtemp(prefix='app-int-test-')
+        os.environ[LOG_DIR_ENV_VARIABLE] = self.__temporary_dir_path
 
         # monkey patch in a fake logging config file
         self.__old_log_dirs = list(constants.LOGGING_CONFIG_FILE_DIRECTORIES)
@@ -52,8 +49,11 @@ class ApplicationTest(TestCase):
     def tearDown(self):
         constants.LOGGING_CONFIG_FILE_DIRECTORIES = self.__old_log_dirs
 
-        # restore the log constant
-        constants.PRESTOADMIN_LOG_DIR = self.__old_prestoadmin_log
+        # restore the log location
+        if self.__old_prestoadmin_log:
+            os.environ[LOG_DIR_ENV_VARIABLE] = self.__old_prestoadmin_log
+        else:
+            os.environ.pop(LOG_DIR_ENV_VARIABLE)
 
         # clean up the temporary directory
         os.system('rm -rf ' + self.__temporary_dir_path)
@@ -69,7 +69,7 @@ class ApplicationTest(TestCase):
             pass
 
         log_file_path = os.path.join(
-            constants.PRESTOADMIN_LOG_DIR,
+            get_log_directory(),
             APPLICATION_NAME + '.log'
         )
         self.assertTrue(

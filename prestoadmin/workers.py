@@ -26,9 +26,9 @@ from fabric.api import env
 
 from prestoadmin.node import Node
 from prestoadmin.presto_conf import validate_presto_conf
-from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError
 import prestoadmin.util.fabricapi as util
+from prestoadmin.util.local_config_util import get_workers_directory
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class Worker(Node):
                           }
 
     def _get_conf_dir(self):
-        return constants.WORKERS_DIR
+        return get_workers_directory()
 
     def default_config(self, filename):
         try:

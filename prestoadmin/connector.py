@@ -32,6 +32,7 @@ from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
 from prestoadmin.util.fabricapi import put_secure
 from prestoadmin.util.filesystem import ensure_directory_exists
+from prestoadmin.util.local_config_util import get_connectors_directory
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ def gather_connectors(local_config_dir, allow_overwrite=False):
 
 def validate(filenames):
     for name in filenames:
-        file_path = os.path.join(constants.CONNECTORS_DIR, name)
+        file_path = os.path.join(get_connectors_directory(), name)
         _LOGGER.info('Validating connector configuration: ' + str(name))
         try:
             with open(file_path) as f:
@@ -95,29 +96,30 @@ def add(name=None):
     Parameters:
         name - Name of the connector to be added
     """
+    connectors_dir = get_connectors_directory()
     if name:
         filename = name + '.properties'
-        config_path = os.path.join(constants.CONNECTORS_DIR, filename)
+        config_path = os.path.join(connectors_dir, filename)
         if not os.path.isfile(config_path):
             raise ConfigFileNotFoundError(
                 config_path=config_path,
                 message='Configuration for connector ' + name + ' not found')
         filenames = [filename]
-    elif not os.path.isdir(constants.CONNECTORS_DIR):
+    elif not os.path.isdir(connectors_dir):
         message = ('Cannot add connectors because directory %s does not exist'
-                   % constants.CONNECTORS_DIR)
-        raise ConfigFileNotFoundError(config_path=constants.CONNECTORS_DIR,
+                   % connectors_dir)
+        raise ConfigFileNotFoundError(config_path=connectors_dir,
                                       message=message)
     else:
         try:
-            filenames = os.listdir(constants.CONNECTORS_DIR)
+            filenames = os.listdir(connectors_dir)
         except OSError as e:
             fabric.utils.error(e.strerror)
             return
         if not filenames:
             fabric.utils.warn(
                 'Directory %s is empty. No connectors will be deployed' %
-                constants.CONNECTORS_DIR)
+                connectors_dir)
             return
 
     if not validate(filenames):
@@ -127,7 +129,7 @@ def add(name=None):
     print('Deploying %s connector configurations on: %s ' %
           (', '.join(filenames), env.host))
 
-    deploy_files(filenames, constants.CONNECTORS_DIR,
+    deploy_files(filenames, connectors_dir,
                  constants.REMOTE_CATALOG_DIR, PRESTO_STANDALONE_USER_GROUP)
 
 
@@ -153,7 +155,7 @@ def remove(name):
         fabric.utils.error('Failed to remove connector ' + name + '.\n\t' +
                            ret)
 
-    local_path = os.path.join(constants.CONNECTORS_DIR, name + '.properties')
+    local_path = os.path.join(get_connectors_directory(), name + '.properties')
     try:
         os.remove(local_path)
     except OSError as e:

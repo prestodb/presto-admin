@@ -16,14 +16,13 @@ import os
 
 from nose.plugins.attrib import attr
 
-from prestoadmin.util import constants
-
+from prestoadmin.util.local_config_util import get_connectors_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
-from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR, JAVA_VERSION_DIR, \
     DEFAULT_JAVA_DIR
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
 def relocate_default_java(cluster, destination):
@@ -234,7 +233,7 @@ query.max-memory=50GB\n"""
         self.upload_topology(topology)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            os.path.join(get_connectors_directory(), 'jmx.properties'),
             self.cluster.master
         )
 
@@ -273,7 +272,7 @@ query.max-memory=50GB\n"""
         self.upload_topology(topology)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            os.path.join(get_connectors_directory(), 'jmx.properties'),
             self.cluster.master
         )
 
@@ -318,7 +317,7 @@ query.max-memory=50GB\n"""
         installer = StandalonePrestoInstaller(self)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            os.path.join(get_connectors_directory(), 'jmx.properties'),
             self.cluster.master
         )
         rpm_name = installer.copy_presto_rpm_to_master()

@@ -24,6 +24,7 @@ from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigurationError, \
     ConfigFileNotFoundError
 from prestoadmin.standalone.config import PRESTO_STANDALONE_USER_GROUP
+from prestoadmin.util.local_config_util import get_connectors_directory
 from tests.unit.base_unit_case import BaseUnitCase
 
 
@@ -46,7 +47,7 @@ class TestConnector(BaseUnitCase):
         connector.add('tpch')
         filenames = ['tpch.properties']
         deploy_mock.assert_called_with(filenames,
-                                       constants.CONNECTORS_DIR,
+                                       get_connectors_directory(),
                                        constants.REMOTE_CATALOG_DIR,
                                        PRESTO_STANDALONE_USER_GROUP)
         validate_mock.assert_called_with(filenames)
@@ -61,7 +62,7 @@ class TestConnector(BaseUnitCase):
         listdir_mock.return_value = catalogs
         connector.add()
         deploy_mock.assert_called_with(catalogs,
-                                       constants.CONNECTORS_DIR,
+                                       get_connectors_directory(),
                                        constants.REMOTE_CATALOG_DIR,
                                        PRESTO_STANDALONE_USER_GROUP)
 
@@ -87,7 +88,7 @@ class TestConnector(BaseUnitCase):
         fabric.api.env.host = 'localhost'
         connector.remove('tpch')
         sudo_mock.assert_called_with(script)
-        local_rm_mock.assert_called_with(constants.CONNECTORS_DIR +
+        local_rm_mock.assert_called_with(get_connectors_directory() +
                                          '/tpch.properties')
 
     @patch('prestoadmin.connector.sudo')
@@ -126,7 +127,7 @@ class TestConnector(BaseUnitCase):
         listdir_mock.return_value = []
         connector.add()
         self.assertEqual('\nWarning: Directory %s is empty. No connectors will'
-                         ' be deployed\n\n' % constants.CONNECTORS_DIR,
+                         ' be deployed\n\n' % get_connectors_directory(),
                          self.test_stderr.getvalue())
 
     @patch('prestoadmin.connector.os.listdir')

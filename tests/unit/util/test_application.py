@@ -21,6 +21,7 @@ from mock import call
 
 from prestoadmin.util import constants
 from prestoadmin.util.application import Application
+from prestoadmin.util.local_config_util import get_log_directory
 
 from tests.base_test_case import BaseTestCase
 
@@ -59,7 +60,7 @@ class ApplicationTest(BaseTestCase):
             pass
 
         file_path = os.path.join(
-            constants.PRESTOADMIN_LOG_DIR,
+            get_log_directory(),
             APPLICATION_NAME + '.log'
         )
         self.__assert_logging_setup_with_file(
@@ -105,7 +106,7 @@ class ApplicationTest(BaseTestCase):
             pass
 
         file_path = os.path.join(
-            constants.PRESTOADMIN_LOG_DIR,
+            get_log_directory(),
             log_file_path
         )
         self.__assert_logging_setup_with_file(

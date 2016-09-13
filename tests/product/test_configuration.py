@@ -22,6 +22,7 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
+from prestoadmin.util.local_config_util import get_coordinator_directory, get_workers_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
@@ -91,10 +92,10 @@ class TestConfiguration(BaseProductTestCase):
 
         # deploy workers configuration only has non-default file
         filename = 'node.properties'
-        path = os.path.join(constants.WORKERS_DIR, filename)
+        path = os.path.join(get_workers_directory(), filename)
         self.cluster.write_content_to_host(
             'node.environment test', path, self.cluster.master)
-        path = os.path.join(constants.COORDINATOR_DIR, filename)
+        path = os.path.join(get_coordinator_directory(), filename)
         self.cluster.write_content_to_host(
             'node.environment test', path, self.cluster.master)
 
@@ -274,12 +275,12 @@ class TestConfiguration(BaseProductTestCase):
         filename = 'log.properties'
         self.cluster.write_content_to_host(
             log_properties,
-            os.path.join(constants.WORKERS_DIR, filename),
+            os.path.join(get_workers_directory(), filename),
             self.cluster.master
         )
         self.cluster.write_content_to_host(
             log_properties,
-            os.path.join(constants.COORDINATOR_DIR, filename),
+            os.path.join(get_coordinator_directory(), filename),
             self.cluster.master
         )
         self.run_prestoadmin('configuration deploy')

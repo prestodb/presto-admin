@@ -35,12 +35,12 @@ from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import get_presto_version, get_connector_info_from
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.filesystem import ensure_directory_exists
+from prestoadmin.util.local_config_util import get_log_directory
 from prestoadmin.util.remote_config_util import lookup_server_log_file,\
     lookup_launcher_log_file,  lookup_port, lookup_catalog_directory
 from prestoadmin.standalone.config import StandaloneConfig
 import prestoadmin.util.fabricapi as fabricapi
 import prestoadmin
-from util.constants import PRESTOADMIN_LOG_DIR
 
 
 TMP_PRESTO_DEBUG = '/tmp/presto-debug/'
@@ -75,7 +75,7 @@ def logs():
 
 
 def copy_admin_log(log_folder):
-    shutil.copy(os.path.join(PRESTOADMIN_LOG_DIR, PRESTOADMIN_LOG_NAME), log_folder)
+    shutil.copy(os.path.join(get_log_directory(), PRESTOADMIN_LOG_NAME), log_folder)
 
 
 def make_tarfile(output_filename, source_dir):

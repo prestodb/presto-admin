@@ -22,11 +22,11 @@ from fabric.api import abort, task
 from fabric.decorators import runs_once
 
 from prestoadmin import config
-from prestoadmin.util.constants import LOCAL_CONF_DIR
 from prestoadmin.util.exception import ConfigurationError, \
     ConfigFileNotFoundError
+from prestoadmin.util.local_config_util import get_config_directory
 
-MODE_CONF_PATH = os.path.join(LOCAL_CONF_DIR, 'mode.json')
+MODE_CONF_PATH = os.path.join(get_config_directory(), 'mode.json')
 MODE_KEY = 'mode'
 
 MODE_SLIDER = 'yarn_slider'

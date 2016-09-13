@@ -29,7 +29,7 @@ from prestoadmin.server import INIT_SCRIPTS
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
-
+from prestoadmin.util.local_config_util import get_connectors_directory
 from tests.unit.base_unit_case import BaseUnitCase
 
 
@@ -490,8 +490,8 @@ class TestInstall(BaseUnitCase):
         server.update_configs()
 
         mock_config.assert_called_with()
-        mock_makedir.assert_called_with(constants.CONNECTORS_DIR)
-        mock_open.assert_called_with(os.path.join(constants.CONNECTORS_DIR,
+        mock_makedir.assert_called_with(get_connectors_directory())
+        mock_open.assert_called_with(os.path.join(get_connectors_directory(),
                                                   'tpch.properties'),
                                      os.O_CREAT | os.O_EXCL | os.O_WRONLY)
         file_manager = mock_fdopen.return_value.__enter__.return_value

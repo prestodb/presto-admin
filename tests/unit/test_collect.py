@@ -23,11 +23,14 @@ from fabric.api import env
 import requests
 
 from prestoadmin import collect
-from prestoadmin.collect import TMP_PRESTO_DEBUG, \
-    PRESTOADMIN_LOG_NAME, PRESTOADMIN_LOG_DIR, \
-    OUTPUT_FILENAME_FOR_LOGS, OUTPUT_FILENAME_FOR_SYS_INFO, \
+from prestoadmin.collect import \
+    TMP_PRESTO_DEBUG, \
+    PRESTOADMIN_LOG_NAME, \
+    OUTPUT_FILENAME_FOR_LOGS, \
+    OUTPUT_FILENAME_FOR_SYS_INFO, \
     TMP_PRESTO_DEBUG_REMOTE
 import prestoadmin
+from prestoadmin.util.local_config_util import get_log_directory
 from tests.unit.base_unit_case import BaseUnitCase
 
 
@@ -47,7 +50,7 @@ class TestCollect(BaseUnitCase):
         collect.logs()
 
         mkdirs_mock.assert_called_with(downloaded_logs_loc)
-        copy_mock.assert_called_with(path.join(PRESTOADMIN_LOG_DIR,
+        copy_mock.assert_called_with(path.join(get_log_directory(),
                                                PRESTOADMIN_LOG_NAME),
                                      downloaded_logs_loc)
 

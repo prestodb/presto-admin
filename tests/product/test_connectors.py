@@ -22,6 +22,7 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
+from prestoadmin.util.local_config_util import get_connectors_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
     PrestoError
@@ -45,9 +46,7 @@ class TestConnectors(BaseProductTestCase):
     def test_connector_add_remove(self):
         self.setup_cluster_assert_connectors()
         self.run_prestoadmin('connector remove tpch')
-        self.assert_path_removed(self.cluster.master,
-                                 os.path.join(constants.CONNECTORS_DIR,
-                                              'tpch.properties'))
+        self.assert_path_removed(self.cluster.master, os.path.join(get_connectors_directory(), 'tpch.properties'))
         for host in self.cluster.all_hosts():
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
@@ -56,12 +55,12 @@ class TestConnectors(BaseProductTestCase):
         # test add connectors from directory with more than one connector
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            os.path.join(get_connectors_directory(), 'tpch.properties'),
             self.cluster.master
         )
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            os.path.join(get_connectors_directory(), 'jmx.properties'),
             self.cluster.master
         )
         self.run_prestoadmin('connector add')
@@ -80,7 +79,7 @@ class TestConnectors(BaseProductTestCase):
         self.run_prestoadmin('connector remove tpch -H %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
         self.assert_path_removed(self.cluster.master,
-                                 os.path.join(constants.CONNECTORS_DIR,
+                                 os.path.join(get_connectors_directory(),
                                               'tpch.properties'))
         self._assert_connectors_loaded([['system']])
         for host in [self.cluster.master, self.cluster.slaves[0]]:
@@ -92,7 +91,7 @@ class TestConnectors(BaseProductTestCase):
 
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            os.path.join(get_connectors_directory(), 'tpch.properties'),
             self.cluster.master
         )
         self.run_prestoadmin('connector add tpch -H %(master)s,%(slave1)s')
@@ -115,7 +114,7 @@ class TestConnectors(BaseProductTestCase):
 
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            os.path.join(get_connectors_directory(), 'tpch.properties'),
             self.cluster.master
         )
         self.run_prestoadmin('connector add tpch -x %(master)s,%(slave1)s')
@@ -131,7 +130,7 @@ class TestConnectors(BaseProductTestCase):
         # test add connector by name when it exists
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            os.path.join(get_connectors_directory(), 'tpch.properties'),
             self.cluster.master
         )
         self.run_prestoadmin('connector add tpch')
@@ -185,7 +184,7 @@ Aborting.
             self.cluster.slaves[0])
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            os.path.join(get_connectors_directory(), 'tpch.properties'),
             self.cluster.master
         )
         output = self.run_prestoadmin('connector add tpch', raise_error=False)
@@ -264,7 +263,7 @@ for the change to take effect
         # test remove connector in directory but not in presto
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
+            os.path.join(get_connectors_directory(), 'tpch.properties'),
             self.cluster.master
         )
 
@@ -335,7 +334,7 @@ for the change to take effect
 
         self.run_prestoadmin('connector remove tpch -p password')
         self.assert_path_removed(self.cluster.master,
-                                 os.path.join(constants.CONNECTORS_DIR,
+                                 os.path.join(get_connectors_directory(),
                                               'tpch.properties'))
         for host in self.cluster.all_hosts():
             self.assert_path_removed(host,
@@ -344,7 +343,7 @@ for the change to take effect
 
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            os.path.join(get_connectors_directory(), 'jmx.properties'),
             self.cluster.master
         )
         self.run_prestoadmin('connector add -p password')
