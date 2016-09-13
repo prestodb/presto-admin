@@ -24,10 +24,10 @@ import urlparse
 
 from fabric.api import env
 
+import prestoadmin.util.fabricapi as util
 from prestoadmin.node import Node
 from prestoadmin.presto_conf import validate_presto_conf
 from prestoadmin.util.exception import ConfigurationError
-import prestoadmin.util.fabricapi as util
 from prestoadmin.util.local_config_util import get_workers_directory
 
 _LOGGER = logging.getLogger(__name__)

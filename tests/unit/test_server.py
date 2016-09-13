@@ -23,12 +23,12 @@ from fabric.operations import _AttributeString
 from mock import patch, call, MagicMock
 
 from prestoadmin import server
-from prestoadmin.util.fabricapi import get_host_list
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import INIT_SCRIPTS
 from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
+from prestoadmin.util.fabricapi import get_host_list
 from prestoadmin.util.local_config_util import get_connectors_directory
 from tests.unit.base_unit_case import BaseUnitCase
 

@@ -22,6 +22,7 @@ import re
 import sys
 import urllib2
 import urlparse
+from tempfile import mkdtemp
 
 from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
@@ -30,7 +31,6 @@ from fabric.operations import run, os
 from fabric.tasks import execute
 from fabric.utils import warn, error, abort
 from retrying import retry, RetryError
-from tempfile import mkdtemp
 
 import util.filesystem
 from prestoadmin import configure_cmds
@@ -60,6 +60,7 @@ SYSTEM_RUNTIME_NODES = 'select * from system.runtime.nodes'
 def old_sysnode_processor(node_info_rows):
     def old_transform(node_is_active):
         return 'active' if node_is_active else 'inactive'
+
     return get_sysnode_info_from(node_info_rows, old_transform)
 
 
@@ -72,12 +73,12 @@ NODE_INFO_PER_URI_SQL = VersionRangeList(
                  ('select http_uri, node_version, active from '
                   'system.runtime.nodes where '
                   'url_extract_host(http_uri) = \'%s\'',
-                 old_sysnode_processor)),
+                  old_sysnode_processor)),
     VersionRange((0, 128), (sys.maxsize,),
                  ('select http_uri, node_version, state from '
                   'system.runtime.nodes where '
                   'url_extract_host(http_uri) = \'%s\'',
-                 new_sysnode_processor))
+                  new_sysnode_processor))
 )
 
 EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from ' \
@@ -119,8 +120,7 @@ class LocalPrestoRpmFinder:
         return True
 
     def _check_if_absolute_path(self):
-        if os.path.isfile(self.local_path) and \
-           self._check_rpm_uncorrupted(self.local_path):
+        if os.path.isfile(self.local_path) and self._check_rpm_uncorrupted(self.local_path):
             print('Found existing rpm at: %s' % self.local_path)
             return self.local_path
         else:
@@ -128,8 +128,7 @@ class LocalPrestoRpmFinder:
 
     def _check_if_relative_path(self, directory_path):
         path_relative_to_download_dir = os.path.join(directory_path, self.local_path)
-        if os.path.isfile(path_relative_to_download_dir) and \
-           self._check_rpm_uncorrupted(path_relative_to_download_dir):
+        if os.path.isfile(path_relative_to_download_dir) and self._check_rpm_uncorrupted(path_relative_to_download_dir):
             print('Found existing rpm at: %s' % path_relative_to_download_dir)
             return path_relative_to_download_dir
         else:
@@ -500,7 +499,6 @@ def service(control=None):
 
 
 def check_status_for_control_commands():
-
     print('Waiting to make sure we can connect to the Presto server on %s, '
           'please wait. This check will time out after %d minutes if the '
           'server does not respond.'
@@ -636,11 +634,11 @@ def check_server_status():
 
 @retry(stop_max_delay=RETRY_TIMEOUT * 1000, wait_fixed=5000, retry_on_result=lambda result: result is False)
 def query_server_for_status(client, node_id):
-        try:
-            client.execute_query(SYSTEM_RUNTIME_NODES)
-        except ConfigurationError as e:
-            _LOGGER.warn(e)
-        return _is_in_rows(node_id, client.get_rows())
+    try:
+        client.execute_query(SYSTEM_RUNTIME_NODES)
+    except ConfigurationError as e:
+        _LOGGER.warn(e)
+    return _is_in_rows(node_id, client.get_rows())
 
 
 def _is_in_rows(value, rows):
@@ -753,9 +751,8 @@ def get_ext_ip_of_node(client):
     external_ip_row = execute_external_ip_sql(client, node_uuid)
     external_ip = ''
     if len(external_ip_row) > 1:
-        warn_more_than_one_ip = 'More than one external ip found for ' \
-                                + env.host + '. There could be multiple ' \
-                                'nodes associated with the same node.id'
+        warn_more_than_one_ip = 'More than one external ip found for ' + env.host + \
+                                '. There could be multiple nodes associated with the same node.id'
         _LOGGER.debug(warn_more_than_one_ip)
         warn(warn_more_than_one_ip)
         return external_ip

@@ -232,6 +232,7 @@ def entry_point(name, version=None, log_file_path=None,
         application_class - Type of application to run. The default is
         Application but there can be subclasses of that class.
     """
+
     def application_decorator(method):
         @functools.wraps(method)
         def wrapped_application(*args, **kwargs):

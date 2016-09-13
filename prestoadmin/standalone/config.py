@@ -16,7 +16,6 @@
 Module for setting and validating the presto-admin config
 """
 from fabric.api import env
-
 from overrides import overrides
 
 import prestoadmin.util.fabricapi as util
@@ -67,13 +66,16 @@ _TOPOLOGY_CONFIG = [
         PORT, 'Enter port number for SSH connections to all nodes:',
         default=DEFAULT_PROPERTIES['port'], validate=validate_port),
     SingleConfigItem(
-        COORDINATOR, 'Enter host name or IP address for coordinator node. '
+        COORDINATOR,
+        'Enter host name or IP address for coordinator node. '
         'Enter an external host name or ip address if this is a multi-node '
-        'cluster:', default=DEFAULT_PROPERTIES['coordinator'],
+        'cluster:',
+        default=DEFAULT_PROPERTIES['coordinator'],
         validate=validate_coordinator),
     SingleConfigItem(
-        WORKERS, 'Enter host names or IP addresses for worker nodes separated '
-        'by spaces:', default=' '.join(DEFAULT_PROPERTIES['workers']),
+        WORKERS,
+        'Enter host names or IP addresses for worker nodes separated by spaces:',
+        default=' '.join(DEFAULT_PROPERTIES['workers']),
         validate=validate_workers_for_prompt)
 ]
 
@@ -153,8 +155,7 @@ class StandaloneConfig(BaseConfig):
 
     @overrides
     def is_config_loaded(self):
-        return STANDALONE_CONFIG_LOADED in env and \
-            env[STANDALONE_CONFIG_LOADED]
+        return STANDALONE_CONFIG_LOADED in env and env[STANDALONE_CONFIG_LOADED]
 
     @overrides
     def set_config_loaded(self):

@@ -18,11 +18,11 @@ BaseTestCase, your test cases should extend BaseTestCase rather than
 unittest.TestCase
 """
 
+import StringIO
 import copy
 import logging
 import os
 import re
-import StringIO
 import sys
 import tempfile
 import unittest

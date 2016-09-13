@@ -48,9 +48,7 @@ class TestConnectors(BaseProductTestCase):
         self.run_prestoadmin('connector remove tpch')
         self.assert_path_removed(self.cluster.master, os.path.join(get_connectors_directory(), 'tpch.properties'))
         for host in self.cluster.all_hosts():
-            self.assert_path_removed(host,
-                                     os.path.join(constants.REMOTE_CATALOG_DIR,
-                                                  'tcph.properties'))
+            self.assert_path_removed(host, os.path.join(constants.REMOTE_CATALOG_DIR, 'tpch.properties'))
 
         # test add connectors from directory with more than one connector
         self.cluster.write_content_to_host(

@@ -18,10 +18,11 @@ Tests the presto diagnostic information using presto-admin collect
 import os
 from os import path
 
-from mock import patch
-from fabric.api import env
 import requests
+from fabric.api import env
+from mock import patch
 
+import prestoadmin
 from prestoadmin import collect
 from prestoadmin.collect import \
     TMP_PRESTO_DEBUG, \
@@ -29,13 +30,11 @@ from prestoadmin.collect import \
     OUTPUT_FILENAME_FOR_LOGS, \
     OUTPUT_FILENAME_FOR_SYS_INFO, \
     TMP_PRESTO_DEBUG_REMOTE
-import prestoadmin
 from prestoadmin.util.local_config_util import get_log_directory
 from tests.unit.base_unit_case import BaseUnitCase
 
 
 class TestCollect(BaseUnitCase):
-
     @patch('prestoadmin.collect.lookup_launcher_log_file')
     @patch('prestoadmin.collect.lookup_server_log_file')
     @patch('prestoadmin.collect.get_files')

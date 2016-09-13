@@ -15,14 +15,14 @@
 """
 Module for presto connector configurations
 """
-import logging
 import errno
+import logging
 
+import fabric.utils
 from fabric.api import task, env
 from fabric.context_managers import hide
 from fabric.contrib import files
 from fabric.operations import sudo, os, get
-import fabric.utils
 
 from prestoadmin.standalone.config import StandaloneConfig, \
     PRESTO_STANDALONE_USER_GROUP
@@ -166,7 +166,6 @@ def remove(name):
 
 
 def remove_file(path):
-
     script = ('if [ -f %(path)s ] ; '
               'then rm %(path)s ; '
               'else echo "%(could_not_remove)s \'%(name)s\'. '
