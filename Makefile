@@ -11,7 +11,8 @@ help:
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test-containers - remove Docker containers used during tests"
-	@echo "clean-test - remove test and coverage artifacts"
+	@echo "clean-test - remove test and coverage artifacts for unit and integration tests"
+	@echo "clean-test-all - remove test and coverage artifacts for all tests"
 	@echo "clean-docs - remove doc artifacts"
 	@echo "lint - check style with flake8"
 	@echo "smoke - run tests annotated with attr smoke using nosetests"
@@ -36,7 +37,7 @@ precommit: clean dist lint docs test
 clean-all: clean
 	rm -f presto*.rpm
 
-clean: clean-build clean-pyc clean-test clean-eggs clean-docs
+clean: clean-build clean-pyc clean-test-all clean-eggs clean-docs
 
 clean-eggs:
 	rm -fr .eggs/
@@ -78,7 +79,7 @@ lint:
 presto-server-rpm.rpm:
 	wget 'https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&g=com.facebook.presto&a=presto-server-rpm&e=rpm&v=RELEASE' -O $@
 
-smoke: clean-test test-images
+smoke: clean-test-all test-images
 	tox -e py26 -- -a smoketest,'!quarantine'
 
 test: clean-test
@@ -107,7 +108,7 @@ DOCKER_IMAGES := \
 docker-images:
 	for image in $(DOCKER_IMAGES); do docker pull $$image || exit 1; done
 
-test-rpm: clean-test test-images
+test-rpm: clean-test-all test-images
 	tox -e py26 -- -s tests.rpm -a '!quarantine'
 
 coverage:
