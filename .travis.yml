@@ -1,8 +1,7 @@
 language: python
-python:
-  - "2.6"
-  - "2.7"
+python: "2.7"
 sudo: required
+dist: trusty
 services:
   - docker
 env:
@@ -21,6 +20,7 @@ env:
 install:
   - pip install --upgrade pip==6.1.1
   - pip install -r requirements.txt
+  - pip install tox-travis
 before_script:
   - make docker-images
   - make presto-server-rpm.rpm
@@ -47,8 +47,10 @@ script:
       nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO};
     elif [ -v OTHER_TESTS ]; then
       make clean lint dist docs test-rpm &&
-      nosetests -s tests.unit &&
-      nosetests -s tests.integration;
+      tox -e py26 -- -s tests.unit &&
+      tox -e py26 -- -s tests.integration;
+      tox -e py27 -- -s tests.unit &&
+      tox -e py27 -- -s tests.integration;
     else
       echo "Unknown test" &&
       exit 1;
