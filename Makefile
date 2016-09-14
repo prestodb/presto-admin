@@ -11,7 +11,8 @@ help:
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test-containers - remove Docker containers used during tests"
-	@echo "clean-test - remove test and coverage artifacts"
+	@echo "clean-test - remove test and coverage artifacts for unit and integration tests"
+	@echo "clean-test-all - remove test and coverage artifacts for all tests"
 	@echo "clean-docs - remove doc artifacts"
 	@echo "lint - check style with flake8"
 	@echo "smoke - run tests annotated with attr smoke using nosetests"
@@ -36,7 +37,7 @@ precommit: clean dist lint docs test
 clean-all: clean
 	rm -f presto*.rpm
 
-clean: clean-build clean-pyc clean-test clean-eggs clean-docs
+clean: clean-build clean-pyc clean-test-all clean-eggs clean-docs
 
 clean-eggs:
 	rm -fr .eggs/
