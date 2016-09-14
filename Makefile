@@ -1,6 +1,7 @@
 .PHONY: clean-all clean clean-eggs clean-build clean-pyc clean-test-containers clean-test \
 	clean-docs lint smoke test test-all test-images test-rpm docker-images coverage docs \
-	open-docs release release-builds dist dist-online dist-offline wheel install precommit
+	open-docs release release-builds dist dist-online dist-offline wheel install precommit \
+	clean-test-all
 
 help:
 	@echo "precommit - run \`quick' tests and tasks that should pass or succeed prior to pushing"
@@ -60,6 +61,8 @@ clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+
+clean-test-all: clean-test
 	rm -fr tmp
 	for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$1}'); do docker rmi -f $$image ; done
 	@echo "\n\tYou can kill running containers that caused errors removing images by running \`make clean-test-containers'\n"
@@ -84,7 +87,7 @@ test: clean-test
 
 TEST_SUITE?=tests.product
 
-test-all: clean-test test-images
+test-all: clean-test-all test-images
 	tox -- -s tests.unit
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
