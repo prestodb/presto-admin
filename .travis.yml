@@ -46,7 +46,7 @@ script:
       make test-images &&
       nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO};
     elif [ -v OTHER_TESTS ]; then
-      make clean lint dist docs test-rpm &&
+      make clean lint dist docs &&
       tox -e py26 -- -s tests.unit &&
       tox -e py26 -- -s tests.integration;
       tox -e py27 -- -s tests.unit &&
