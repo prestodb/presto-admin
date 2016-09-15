@@ -189,6 +189,7 @@ query.max-memory=50GB\n"""
                                            '/etc/presto/config.properties',
                                            self.default_workers_config_regex_)
 
+    @attr('smoketest')
     def test_install_with_java8_home(self):
         installer = StandalonePrestoInstaller(self)
         new_java_home = relocate_default_java(self.cluster, '/usr')
@@ -208,42 +209,6 @@ query.max-memory=50GB\n"""
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
-
-    @attr('smoketest')
-    def test_install(self, installer=None):
-        if installer is None:
-            installer = StandalonePrestoInstaller(self)
-
-        self.upload_topology()
-
-        cmd_output = installer.install()
-        expected = installed_all_hosts_output
-
-        actual = cmd_output.splitlines()
-        self.assertRegexpMatchesLineByLine(actual, expected)
-
-        for container in self.cluster.all_hosts():
-            installer.assert_installed(self, container)
-            self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
-
-    def test_install_worker_is_pa_master(self):
-        installer = StandalonePrestoInstaller(self)
-        topology = {"coordinator": "slave1",
-                    "workers": ["master", "slave2", "slave3"]}
-        self.upload_topology(topology)
-
-        cmd_output = installer.install(coordinator='slave1')
-        expected = install_with_worker_pa_master_out
-
-        actual = cmd_output.splitlines()
-        self.assertRegexpMatchesLineByLine(actual, expected)
-
-        self.assert_installed_with_configs(
-            self.cluster.slaves[0],
-            [self.cluster.slaves[1],
-             self.cluster.slaves[2],
-             self.cluster.master])
 
     def test_install_ext_host_is_pa_master(self):
         installer = StandalonePrestoInstaller(self)
@@ -349,7 +314,7 @@ query.max-memory=50GB\n"""
                           self.cluster.slaves[0]]:
             self.assert_has_jmx_connector(container)
 
-    def test_install_interactive_with_hostnames(self):
+    def test_install_interactive(self):
         installer = StandalonePrestoInstaller(self)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
@@ -406,111 +371,6 @@ query.max-memory=50GB\n"""
             self.assert_has_default_config(container)
             self.assert_has_default_connector(container)
             self.assert_has_jmx_connector(container)
-
-    def test_install_interactive_with_ips(self):
-        installer = StandalonePrestoInstaller(self)
-        ips = self.cluster.get_ip_address_dict()
-        rpm_name = installer.copy_presto_rpm_to_master()
-        self.write_test_configs(self.cluster)
-
-        additional_keywords = {
-            'rpm': rpm_name,
-            'master_ip': ips[self.cluster.master],
-            'slave1_ip': ips[self.cluster.slaves[0]]
-        }
-        cmd_output = self.run_script_from_prestoadmin_dir(
-            'echo -e "root\n22\n%(master_ip)s\n%(slave1_ip)s\n" | '
-            './presto-admin server install /mnt/presto-admin/%(rpm)s ',
-            **additional_keywords).splitlines()
-        expected = [r'Enter user name for SSH connection to all nodes: '
-                    r'\[root\] '
-                    r'Enter port number for SSH connections to all nodes: '
-                    r'\[22\] '
-                    r'Enter host name or IP address for coordinator node. '
-                    r'Enter an external host name or ip address if this is a '
-                    r'multi-node cluster: \[localhost\] '
-                    r'Enter host names or IP addresses for worker nodes '
-                    r'separated by spaces: '
-                    r'\[localhost\] Using rpm_specifier as a local path',
-                    r'Package deployed successfully on: ' +
-                    ips[self.cluster.master],
-                    r'Package installed successfully on: ' +
-                    ips[self.cluster.master],
-                    r'Package deployed successfully on: ' +
-                    ips[self.cluster.slaves[0]],
-                    r'Package installed successfully on: ' +
-                    ips[self.cluster.slaves[0]],
-                    r'Deploying configuration on: ' +
-                    ips[self.cluster.master],
-                    r'Deploying tpch.properties connector '
-                    r'configurations on: ' +
-                    ips[self.cluster.master] + r' ',
-                    r'Deploying configuration on: ' +
-                    ips[self.cluster.slaves[0]],
-                    r'Deploying tpch.properties connector '
-                    r'configurations on: ' +
-                    ips[self.cluster.slaves[0]] + r' ',
-                    r'Deploying rpm on .*\.\.\.',
-                    r'Deploying rpm on .*\.\.\.',
-                    r'Fetching local presto rpm at path: .*',
-                    r'Found existing rpm at: .*']
-
-        cmd_output.sort()
-        expected.sort()
-        for expected_regexp, actual_line in zip(expected, cmd_output):
-            self.assertRegexpMatches(actual_line, expected_regexp)
-
-        self.assert_installed_with_regex_configs(
-            self.cluster.master,
-            [self.cluster.slaves[0]])
-
-    def test_install_with_wrong_topology(self):
-        installer = StandalonePrestoInstaller(self)
-        rpm_name = installer.copy_presto_rpm_to_master()
-        topology = {'coordinator': 'dummy_master', 'workers': ['slave1']}
-        self.upload_topology(topology)
-        expected = 'u\'dummy_master\' is not a valid ip address or' \
-                   ' host name.' \
-                   '  More detailed information can be found in ' \
-                   '/var/log/prestoadmin/presto-admin.log\n'
-        self.assertRaisesRegexp(OSError,
-                                expected,
-                                self.run_prestoadmin,
-                                'server install /mnt/presto-admin/%(rpm)s ',
-                                rpm=rpm_name)
-
-    def test_install_with_malformed_topology(self):
-        installer = StandalonePrestoInstaller(self)
-        rpm_name = installer.copy_presto_rpm_to_master()
-        topology = {'coordinator': 'master',
-                    'workers': 'slave1' 'slave2'}
-        self.upload_topology(topology)
-        expected = 'Workers must be of type list.  Found <type \'unicode\'>.' \
-                   '  More detailed information can be found in ' \
-                   '/var/log/prestoadmin/presto-admin.log'
-
-        self.assertRaisesRegexp(OSError,
-                                expected,
-                                self.run_prestoadmin,
-                                'server install /mnt/presto-admin/%(rpm)s ',
-                                rpm=rpm_name)
-
-    def test_install_with_malformed_connector(self):
-        installer = StandalonePrestoInstaller(self)
-        self.upload_topology()
-        self.cluster.write_content_to_host(
-            'connectr.typo:invalid',
-            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
-            self.cluster.master
-        )
-        actual_out = installer.install(pa_raise_error=False)
-        expected = 'Underlying exception:\n    Catalog configuration ' \
-                   'jmx.properties does not contain connector.name'
-        self.assertRegexpMatches(actual_out, expected)
-
-        for container in self.cluster.all_hosts():
-            installer.assert_installed(self, container)
-            self.assert_has_default_config(container)
 
     def test_connection_to_coord_lost(self):
         installer = StandalonePrestoInstaller(self)
