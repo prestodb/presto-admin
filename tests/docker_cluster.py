@@ -36,7 +36,7 @@ from tests.product.constants import \
 
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 
-_DOCKER_START_TIMEOUT = 30000
+_DOCKER_START_TIMEOUT = 60000
 _DOCKER_START_WAIT = 1000
 
 NO_WAIT_SSH_IMAGES = [
