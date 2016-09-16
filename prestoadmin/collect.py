@@ -24,7 +24,7 @@ import shutil
 import tarfile
 
 import requests
-from fabric.contrib.files import exists, append
+from fabric.contrib.files import append
 from fabric.context_managers import settings, hide
 from fabric.operations import os, get, run
 from fabric.tasks import execute
@@ -75,8 +75,7 @@ def logs():
 
 
 def copy_admin_log(log_folder):
-    shutil.copy(os.path.join(PRESTOADMIN_LOG_DIR, PRESTOADMIN_LOG_NAME),
-                log_folder)
+    shutil.copy(os.path.join(PRESTOADMIN_LOG_DIR, PRESTOADMIN_LOG_NAME), log_folder)
 
 
 def make_tarfile(output_filename, source_dir):
@@ -90,21 +89,22 @@ def make_tarfile(output_filename, source_dir):
 
 def get_remote_log_files(dest_path):
     remote_server_log = lookup_server_log_file(env.host)
-    _LOGGER.debug('Logs to be archived on host ' + env.host + ': ' +
-                  remote_server_log)
+    _LOGGER.debug('Logs to be archived on host ' + env.host + ': ' + remote_server_log)
     get_files(remote_server_log + '*', dest_path)
 
     remote_launcher_log = lookup_launcher_log_file(env.host)
-    _LOGGER.debug('LOG directory to be archived on host ' + env.host + ': ' +
-                  remote_launcher_log)
+    _LOGGER.debug('LOG directory to be archived on host ' + env.host + ': ' + remote_launcher_log)
     get_files(remote_launcher_log + '*', dest_path)
 
 
 def get_files(remote_path, local_path):
     path_with_host_name = os.path.join(local_path, env.host)
 
-    if not os.path.exists(path_with_host_name):
+    try:
         os.makedirs(path_with_host_name)
+    except OSError:
+        if not os.path.isdir(path_with_host_name):
+            raise
 
     _LOGGER.debug('local path used ' + path_with_host_name)
 
@@ -140,11 +140,13 @@ def query_info(query_id):
               'query_id is correct, or check that server is up with ' \
               'command: server status'
     req = get_request(request_url(QUERY_REQUEST_EXT + query_id), err_msg)
-    query_info_file_name = os.path.join(TMP_PRESTO_DEBUG,
-                                        'query_info_' + query_id + '.json')
+    query_info_file_name = os.path.join(TMP_PRESTO_DEBUG, 'query_info_' + query_id + '.json')
 
-    if not os.path.exists(TMP_PRESTO_DEBUG):
-        os.mkdir(TMP_PRESTO_DEBUG)
+    try:
+        os.makedirs(TMP_PRESTO_DEBUG)
+    except OSError:
+        if not os.path.isdir(TMP_PRESTO_DEBUG):
+            raise
 
     with open(query_info_file_name, 'w') as out_file:
         out_file.write(json.dumps(req.json(), indent=4))
@@ -177,16 +179,14 @@ def system_info():
               'Please check that server is up with command: server status'
     req = get_request(request_url(NODES_REQUEST_EXT), err_msg)
 
-    if not os.path.exists(TMP_PRESTO_DEBUG):
-        os.mkdir(TMP_PRESTO_DEBUG)
-
     downloaded_sys_info_loc = os.path.join(TMP_PRESTO_DEBUG, "sysinfo")
-    node_info_file_name = os.path.join(downloaded_sys_info_loc,
-                                       'node_info.json')
+    try:
+        os.makedirs(downloaded_sys_info_loc)
+    except OSError:
+        if not os.path.isdir(downloaded_sys_info_loc):
+            raise
 
-    if not os.path.exists(downloaded_sys_info_loc):
-        os.mkdir(downloaded_sys_info_loc)
-
+    node_info_file_name = os.path.join(downloaded_sys_info_loc, 'node_info.json')
     with open(node_info_file_name, 'w') as out_file:
         out_file.write(json.dumps(req.json(), indent=4))
 
@@ -210,13 +210,10 @@ def system_info():
 
 def get_system_info(download_location):
 
-    if not exists(TMP_PRESTO_DEBUG_REMOTE):
-        run("mkdir " + TMP_PRESTO_DEBUG_REMOTE)
+    run("mkdir -p " + TMP_PRESTO_DEBUG_REMOTE)
 
     version_file_name = os.path.join(TMP_PRESTO_DEBUG_REMOTE, 'version_info.txt')
-
-    if exists(version_file_name):
-        run('rm -f ' + version_file_name)
+    run('rm -f ' + version_file_name)
 
     append(version_file_name, "platform information : " +
            get_platform_information() + '\n')

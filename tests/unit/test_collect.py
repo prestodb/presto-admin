@@ -15,7 +15,7 @@
 """
 Tests the presto diagnostic information using presto-admin collect
 """
-
+import os
 from os import path
 
 from mock import patch
@@ -39,12 +39,10 @@ class TestCollect(BaseUnitCase):
     @patch("prestoadmin.collect.tarfile.open")
     @patch("prestoadmin.collect.shutil.copy")
     @patch("prestoadmin.collect.ensure_directory_exists")
-    @patch("prestoadmin.collect.os.path.exists")
-    def test_collect_logs(self, path_exists_mock, mkdirs_mock, copy_mock,
+    def test_collect_logs(self, mkdirs_mock, copy_mock,
                           tarfile_open_mock, get_files_mock, server_log_mock,
                           launcher_log_mock):
         downloaded_logs_loc = path.join(TMP_PRESTO_DEBUG, "logs")
-        path_exists_mock.return_value = False
 
         collect.logs()
 
@@ -58,27 +56,26 @@ class TestCollect(BaseUnitCase):
         tar.add.assert_called_with(downloaded_logs_loc,
                                    arcname=path.basename(downloaded_logs_loc))
 
-    @patch("prestoadmin.collect.os.path.exists")
+    @patch("prestoadmin.collect.os.makedirs")
     @patch("prestoadmin.collect.get")
-    def test_get_files(self, get_mock, path_exists_mock):
+    def test_get_files(self, get_mock, makedirs_mock):
         remote_path = "/a/b"
         local_path = "/c/d"
         env.host = "myhost"
         path_with_host_name = path.join(local_path, env.host)
-        path_exists_mock.return_value = True
 
         collect.get_files(remote_path, local_path)
 
+        makedirs_mock.assert_called_with(os.path.join(local_path, env.host))
         get_mock.assert_called_with(remote_path, path_with_host_name, use_sudo=True)
 
-    @patch("prestoadmin.collect.os.path.exists")
+    @patch("prestoadmin.collect.os.makedirs")
     @patch("prestoadmin.collect.warn")
     @patch("prestoadmin.collect.get")
-    def test_get_files_warning(self, get_mock, warn_mock, path_exists_mock):
+    def test_get_files_warning(self, get_mock, warn_mock, makedirs_mock):
         remote_path = "/a/b"
         local_path = "/c/d"
         env.host = "remote_host"
-        path_exists_mock.return_value = True
         get_mock.side_effect = SystemExit
 
         collect.get_files(remote_path, local_path)
@@ -110,17 +107,15 @@ class TestCollect(BaseUnitCase):
     @patch("prestoadmin.collect.json.dumps")
     @patch("prestoadmin.collect.requests.models.json")
     @patch("__builtin__.open")
-    @patch("prestoadmin.collect.os.mkdir")
-    @patch("prestoadmin.collect.os.path.exists")
+    @patch("prestoadmin.collect.os.makedirs")
     @patch("prestoadmin.collect.requests.get")
     @patch('prestoadmin.collect.request_url')
     def test_collect_query_info(self, requests_url_mock, requests_get_mock,
-                                path_exist_mock, mkdir_mock, open_mock,
+                                mkdir_mock, open_mock,
                                 req_json_mock, json_dumps_mock):
         query_id = "1234_abcd"
         query_info_file_name = path.join(TMP_PRESTO_DEBUG,
                                          "query_info_" + query_id + ".json")
-        path_exist_mock.return_value = False
         file_obj = open_mock.return_value.__enter__.return_value
         requests_get_mock.return_value.json.return_value = req_json_mock
         requests_get_mock.return_value.status_code = requests.codes.ok
@@ -143,13 +138,11 @@ class TestCollect(BaseUnitCase):
     @patch("prestoadmin.collect.requests.models.json")
     @patch('prestoadmin.collect.execute')
     @patch("__builtin__.open")
-    @patch("prestoadmin.collect.os.mkdir")
-    @patch("prestoadmin.collect.os.path.exists")
+    @patch("prestoadmin.collect.os.makedirs")
     @patch("prestoadmin.collect.requests.get")
     @patch('prestoadmin.collect.request_url')
     def test_collect_system_info(self, requests_url_mock, requests_get_mock,
-                                 path_exists_mock,
-                                 mkdir_mock, open_mock,
+                                 makedirs_mock, open_mock,
                                  execute_mock, req_json_mock,
                                  json_dumps_mock, conn_info_mock,
                                  make_tarfile_mock):
@@ -158,7 +151,6 @@ class TestCollect(BaseUnitCase):
                                         "node_info.json")
         conn_info_file_name = path.join(downloaded_sys_info_loc,
                                         "connector_info.txt")
-        path_exists_mock.return_value = False
 
         file_obj = open_mock.return_value.__enter__.return_value
         requests_get_mock.return_value.json.return_value = req_json_mock
@@ -168,9 +160,9 @@ class TestCollect(BaseUnitCase):
         env.host = "myhost"
         env.roledefs["coordinator"] = ["myhost"]
         collect.system_info()
-        mkdir_mock.assert_any_call(TMP_PRESTO_DEBUG)
 
-        mkdir_mock.assert_called_with(downloaded_sys_info_loc)
+        makedirs_mock.assert_called_with(downloaded_sys_info_loc)
+        makedirs_mock.assert_called_with(downloaded_sys_info_loc)
 
         open_mock.assert_any_call(node_info_file_name, "w")
 
@@ -196,8 +188,7 @@ class TestCollect(BaseUnitCase):
     @patch("prestoadmin.collect.get_java_version")
     @patch("prestoadmin.collect.get_platform_information")
     @patch('prestoadmin.collect.run')
-    @patch("prestoadmin.collect.exists")
-    def test_get_system_info(self, exists_mock, run_collect_mock,
+    def test_get_system_info(self, run_collect_mock,
                              plat_info_mock, java_version_mock,
                              server_version_mock,
                              append_mock, get_files_mock):
@@ -208,17 +199,13 @@ class TestCollect(BaseUnitCase):
         platform_info = "platform abcd"
         server_version = "dummy_verion"
         java_version = "java dummy version"
-        exists_mock.return_value = False
         plat_info_mock.return_value = platform_info
         java_version_mock.return_value = java_version
         server_version_mock.return_value = server_version
 
         collect.get_system_info(downloaded_sys_info_loc)
 
-        exists_mock.assert_any_call(TMP_PRESTO_DEBUG_REMOTE)
-        run_collect_mock.assert_any_call('mkdir ' + TMP_PRESTO_DEBUG_REMOTE)
-
-        exists_mock.assert_any_call(version_info_file_name)
+        run_collect_mock.assert_any_call('mkdir -p ' + TMP_PRESTO_DEBUG_REMOTE)
 
         append_mock.assert_any_call(version_info_file_name,
                                     'platform information : ' +
