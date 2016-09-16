@@ -405,7 +405,18 @@ query.max-memory=50GB\n"""
 
     def test_install_twice(self):
         installer = StandalonePrestoInstaller(self)
-        self.test_install(installer=installer)
+        self.upload_topology()
+        cmd_output = installer.install()
+        expected = installed_all_hosts_output
+
+        actual = cmd_output.splitlines()
+        self.assertRegexpMatchesLineByLine(actual, expected)
+
+        for container in self.cluster.all_hosts():
+            installer.assert_installed(self, container)
+            self.assert_has_default_config(container)
+            self.assert_has_default_connector(container)
+
         output = installer.install(pa_raise_error=False)
 
         self.default_keywords.update(installer.get_keywords())
