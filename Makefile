@@ -1,7 +1,7 @@
 .PHONY: clean-all clean clean-eggs clean-build clean-pyc clean-test-containers clean-test \
 	clean-docs lint smoke test test-all test-images test-rpm docker-images coverage docs \
 	open-docs release release-builds dist dist-online dist-offline wheel install precommit \
-	clean-test-all
+	clean-test-all smoke-configurable-cluster test-all-configurable-cluster _clean_tmp
 
 help:
 	@echo "precommit - run \`quick' tests and tasks that should pass or succeed prior to pushing"
@@ -16,8 +16,10 @@ help:
 	@echo "clean-docs - remove doc artifacts"
 	@echo "lint - check style with flake8"
 	@echo "smoke - run tests annotated with attr smoke using nosetests"
+	@echo "smoke-configurable-cluster - same target as smoke but doesn't build the Docker images as the tests will run on a configurable cluster"
 	@echo "test - run tests quickly with Python 2.6 and 2.7"
 	@echo "test-all - run tests on every Python version with tox. Specify TEST_SUITE env variable to run only a given suite."
+	@echo "test-all-configurable-cluster - same target as test-all but doesn't build the Docker images as the tests will run on a configurable cluster"
 	@echo "test-images - create product test image(s). Specify IMAGE_NAMES env variable to create only certain images."
 	@echo "test-rpm - run tests for the RPM package"
 	@echo "docker-images - pull docker image(s). Specify DOCKER_IMAGE_NAME env variable for specific image."
@@ -63,10 +65,12 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 
-clean-test-all: clean-test
-	rm -fr tmp
+clean-test-all: clean-test _clean_tmp
 	for image in $$(docker images | awk '/teradatalabs\/pa_test/ {print $$1}'); do docker rmi -f $$image ; done
 	@echo "\n\tYou can kill running containers that caused errors removing images by running \`make clean-test-containers'\n"
+
+_clean_tmp:
+	rm -rf tmp
 
 clean-docs:
 	rm -rf docs/prestoadmin.*
@@ -79,7 +83,11 @@ lint:
 presto-server-rpm.rpm:
 	wget 'https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&g=com.facebook.presto&a=presto-server-rpm&e=rpm&v=RELEASE' -O $@
 
-smoke: clean-test-all test-images
+smoke: clean-test-all test-images _smoke
+
+smoke-configurable-cluster: clean-test _clean_tmp _smoke
+
+_smoke:
 	tox -e py26 -- -a smoketest,'!quarantine'
 
 test: clean-test
@@ -88,7 +96,11 @@ test: clean-test
 
 TEST_SUITE?=tests.product
 
-test-all: clean-test-all test-images
+test-all: clean-test-all test-images _test-all
+
+test-all-configurable-cluster: clean-test _clean_tmp _test-all
+
+_test-all:
 	tox -- -s tests.unit
 	tox -- -s tests.integration
 	tox -e py26 -- -s ${TEST_SUITE} -a '!quarantine'
