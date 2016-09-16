@@ -67,13 +67,6 @@ class TestCollect(BaseProductTestCase):
         msg = '%s != %s' % (actual, expected)
         return msg
 
-    @attr('smoketest')
-    def test_collect_system_info_basic(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-        self.run_prestoadmin('server start')
-        actual = self.run_prestoadmin('collect system_info')
-        self.test_basic_system_info(actual)
-
     @nottest
     def test_basic_system_info(self, actual, coordinator=None, hosts=None):
         if not coordinator:
@@ -132,6 +125,7 @@ class TestCollect(BaseProductTestCase):
                                     [self.cluster.master,
                                      self.cluster.slaves[0]])
 
+    @attr('smoketest')
     def test_system_info_pa_separate_node(self):
         installer = StandalonePrestoInstaller(self)
         self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
@@ -147,24 +141,6 @@ class TestCollect(BaseProductTestCase):
             hosts=self.cluster.slaves)
 
     @attr('smoketest')
-    def test_collect_query_info(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-        self.run_prestoadmin('server start')
-        sql_to_run = 'SELECT * FROM system.runtime.nodes WHERE 1234 = 1234'
-        query_id = self.retry(lambda: self.get_query_id(sql_to_run))
-
-        actual = self.run_prestoadmin('collect query_info ' + query_id)
-        query_info_file_name = path.join(TMP_PRESTO_DEBUG,
-                                         'query_info_' + query_id +
-                                         '.json')
-
-        expected = 'Gathered query information in file: ' + \
-                   query_info_file_name + '\n'
-
-        self.assert_path_exists(self.cluster.master,
-                                query_info_file_name)
-        self.assertEqual(actual, expected)
-
     def test_query_info_pa_separate_node(self):
         installer = StandalonePrestoInstaller(self)
         self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
