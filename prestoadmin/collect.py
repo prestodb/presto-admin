@@ -36,7 +36,7 @@ from prestoadmin.server import get_presto_version, get_connector_info_from
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.filesystem import ensure_directory_exists
 from prestoadmin.util.remote_config_util import lookup_server_log_file,\
-    lookup_launcher_log_file,  lookup_port
+    lookup_launcher_log_file,  lookup_port, lookup_catalog_directory
 from prestoadmin.standalone.config import StandaloneConfig
 import prestoadmin.util.fabricapi as fabricapi
 import prestoadmin
@@ -202,6 +202,7 @@ def system_info():
 
     _LOGGER.debug('Gathered connector information in file: ' + conn_file_name)
 
+    execute(get_connector_configs, downloaded_sys_info_loc, roles=env.roles)
     execute(get_system_info, downloaded_sys_info_loc, roles=env.roles)
 
     make_tarfile(OUTPUT_FILENAME_FOR_SYS_INFO, downloaded_sys_info_loc)
@@ -226,6 +227,12 @@ def get_system_info(download_location):
     _LOGGER.debug('Gathered version information in file: ' + version_file_name)
 
     get_files(version_file_name, download_location)
+
+
+def get_connector_configs(dest_path):
+    remote_catalog_dir = lookup_catalog_directory(env.host)
+    _LOGGER.debug('catalogs to be archived on host ' + env.host + ': ' + remote_catalog_dir)
+    get_files(remote_catalog_dir, dest_path)
 
 
 def get_platform_information():
