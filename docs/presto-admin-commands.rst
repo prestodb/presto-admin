@@ -52,7 +52,8 @@ This command gathers various system specific information from the cluster. The i
 The gathered information includes:
 
  * Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.
- * Connectors configured
+ * List of connectors configured
+ * Connector configuration files
  * Other system specific information like OS information, Java version, ``presto-admin`` version and Presto server version
 
 Example
