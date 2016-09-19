@@ -77,9 +77,6 @@ class TestCollect(BaseProductTestCase):
         downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, 'sysinfo')
         self.assert_path_exists(self.cluster.master, downloaded_sys_info_loc)
 
-        coord_system_info_location = path.join(downloaded_sys_info_loc, coordinator)
-        self.assert_path_exists(self.cluster.master, coord_system_info_location)
-
         conn_file_name = path.join(downloaded_sys_info_loc, 'connector_info.txt')
         self.assert_path_exists(self.cluster.master, conn_file_name)
 
@@ -87,8 +84,22 @@ class TestCollect(BaseProductTestCase):
         for host in hosts:
             self.assert_path_exists(host, version_file_name)
 
+        # collected coordinator info
+        coord_system_info_location = path.join(downloaded_sys_info_loc, coordinator)
+        self.assert_path_exists(self.cluster.master, coord_system_info_location)
+
+        coord_catalog_info_location = path.join(coord_system_info_location, 'catalog')
+        self.assert_path_exists(self.cluster.master, coord_catalog_info_location)
+        self.assert_path_exists(self.cluster.master, path.join(coord_catalog_info_location, 'tpch.properties'))
+
+        # collected worker info
         slave0_system_info_loc = path.join(downloaded_sys_info_loc, self.cluster.internal_slaves[0])
         self.assert_path_exists(self.cluster.master, slave0_system_info_loc)
+        self.assert_path_exists(self.cluster.master, slave0_system_info_loc)
+
+        slave0_catalog_info_loc = path.join(slave0_system_info_loc, 'catalog')
+        self.assert_path_exists(self.cluster.master, slave0_catalog_info_loc)
+        self.assert_path_exists(self.cluster.master, path.join(slave0_catalog_info_loc, 'tpch.properties'))
         self.assert_path_exists(self.cluster.master, OUTPUT_FILENAME_FOR_SYS_INFO)
 
     def test_collect_system_info_dash_h_coord_worker(self):

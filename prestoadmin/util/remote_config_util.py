@@ -18,7 +18,7 @@ from fabric.operations import sudo
 from fabric.tasks import execute
 from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util.constants import DEFAULT_PRESTO_LAUNCHER_LOG_FILE,\
-    DEFAULT_PRESTO_SERVER_LOG_FILE, REMOTE_CONF_DIR
+    DEFAULT_PRESTO_SERVER_LOG_FILE, REMOTE_CONF_DIR, REMOTE_CATALOG_DIR
 import prestoadmin.util.validators
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,6 +69,14 @@ def lookup_launcher_log_file(host):
                                     host, DEFAULT_PRESTO_LAUNCHER_LOG_FILE)
     except:
         return DEFAULT_PRESTO_LAUNCHER_LOG_FILE
+
+
+def lookup_catalog_directory(host):
+    try:
+        return lookup_string_config('plugin.config-dir', NODE_CONFIG_FILE,
+                                    host, REMOTE_CATALOG_DIR)
+    except:
+        return REMOTE_CATALOG_DIR
 
 
 def lookup_string_config(config_value, config_file, host, default=''):
