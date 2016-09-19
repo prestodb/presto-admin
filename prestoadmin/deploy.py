@@ -131,7 +131,7 @@ def deploy_node_properties(content, remote_dir):
         "sed -i '/node.id/!d' " + node_file_path + "; "
         )
     sudo(node_id_command)
-    files.append(os.path.join(remote_dir, name), content, True)
+    files.append(os.path.join(remote_dir, name), content, True, shell=True)
 
 
 def write_to_remote_file(text, filepath, owner, mode=600):

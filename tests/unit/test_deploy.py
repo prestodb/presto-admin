@@ -92,7 +92,7 @@ class TestDeploy(BaseTestCase):
         deploy.deploy_node_properties("key=value", "/my/remote/dir")
         sudo_mock.assert_called_with(command)
         append_mock.assert_called_with("/my/remote/dir/node.properties",
-                                       "key=value", True)
+                                       "key=value", True, shell=True)
 
     @patch('prestoadmin.deploy.deploy')
     @patch('prestoadmin.deploy.deploy_node_properties')
