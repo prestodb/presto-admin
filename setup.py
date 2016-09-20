@@ -94,7 +94,6 @@ PyPIRCCommand._get_rc_file = get_custom_rc_file
 
 setup(
     name='prestoadmin',
-    # Make sure to update version in prestoadmin/__init__.py
     version=__version__,
     description="Presto-admin installs, configures, and manages Presto " + \
                 "installations.",
