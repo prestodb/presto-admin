@@ -50,7 +50,7 @@ requirements = [
     'fabric==1.10.1',
     'requests==2.7.0',
     'overrides==0.5',
-    'pip==7.1.2',
+    'pip==8.1.2',
     'setuptools==20.1.1',
     'wheel==0.23.0',
     'flake8==2.5.4',
