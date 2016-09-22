@@ -29,7 +29,6 @@ from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
 class TestConfiguration(BaseProductTestCase):
-
     def setUp(self):
         super(TestConfiguration, self).setUp()
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
@@ -205,8 +204,7 @@ class TestConfiguration(BaseProductTestCase):
         )
         for host in self.cluster.all_internal_hosts():
             self.assertTrue('Deploying configuration on: %s' % host in output)
-        expected_size = self.len_down_node_error + \
-            len(self.cluster.all_hosts())
+        expected_size = self.len_down_node_error + len(self.cluster.all_hosts())
         self.assertEqual(len(output.splitlines()), expected_size)
 
         output = self.run_prestoadmin('configuration show config',
@@ -220,23 +218,6 @@ class TestConfiguration(BaseProductTestCase):
             expected = f.read()
         self.assertRegexpMatches(str.join('\n', output.splitlines()[6:]),
                                  expected)
-
-    def test_deploy_lost_worker_connection(self):
-        self.upload_topology()
-        internal_bad_host = self.cluster.internal_slaves[0]
-        bad_host = self.cluster.slaves[0]
-        self.cluster.stop_host(bad_host)
-        output = self.run_prestoadmin('configuration deploy',
-                                      raise_error=False)
-        self.assertRegexpMatches(
-            output,
-            self.down_node_connection_error(internal_bad_host)
-        )
-        for host in self.cluster.all_internal_hosts():
-            self.assertTrue('Deploying configuration on: %s' % host in output)
-        expected_length = len(self.cluster.all_hosts()) + \
-            self.len_down_node_error
-        self.assertEqual(len(output.splitlines()), expected_length)
 
     def test_configuration_show(self):
         self.upload_topology()
@@ -346,7 +327,7 @@ class TestConfiguration(BaseProductTestCase):
             OSError, "User presto does not exist", self.run_prestoadmin,
             'configuration deploy')
 
-    def test_configuration_show_non_sudo_user(self):
+    def test_configuration_show_non_root_user(self):
         self.upload_topology(
             {"coordinator": "master",
              "workers": ["slave1", "slave2", "slave3"],

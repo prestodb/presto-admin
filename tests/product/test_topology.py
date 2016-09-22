@@ -17,7 +17,7 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
@@ -54,26 +54,6 @@ class TestTopologyShow(BaseProductTestCase):
     @attr('smoketest')
     def test_topology_show(self):
         self.upload_topology()
-        actual = self.run_prestoadmin('topology show')
-        expected = normal_topology
-        self.assertEqual(expected, actual)
-
-    @docker_only
-    def test_topology_show_coord_down(self):
-        topology = {'coordinator': 'slave1',
-                    'workers': ['master', 'slave2', 'slave3']}
-        self.upload_topology(topology=topology)
-        self.cluster.stop_host(
-            self.cluster.slaves[0])
-        actual = self.run_prestoadmin('topology show')
-        expected = topology_with_slave1_coord
-        self.assertEqual(expected, actual)
-
-    @docker_only
-    def test_topology_show_worker_down(self):
-        self.upload_topology()
-        self.cluster.stop_host(
-            self.cluster.slaves[0])
         actual = self.run_prestoadmin('topology show')
         expected = normal_topology
         self.assertEqual(expected, actual)
