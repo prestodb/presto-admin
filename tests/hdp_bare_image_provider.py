@@ -21,7 +21,7 @@ from tests.bare_image_provider import TagBareImageProvider
 
 
 class HdpBareImageProvider(TagBareImageProvider):
-    def __init__(self):
+    def __init__(self, images_tag):
         super(HdpBareImageProvider, self).__init__(
-            'teradatalabs/hdp2.3-master', 'teradatalabs/hdp2.3-slave',
-            'hdp2.3')
+            'teradatalabs/hdp2.3-master:%s', 'teradatalabs/hdp2.3-slave',
+            images_tag, 'hdp2.3')

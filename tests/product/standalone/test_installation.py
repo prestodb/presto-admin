@@ -25,6 +25,7 @@ from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.docker_cluster import DockerCluster
+from tests.product.constants import BASE_IMAGES_TAG
 from tests.product.constants import DEFAULT_DOCKER_MOUNT_POINT, \
     DEFAULT_LOCAL_MOUNT_POINT
 
@@ -34,7 +35,7 @@ class TestInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestInstallation, self).setUp()
         self.pa_installer = PrestoadminInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_BARE_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_BARE_CLUSTER)
         dist_dir = self.pa_installer._build_dist_if_necessary(self.cluster)
         self.pa_installer._copy_dist_to_host(self.cluster, dist_dir,
                                              self.cluster.master)
@@ -84,7 +85,7 @@ class TestInstallation(BaseProductTestCase):
     @docker_only
     def test_install_on_wrong_os_offline_installer(self):
         image = 'teradatalabs/ubuntu-trusty-python2.6'
-        tag = 'latest'
+        tag = BASE_IMAGES_TAG
         host = 'wrong-os-master'
         ubuntu_container = DockerCluster(host, [], DEFAULT_LOCAL_MOUNT_POINT,
                                          DEFAULT_DOCKER_MOUNT_POINT)

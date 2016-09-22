@@ -32,7 +32,7 @@ from prestoadmin.yarn_slider.config import HOST, DIR, SLIDER_USER, \
 class TestSliderInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestSliderInstallation, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), YARN_SLIDER_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider, YARN_SLIDER_PA_CLUSTER)
 
     def _get_interactive_config(self, conf):
         cluster_conf = cluster_config(conf)

@@ -30,6 +30,7 @@ from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster
 from tests.product.cluster_types import cluster_types
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
+from tests.product.constants import BASE_IMAGES_TAG
 
 PRESTO_VERSION = r'.+'
 RETRY_TIMEOUT = 120
@@ -132,6 +133,7 @@ query.max-memory=50GB\n"""
                 StandalonePrestoInstaller.assert_installed)
             BaseProductTestCase.run_installers(self.cluster, installers, self)
         else:
+            bare_image_provider = bare_image_provider(BASE_IMAGES_TAG)
             self.cluster, bare_cluster = DockerCluster.start_cluster(
                 bare_image_provider, cluster_type)
 

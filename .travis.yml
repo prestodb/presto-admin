@@ -6,6 +6,7 @@ services:
   - docker
 env:
   global:
+    - BASE_IMAGES_TAG=6
     - PA_TEST_ONLINE_INSTALLER=true
     - PYTHONPATH=$PYTHONPATH:$(pwd)
     - LONG_PRODUCT_TESTS="tests/product/test_server_install.py tests/product/test_status.py tests/product/test_collect.py tests/product/test_connectors.py tests/product/test_control.py tests/product/test_server_uninstall.py"

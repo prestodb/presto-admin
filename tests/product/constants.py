@@ -17,9 +17,17 @@ Module defining constants global to the product tests
 """
 
 import os
+import sys
 
 import prestoadmin
 from prestoadmin import main_dir
+
+try:
+    BASE_IMAGES_TAG = os.environ['BASE_IMAGES_TAG']
+except KeyError:
+    print "BASE_IMAGES_TAG must be set in the environment"
+    sys.exit(1)
+
 
 JAVA_VERSION_DIR = 'jdk1.8.0_92'
 DEFAULT_JAVA_DIR = os.path.join('/usr', 'java', JAVA_VERSION_DIR)
@@ -29,5 +37,3 @@ LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
 
 DEFAULT_DOCKER_MOUNT_POINT = '/mnt/presto-admin'
 DEFAULT_LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
-
-BASE_TD_IMAGE_NAME = 'teradatalabs/centos6-ssh-test'

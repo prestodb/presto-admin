@@ -59,10 +59,11 @@ presto-admin codebase.
 
 
 class TagBareImageProvider(BareImageProvider):
-    def __init__(self, base_master_name, base_slave_name, tag_decoration):
+    def __init__(
+            self, base_master_name, base_slave_name, base_tag, tag_decoration):
         super(TagBareImageProvider, self).__init__(tag_decoration)
-        self.base_master_name = base_master_name
-        self.base_slave_name = base_slave_name
+        self.base_master_name = base_master_name + ":" + base_tag
+        self.base_slave_name = base_slave_name + ":" + base_tag
         self.client = Client()
 
     def create_bare_images(self, cluster, master_name, slave_name):
