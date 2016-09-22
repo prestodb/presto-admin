@@ -24,6 +24,7 @@ from fabric.context_managers import hide
 from fabric.contrib import files
 from fabric.operations import sudo, os, get
 
+from prestoadmin.deploy import secure_create_directory
 from prestoadmin.standalone.config import StandaloneConfig, \
     PRESTO_STANDALONE_USER_GROUP
 from prestoadmin.util import constants
@@ -42,7 +43,7 @@ COULD_NOT_REMOVE = 'Could not remove connector'
 
 def deploy_files(filenames, local_dir, remote_dir, user_group, mode=0600):
     _LOGGER.info('Deploying configurations for ' + str(filenames))
-    sudo('mkdir -p ' + remote_dir)
+    secure_create_directory(remote_dir, PRESTO_STANDALONE_USER_GROUP)
     for name in filenames:
         put_secure(user_group, mode, os.path.join(local_dir, name), remote_dir,
                    use_sudo=True)

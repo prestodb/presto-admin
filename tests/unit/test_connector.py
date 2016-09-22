@@ -149,14 +149,14 @@ class TestConnector(BaseUnitCase):
         self.assertRaisesRegexp(OSError, 'Permission denied',
                                 connector.remove, 'tpch')
 
-    @patch('prestoadmin.connector.sudo')
+    @patch('prestoadmin.connector.secure_create_directory')
     @patch('prestoadmin.util.fabricapi.put')
-    def test_deploy_files(self, put_mock, sudo_mock):
+    def test_deploy_files(self, put_mock, create_dir_mock):
         local_dir = '/my/local/dir'
         remote_dir = '/my/remote/dir'
         connector.deploy_files(['a', 'b'], local_dir, remote_dir,
                                PRESTO_STANDALONE_USER_GROUP)
-        sudo_mock.assert_called_with('mkdir -p %s' % remote_dir)
+        create_dir_mock.assert_called_with(remote_dir, PRESTO_STANDALONE_USER_GROUP)
         put_mock.assert_any_call('/my/local/dir/a', remote_dir, use_sudo=True,
                                  mode=0600)
         put_mock.assert_any_call('/my/local/dir/b', remote_dir, use_sudo=True,

@@ -283,10 +283,17 @@ query.max-memory=50GB\n"""
         self.assert_file_perm_owner(
             host, filepath, '-rw-------', 'presto', 'presto')
 
-    def assert_file_perm_owner(
-            self, host, filepath, permissions, owner, group):
-        ls = self.cluster.exec_cmd_on_host(host, "ls -l %s" % (filepath,))
-        fields = ls.split()
+    def assert_directory_perm_owner(self, host, filepath, permissions, owner, group):
+        self.assertEqual(permissions[0], 'd', 'expected permissions should begin with a d')
+        ls = self.cluster.exec_cmd_on_host(host, "ls -l -d %s" % filepath)
+        self.assert_perm_owner(permissions, owner, group, ls)
+
+    def assert_file_perm_owner(self, host, filepath, permissions, owner, group):
+        ls = self.cluster.exec_cmd_on_host(host, "ls -l %s" % filepath)
+        self.assert_perm_owner(permissions, owner, group, ls)
+
+    def assert_perm_owner(self, permissions, owner, group, actual):
+        fields = actual.split()
         self.assertEqual(fields[0], permissions)
         self.assertEqual(fields[2], owner)
         self.assertEqual(fields[3], group)
@@ -340,11 +347,13 @@ query.max-memory=50GB\n"""
         config = self.get_file_content(host, filepath)
         self.assertRegexpMatches(config, expected)
 
-    def assert_has_default_connector(self, container):
-        filepath = '/etc/presto/catalog/tpch.properties'
+    def assert_has_default_connector(self, host):
+        catalog_dir = constants.REMOTE_CATALOG_DIR
+        self.assert_directory_perm_owner(host, catalog_dir, 'drwxr-xr-x', 'presto', 'presto')
 
-        self.assert_config_perms(container, filepath)
-        self.assert_file_content(container, filepath, 'connector.name=tpch')
+        filepath = os.path.join(catalog_dir, 'tpch.properties')
+        self.assert_config_perms(host, filepath)
+        self.assert_file_content(host, filepath, 'connector.name=tpch')
 
     def assert_has_jmx_connector(self, container):
         self.assert_file_content(container,

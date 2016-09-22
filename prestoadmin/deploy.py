@@ -113,7 +113,27 @@ def secure_create_file(filepath, user_group, mode=600):
         result = sudo(command)
         if result.return_code == missing_owner_code:
             abort("User %s does not exist. Make sure the Presto server RPM "
-                  "is installed and try again" % (user,))
+                  "is installed and try again" % user)
+        elif result.failed:
+            abort("Failed to securely create file %s" % (filepath))
+
+
+def secure_create_directory(filepath, user_group, mode=755):
+    user, group = user_group.split(':')
+    missing_owner_code = 42
+    command = \
+        "( getent passwd {user} >/dev/null || exit {missing_owner_code} ) && " \
+        "mkdir -p {filepath} && " \
+        "chown {user_group} {filepath} && " \
+        "chmod {mode} {filepath} ".format(
+            filepath=filepath, user=user, user_group=user_group, mode=mode,
+            missing_owner_code=missing_owner_code)
+
+    with settings(warn_only=True):
+        result = sudo(command)
+        if result.return_code == missing_owner_code:
+            abort("User %s does not exist. Make sure the Presto server RPM "
+                  "is installed and try again" % user)
         elif result.failed:
             abort("Failed to securely create file %s" % (filepath))
 
