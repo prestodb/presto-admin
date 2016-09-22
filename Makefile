@@ -110,12 +110,30 @@ _test-all:
 # yarn_slider_presto_admin, all
 IMAGE_NAMES?="all"
 
+#
+# The canonical source of the BASE_IMAGES_TAG is .travis.yml because we don't
+# have a good way to get that information into travis from somewhere else.
+#
+# Note that this is conditionally assigned. If you export
+# BASE_IMAGES_TAG="something else" before invoking e.g. `make smoke', you'll
+# get that value, not the one here. This makes it possible to test new docker
+# images without modifying the Makefile
+#
+# To confirm the value of BASE_IMAGES_TAG that make is using, run `make bit'
+#
+BASE_IMAGES_TAG ?= $(shell awk '/BASE_IMAGES_TAG/ {split($$0, a, "="); print a[2]}' .travis.yml)
+export BASE_IMAGES_TAG
+
+.PHONY: bit
+bit:
+	echo $(BASE_IMAGES_TAG)
+
 test-images: docker-images presto-server-rpm.rpm
-	python tests/product/image_builder.py ${IMAGE_NAMES}
+	python tests/product/image_builder.py $(IMAGE_NAMES)
 
 DOCKER_IMAGES := \
-	teradatalabs/centos6-ssh-oj8 \
-	teradatalabs/ubuntu-trusty-python2.6
+	teradatalabs/centos6-ssh-oj8:$(BASE_IMAGES_TAG) \
+	teradatalabs/ubuntu-trusty-python2.6:$(BASE_IMAGES_TAG)
 
 docker-images:
 	for image in $(DOCKER_IMAGES); do docker pull $$image || exit 1; done

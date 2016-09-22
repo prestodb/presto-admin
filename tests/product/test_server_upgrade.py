@@ -28,7 +28,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
     def setUp(self):
         super(TestServerUpgrade, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
         self.dummy_installer = StandalonePrestoInstaller(
             self, (os.path.join(prestoadmin.main_dir, 'tests', 'product',
                                 'resources'), 'dummy-rpm.rpm'))

@@ -3,6 +3,7 @@ from tests.hdp_bare_image_provider import HdpBareImageProvider
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 
 from tests.product.base_product_case import BaseProductTestCase
+from tests.product.constants import BASE_IMAGES_TAG
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER, STANDALONE_PA_CLUSTER, \
     STANDALONE_PRESTO_CLUSTER, YARN_SLIDER_PA_CLUSTER, cluster_types
 
@@ -10,10 +11,11 @@ import argparse
 
 
 class ImageBuilder:
-    def __init__(self, testcase):
+    def __init__(self, testcase, images_tag):
         self.testcase = testcase
         self.testcase.default_keywords = {}
         self.testcase.cluster = None
+        self.images_tag = images_tag
 
     def _setup_image(self, bare_image_provider, cluster_type):
         installers = cluster_types[cluster_type]
@@ -36,7 +38,7 @@ class ImageBuilder:
         self.testcase.cluster.tear_down()
 
     def _setup_image_with_no_hadoop_provider(self, cluster_type):
-        self._setup_image(NoHadoopBareImageProvider(),
+        self._setup_image(NoHadoopBareImageProvider(self.images_tag),
                           cluster_type)
 
     def setup_standalone_presto_images(self):
@@ -56,7 +58,7 @@ class ImageBuilder:
         self._setup_image_with_no_hadoop_provider(cluster_type)
 
     def _setup_cluster_with_hdp_image_provider(self, cluster_type):
-        self._setup_image(HdpBareImageProvider(),
+        self._setup_image(HdpBareImageProvider(self.images_tag),
                           cluster_type)
 
     def setup_yarn_slider_presto_admin_and_slider_images(self):
@@ -67,13 +69,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Update the Makefile to list supported images if more are added
-    parser.add_argument("image_type", metavar="image_type", type=str, nargs="+",
-                        choices=["standalone_presto", "standalone_presto_admin",
-                                 "standalone_bare", "yarn_slider_presto_admin",
-                                 "all"],
-                        help="Specify the type of image to create. The available choices are: "
-                             "standalone_presto, standalone_presto_admin, standalone_bare, "
-                             "yarn_slider_presto_admin, all")
+    parser.add_argument(
+        "image_type", metavar="image_type", type=str, nargs="+",
+        choices=["standalone_presto", "standalone_presto_admin",
+                 "standalone_bare", "yarn_slider_presto_admin",
+                 "all"],
+        help="Specify the type of image to create. The available choices are: "
+             "standalone_presto, standalone_presto_admin, standalone_bare, "
+             "yarn_slider_presto_admin, all")
+
+    args = parser.parse_args()
 
     # ImageBuilder needs an input testcase with access to unittest assertions
     # so the installers can check their resulting installations as well as some
@@ -82,9 +87,8 @@ if __name__ == "__main__":
     # unittest. A unittest instance can be successfully created if the name
     # of an existing method of the class is passed into the constructor.
     dummy_testcase = BaseProductTestCase('__init__')
-    image_builder = ImageBuilder(dummy_testcase)
+    image_builder = ImageBuilder(dummy_testcase, BASE_IMAGES_TAG)
 
-    args = parser.parse_args()
     if "all" in args.image_type:
         image_builder.setup_standalone_presto_images()
         image_builder.setup_standalone_presto_admin_images()

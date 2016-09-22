@@ -25,7 +25,7 @@ import prestoadmin
 
 from tests.base_installer import BaseInstaller
 from tests.configurable_cluster import ConfigurableCluster
-from tests.product.constants import LOCAL_RESOURCES_DIR
+from tests.product.constants import BASE_IMAGES_TAG, LOCAL_RESOURCES_DIR
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 
 from tests.docker_cluster import DockerCluster
@@ -86,7 +86,7 @@ class PrestoadminInstaller(BaseInstaller):
 
         container_name = 'installer'
         cluster_type = 'installer_builder'
-        bare_image_provider = NoHadoopBareImageProvider()
+        bare_image_provider = NoHadoopBareImageProvider(BASE_IMAGES_TAG)
 
         installer_container, created_bare = DockerCluster.start_cluster(
             bare_image_provider, cluster_type, 'installer', [])

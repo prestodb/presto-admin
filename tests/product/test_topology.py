@@ -49,7 +49,7 @@ class TestTopologyShow(BaseProductTestCase):
 
     def setUp(self):
         super(TestTopologyShow, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
 
     @attr('smoketest')
     def test_topology_show(self):

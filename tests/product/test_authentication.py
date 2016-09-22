@@ -30,7 +30,7 @@ from constants import LOCAL_RESOURCES_DIR
 class TestAuthentication(BaseProductTestCase):
     def setUp(self):
         super(TestAuthentication, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
 
     success_output = (
         'Deploying tpch.properties connector configurations on: slave1 \n'

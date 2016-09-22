@@ -25,7 +25,7 @@ from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 class TestFile(BaseProductTestCase):
     def setUp(self):
         super(TestFile, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
         self.upload_topology()
 
     @attr('smoketest')
