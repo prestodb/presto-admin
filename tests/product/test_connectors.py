@@ -24,9 +24,8 @@ from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
-    docker_only, PrestoError
+    PrestoError
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
-from tests.product.constants import LOCAL_RESOURCES_DIR
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -43,30 +42,37 @@ class TestConnectors(BaseProductTestCase):
         self._assert_connectors_loaded([['system'], ['tpch']])
 
     @attr('smoketest')
-    def test_basic_connector_add_remove(self):
+    def test_connector_add_remove(self):
         self.setup_cluster_assert_connectors()
-
         self.run_prestoadmin('connector remove tpch')
-        self.run_prestoadmin('server restart')
         self.assert_path_removed(self.cluster.master,
                                  os.path.join(constants.CONNECTORS_DIR,
                                               'tpch.properties'))
-        self._assert_connectors_loaded([['system']])
         for host in self.cluster.all_hosts():
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
                                                   'tcph.properties'))
 
+        # test add connectors from directory with more than one connector
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
             self.cluster.master
         )
+        self.cluster.write_content_to_host(
+            'connector.name=jmx',
+            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
+            self.cluster.master
+        )
         self.run_prestoadmin('connector add')
         self.run_prestoadmin('server restart')
         for host in self.cluster.all_hosts():
+            filepath = '/etc/presto/catalog/jmx.properties'
             self.assert_has_default_connector(host)
-        self._assert_connectors_loaded([['system'], ['tpch']])
+            self.assert_file_perm_owner(host, filepath,
+                                        '-rw-------', 'presto', 'presto')
+            self.assert_file_content(host, filepath, 'connector.name=jmx')
+        self._assert_connectors_loaded([['system'], ['jmx'], ['tpch']])
 
     def test_connector_add_remove_coord_worker_using_dash_h(self):
         self.setup_cluster_assert_connectors()
@@ -118,66 +124,6 @@ class TestConnectors(BaseProductTestCase):
         for slave in [self.cluster.slaves[1], self.cluster.slaves[2]]:
             self.assert_has_default_connector(slave)
 
-    @docker_only
-    def test_connector_add_wrong_permissions(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-
-        # test add connector without read permissions on file
-        script = 'chmod 600 /etc/opt/prestoadmin/connectors/tpch.properties;' \
-                 ' su app-admin -c "./presto-admin connector add tpch"'
-        output = self.run_script_from_prestoadmin_dir(script)
-        with open(os.path.join(LOCAL_RESOURCES_DIR,
-                               'connector_permissions_warning.txt'), 'r') as f:
-            expected = f.read() % \
-                {'master': self.cluster.internal_master,
-                 'slave1': self.cluster.internal_slaves[0],
-                 'slave2': self.cluster.internal_slaves[1],
-                 'slave3': self.cluster.internal_slaves[2]}
-
-        self.assertEqualIgnoringOrder(expected, output)
-
-        # test add connector directory without read permissions on directory
-        script = 'chmod 600 /etc/opt/prestoadmin/connectors; ' \
-                 'su app-admin -c "./presto-admin connector add"'
-        output = self.run_script_from_prestoadmin_dir(script)
-        permission_error = '\nWarning: [slave3] Permission denied\n\n\n' \
-                           'Warning: [slave2] Permission denied\n\n\n' \
-                           'Warning: [slave1] Permission denied\n\n\n' \
-                           'Warning: [master] Permission denied\n\n'
-        self.assertEqualIgnoringOrder(output, permission_error)
-
-        # test add connector by file without read permissions on directory
-        script = 'chmod 600 /etc/opt/prestoadmin/connectors; ' \
-                 'su app-admin -c "./presto-admin connector add tpch"'
-        not_found_error = self.fatal_error(
-            'Configuration for connector tpch not found')
-        self.assertRaisesRegexp(OSError, not_found_error,
-                                self.run_script_from_prestoadmin_dir, script)
-
-    def test_connector_add_missing_connector(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-
-        # test add a connector that does not exist
-        not_found_error = self.fatal_error(
-            'Configuration for connector tpch not found')
-        self.run_prestoadmin('connector remove tpch')
-        self.assertRaisesRegexp(OSError, not_found_error,
-                                self.run_prestoadmin, 'connector add tpch')
-
-    def test_connector_add_no_dir(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-
-        # test add all connectors when the directory does not exist
-        self.cluster.exec_cmd_on_host(
-            self.cluster.master,
-            'rm -r /etc/opt/prestoadmin/connectors')
-        missing_dir_error = self.fatal_error('Cannot add connectors '
-                                             'because directory /etc/'
-                                             'opt/prestoadmin/connectors '
-                                             'does not exist')
-        self.assertRaisesRegexp(OSError, missing_dir_error,
-                                self.run_prestoadmin, 'connector add')
-
     def test_connector_add_by_name(self):
         self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('connector remove tpch')
@@ -216,31 +162,6 @@ No connectors will be deployed
 
 """
         self.assertEqualIgnoringOrder(expected, output)
-
-    def test_connector_add_two_connectors(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-        self.run_prestoadmin('connector remove tpch')
-
-        # test add connectors from directory with more than one connector
-        self.cluster.write_content_to_host(
-            'connector.name=tpch',
-            os.path.join(constants.CONNECTORS_DIR, 'tpch.properties'),
-            self.cluster.master
-        )
-        self.cluster.write_content_to_host(
-            'connector.name=jmx',
-            os.path.join(constants.CONNECTORS_DIR, 'jmx.properties'),
-            self.cluster.master
-        )
-        self.run_prestoadmin('connector add')
-        self.run_prestoadmin('server start')
-        for host in self.cluster.all_hosts():
-            filepath = '/etc/presto/catalog/jmx.properties'
-            self.assert_has_default_connector(host)
-            self.assert_file_perm_owner(host, filepath,
-                                        '-rw-------', 'presto', 'presto')
-            self.assert_file_content(host, filepath, 'connector.name=jmx')
-        self._assert_connectors_loaded([['system'], ['jmx'], ['tpch']])
 
     def fatal_error(self, error):
         message = """
@@ -352,22 +273,6 @@ for the change to take effect
             missing_connector_message % {'name': 'tpch'},
             self.run_prestoadmin,
             'connector remove tpch')
-
-    def test_connector_name_not_found(self):
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
-        self.run_prestoadmin('server start')
-
-        self.cluster.write_content_to_host(
-            'connector.noname=example',
-            os.path.join(constants.CONNECTORS_DIR, 'example.properties'),
-            self.cluster.master
-        )
-
-        expected = self.fatal_error('Catalog configuration '
-                                    'example.properties does not '
-                                    'contain connector.name')
-        self.assertRaisesRegexp(OSError, expected, self.run_prestoadmin,
-                                'connector add example')
 
     def test_connector_add_no_presto_user(self):
         self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)

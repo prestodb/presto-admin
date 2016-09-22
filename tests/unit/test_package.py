@@ -119,6 +119,12 @@ class TestPackage(BaseUnitCase):
                                     use_sudo=True,
                                     temp_dir='/tmp')
 
+    @patch('prestoadmin.package.os.path.isfile')
+    def test_deploy_invalid_local_path(self, mock_isfile):
+        mock_isfile.return_value = False
+        invalid_path = '/invalid/path'
+        self.assertRaisesRegexp(SystemExit, 'RPM file not found at %s' % invalid_path, package.deploy, invalid_path)
+
     @patch('prestoadmin.package.uninstall')
     def test_uninstall(self, mock_uninstall):
         env.host = 'any_host'
