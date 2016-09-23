@@ -22,6 +22,7 @@ import os
 
 from fabric.contrib import files
 from fabric.context_managers import settings
+from fabric.contrib.files import exists
 from fabric.operations import sudo, abort
 from fabric.api import env
 
@@ -142,7 +143,11 @@ def deploy_node_properties(content, remote_dir):
     _LOGGER.info("Deploying node.properties configuration")
     name = "node.properties"
     node_file_path = (os.path.join(remote_dir, name))
-    secure_create_file(node_file_path, PRESTO_STANDALONE_USER_GROUP)
+    if not exists(node_file_path, use_sudo=True):
+        secure_create_file(node_file_path, PRESTO_STANDALONE_USER_GROUP, mode=644)
+    else:
+        sudo('chown %(owner)s %(filepath)s && chmod %(mode)s %(filepath)s'
+             % {'owner': PRESTO_STANDALONE_USER_GROUP, 'mode': 644, 'filepath': node_file_path})
     node_id_command = (
         "if ! ( grep -q -s 'node.id' " + node_file_path + " ); then "
         "uuid=$(uuidgen); "

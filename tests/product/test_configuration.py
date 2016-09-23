@@ -65,11 +65,17 @@ class TestConfiguration(BaseProductTestCase):
         self.write_test_configs(self.cluster, extra_configs)
         return dummy_prop1, dummy_prop2
 
+    def _get_node_id(self, host):
+        return self.cluster.exec_cmd_on_host(host, 'grep node.id= /etc/presto/node.properties').strip()
+
     @attr('smoketest')
     def test_configuration_deploy_show(self):
         self.upload_topology()
 
         self.deploy_and_assert_default_config()
+        node_ids = {}
+        for host in self.cluster.all_hosts():
+            node_ids[host] = self._get_node_id(host)
 
         # deploy coordinator configuration only.  Has a non-default file
         dummy_prop1, dummy_prop2 = self.__write_dummy_config_file()
@@ -78,8 +84,8 @@ class TestConfiguration(BaseProductTestCase):
         deploy_template = 'Deploying configuration on: %s\n'
         self.assertEqual(output,
                          deploy_template % self.cluster.internal_master)
-        for container in self.cluster.slaves:
-            self.assert_has_default_config(container)
+        for host in self.cluster.slaves:
+            self.assert_has_default_config(host)
 
         config_properties_path = os.path.join(
             constants.REMOTE_CONF_DIR, 'config.properties')
@@ -105,18 +111,19 @@ class TestConfiguration(BaseProductTestCase):
             expected += deploy_template % host
         self.assertEqualIgnoringOrder(output, expected)
 
-        for container in self.cluster.slaves:
-            self.assert_config_perms(container, config_properties_path)
-            self.assert_file_content(container,
+        for host in self.cluster.slaves:
+            self.assert_config_perms(host, config_properties_path)
+            self.assert_file_content(host,
                                      config_properties_path,
                                      dummy_prop1 + '\n' +
                                      dummy_prop2 + '\n' +
                                      self.default_workers_test_config_)
             expected = 'node.environment=test\n'
-            self.assert_node_config(container, expected)
+            self.assert_node_config(host, expected, node_ids[host])
 
         self.assert_node_config(self.cluster.master,
-                                self.default_node_properties_)
+                                self.default_node_properties_,
+                                node_ids[self.cluster.master])
 
     def test_configuration_deploy_using_dash_h_coord_worker(self):
         self.upload_topology()

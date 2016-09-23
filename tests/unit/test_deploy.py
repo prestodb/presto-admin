@@ -76,10 +76,12 @@ class TestDeploy(BaseTestCase):
         sudo_mock.assert_any_call("echo 'a=b' > /my/remote/dir/jvm.config")
 
     @patch('__builtin__.open')
+    @patch('prestoadmin.deploy.exists')
     @patch('prestoadmin.deploy.files.append')
     @patch('prestoadmin.deploy.sudo')
-    def test_deploy_node_properties(self, sudo_mock, append_mock, open_mock):
+    def test_deploy_node_properties(self, sudo_mock, append_mock, exists_mock, open_mock):
         sudo_mock.return_value = SudoResult()
+        exists_mock.return_value = True
         file_manager = open_mock.return_value.__enter__.return_value
         file_manager.read.return_value = ("key=value")
         command = (

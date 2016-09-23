@@ -388,22 +388,23 @@ query.max-memory=50GB\n"""
             self.assert_file_content(host, config_properties_path,
                                      self.default_coordinator_test_config_)
 
-    def assert_node_config(self, host, expected):
+    def assert_node_config(self, host, expected, expected_node_id=None):
         node_properties_path = '/etc/presto/node.properties'
         self.assert_config_perms(host, node_properties_path)
         node_properties = self.cluster.exec_cmd_on_host(
             host, 'cat %s' % (node_properties_path,))
         split_properties = node_properties.split('\n', 1)
-        self.assertRegexpMatches(split_properties[0], 'node.id=.*')
+        if expected_node_id:
+            self.assertEqual(expected_node_id, split_properties[0])
+        else:
+            self.assertRegexpMatches(split_properties[0], 'node.id=.*')
         actual = split_properties[1]
         if host in self.cluster.slaves:
             conf_dir = get_workers_directory()
         else:
             conf_dir = get_coordinator_directory()
         self.assertLazyMessage(
-            lambda: self.file_content_message(actual, expected,
-                                              os.path.join(conf_dir,
-                                                           'node.properties')),
+            lambda: self.file_content_message(actual, expected, os.path.join(conf_dir, 'node.properties')),
             self.assertEqual,
             actual,
             expected)
