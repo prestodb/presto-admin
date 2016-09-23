@@ -95,7 +95,7 @@ def deploy(confs, remote_dir):
     sudo("mkdir -p " + remote_dir)
     for name, content in confs.iteritems():
         write_to_remote_file(content, os.path.join(remote_dir, name),
-                             'presto')
+                             owner=PRESTO_STANDALONE_USER_GROUP, mode=644)
 
 
 def secure_create_file(filepath, user_group, mode=600):
@@ -155,7 +155,7 @@ def deploy_node_properties(content, remote_dir):
 
 
 def write_to_remote_file(text, filepath, owner, mode=600):
-    secure_create_file(filepath, PRESTO_STANDALONE_USER_GROUP)
+    secure_create_file(filepath, owner, mode)
     command = "echo '{text}' > {filepath}".format(
         text=escape_single_quotes(text), filepath=filepath)
     sudo(command)

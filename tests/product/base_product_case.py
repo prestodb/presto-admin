@@ -281,6 +281,10 @@ query.max-memory=50GB\n"""
 
     def assert_config_perms(self, host, filepath):
         self.assert_file_perm_owner(
+            host, filepath, '-rw-r--r--', 'presto', 'presto')
+
+    def assert_connector_perms(self, host, filepath):
+        self.assert_file_perm_owner(
             host, filepath, '-rw-------', 'presto', 'presto')
 
     def assert_directory_perm_owner(self, host, filepath, permissions, owner, group):
@@ -352,7 +356,7 @@ query.max-memory=50GB\n"""
         self.assert_directory_perm_owner(host, catalog_dir, 'drwxr-xr-x', 'presto', 'presto')
 
         filepath = os.path.join(catalog_dir, 'tpch.properties')
-        self.assert_config_perms(host, filepath)
+        self.assert_connector_perms(host, filepath)
         self.assert_file_content(host, filepath, 'connector.name=tpch')
 
     def assert_has_jmx_connector(self, container):

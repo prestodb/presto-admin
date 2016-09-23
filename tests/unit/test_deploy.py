@@ -94,6 +94,13 @@ class TestDeploy(BaseTestCase):
         append_mock.assert_called_with("/my/remote/dir/node.properties",
                                        "key=value", True, shell=True)
 
+    @patch('prestoadmin.deploy.sudo')
+    @patch('prestoadmin.deploy.secure_create_file')
+    def test_deploys_as_presto_user(self, secure_create_file_mock, sudo_mock):
+        deploy.deploy({'my_file': 'hello!'}, '/remote/path')
+        secure_create_file_mock.assert_called_with('/remote/path/my_file', 'presto:presto', 644)
+        sudo_mock.assert_called_with("echo 'hello!' > /remote/path/my_file")
+
     @patch('prestoadmin.deploy.deploy')
     @patch('prestoadmin.deploy.deploy_node_properties')
     def test_configure_presto(self, deploy_node_mock, deploy_mock):

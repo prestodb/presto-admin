@@ -93,7 +93,7 @@ def deploy_all(source_directory, should_warn=True):
                      % (env.host, local_config_file))
             continue
         remote_config_file = os.path.join(constants.REMOTE_CONF_DIR, file_name)
-        put_secure(PRESTO_STANDALONE_USER_GROUP, 0600, local_config_file,
+        put_secure(PRESTO_STANDALONE_USER_GROUP, 0644, local_config_file,
                    remote_config_file, use_sudo=True)
 
 

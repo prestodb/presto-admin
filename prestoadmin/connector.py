@@ -41,6 +41,8 @@ __all__ = ['add', 'remove']
 COULD_NOT_REMOVE = 'Could not remove connector'
 
 
+# we deploy connector files with 0600 permissions because they can contain passwords
+# that should not be world readable
 def deploy_files(filenames, local_dir, remote_dir, user_group, mode=0600):
     _LOGGER.info('Deploying configurations for ' + str(filenames))
     secure_create_directory(remote_dir, PRESTO_STANDALONE_USER_GROUP)
