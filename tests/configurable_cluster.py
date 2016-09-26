@@ -153,11 +153,12 @@ class ConfigurableCluster(BaseCluster):
         return '1.0.0.0'
 
     def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
-                         tty=False):
-        # Ensure command is invoked with sudo since EMR's login user is ec2-user
-        # If sudo is already present in the command then no error will occur
-        # as arbitrary nesting of sudo is allowed
-        cmd = 'sudo ' + cmd
+                         tty=False, invoke_sudo=True):
+        # If the corresponding variable is set, invoke command with sudo since EMR's login
+        # user is ec2-user. If sudo is already present in the command then no error will occur
+        # as arbitrary nesting of sudo is allowed.
+        if invoke_sudo:
+            cmd = 'sudo ' + cmd
 
         if user is None:
             user = self.user

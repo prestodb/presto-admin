@@ -116,7 +116,7 @@ class BaseCluster(object):
 
     @abc.abstractmethod
     def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
-                         tty=False):
+                         tty=False, invoke_sudo=False):
         pass
 
     @abc.abstractmethod
