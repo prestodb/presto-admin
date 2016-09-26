@@ -110,6 +110,23 @@ _test-all:
 # yarn_slider_presto_admin, all
 IMAGE_NAMES?="all"
 
+#
+# The build process and product tests rely on several base Docker images.
+# Teradata builds and releases a number of Docker images from the same
+# repository, all versioned together. This makes it simple to verify that your
+# test environment is sane: if all of the images are the same version, they
+# should work together.
+#
+# As part of the process of releasing those images, we tag all of the images
+# with the version number of the release. This means that anything that uses
+# the images can reference them as `teradatalabs/image_name:version'. The
+# Makefile needs to know that to pull the images, and the python code needs to
+# know that for various reasons.
+#
+# base-images-tag.json is the canonical source of the tag information for the
+# repository. The python code parses it properly with the json module, and the
+# Makefile parses it adequately with awk ;-)
+#
 BASE_IMAGES_TAG := $(shell awk '/base_images_tag/ \
 	{split($$NF, a, "\""); print a[2]}' base-images-tag.json)
 

@@ -25,6 +25,10 @@ from prestoadmin import main_dir
 
 BASE_IMAGES_TAG_CONFIG = 'base-images-tag.json'
 
+#
+# See the Makefile for an in-depth explanation of how we're using the base
+# Docker images.
+#
 try:
     with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as tag_config:
         tag_json = json.load(tag_config)
