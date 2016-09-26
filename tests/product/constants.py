@@ -16,20 +16,29 @@
 Module defining constants global to the product tests
 """
 
+import json
 import os
 import sys
 
 import prestoadmin
 from prestoadmin import main_dir
 
+BASE_IMAGES_TAG_CONFIG = 'base-images-tag.json'
+
+#
+# See the Makefile for an in-depth explanation of how we're using the base
+# Docker images.
+#
 try:
-    BASE_IMAGES_TAG = os.environ['BASE_IMAGES_TAG']
+    with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as tag_config:
+        tag_json = json.load(tag_config)
+    BASE_IMAGES_TAG = tag_json['base_images_tag']
 except KeyError:
-    print "BASE_IMAGES_TAG must be set in the environment"
+    print "base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
     sys.exit(1)
 
 
-JAVA_VERSION_DIR = 'jdk1.8.0_92'
+JAVA_VERSION_DIR = 'jdk1.8.0_102'
 DEFAULT_JAVA_DIR = os.path.join('/usr', 'java', JAVA_VERSION_DIR)
 
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
