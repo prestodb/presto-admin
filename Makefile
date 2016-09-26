@@ -111,22 +111,24 @@ _test-all:
 IMAGE_NAMES?="all"
 
 #
-# The canonical source of the BASE_IMAGES_TAG is .travis.yml because we don't
-# have a good way to get that information into travis from somewhere else.
+# The build process and product tests rely on several base Docker images.
+# Teradata builds and releases a number of Docker images from the same
+# repository, all versioned together. This makes it simple to verify that your
+# test environment is sane: if all of the images are the same version, they
+# should work together.
 #
-# Note that this is conditionally assigned. If you export
-# BASE_IMAGES_TAG="something else" before invoking e.g. `make smoke', you'll
-# get that value, not the one here. This makes it possible to test new docker
-# images without modifying the Makefile
+# As part of the process of releasing those images, we tag all of the images
+# with the version number of the release. This means that anything that uses
+# the images can reference them as `teradatalabs/image_name:version'. The
+# Makefile needs to know that to pull the images, and the python code needs to
+# know that for various reasons.
 #
-# To confirm the value of BASE_IMAGES_TAG that make is using, run `make bit'
+# base-images-tag.json is the canonical source of the tag information for the
+# repository. The python code parses it properly with the json module, and the
+# Makefile parses it adequately with awk ;-)
 #
-BASE_IMAGES_TAG ?= $(shell awk '/BASE_IMAGES_TAG/ {split($$0, a, "="); print a[2]}' .travis.yml)
-export BASE_IMAGES_TAG
-
-.PHONY: bit
-bit:
-	echo $(BASE_IMAGES_TAG)
+BASE_IMAGES_TAG := $(shell awk '/base_images_tag/ \
+	{split($$NF, a, "\""); print a[2]}' base-images-tag.json)
 
 test-images: docker-images presto-server-rpm.rpm
 	python tests/product/image_builder.py $(IMAGE_NAMES)
