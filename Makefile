@@ -110,19 +110,8 @@ _test-all:
 # yarn_slider_presto_admin, all
 IMAGE_NAMES?="all"
 
-#
-# The canonical source of the BASE_IMAGES_TAG is .travis.yml because we don't
-# have a good way to get that information into travis from somewhere else.
-#
-# Note that this is conditionally assigned. If you export
-# BASE_IMAGES_TAG="something else" before invoking e.g. `make smoke', you'll
-# get that value, not the one here. This makes it possible to test new docker
-# images without modifying the Makefile
-#
-# To confirm the value of BASE_IMAGES_TAG that make is using, run `make bit'
-#
-BASE_IMAGES_TAG ?= $(shell awk '/BASE_IMAGES_TAG/ {split($$0, a, "="); print a[2]}' .travis.yml)
-export BASE_IMAGES_TAG
+BASE_IMAGES_TAG := $(shell awk '/base_images_tag/ \
+	{split($$NF, a, "\""); print a[2]}' base-images-tag.json)
 
 .PHONY: bit
 bit:

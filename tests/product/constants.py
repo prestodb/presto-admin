@@ -16,16 +16,21 @@
 Module defining constants global to the product tests
 """
 
+import json
 import os
 import sys
 
 import prestoadmin
 from prestoadmin import main_dir
 
+BASE_IMAGES_TAG_CONFIG = 'base-images-tag.json'
+
 try:
-    BASE_IMAGES_TAG = os.environ['BASE_IMAGES_TAG']
+    with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as bit_conf:
+        bit_json = json.load(bit_conf)
+    BASE_IMAGES_TAG = bit_json['base_images_tag']
 except KeyError:
-    print "BASE_IMAGES_TAG must be set in the environment"
+    print "BASE_IMAGES_TAG must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
     sys.exit(1)
 
 
