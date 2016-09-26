@@ -130,10 +130,6 @@ IMAGE_NAMES?="all"
 BASE_IMAGES_TAG := $(shell awk '/base_images_tag/ \
 	{split($$NF, a, "\""); print a[2]}' base-images-tag.json)
 
-.PHONY: bit
-bit:
-	echo $(BASE_IMAGES_TAG)
-
 test-images: docker-images presto-server-rpm.rpm
 	python tests/product/image_builder.py $(IMAGE_NAMES)
 
