@@ -26,11 +26,11 @@ from prestoadmin import main_dir
 BASE_IMAGES_TAG_CONFIG = 'base-images-tag.json'
 
 try:
-    with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as bit_conf:
-        bit_json = json.load(bit_conf)
-    BASE_IMAGES_TAG = bit_json['base_images_tag']
+    with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as tag_config:
+        tag_json = json.load(tag_config)
+    BASE_IMAGES_TAG = tag_json['base_images_tag']
 except KeyError:
-    print "BASE_IMAGES_TAG must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
+    print "base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
     sys.exit(1)
 
 
