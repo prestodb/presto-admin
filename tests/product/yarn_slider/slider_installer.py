@@ -63,11 +63,11 @@ class SliderInstaller(BaseInstaller):
     def copy_slider_dist_to_cluster(testcase):
         slider_filename = SLIDER_DIST_FILENAME
         slider_path = os.path.join(LOCAL_RESOURCES_DIR, slider_filename)
-        testcase.cluster.copy_to_host(slider_path, testcase.cluster.master)
-        return os.path.join(testcase.cluster.mount_dir, slider_filename)
+        testcase.cluster.copy_to_host(slider_path, testcase.cluster.get_master())
+        return os.path.join(testcase.cluster.get_mount_dir(), slider_filename)
 
     @staticmethod
     def install_slider_package(testcase, slider_path):
         testcase.run_prestoadmin(
             'slider install %s' %
-            (os.path.join(testcase.cluster.mount_dir, slider_path)))
+            (os.path.join(testcase.cluster.get_mount_dir(), slider_path)))

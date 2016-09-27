@@ -84,7 +84,7 @@ class DockerCluster(BaseCluster):
         DockerCluster.__check_if_docker_exists()
 
     def all_hosts(self):
-        return self.slaves + [self.master]
+        return self.slaves + [self.get_master()]
 
     def get_master(self):
         return self.master
@@ -98,7 +98,7 @@ class DockerCluster(BaseCluster):
 
     def get_dist_dir(self, unique):
         if unique:
-            return os.path.join(DIST_DIR, self.master)
+            return os.path.join(DIST_DIR, self.get_master())
         else:
             return DIST_DIR
 
@@ -213,18 +213,18 @@ class DockerCluster(BaseCluster):
                 )
                 self.client.start(container_name,
                                   binds={container_mount_dir:
-                                         {'bind': self.mount_dir,
+                                         {'bind': self.get_mount_dir(),
                                           'ro': False}},
                                   **kwargs)
 
-        master_mount_dir = self.get_local_mount_dir(self.master)
+        master_mount_dir = self.get_local_mount_dir(self.get_master())
         self._create_container(
-            master_image, self.master, hostname=self.internal_master,
+            master_image, self.get_master(), hostname=self.internal_master,
             cmd=cmd
         )
-        self.client.start(self.master,
+        self.client.start(self.get_master(),
                           binds={master_mount_dir:
-                                 {'bind': self.mount_dir,
+                                 {'bind': self.get_mount_dir(),
                                   'ro': False}},
                           links=zip(self.slaves, self.slaves), **kwargs)
         self._add_hostnames_to_slaves()
@@ -393,7 +393,7 @@ class DockerCluster(BaseCluster):
         return has_master_image and has_slave_image
 
     def commit_images(self, bare_image_provider, cluster_type):
-        self.client.commit(self.master,
+        self.client.commit(self.get_master(),
                            self._get_master_image_name(bare_image_provider,
                                                        cluster_type))
         if self.slaves:
@@ -419,7 +419,7 @@ class DockerCluster(BaseCluster):
 
         self.exec_cmd_on_host(host, 'mkdir -p ' + dest_dir)
         self.exec_cmd_on_host(
-            host, 'cp %s %s' % (os.path.join(self.mount_dir, filename),
+            host, 'cp %s %s' % (os.path.join(self.get_mount_dir(), filename),
                                 dest_dir))
 
     def copy_to_host(self, source_path, dest_host, **kwargs):
@@ -458,6 +458,12 @@ class DockerCluster(BaseCluster):
 
     def get_rpm_cache_dir(self):
         return self.mount_dir
+
+    def get_mount_dir(self):
+        return self.mount_dir
+
+    def get_user(self):
+        return self.user
 
 
 class DockerClusterException(Exception):

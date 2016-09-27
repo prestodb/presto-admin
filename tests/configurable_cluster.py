@@ -90,7 +90,7 @@ class ConfigurableCluster(BaseCluster):
         return self.master
 
     def all_hosts(self):
-        return self.slaves + [self.master]
+        return self.slaves + [self.get_master()]
 
     def all_internal_hosts(self, stopped_host=None):
         internal_hosts = self.internal_slaves + [self.internal_master]
@@ -98,7 +98,7 @@ class ConfigurableCluster(BaseCluster):
 
     def get_dist_dir(self, unique):
         if unique:
-            return os.path.join(DIST_DIR, self.master)
+            return os.path.join(DIST_DIR, self.get_master())
         else:
             return DIST_DIR
 
@@ -117,7 +117,7 @@ class ConfigurableCluster(BaseCluster):
             rm -rf /tmp/presto-debug-remote
             rm -rf /var/log/presto
             rm -rf %s
-            """ % self.mount_dir
+            """ % self.get_mount_dir()
             self.run_script_on_host(script, host)
 
     def stop_host(self, host_name):
@@ -128,18 +128,18 @@ class ConfigurableCluster(BaseCluster):
         ips = self.get_ip_address_dict()
         down_hostname = self.get_down_hostname(host_name)
         self.exec_cmd_on_host(
-            self.master,
+            self.get_master(),
             'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
             (host_name, down_hostname)
         )
         self.exec_cmd_on_host(
-            self.master,
+            self.get_master(),
             'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json'
             % (ips[host_name], down_hostname)
         )
         index = self.all_hosts().index(host_name)
         self.exec_cmd_on_host(
-            self.master,
+            self.get_master(),
             'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
             (self.all_internal_hosts()[index], down_hostname)
         )
@@ -211,7 +211,7 @@ class ConfigurableCluster(BaseCluster):
 
     def copy_to_host(self, source_path, host, dest_path=None):
         if not dest_path:
-            dest_path = os.path.join(self.mount_dir,
+            dest_path = os.path.join(self.get_mount_dir(),
                                      os.path.basename(source_path))
         self.exec_cmd_on_host(host, 'mkdir -p {dir}'.format(dir=os.path.dirname(dest_path)))
         self.exec_cmd_on_host(host, 'chown {user}:{group} {file}'.format(
@@ -250,7 +250,7 @@ class ConfigurableCluster(BaseCluster):
         for ip in self.all_hosts():
             ip_addresses[ip] = ip
 
-        hosts_file = self.exec_cmd_on_host(self.master, 'cat /etc/hosts').splitlines()
+        hosts_file = self.exec_cmd_on_host(self.get_master(), 'cat /etc/hosts').splitlines()
         for internal_host in self.all_internal_hosts():
             ip_addresses[internal_host] = self._get_ip_from_hosts_file(
                 hosts_file, internal_host)
@@ -276,3 +276,9 @@ class ConfigurableCluster(BaseCluster):
 
     def get_rpm_cache_dir(self):
         return self.rpm_cache_dir
+
+    def get_mount_dir(self):
+        return self.mount_dir
+
+    def get_user(self):
+        return self.user

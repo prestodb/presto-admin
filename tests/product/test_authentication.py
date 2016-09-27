@@ -190,7 +190,7 @@ class TestAuthentication(BaseProductTestCase):
 
         # No passwordless SSH, specify keyfile with -i
         self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'chmod 600 /root/.ssh/id_rsa.bak')
+            self.cluster.get_master(), 'chmod 600 /root/.ssh/id_rsa.bak')
         command_output = self.run_prestoadmin(
             'connector add -i /root/.ssh/id_rsa.bak')
         self.assertEqualIgnoringOrder(self.success_output, command_output)
@@ -209,7 +209,7 @@ class TestAuthentication(BaseProductTestCase):
 
         # We use Popen because docker-py loses the first 8 characters of TTY
         # output.
-        args = ['docker', 'exec', '-t', self.cluster.master, 'sudo',
+        args = ['docker', 'exec', '-t', self.cluster.get_master(), 'sudo',
                 '-u', 'app-admin', '/opt/prestoadmin/presto-admin',
                 'topology show']
         proc = subprocess.Popen(args, stdout=subprocess.PIPE,

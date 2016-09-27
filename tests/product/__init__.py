@@ -29,10 +29,10 @@ def determine_jdk_directory(cluster):
 
     :param cluster: cluster on which to search for the JDK directory
     """
-    number_of_jdks = cluster.exec_cmd_on_host(cluster.master, 'bash -c "ls -ld /usr/java/jdk* | wc -l"')
+    number_of_jdks = cluster.exec_cmd_on_host(cluster.get_master(), 'bash -c "ls -ld /usr/java/jdk* | wc -l"')
     if int(number_of_jdks) != 1:
         raise Exception('The number of JDK directories matching /usr/java/jdk* is not 1')
-    output = cluster.exec_cmd_on_host(cluster.master, 'bash -c "ls -d /usr/java/jdk*"')
+    output = cluster.exec_cmd_on_host(cluster.get_master(), 'bash -c "ls -d /usr/java/jdk*"')
     return output.split(os.path.sep)[-1].strip('\n')
 
 

@@ -33,7 +33,7 @@ class TestFile(BaseProductTestCase):
         # basic run script
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
                                            '/opt/prestoadmin/script.sh',
-                                           self.cluster.master)
+                                           self.cluster.get_master())
         output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh')
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
@@ -47,7 +47,7 @@ class TestFile(BaseProductTestCase):
         # specify remote directory
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
                                            '/opt/prestoadmin/script.sh',
-                                           self.cluster.master)
+                                           self.cluster.get_master())
         output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh',
                                       '/opt/script.sh')
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
@@ -63,7 +63,7 @@ class TestFile(BaseProductTestCase):
         # remote and local are the same
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
                                            '/tmp/script.sh',
-                                           self.cluster.master)
+                                           self.cluster.get_master())
         output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh')
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
@@ -77,7 +77,7 @@ class TestFile(BaseProductTestCase):
         # invalid script
         self.cluster.write_content_to_host('not a valid script',
                                            '/opt/prestoadmin/invalid.sh',
-                                           self.cluster.master)
+                                           self.cluster.get_master())
         output = self.run_prestoadmin('file run /opt/prestoadmin/invalid.sh',
                                       raise_error=False)
         self.assertEqualIgnoringOrder(output, """

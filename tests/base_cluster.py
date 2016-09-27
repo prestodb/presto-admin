@@ -164,3 +164,13 @@ class BaseCluster(object):
             sys.stderr.write(e.message)
             sys.stderr.flush()
             sys.exit(1)
+
+    @abc.abstractmethod
+    def get_mount_dir(self):
+        """Return the mount directory on the cluster"""
+        pass
+
+    @abc.abstractmethod
+    def get_user(self):
+        """Return the user with which commmands should be executed"""
+        pass

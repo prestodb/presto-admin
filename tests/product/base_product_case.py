@@ -187,7 +187,7 @@ query.max-memory=50GB\n"""
         cluster.write_content_to_host(
             json.dumps(topology),
             '/etc/opt/prestoadmin/config.json',
-            cluster.master
+            cluster.get_master()
         )
 
     def upload_topology(self, topology=None, cluster=None):
@@ -217,12 +217,12 @@ query.max-memory=50GB\n"""
         cluster.write_content_to_host(
             coordinator_config,
             os.path.join(get_coordinator_directory(), 'config.properties'),
-            cluster.master
+            cluster.get_master()
         )
         cluster.write_content_to_host(
             workers_config,
             os.path.join(get_workers_directory(), 'config.properties'),
-            cluster.master
+            cluster.get_master()
         )
 
     def fetch_log_tail(self, lines=50):
@@ -237,16 +237,16 @@ query.max-memory=50GB\n"""
             cluster = self.cluster
         command = self.replace_keywords(command, cluster=cluster, **kwargs)
         return cluster.exec_cmd_on_host(
-            cluster.master,
+            cluster.get_master(),
             "/opt/prestoadmin/presto-admin --user {user} {cmd}".format(
-                user=cluster.user, cmd=command),
+                user=cluster.get_user(), cmd=command),
             raise_error=raise_error
         )
 
     def run_script_from_prestoadmin_dir(self, script_contents, host='',
                                         raise_error=True, **kwargs):
         if not host:
-            host = self.cluster.master
+            host = self.cluster.get_master()
 
         script_contents = self.replace_keywords(script_contents,
                                                 **kwargs)
@@ -266,11 +266,11 @@ query.max-memory=50GB\n"""
                          (command, expect_statements)
 
         self.cluster.write_content_to_host(script_content, temp_script,
-                                           self.cluster.master)
+                                           self.cluster.get_master())
         self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'chmod +x %s' % temp_script)
+            self.cluster.get_master(), 'chmod +x %s' % temp_script)
         return self.cluster.exec_cmd_on_host(
-            self.cluster.master, temp_script)
+            self.cluster.get_master(), temp_script)
 
     def assert_path_exists(self, host, file_path):
         self.cluster.exec_cmd_on_host(

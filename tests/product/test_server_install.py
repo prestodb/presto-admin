@@ -228,7 +228,7 @@ query.max-memory=50GB\n"""
         self.cluster.write_content_to_host(
             'connector.name=jmx',
             os.path.join(get_connectors_directory(), 'jmx.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
 
         cmd_output = installer.install()
@@ -251,7 +251,7 @@ query.max-memory=50GB\n"""
         actual = cmd_output.splitlines()
         self.assertRegexpMatchesLineByLine(actual, expected)
 
-        for container in [self.cluster.master,
+        for container in [self.cluster.get_master(),
                           self.cluster.slaves[0]]:
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
@@ -267,7 +267,7 @@ query.max-memory=50GB\n"""
         self.cluster.write_content_to_host(
             'connector.name=jmx',
             os.path.join(get_connectors_directory(), 'jmx.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
 
         cmd_output = installer.install().splitlines()
@@ -301,9 +301,9 @@ query.max-memory=50GB\n"""
         self.assertRegexpMatchesLineByLine(cmd_output, expected)
 
         self.assert_installed_with_regex_configs(
-            self.cluster.master,
+            self.cluster.get_master(),
             [self.cluster.slaves[0]])
-        for host in [self.cluster.master, self.cluster.slaves[0]]:
+        for host in [self.cluster.get_master(), self.cluster.slaves[0]]:
             self.assert_has_jmx_connector(host)
 
     def test_install_interactive(self):
@@ -311,13 +311,13 @@ query.max-memory=50GB\n"""
         self.cluster.write_content_to_host(
             'connector.name=jmx',
             os.path.join(get_connectors_directory(), 'jmx.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         rpm_name = installer.copy_presto_rpm_to_master()
         self.write_test_configs(self.cluster)
 
         additional_keywords = {
-            'user': self.cluster.user,
+            'user': self.cluster.get_user(),
             'rpm_dir': self.cluster.get_rpm_cache_dir(),
             'rpm': rpm_name
         }
@@ -363,7 +363,7 @@ query.max-memory=50GB\n"""
                     ]
 
         self.assertRegexpMatchesLineByLine(actual, expected)
-        for container in [self.cluster.master,
+        for container in [self.cluster.get_master(),
                           self.cluster.slaves[0]]:
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
@@ -389,7 +389,7 @@ query.max-memory=50GB\n"""
             self.down_node_connection_error(down_node)
         )
 
-        for host in [self.cluster.master,
+        for host in [self.cluster.get_master(),
                      self.cluster.slaves[1],
                      self.cluster.slaves[2]]:
             self.assert_common_configs(host)
