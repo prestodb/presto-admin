@@ -64,7 +64,7 @@ class TestInstaller(BaseProductTestCase):
             # interface down if the NET_ADMIN capability isn't set for the
             # container. ifconfig eth0 down accomplishes the same thing, but
             # results in a failure if it fails.
-            self.centos_container.master, 'ifconfig eth0 down')
+            self.centos_container.get_master(), 'ifconfig eth0 down')
         self.pa_installer.install(
             dist_dir=self.centos_container.get_dist_dir(unique=True))
         self.run_prestoadmin('--help', raise_error=True)

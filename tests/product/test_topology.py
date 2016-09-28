@@ -55,23 +55,23 @@ class TestTopologyShow(BaseProductTestCase):
     def test_topology_show(self):
         self.upload_topology()
         actual = self.run_prestoadmin('topology show')
-        expected = normal_topology.format(user=self.cluster.user)
+        expected = normal_topology.format(user=self.cluster.get_user())
         self.assertEqual(expected, actual)
 
     def test_topology_show_empty_config(self):
         self.dump_and_cp_topology(topology={})
         actual = self.run_prestoadmin('topology show')
-        self.assertEqual(local_topology.format(user=self.cluster.user), actual)
+        self.assertEqual(local_topology.format(user=self.cluster.get_user()), actual)
 
     def test_topology_show_bad_json(self):
         self.cluster.copy_to_host(
             os.path.join(LOCAL_RESOURCES_DIR, 'invalid_json.json'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.cluster.exec_cmd_on_host(
-            self.cluster.master,
+            self.cluster.get_master(),
             'cp %s /etc/opt/prestoadmin/config.json' %
-            os.path.join(self.cluster.mount_dir, 'invalid_json.json')
+            os.path.join(self.cluster.get_mount_dir(), 'invalid_json.json')
         )
         self.assertRaisesRegexp(OSError,
                                 'Expecting , delimiter: line 3 column 3 '

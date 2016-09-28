@@ -103,10 +103,10 @@ class TestSliderInstallation(BaseProductTestCase):
     @docker_only
     def test_slider_install_localhost(self):
         self.run_with_config(
-            get_config(self.cluster, override={HOST: ('localhost', self.cluster.master)}))
+            get_config(self.cluster, override={HOST: ('localhost', self.cluster.get_master())}))
 
     @docker_only
     def test_slider_install_interactive_ip(self):
         ips = self.cluster.get_ip_address_dict()
         self.run_interactive(
-            get_config(self.cluster, override={HOST: (ips[self.cluster.master], self.cluster.master)}))
+            get_config(self.cluster, override={HOST: (ips[self.cluster.get_master()], self.cluster.get_master())}))

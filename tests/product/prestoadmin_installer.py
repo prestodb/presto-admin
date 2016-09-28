@@ -51,12 +51,12 @@ class PrestoadminInstaller(BaseInstaller):
 
         if not dist_dir:
             dist_dir = self._build_dist_if_necessary(cluster)
-        self._copy_dist_to_host(cluster, dist_dir, cluster.master)
+        self._copy_dist_to_host(cluster, dist_dir, cluster.get_master())
         with open(LOCAL_RESOURCES_DIR + "/install-admin.sh", 'r') as file_obj:
             script = file_obj.read()
 
-        script = script.format(mount_dir=cluster.mount_dir)
-        cluster.run_script_on_host(script, cluster.master, tty=False)
+        script = script.format(mount_dir=cluster.get_mount_dir())
+        cluster.run_script_on_host(script, cluster.get_master(), tty=False)
 
     @staticmethod
     def assert_installed(testcase, msg=None):
@@ -121,9 +121,9 @@ class PrestoadminInstaller(BaseInstaller):
                 'cd ~/presto-admin\n'
                 'make %s\n'
                 'cp dist/prestoadmin-*.tar.bz2 %s'
-                % (installer_container.mount_dir,
+                % (installer_container.get_mount_dir(),
                    'dist' if online_installer else 'dist-offline',
-                   installer_container.mount_dir),
+                   installer_container.get_mount_dir()),
                 container_name)
 
             try:

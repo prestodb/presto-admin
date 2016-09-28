@@ -83,8 +83,8 @@ class TestConfiguration(BaseProductTestCase):
 
         config_properties_path = os.path.join(
             constants.REMOTE_CONF_DIR, 'config.properties')
-        self.assert_config_perms(self.cluster.master, config_properties_path)
-        self.assert_file_content(self.cluster.master,
+        self.assert_config_perms(self.cluster.get_master(), config_properties_path)
+        self.assert_file_content(self.cluster.get_master(),
                                  config_properties_path,
                                  dummy_prop1 + '\n' +
                                  dummy_prop2 + '\n' +
@@ -94,10 +94,10 @@ class TestConfiguration(BaseProductTestCase):
         filename = 'node.properties'
         path = os.path.join(get_workers_directory(), filename)
         self.cluster.write_content_to_host(
-            'node.environment test', path, self.cluster.master)
+            'node.environment test', path, self.cluster.get_master())
         path = os.path.join(get_coordinator_directory(), filename)
         self.cluster.write_content_to_host(
-            'node.environment test', path, self.cluster.master)
+            'node.environment test', path, self.cluster.get_master())
 
         output = self.run_prestoadmin('configuration deploy workers')
         expected = ''
@@ -115,7 +115,7 @@ class TestConfiguration(BaseProductTestCase):
             expected = 'node.environment=test\n'
             self.assert_node_config(container, expected)
 
-        self.assert_node_config(self.cluster.master,
+        self.assert_node_config(self.cluster.get_master(),
                                 self.default_node_properties_)
 
     def test_configuration_deploy_using_dash_h_coord_worker(self):
@@ -142,8 +142,8 @@ class TestConfiguration(BaseProductTestCase):
                                               'config.properties')
 
         self.assert_config_perms(
-            self.cluster.master, config_properties_path)
-        self.assert_file_content(self.cluster.master,
+            self.cluster.get_master(), config_properties_path)
+        self.assert_file_content(self.cluster.get_master(),
                                  config_properties_path,
                                  dummy_prop1 + '\n' +
                                  dummy_prop2 + '\n' +
@@ -166,7 +166,7 @@ class TestConfiguration(BaseProductTestCase):
 
         output = self.run_prestoadmin('configuration deploy '
                                       '-x %(master)s,%(slave1)s')
-        self.assert_has_default_config(self.cluster.master)
+        self.assert_has_default_config(self.cluster.get_master())
         self.assert_has_default_config(self.cluster.slaves[0])
         deploy_template = 'Deploying configuration on: %s\n'
         expected = ''
@@ -276,12 +276,12 @@ class TestConfiguration(BaseProductTestCase):
         self.cluster.write_content_to_host(
             log_properties,
             os.path.join(get_workers_directory(), filename),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.cluster.write_content_to_host(
             log_properties,
             os.path.join(get_coordinator_directory(), filename),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.run_prestoadmin('configuration deploy')
 

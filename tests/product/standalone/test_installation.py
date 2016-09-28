@@ -38,7 +38,7 @@ class TestInstallation(BaseProductTestCase):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_BARE_CLUSTER)
         dist_dir = self.pa_installer._build_dist_if_necessary(self.cluster)
         self.pa_installer._copy_dist_to_host(self.cluster, dist_dir,
-                                             self.cluster.master)
+                                             self.cluster.get_master())
 
     @attr('smoketest')
     @docker_only
@@ -52,13 +52,13 @@ class TestInstallation(BaseProductTestCase):
             sudo -u app-admin tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
             sudo -u app-admin ./install-prestoadmin.sh
-        """.format(mount_dir=self.cluster.mount_dir,
+        """.format(mount_dir=self.cluster.get_mount_dir(),
                    install_dir=install_dir)
 
         self.assertRaisesRegexp(OSError, 'mkdir: cannot create directory '
                                 '`/var/log/prestoadmin\': Permission denied',
                                 self.cluster.run_script_on_host, script,
-                                self.cluster.master)
+                                self.cluster.get_master())
 
     @attr('smoketest')
     def test_install_from_different_dir(self):
@@ -69,7 +69,7 @@ class TestInstallation(BaseProductTestCase):
             cd {install_dir}
             tar jxf prestoadmin-*.tar.bz2
              ./prestoadmin/install-prestoadmin.sh
-        """.format(mount_dir=self.cluster.mount_dir,
+        """.format(mount_dir=self.cluster.get_mount_dir(),
                    install_dir=install_dir)
 
         self.assertRaisesRegexp(
@@ -78,7 +78,7 @@ class TestInstallation(BaseProductTestCase):
             r'\'/opt/prestoadmin-.*-py2-none-any.whl\'',
             self.cluster.run_script_on_host,
             script,
-            self.cluster.master
+            self.cluster.get_master()
         )
 
     @attr('smoketest', 'offline_installer')
@@ -117,16 +117,16 @@ class TestInstallation(BaseProductTestCase):
             tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
              ./install-prestoadmin.sh dummy_cert.cert
-        """.format(mount_dir=self.cluster.mount_dir,
+        """.format(mount_dir=self.cluster.get_mount_dir(),
                    install_dir=install_dir)
-        output = self.cluster.run_script_on_host(script, self.cluster.master)
+        output = self.cluster.run_script_on_host(script, self.cluster.get_master())
         self.assertRegexpMatches(output, r'Adding pypi.python.org as '
                                  'trusted\-host. Cannot find certificate '
                                  'file: dummy_cert.cert')
 
     @attr('smoketest')
     def test_cert_arg_to_installation_real_cert(self):
-        self.cluster.copy_to_host(certifi.where(), self.cluster.master)
+        self.cluster.copy_to_host(certifi.where(), self.cluster.get_master())
         install_dir = '/opt'
         cert_file = os.path.basename(certifi.where())
         script = """
@@ -136,10 +136,10 @@ class TestInstallation(BaseProductTestCase):
             tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
              ./install-prestoadmin.sh {mount_dir}/{cacert}
-        """.format(mount_dir=self.cluster.mount_dir,
+        """.format(mount_dir=self.cluster.get_mount_dir(),
                    install_dir=install_dir,
                    cacert=cert_file)
-        output = self.cluster.run_script_on_host(script, self.cluster.master)
+        output = self.cluster.run_script_on_host(script, self.cluster.get_master())
         self.assertTrue('Adding pypi.python.org as trusted-host. Cannot find'
                         ' certificate file: %s' % cert_file not in output,
                         'Unable to find cert file; output: %s' % output)
@@ -153,16 +153,16 @@ class TestInstallation(BaseProductTestCase):
             tar jxf prestoadmin-*.tar.bz2
             cd prestoadmin
              ./install-prestoadmin.sh
-        """.format(mount_dir=self.cluster.mount_dir,
+        """.format(mount_dir=self.cluster.get_mount_dir(),
                    install_dir=install_dir)
-        self.cluster.run_script_on_host(script, self.cluster.master)
+        self.cluster.run_script_on_host(script, self.cluster.get_master())
 
         pa_etc_dir = '/etc/opt/prestoadmin'
         connectors_dir = pa_etc_dir + '/connectors'
-        self.assert_path_exists(self.cluster.master, connectors_dir)
+        self.assert_path_exists(self.cluster.get_master(), connectors_dir)
 
         coordinator_dir = pa_etc_dir + '/coordinator'
-        self.assert_path_exists(self.cluster.master, coordinator_dir)
+        self.assert_path_exists(self.cluster.get_master(), coordinator_dir)
 
         workers_dir = pa_etc_dir + '/workers'
-        self.assert_path_exists(self.cluster.master, workers_dir)
+        self.assert_path_exists(self.cluster.get_master(), workers_dir)

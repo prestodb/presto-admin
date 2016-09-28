@@ -96,8 +96,8 @@ class StandalonePrestoInstaller(BaseInstaller):
 
         rpm_path = os.path.join(self.rpm_dir, self.rpm_name)
         if not self._check_rpm_already_uploaded(self.rpm_name, cluster):
-            cluster.copy_to_host(rpm_path, cluster.master, dest_path=os.path.join(cluster.get_rpm_cache_dir(),
-                                                                                  self.rpm_name))
+            cluster.copy_to_host(rpm_path, cluster.get_master(), dest_path=os.path.join(cluster.get_rpm_cache_dir(),
+                                                                                        self.rpm_name))
         self._check_if_corrupted_rpm(self.rpm_name, cluster)
         return self.rpm_name
 
@@ -121,8 +121,8 @@ class StandalonePrestoInstaller(BaseInstaller):
     @staticmethod
     def _check_if_corrupted_rpm(rpm_name, cluster):
         cluster.exec_cmd_on_host(
-            cluster.master, 'rpm -K --nosignature ' +
-                            os.path.join(cluster.get_rpm_cache_dir(), rpm_name)
+            cluster.get_master(), 'rpm -K --nosignature ' +
+                                  os.path.join(cluster.get_rpm_cache_dir(), rpm_name)
         )
 
     def assert_uninstalled(self, container, msg=None):
@@ -140,7 +140,7 @@ class StandalonePrestoInstaller(BaseInstaller):
         rpm_already_exists = True
         try:
             cluster.exec_cmd_on_host(
-                cluster.master,
+                cluster.get_master(),
                 'ls ' + os.path.join(cluster.get_rpm_cache_dir(), rpm_name)
             )
         except OSError:

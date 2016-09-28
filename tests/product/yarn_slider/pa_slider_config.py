@@ -70,5 +70,5 @@ def docker_config(conf):
 
 def upload_config(cluster, conf):
     cluster.write_content_to_host(
-        json.dumps(cluster_config(conf)), SLIDER_CONFIG_PATH, cluster.master)
+        json.dumps(cluster_config(conf)), SLIDER_CONFIG_PATH, cluster.get_master())
     return conf

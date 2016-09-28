@@ -46,7 +46,7 @@ class TestConnectors(BaseProductTestCase):
     def test_connector_add_remove(self):
         self.setup_cluster_assert_connectors()
         self.run_prestoadmin('connector remove tpch')
-        self.assert_path_removed(self.cluster.master, os.path.join(get_connectors_directory(), 'tpch.properties'))
+        self.assert_path_removed(self.cluster.get_master(), os.path.join(get_connectors_directory(), 'tpch.properties'))
         for host in self.cluster.all_hosts():
             self.assert_path_removed(host, os.path.join(constants.REMOTE_CATALOG_DIR, 'tpch.properties'))
 
@@ -54,12 +54,12 @@ class TestConnectors(BaseProductTestCase):
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(get_connectors_directory(), 'tpch.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.cluster.write_content_to_host(
             'connector.name=jmx',
             os.path.join(get_connectors_directory(), 'jmx.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.run_prestoadmin('connector add')
         self.run_prestoadmin('server restart')
@@ -76,11 +76,11 @@ class TestConnectors(BaseProductTestCase):
 
         self.run_prestoadmin('connector remove tpch -H %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
-        self.assert_path_removed(self.cluster.master,
+        self.assert_path_removed(self.cluster.get_master(),
                                  os.path.join(get_connectors_directory(),
                                               'tpch.properties'))
         self._assert_connectors_loaded([['system']])
-        for host in [self.cluster.master, self.cluster.slaves[0]]:
+        for host in [self.cluster.get_master(), self.cluster.slaves[0]]:
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
                                                   'tpch.properties'))
@@ -90,11 +90,11 @@ class TestConnectors(BaseProductTestCase):
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(get_connectors_directory(), 'tpch.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.run_prestoadmin('connector add tpch -H %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
-        self.assert_has_default_connector(self.cluster.master)
+        self.assert_has_default_connector(self.cluster.get_master())
         self.assert_has_default_connector(self.cluster.slaves[1])
 
     def test_connector_add_remove_coord_worker_using_dash_x(self):
@@ -103,7 +103,7 @@ class TestConnectors(BaseProductTestCase):
         self.run_prestoadmin('connector remove tpch -x %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
         self._assert_connectors_loaded([['system'], ['tpch']])
-        self.assert_has_default_connector(self.cluster.master)
+        self.assert_has_default_connector(self.cluster.get_master())
         self.assert_has_default_connector(self.cluster.slaves[0])
         for host in [self.cluster.slaves[1], self.cluster.slaves[2]]:
             self.assert_path_removed(host,
@@ -113,7 +113,7 @@ class TestConnectors(BaseProductTestCase):
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(get_connectors_directory(), 'tpch.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.run_prestoadmin('connector add tpch -x %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
@@ -129,7 +129,7 @@ class TestConnectors(BaseProductTestCase):
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(get_connectors_directory(), 'tpch.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.run_prestoadmin('connector add tpch')
         self.run_prestoadmin('server start')
@@ -183,7 +183,7 @@ Aborting.
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(get_connectors_directory(), 'tpch.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         output = self.run_prestoadmin('connector add tpch', raise_error=False)
         for host in self.cluster.all_internal_hosts():
@@ -201,7 +201,7 @@ Aborting.
                          self.len_down_node_error)
         self.run_prestoadmin('server start', raise_error=False)
 
-        for host in [self.cluster.master,
+        for host in [self.cluster.get_master(),
                      self.cluster.slaves[1],
                      self.cluster.slaves[2]]:
             self.assert_has_default_connector(host)
@@ -251,7 +251,7 @@ for the change to take effect
 
         # test remove connector not in directory, but in presto
         self.cluster.exec_cmd_on_host(
-            self.cluster.master,
+            self.cluster.get_master(),
             'rm /etc/opt/prestoadmin/connectors/tpch.properties'
         )
 
@@ -262,7 +262,7 @@ for the change to take effect
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(get_connectors_directory(), 'tpch.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
 
         self.assertRaisesMessageIgnoringOrder(
@@ -284,7 +284,7 @@ for the change to take effect
 
     def get_connector_info(self):
         output = self.cluster.exec_cmd_on_host(
-            self.cluster.master,
+            self.cluster.get_master(),
             "curl --silent -X POST http://localhost:8080/v1/statement -H "
             "'X-Presto-User:$USER' -H 'X-Presto-Schema:metadata' -H "
             "'X-Presto-Catalog:system' -d 'select catalog_name from catalogs'")
@@ -293,7 +293,7 @@ for the change to take effect
         next_uri = self.get_key_value(output, 'nextUri')
         while not data and next_uri:
             output = self.cluster.exec_cmd_on_host(
-                self.cluster.master,
+                self.cluster.get_master(),
                 'curl --silent %s' % self.get_key_value(output, 'nextUri')
             )
             data = self.get_key_value(output, 'data')
@@ -331,7 +331,7 @@ for the change to take effect
         )
 
         self.run_prestoadmin('connector remove tpch -p password')
-        self.assert_path_removed(self.cluster.master,
+        self.assert_path_removed(self.cluster.get_master(),
                                  os.path.join(get_connectors_directory(),
                                               'tpch.properties'))
         for host in self.cluster.all_hosts():
@@ -342,7 +342,7 @@ for the change to take effect
         self.cluster.write_content_to_host(
             'connector.name=jmx',
             os.path.join(get_connectors_directory(), 'jmx.properties'),
-            self.cluster.master
+            self.cluster.get_master()
         )
         self.run_prestoadmin('connector add -p password')
         self.run_prestoadmin('server restart -p password')

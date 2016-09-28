@@ -126,7 +126,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
         symlink = '/opt/prestoadmin/link.rpm'
-        self.cluster.exec_cmd_on_host(self.cluster.master, 'ln -s %s %s'
+        self.cluster.exec_cmd_on_host(self.cluster.get_master(), 'ln -s %s %s'
                                       % (path_on_cluster, symlink))
         self.upgrade_and_assert_success(symlink)
 
@@ -140,7 +140,7 @@ class TestServerUpgrade(BaseProductTestCase):
         self.add_dummy_properties_to_host(self.cluster.slaves[1])
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
         symlink = '/opt/prestoadmin/link.rpm'
-        self.cluster.exec_cmd_on_host(self.cluster.master, 'ln -s %s %s'
+        self.cluster.exec_cmd_on_host(self.cluster.get_master(), 'ln -s %s %s'
                                       % (path_on_cluster, symlink))
 
         self.run_prestoadmin('server upgrade ' + path_on_cluster)

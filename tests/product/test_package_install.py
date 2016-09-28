@@ -61,14 +61,14 @@ class TestPackageInstall(BaseProductTestCase):
         output = self.run_prestoadmin('package install %(rpm)s -H %(master)s,%(slave2)s',
                                       rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
 
-        self.installer.assert_installed(self, self.cluster.master, msg=output)
+        self.installer.assert_installed(self, self.cluster.get_master(), msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[1], msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[0], msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[2], msg=output)
 
         # uninstall on slave2
         output = self.run_prestoadmin('package uninstall presto-server-rpm -H %(slave2)s')
-        self.installer.assert_installed(self, self.cluster.master, msg=output)
+        self.installer.assert_installed(self, self.cluster.get_master(), msg=output)
         for container in self.cluster.slaves:
             self.installer.assert_uninstalled(container, msg=output)
 
@@ -83,7 +83,7 @@ class TestPackageInstall(BaseProductTestCase):
                                       rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
 
         # install
-        self.installer.assert_uninstalled(self.cluster.master, msg=output)
+        self.installer.assert_uninstalled(self.cluster.get_master(), msg=output)
         self.installer.assert_uninstalled(self.cluster.slaves[1], msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[0], msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[2], msg=output)
@@ -97,11 +97,11 @@ class TestPackageInstall(BaseProductTestCase):
     def test_install_rpm_missing_dependency(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'rpm -e --nodeps python-2.6.6')
+            self.cluster.get_master(), 'rpm -e --nodeps python-2.6.6')
         self.assertRaisesRegexp(OSError,
                                 'package python-2.6.6 is not installed',
                                 self.cluster.exec_cmd_on_host,
-                                self.cluster.master,
+                                self.cluster.get_master(),
                                 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(
@@ -131,11 +131,11 @@ Package deployed successfully on: %(master)s
     def test_install_rpm_with_nodeps(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'rpm -e --nodeps python-2.6.6')
+            self.cluster.get_master(), 'rpm -e --nodeps python-2.6.6')
         self.assertRaisesRegexp(OSError,
                                 'package python-2.6.6 is not installed',
                                 self.cluster.exec_cmd_on_host,
-                                self.cluster.master,
+                                self.cluster.get_master(),
                                 'rpm -q python-2.6.6')
 
         cmd_output = self.run_prestoadmin(

@@ -31,7 +31,7 @@ class TestPlugin(BaseProductTestCase):
 
     def deploy_jar_to_master(self):
         self.cluster.write_content_to_host('A PRETEND JAR', TMP_JAR_PATH,
-                                           self.cluster.master)
+                                           self.cluster.get_master())
 
     def test_basic_add_jars(self):
         self.upload_topology()

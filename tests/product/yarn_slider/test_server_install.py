@@ -52,7 +52,7 @@ class TestServerInstall(BaseProductTestCase):
 
     def await_hdfs(self):
         start = time.clock()
-        ip_addr = self.cluster.get_ip_address_dict()[self.cluster.master]
+        ip_addr = self.cluster.get_ip_address_dict()[self.cluster.get_master()]
         while True:
             try:
                 s = socket()
