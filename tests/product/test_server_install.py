@@ -318,7 +318,7 @@ query.max-memory=50GB\n"""
 
         additional_keywords = {
             'user': self.cluster.user,
-            'rpm_dir': self.cluster.get_rpm_cache_dir(),
+            'rpm_dir': self.cluster.rpm_cache_dir,
             'rpm': rpm_name
         }
 
@@ -442,7 +442,7 @@ query.max-memory=50GB\n"""
         self.write_test_configs(self.cluster)
         self.run_prestoadmin(
             'server install {rpm_dir}/{name} -p password'.format(
-                rpm_dir=self.cluster.get_rpm_cache_dir(), name=rpm_name)
+                rpm_dir=self.cluster.rpm_cache_dir, name=rpm_name)
         )
 
         for container in self.cluster.all_hosts():

@@ -53,7 +53,7 @@ class StandalonePrestoInstaller(BaseInstaller):
 
         self.testcase.write_test_configs(cluster, extra_configs, coordinator)
         cmd_output = self.testcase.run_prestoadmin(
-            'server install ' + os.path.join(cluster.get_rpm_cache_dir(), rpm_name),
+            'server install ' + os.path.join(cluster.rpm_cache_dir, rpm_name),
             cluster=cluster, raise_error=pa_raise_error
         )
 
@@ -75,7 +75,7 @@ class StandalonePrestoInstaller(BaseInstaller):
         # container keyword arg supports test_package_install and a few other
         # places where we need to check specific members of a cluster.
         if not container:
-            container = cluster.get_master()
+            container = cluster.master
 
         try:
             check_rpm = cluster.exec_cmd_on_host(
@@ -96,7 +96,7 @@ class StandalonePrestoInstaller(BaseInstaller):
 
         rpm_path = os.path.join(self.rpm_dir, self.rpm_name)
         if not self._check_rpm_already_uploaded(self.rpm_name, cluster):
-            cluster.copy_to_host(rpm_path, cluster.master, dest_path=os.path.join(cluster.get_rpm_cache_dir(),
+            cluster.copy_to_host(rpm_path, cluster.master, dest_path=os.path.join(cluster.rpm_cache_dir,
                                                                                   self.rpm_name))
         self._check_if_corrupted_rpm(self.rpm_name, cluster)
         return self.rpm_name
@@ -122,7 +122,7 @@ class StandalonePrestoInstaller(BaseInstaller):
     def _check_if_corrupted_rpm(rpm_name, cluster):
         cluster.exec_cmd_on_host(
             cluster.master, 'rpm -K --nosignature ' +
-                            os.path.join(cluster.get_rpm_cache_dir(), rpm_name)
+                            os.path.join(cluster.rpm_cache_dir, rpm_name)
         )
 
     def assert_uninstalled(self, container, msg=None):
@@ -141,7 +141,7 @@ class StandalonePrestoInstaller(BaseInstaller):
         try:
             cluster.exec_cmd_on_host(
                 cluster.master,
-                'ls ' + os.path.join(cluster.get_rpm_cache_dir(), rpm_name)
+                'ls ' + os.path.join(cluster.rpm_cache_dir, rpm_name)
             )
         except OSError:
             rpm_already_exists = False

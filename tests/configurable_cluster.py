@@ -57,7 +57,7 @@ class ConfigurableCluster(BaseCluster):
         with open(os.path.join(main_dir, config_filename)) as config_file:
             config = yaml.load(config_file)
 
-        self.master = config['master']
+        self._master = config['master']
         if type(self.master) is not str:
             raise Exception('Must have just one master with type string.')
 
@@ -67,7 +67,7 @@ class ConfigurableCluster(BaseCluster):
 
         self.internal_master = 'master'
         self.internal_slaves = ['slave1', 'slave2', 'slave3']
-        self.user = config['user']
+        self._user = config['user']
 
         self.key_path = config['key_path']
         if not os.path.exists(self.key_path):
@@ -75,8 +75,8 @@ class ConfigurableCluster(BaseCluster):
                 path=self.key_path))
 
         self.config = config
-        self.mount_dir = config['mount_point']
-        self.rpm_cache_dir = config['rpm_cache_dir']
+        self._mount_dir = config['mount_point']
+        self._rpm_cache_dir = config['rpm_cache_dir']
 
     @staticmethod
     def check_for_cluster_config():
@@ -85,9 +85,6 @@ class ConfigurableCluster(BaseCluster):
             return config_name[0]
         else:
             return None
-
-    def get_master(self):
-        return self.master
 
     def all_hosts(self):
         return self.slaves + [self.master]
@@ -274,5 +271,18 @@ class ConfigurableCluster(BaseCluster):
     def postinstall(self, installer):
         pass
 
-    def get_rpm_cache_dir(self):
-        return self.rpm_cache_dir
+    @property
+    def rpm_cache_dir(self):
+        return self._rpm_cache_dir
+
+    @property
+    def mount_dir(self):
+        return self._mount_dir
+
+    @property
+    def user(self):
+        return self._user
+
+    @property
+    def master(self):
+        return self._master

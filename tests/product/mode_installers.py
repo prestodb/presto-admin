@@ -48,7 +48,7 @@ class BaseModeInstaller(BaseInstaller):
     @overrides
     def install(self):
         self.testcase.cluster.write_content_to_host(
-            self.json, MODE_CONF_PATH, self.testcase.cluster.get_master())
+            self.json, MODE_CONF_PATH, self.testcase.cluster.master)
 
     @overrides
     def get_keywords(self, *args, **kwargs):
@@ -57,7 +57,7 @@ class BaseModeInstaller(BaseInstaller):
     @staticmethod
     def _assert_installed(testcase, expected_mode):
         json_str = testcase.cluster.exec_cmd_on_host(
-            testcase.cluster.get_master(), 'cat %s' % MODE_CONF_PATH)
+            testcase.cluster.master, 'cat %s' % MODE_CONF_PATH)
 
         actual_mode_cfg = json.loads(json_str)
         testcase.assertEqual(

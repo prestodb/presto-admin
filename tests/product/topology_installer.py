@@ -34,7 +34,7 @@ class TopologyInstaller(BaseInstaller):
     @staticmethod
     def assert_installed(testcase, msg=None):
         testcase.cluster.exec_cmd_on_host(
-            testcase.cluster.get_master(),
+            testcase.cluster.master,
             'test -r /etc/opt/prestoadmin/config.json')
 
     def get_keywords(self):
