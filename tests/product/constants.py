@@ -30,4 +30,4 @@ LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
 DEFAULT_DOCKER_MOUNT_POINT = '/mnt/presto-admin'
 DEFAULT_LOCAL_MOUNT_POINT = os.path.join(main_dir, 'tmp/docker-pa/')
 
-BASE_TD_IMAGE_NAME = 'teradatalabs/centos6-ssh-test'
+BASE_TD_IMAGE_NAME = 'teradatalabs/centos6-ssh-test:6'

@@ -86,7 +86,7 @@ test-all: clean-test docker-images
 
 
 docker-images:
-	docker pull teradatalabs/centos6-ssh-oj8
+	docker pull teradatalabs/centos6-ssh-oj8:6
 
 test-rpm: clean-test
 	tox -e py26 -- -s tests.rpm -a '!quarantine'
