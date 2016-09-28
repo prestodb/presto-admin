@@ -22,5 +22,5 @@ from tests.bare_image_provider import TagBareImageProvider
 class NoHadoopBareImageProvider(TagBareImageProvider):
     def __init__(self):
         super(NoHadoopBareImageProvider, self).__init__(
-            'teradatalabs/centos6-ssh-oj8', 'teradatalabs/centos6-ssh-oj8',
+            'teradatalabs/centos6-ssh-oj8:6', 'teradatalabs/centos6-ssh-oj8:6',
             'nohadoop')
