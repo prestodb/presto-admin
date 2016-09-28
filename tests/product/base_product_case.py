@@ -227,7 +227,7 @@ query.max-memory=50GB\n"""
 
     def fetch_log_tail(self, lines=50):
         return self.cluster.exec_cmd_on_host(
-            self.cluster.get_master(),
+            self.cluster.master,
             'tail -%d /var/log/prestoadmin/presto-admin.log' % (lines,),
             raise_error=False)
 
@@ -340,7 +340,7 @@ query.max-memory=50GB\n"""
                 # file content that we display above.
                 msg += '\t==== Content for presto-admin file %s ====\n' % \
                        (pa_file,)
-                msg += self.get_file_content(self.cluster.get_master(),
+                msg += self.get_file_content(self.cluster.master,
                                              pa_file)
                 msg += '\n\t==========================================\n'
             except OSError as e:

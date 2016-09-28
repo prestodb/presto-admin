@@ -66,28 +66,25 @@ class DockerCluster(BaseCluster):
         # difference between an internal and regular host
         self.internal_master = master_host
         self.internal_slaves = slave_hosts
-        self.master = master_host + '-' + str(uuid.uuid4())
+        self._master = master_host + '-' + str(uuid.uuid4())
         self.slaves = [slave + '-' + str(uuid.uuid4())
                        for slave in slave_hosts]
         # the root path for all local mount points; to get a particular
         # container mount point call get_local_mount_dir()
         self.local_mount_dir = local_mount_dir
-        self.mount_dir = docker_mount_dir
+        self._mount_dir = docker_mount_dir
 
         kwargs = kwargs_from_env()
         if 'tls' in kwargs:
             kwargs['tls'].assert_hostname = False
         kwargs['timeout'] = 300
         self.client = Client(**kwargs)
-        self.user = 'root'
+        self._user = 'root'
 
         DockerCluster.__check_if_docker_exists()
 
     def all_hosts(self):
         return self.slaves + [self.master]
-
-    def get_master(self):
-        return self.master
 
     def all_internal_hosts(self):
         return [host.split('-')[0] for host in self.all_hosts()]
@@ -456,8 +453,21 @@ class DockerCluster(BaseCluster):
         if hook:
             hook(self)
 
-    def get_rpm_cache_dir(self):
-        return self.mount_dir
+    @property
+    def rpm_cache_dir(self):
+        return self._mount_dir
+
+    @property
+    def mount_dir(self):
+        return self._mount_dir
+
+    @property
+    def user(self):
+        return self._user
+
+    @property
+    def master(self):
+        return self._master
 
 
 class DockerClusterException(Exception):

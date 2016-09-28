@@ -45,7 +45,7 @@ class TestPackageInstall(BaseProductTestCase):
 
         # install
         output = self.run_prestoadmin('package install %(rpm)s',
-                                      rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
+                                      rpm=os.path.join(self.cluster.rpm_cache_dir, rpm_name))
         for container in self.cluster.all_hosts():
             self.installer.assert_installed(self, container, msg=output)
 
@@ -59,7 +59,7 @@ class TestPackageInstall(BaseProductTestCase):
 
         # install onto master and slave2
         output = self.run_prestoadmin('package install %(rpm)s -H %(master)s,%(slave2)s',
-                                      rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
+                                      rpm=os.path.join(self.cluster.rpm_cache_dir, rpm_name))
 
         self.installer.assert_installed(self, self.cluster.master, msg=output)
         self.installer.assert_installed(self, self.cluster.slaves[1], msg=output)
@@ -80,7 +80,7 @@ class TestPackageInstall(BaseProductTestCase):
     def test_install_exclude_nodes(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         output = self.run_prestoadmin('package install %(rpm)s -x %(master)s,%(slave2)s',
-                                      rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name))
+                                      rpm=os.path.join(self.cluster.rpm_cache_dir, rpm_name))
 
         # install
         self.installer.assert_uninstalled(self.cluster.master, msg=output)
@@ -106,7 +106,7 @@ class TestPackageInstall(BaseProductTestCase):
 
         cmd_output = self.run_prestoadmin(
             'package install %(rpm)s -H %(master)s',
-            rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name),
+            rpm=os.path.join(self.cluster.rpm_cache_dir, rpm_name),
             raise_error=False)
         expected = self.replace_keywords("""
 Fatal error: [%(master)s] sudo() received nonzero return code 1 while \
@@ -140,7 +140,7 @@ Package deployed successfully on: %(master)s
 
         cmd_output = self.run_prestoadmin(
             'package install %(rpm)s -H %(master)s --nodeps',
-            rpm=os.path.join(self.cluster.get_rpm_cache_dir(), rpm_name)
+            rpm=os.path.join(self.cluster.rpm_cache_dir, rpm_name)
         )
         expected = 'Deploying rpm on %(host)s...\n' \
                    'Package deployed successfully on: %(host)s\n' \

@@ -75,11 +75,6 @@ class BaseCluster(object):
         pass
 
     @abc.abstractmethod
-    def get_master(self):
-        """Returns the hostname of the master node of the cluster"""
-        pass
-
-    @abc.abstractmethod
     def get_ip_address_dict(self):
         """Returns a dict containing entries mapping both internal and external
         hostnames to the IP address of the node. I.e. the resulting dict will
@@ -141,13 +136,60 @@ class BaseCluster(object):
     def copy_to_host(self, source_path, host, **kwargs):
         pass
 
-    @abc.abstractmethod
-    def get_rpm_cache_dir(self):
-        """Return directory where to cache the presto RPM. For DockerCluster
-        this can be the mount directory but for ConfigurableCluster where
-        RPM upload involves large latency it has to be a directory that doesn't
-        get torn down before every test.
-        """
+    @abc.abstractproperty
+    def master(self):
+        """               +++++ WARNING +++++
+        When overriding this property make sure the child class uses the @property decorator.
+        The declaration of the property in the child should look like this:
+
+        @property
+        def master(self):
+            return self._master
+
+        Returns the hostname of the master node of the cluster"""
+        pass
+
+    @abc.abstractproperty
+    def user(self):
+        """               +++++ WARNING +++++
+        When overriding this property make sure the child class uses the @property decorator.
+        The declaration of the property in the child should look like this:
+
+        @property
+        def user(self):
+            return self._user
+
+        Returns the user with which to execute commands on the cluster"""
+        pass
+
+    @abc.abstractproperty
+    def rpm_cache_dir(self):
+        """               +++++ WARNING +++++
+        When overriding this property make sure the child class uses the @property decorator.
+        The declaration of the property in the child should look like this:
+
+        @property
+        def rpm_cache_dir(self):
+            return self._rpm_cache_dir
+
+        Return directory where to cache the presto RPM. For DockerCluster this can be the
+        mount directory but for ConfigurableCluster where uploading the RPM involves a large
+        latency, the RPM cache has to be different so it doesn't get deleted before every test."""
+        pass
+
+    @abc.abstractproperty
+    def mount_dir(self):
+        """               +++++ WARNING +++++
+        When overriding this property make sure the child class uses the @property decorator.
+        The declaration of the property in the child should look like this:
+
+        @property
+        def mount_dir(self):
+            return self._mount_dir
+
+        Return the mount directory of the cluster. The mount directory is the place where files, scripts
+        and other resources needed by a test are uploaded. The mount directory may or may not be
+        ephemeral; see the implementation of the tear_down() method to confirm."""
         pass
 
     def ensure_correct_execution_environment(self):
