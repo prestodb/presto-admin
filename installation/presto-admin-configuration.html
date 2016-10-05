@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Configuring Presto-Admin &mdash; presto-admin 1.4.1 documentation</title>
+    <title>Configuring Presto-Admin &mdash; presto-admin 1.5.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.4.1',
+        VERSION:     '1.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.4.1 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.5.1 documentation" href="../index.html" />
     <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
     <link rel="next" title="Installing Java 8" href="java-installation.html" />
     <link rel="prev" title="Installing Presto Admin" href="presto-admin-installation.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="presto-admin-installation.html" title="Installing Presto Admin"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
       </ul>
@@ -74,6 +74,10 @@ is root, on all the Presto nodes, and <code class="docutils literal"><span class
 able to login to all of the nodes via SSH as that user (see
 <a class="reference internal" href="../ssh-configuration.html#ssh-configuration-label"><span class="std std-ref">SSH Configuration</span></a> for details on how to set that up). The
 file should be owned by root with R/W permissions (i.e. 622).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The sudo setup for a non-root user must have the ability to run /bin/bash as root. This can be a security issue. The IT organization should take the necessary steps to address this security hole and select an appropriate presto-admin user.</p>
+</div>
 <div class="section" id="configuration-for-amazon-emr">
 <h2>Configuration for Amazon EMR<a class="headerlink" href="#configuration-for-amazon-emr" title="Permalink to this headline">¶</a></h2>
 <p>Use the following configuration as a template for Amazon EMR:</p>
@@ -215,7 +219,7 @@ you for the initial value of your password before running any commands:</p>
         <li class="right" >
           <a href="presto-admin-installation.html" title="Installing Presto Admin"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
       </ul>

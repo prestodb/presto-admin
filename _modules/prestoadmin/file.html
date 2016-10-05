@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin.plugin &mdash; presto-admin 1.5.1 documentation</title>
+    <title>prestoadmin.file &mdash; presto-admin 1.5.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -46,7 +46,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for prestoadmin.plugin</h1><div class="highlight"><pre>
+  <h1>Source code for prestoadmin.file</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
@@ -62,40 +62,53 @@
 <span class="c1"># limitations under the License.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">module for tasks relating to presto plugins</span>
+<span class="sd">Commands for running scripts on a cluster</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">put</span><span class="p">,</span> <span class="n">sudo</span>
 <span class="kn">from</span> <span class="nn">fabric.decorators</span> <span class="kn">import</span> <span class="n">task</span>
-<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">put</span>
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">env</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
+
 <span class="kn">from</span> <span class="nn">prestoadmin.standalone.config</span> <span class="kn">import</span> <span class="n">StandaloneConfig</span>
 <span class="kn">from</span> <span class="nn">prestoadmin.util.base_config</span> <span class="kn">import</span> <span class="n">requires_config</span>
-<span class="kn">from</span> <span class="nn">prestoadmin.util.constants</span> <span class="kn">import</span> <span class="n">REMOTE_PLUGIN_DIR</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.constants</span> <span class="kn">import</span> <span class="n">REMOTE_COPY_DIR</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.plugin</span> <span class="kn">import</span> <span class="n">write</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;add_jar&#39;</span><span class="p">]</span>
 <span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
-    <span class="n">sudo</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">remote_dir</span><span class="p">)</span>
-    <span class="n">put</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="s1">&#39;copy&#39;</span><span class="p">]</span>
 
 
 <span class="nd">@task</span>
 <span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
-<div class="viewcode-block" id="add_jar"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.plugin.add_jar">[docs]</a><span class="k">def</span> <span class="nf">add_jar</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">plugin_name</span><span class="p">,</span> <span class="n">plugin_dir</span><span class="o">=</span><span class="n">REMOTE_PLUGIN_DIR</span><span class="p">):</span>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.file.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">remote_dir</span><span class="o">=</span><span class="s1">&#39;/tmp&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Deploy jar for the specified plugin to the plugin directory.</span>
+<span class="sd">    Run an arbitrary script on all nodes in the cluster.</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">        local_path - Local path to the jar to be deployed</span>
-<span class="sd">        plugin_name - Name of the plugin subdirectory to deploy jars to</span>
-<span class="sd">        plugin_dir - (Optional) The plugin directory.  If no directory is</span>
-<span class="sd">                     given, &#39;/usr/lib/presto/lib/plugin&#39; is used by default.</span>
+<span class="sd">        script - The path to the script</span>
+<span class="sd">        remote_dir - Where to put the script on the cluster.  Default is /tmp.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;deploying jars on </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
-    <span class="n">write</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plugin_dir</span><span class="p">,</span> <span class="n">plugin_name</span><span class="p">))</span></div>
+    <span class="n">script_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+    <span class="n">remote_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="n">script_name</span><span class="p">)</span>
+    <span class="n">put</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">remote_path</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;chmod u+x </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">remote_path</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="n">remote_path</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rm </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">remote_path</span><span class="p">)</span></div>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="copy"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.file.copy">[docs]</a><span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="n">remote_dir</span><span class="o">=</span><span class="n">REMOTE_COPY_DIR</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy a file to all nodes in the cluster.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        local_file - The path to the file</span>
+<span class="sd">        remote_dir - Where to put the file on the cluster.  Default is /tmp.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;copying file to </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

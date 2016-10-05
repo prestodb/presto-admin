@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>prestoadmin package &mdash; presto-admin 1.4.1 documentation</title>
+    <title>prestoadmin package &mdash; presto-admin 1.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.1',
+        VERSION:     '1.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.4.1 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.5.1 documentation" href="index.html" />
     <link rel="up" title="prestoadmin" href="modules.html" />
     <link rel="next" title="prestoadmin.standalone package" href="prestoadmin.standalone.html" />
     <link rel="prev" title="prestoadmin" href="modules.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">prestoadmin</a> &raquo;</li> 
       </ul>
     </div>  
@@ -394,6 +394,46 @@ This will not deploy configuration for a coordinator that is also a worker</p>
 <dt id="prestoadmin.fabric_patches.warn">
 <code class="descclassname">prestoadmin.fabric_patches.</code><code class="descname">warn</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/fabric_patches.html#warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.fabric_patches.warn" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.file">
+<span id="prestoadmin-file-module"></span><h2>prestoadmin.file module<a class="headerlink" href="#module-prestoadmin.file" title="Permalink to this headline">¶</a></h2>
+<p>Commands for running scripts on a cluster</p>
+<dl class="attribute">
+<dt id="prestoadmin.file.run">
+<code class="descclassname">prestoadmin.file.</code><code class="descname">run</code><a class="reference internal" href="_modules/prestoadmin/file.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.file.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run an arbitrary script on all nodes in the cluster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- The path to the script</strong> (<em>script</em>) &#8211; </li>
+<li><strong>- Where to put the script on the cluster.  Default is /tmp.</strong> (<em>remote_dir</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.file.copy">
+<code class="descclassname">prestoadmin.file.</code><code class="descname">copy</code><a class="reference internal" href="_modules/prestoadmin/file.html#copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.file.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy a file to all nodes in the cluster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- The path to the file</strong> (<em>local_file</em>) &#8211; </li>
+<li><strong>- Where to put the file on the cluster.  Default is /tmp.</strong> (<em>remote_dir</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 <div class="section" id="module-prestoadmin.main">
@@ -800,31 +840,9 @@ the results.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-prestoadmin.script">
-<span id="prestoadmin-script-module"></span><h2>prestoadmin.script module<a class="headerlink" href="#module-prestoadmin.script" title="Permalink to this headline">¶</a></h2>
-<p>Commands for running scripts on a cluster</p>
-<dl class="attribute">
-<dt id="prestoadmin.script.run">
-<code class="descclassname">prestoadmin.script.</code><code class="descname">run</code><a class="reference internal" href="_modules/prestoadmin/script.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.script.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run an arbitrary script on all nodes in the cluster.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>- The path to the script</strong> (<a class="reference internal" href="#module-prestoadmin.script" title="prestoadmin.script"><em>script</em></a>) &#8211; </li>
-<li><strong>- Where to put the script on the cluster.  Default is /tmp.</strong> (<em>remote_dir</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
 <div class="section" id="module-prestoadmin.server">
 <span id="prestoadmin-server-module"></span><h2>prestoadmin.server module<a class="headerlink" href="#module-prestoadmin.server" title="Permalink to this headline">¶</a></h2>
-<p>Module for installing, monitoring and controlling presto server
+<p>Module for installing, monitoring, and controlling presto server
 using presto-admin</p>
 <dl class="attribute">
 <dt id="prestoadmin.server.install">
@@ -845,7 +863,24 @@ jvm.config</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>-            Absolute path to the presto rpm to be installed</strong> (<em>local_path</em>) &#8211; </li>
+<li><strong>- String specifying location of presto rpm to copy and install</strong> (<em>rpm_specifier</em>) &#8211; <p>to nodes in the cluster. The string can specify a presto rpm
+in the following ways:</p>
+<ol class="arabic">
+<li>&#8216;latest&#8217; to download the latest release</li>
+<li>Url to download</li>
+<li>Version number to download</li>
+<li>Path to a local copy</li>
+</ol>
+<p>If rpm_specifier matches multiple forms, it is interpreted as the form with
+highest precedence. The forms are listed from highest to lowest precedence
+(going top to bottom) For example, if the rpm_specifier matches the criteria
+to be a url to download, it will be interpreted as such and will never be
+interpreted as a version number or a local path.</p>
+<p>Before downloading an rpm, install will attempt to find a local
+copy with a matching version number to the requested rpm. If such
+a match is found, it will use the local copy instead of downloading
+the rpm again.</p>
+</li>
 <li><strong>-</strong> (<em>--nodeps</em>) &#8211; should ignore checking Presto rpm package
 dependencies. Equivalent to adding &#8211;nodeps
 flag to rpm -i.</li>
@@ -1002,6 +1037,7 @@ to deploy on the presto cluster</p>
 <li><a class="reference internal" href="#module-prestoadmin.coordinator">prestoadmin.coordinator module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.deploy">prestoadmin.deploy module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.fabric_patches">prestoadmin.fabric_patches module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.file">prestoadmin.file module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.main">prestoadmin.main module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.mode">prestoadmin.mode module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.node">prestoadmin.node module</a></li>
@@ -1009,7 +1045,6 @@ to deploy on the presto cluster</p>
 <li><a class="reference internal" href="#module-prestoadmin.plugin">prestoadmin.plugin module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.presto_conf">prestoadmin.presto_conf module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.prestoclient">prestoadmin.prestoclient module</a></li>
-<li><a class="reference internal" href="#module-prestoadmin.script">prestoadmin.script module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.server">prestoadmin.server module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.topology">prestoadmin.topology module</a></li>
 <li><a class="reference internal" href="#module-prestoadmin.workers">prestoadmin.workers module</a></li>
@@ -1060,7 +1095,7 @@ to deploy on the presto cluster</p>
         <li class="right" >
           <a href="modules.html" title="prestoadmin"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li> 
       </ul>
     </div>

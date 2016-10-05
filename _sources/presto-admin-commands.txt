@@ -52,7 +52,8 @@ This command gathers various system specific information from the cluster. The i
 The gathered information includes:
 
  * Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.
- * Connectors configured
+ * List of connectors configured
+ * Connector configuration files
  * Other system specific information like OS information, Java version, ``presto-admin`` version and Presto server version
 
 Example
@@ -392,9 +393,19 @@ server install
 **************
 ::
 
-    presto-admin server install <local_path> [--nodeps]
+    presto-admin server install <rpm_specifier> [--rpm-source] [--nodeps]
 
-This command copies the presto-server rpm from ``local_path`` to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The ``local_path`` should be accessible by ``presto-admin``.
+This command takes in a parameter ``rpm_specifier``. The parameter can be one of the following forms, listed in order of decreasing precedence:
+'latest' - This downloads of the latest version of the presto rpm.
+url - This downloads the presto rpm found at the given url.
+version number - This downloads the presto rpm of the specified version.
+local path - This uses a previously downloaded rpm. The local path should be accessible by ``presto-admin``.
+If ``rpm_specifier`` matches multiple forms, it is interpreted only as the form with highest precedence.
+For forms that require the rpm to be downloaded, if a local copy is found with a matching version to the rpm that would be downloaded, the local copy is used.
+Rpms downloaded using a version number or 'latest' come from Maven Central.
+This command fails if it cannot find or download the requested presto-server rpm.
+
+After successfully finding the rpm, this command copies the presto-server rpm to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration.
 The topology used to configure the nodes are obtained from ``/etc/opt/prestoadmin/config.json``. See :ref:`presto-admin-configuration-label` on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.
 
 The general configurations for Presto's coordinator and workers are taken from the directories ``/etc/opt/prestoadmin/coordinator`` and ``/etc/opt/prestoadmin/workers`` respectively. If these directories or any required configuration files are absent when you run ``server install``, a default configuration will be deployed. See `configuration deploy`_ for details.
@@ -411,6 +422,9 @@ Example
 ::
 
     sudo ./presto-admin server install /tmp/presto.rpm
+    sudo ./presto-admin server install 0.148
+    sudo ./presto-admin server install http://search.maven.org/remotecontent?filepath=com/facebook/presto/presto-server-rpm/0.150/presto-server-rpm-0.150.rpm
+    sudo ./presto-admin server install latest
 
 **Standalone RPM Install**
 

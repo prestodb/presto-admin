@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installing Presto Admin &mdash; presto-admin 1.4.1 documentation</title>
+    <title>Installing Presto Admin &mdash; presto-admin 1.5.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.4.1',
+        VERSION:     '1.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.4.1 documentation" href="../index.html" />
+    <link rel="top" title="presto-admin 1.5.1 documentation" href="../index.html" />
     <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
     <link rel="next" title="Configuring Presto-Admin" href="presto-admin-configuration.html" />
     <link rel="prev" title="Quick Start Guide" href="../quick-start-guide.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="../quick-start-guide.html" title="Quick Start Guide"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
       </ul>
@@ -58,23 +58,32 @@
   <div class="section" id="installing-presto-admin">
 <span id="presto-admin-installation-label"></span><h1>Installing Presto Admin<a class="headerlink" href="#installing-presto-admin" title="Permalink to this headline">¶</a></h1>
 <p><em>Prerequisites:</em> <a class="reference external" href="https://www.python.org/downloads">Python 2.6 or Python 2.7</a></p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">For Amazon EMR, use the online installer instead of the offline installer (see <a class="reference internal" href="advanced-installation-options.html#advanced-installation-options-label"><span class="std std-ref">Advanced Installation Options</span></a>).</p>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Omit the use of ‘sudo’ when the prestoadmin scripts and presto-admin commands when the root user is selected as the prestoadmin user.</p>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The sudo setup for a non-root user has a security hole where the presto-admin non-root user requires the ability to run /bin/bash as root. The IT organization will need to take the appropriate steps to address this security hole and select which user will be the presto-admin user.</p>
-</div>
+<p>Presto Admin is packaged as an offline installer &#8211;
+<code class="docutils literal"><span class="pre">prestoadmin-&lt;version&gt;-offline.tar.bz2</span></code> &#8211; and as an online
+installer &#8211; <code class="docutils literal"><span class="pre">prestoadmin-&lt;version&gt;-online.tar.bz2</span></code>.</p>
+<p>The offline installer includes all of the dependencies for
+<code class="docutils literal"><span class="pre">presto-admin</span></code>, so it can be used on a cluster without an outside
+network connection. The offline installer is currently only supported
+on RedHat Linux 6.x or CentOS equivalent.</p>
+<p>The online installer downloads all of the dependencies when you run
+<code class="docutils literal"><span class="pre">./install-prestoadmin.sh</span></code>. You must use the online installer for
+installation of Presto on Amazon EMR and for use on any operating
+system not listed above. If you are using presto-admin on an
+unsupported operating system, there may be operating system
+dependencies beyond the installation process, and presto-admin may not
+work.</p>
 <p>To install <code class="docutils literal"><span class="pre">presto-admin</span></code>:</p>
-<p>1. Copy the installer <code class="docutils literal"><span class="pre">prestoadmin-1.4-SNAPSHOT-offline.tar.bz2</span></code> to the location where you want
-<code class="docutils literal"><span class="pre">presto-admin</span></code> to run. The recommended installation location is <code class="docutils literal"><span class="pre">/opt</span></code>. Note that <code class="docutils literal"><span class="pre">presto-admin</span></code> does not have to be on the same node(s) where Presto will run, though it does need to have SSH access to all of the nodes in the cluster.</p>
+<p>1. Copy the installer <code class="docutils literal"><span class="pre">prestoadmin-&lt;version&gt;-offline.tar.bz2</span></code> to the
+location where you want <code class="docutils literal"><span class="pre">presto-admin</span></code> to run. The recommended
+installation location is <code class="docutils literal"><span class="pre">/opt</span></code>. Note that <code class="docutils literal"><span class="pre">presto-admin</span></code> does not
+have to be on the same node(s) where Presto will run, though it does
+need to have SSH access to all of the nodes in the cluster.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For Amazon EMR, use the online installer instead of the offline installer.</p>
+</div>
 <p>2. Extract and sudo run the installation script from within the <code class="docutils literal"><span class="pre">prestoadmin</span></code> directory.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ tar xvf prestoadmin-1.4-SNAPSHOT-offline.tar.bz2
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ tar xvf prestoadmin-1.5.1-offline.tar.bz2
 $ cd prestoadmin
 $ sudo ./install-prestoadmin.sh
 </pre></div>
@@ -140,7 +149,7 @@ cluster at a time.</p>
         <li class="right" >
           <a href="../quick-start-guide.html" title="Quick Start Guide"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
       </ul>

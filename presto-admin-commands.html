@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Presto-Admin Commands &mdash; presto-admin 1.4.1 documentation</title>
+    <title>Presto-Admin Commands &mdash; presto-admin 1.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.1',
+        VERSION:     '1.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="presto-admin 1.4.1 documentation" href="index.html" />
+    <link rel="top" title="presto-admin 1.5.1 documentation" href="index.html" />
     <link rel="up" title="User Guide" href="user-guide.html" />
     <link rel="next" title="Presto-Admin Command-Line Options" href="presto-admin-cli-options.html" />
     <link rel="prev" title="SSH Configuration" href="ssh-configuration.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
       </ul>
     </div>  
@@ -94,7 +94,8 @@ The gathered information includes:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.</li>
-<li>Connectors configured</li>
+<li>List of connectors configured</li>
+<li>Connector configuration files</li>
 <li>Other system specific information like OS information, Java version, <code class="docutils literal"><span class="pre">presto-admin</span></code> version and Presto server version</li>
 </ul>
 </div></blockquote>
@@ -399,10 +400,19 @@ script from its local location to the specified remote directory (defaults to
 </div>
 <div class="section" id="server-install">
 <span id="server-install-label"></span><h2>server install<a class="headerlink" href="#server-install" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">install</span> <span class="o">&lt;</span><span class="n">local_path</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">--</span><span class="n">nodeps</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">install</span> <span class="o">&lt;</span><span class="n">rpm_specifier</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">--</span><span class="n">rpm</span><span class="o">-</span><span class="n">source</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">nodeps</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>This command copies the presto-server rpm from <code class="docutils literal"><span class="pre">local_path</span></code> to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration. The <code class="docutils literal"><span class="pre">local_path</span></code> should be accessible by <code class="docutils literal"><span class="pre">presto-admin</span></code>.
+<p>This command takes in a parameter <code class="docutils literal"><span class="pre">rpm_specifier</span></code>. The parameter can be one of the following forms, listed in order of decreasing precedence:
+&#8216;latest&#8217; - This downloads of the latest version of the presto rpm.
+url - This downloads the presto rpm found at the given url.
+version number - This downloads the presto rpm of the specified version.
+local path - This uses a previously downloaded rpm. The local path should be accessible by <code class="docutils literal"><span class="pre">presto-admin</span></code>.
+If <code class="docutils literal"><span class="pre">rpm_specifier</span></code> matches multiple forms, it is interpreted only as the form with highest precedence.
+For forms that require the rpm to be downloaded, if a local copy is found with a matching version to the rpm that would be downloaded, the local copy is used.
+Rpms downloaded using a version number or &#8216;latest&#8217; come from Maven Central.
+This command fails if it cannot find or download the requested presto-server rpm.</p>
+<p>After successfully finding the rpm, this command copies the presto-server rpm to all the nodes in the cluster, installs it, deploys the general presto configuration along with tpch connector configuration.
 The topology used to configure the nodes are obtained from <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/config.json</span></code>. See <a class="reference internal" href="installation/presto-admin-configuration.html#presto-admin-configuration-label"><span class="std std-ref">Configuring Presto-Admin</span></a> on how to configure your cluster using config.json. If this file is missing, then the command prompts for user input to get the topology information.</p>
 <p>The general configurations for Presto&#8217;s coordinator and workers are taken from the directories <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/coordinator</span></code> and <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/workers</span></code> respectively. If these directories or any required configuration files are absent when you run <code class="docutils literal"><span class="pre">server</span> <span class="pre">install</span></code>, a default configuration will be deployed. See <a class="reference internal" href="#configuration-deploy">configuration deploy</a> for details.</p>
 <p>The connectors directory <code class="docutils literal"><span class="pre">/etc/opt/prestoadmin/connectors/</span></code> should contain the configuration files for any catalogs that you would like to connect to in your Presto cluster.
@@ -414,7 +424,10 @@ The <code class="docutils literal"><span class="pre">server</span> <span class="
 </div>
 <div class="section" id="id15">
 <h3>Example<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">install</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">presto</span><span class="o">.</span><span class="n">rpm</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span>sudo ./presto-admin server install /tmp/presto.rpm
+sudo ./presto-admin server install 0.148
+sudo ./presto-admin server install http://search.maven.org/remotecontent?filepath=com/facebook/presto/presto-server-rpm/0.150/presto-server-rpm-0.150.rpm
+sudo ./presto-admin server install latest
 </pre></div>
 </div>
 <p><strong>Standalone RPM Install</strong></p>
@@ -678,7 +691,7 @@ files found in <code class="docutils literal"><span class="pre">/etc/opt/prestoa
         <li class="right" >
           <a href="ssh-configuration.html" title="SSH Configuration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.4.1 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="user-guide.html" >User Guide</a> &raquo;</li> 
       </ul>
     </div>

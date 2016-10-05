@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Advanced Installation Options &mdash; presto-admin 1.5.1 documentation</title>
+    <title>Release 1.5.1 &mdash; presto-admin 1.5.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="presto-admin 1.5.1 documentation" href="../index.html" />
-    <link rel="up" title="User Guide" href="../user-guide.html" />
-    <link rel="next" title="Configuring the Presto Port" href="presto-port-configuration.html" />
-    <link rel="prev" title="Setting up Presto Admin on an Amazon EMR cluster" href="../emr.html" /> 
+    <link rel="up" title="Release Notes" href="../release.html" />
+    <link rel="next" title="Release 1.5" href="release-1.5.html" />
+    <link rel="prev" title="Release Notes" href="../release.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -39,13 +39,13 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="presto-port-configuration.html" title="Configuring the Presto Port"
+          <a href="release-1.5.html" title="Release 1.5"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../emr.html" title="Setting up Presto Admin on an Amazon EMR cluster"
+          <a href="../release.html" title="Release Notes"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../release.html" accesskey="U">Release Notes</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -54,23 +54,14 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="advanced-installation-options">
-<h1>Advanced Installation Options<a class="headerlink" href="#advanced-installation-options" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="specifying-a-certificate-authority-for-the-online-installer">
-<h2>Specifying a Certificate Authority for the Online Installer<a class="headerlink" href="#specifying-a-certificate-authority-for-the-online-installer" title="Permalink to this headline">¶</a></h2>
-<p>The online installer downloads its dependencies from <code class="docutils literal"><span class="pre">pypi.python.org</span></code>, the
-standard Python location for hosting packages. For some operating systems,
-the certificate for pypi.python.org is not included in the CA cert bundle,
-so our installation scripts specify <code class="docutils literal"><span class="pre">--trusted-host</span> <span class="pre">pypi.python.org</span></code> when
-downloading the dependencies.</p>
-<p>If using <code class="docutils literal"><span class="pre">--trusted-host</span></code> is not suitable for your security needs, it is
-possible to supply your own certificates to use to authenticate to
-<code class="docutils literal"><span class="pre">pypi.python.org</span></code>.  Please note that if these certificates do not work to
-access <code class="docutils literal"><span class="pre">pypi.python.org</span></code>, the installation will fail. For example, to install
-with your own certificates:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">install</span><span class="o">-</span><span class="n">prestoadmin</span><span class="o">.</span><span class="n">sh</span> <span class="o">&lt;</span><span class="n">path_to_cert</span><span class="o">&gt;/</span><span class="n">cacert</span><span class="o">.</span><span class="n">pem</span>
-</pre></div>
-</div>
+  <div class="section" id="release-1-5-1">
+<h1>Release 1.5.1<a class="headerlink" href="#release-1-5-1" title="Permalink to this headline">¶</a></h1>
+<p>This release works for Presto versions 0.116 through at least 0.152.1</p>
+<div class="section" id="bug-fixes">
+<h2>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Pin the Docker images used for the product tests to a specific version</li>
+</ul>
 </div>
 </div>
 
@@ -82,22 +73,22 @@ with your own certificates:</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Advanced Installation Options</a><ul>
-<li><a class="reference internal" href="#specifying-a-certificate-authority-for-the-online-installer">Specifying a Certificate Authority for the Online Installer</a></li>
+<li><a class="reference internal" href="#">Release 1.5.1</a><ul>
+<li><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../emr.html"
-                        title="previous chapter">Setting up Presto Admin on an Amazon EMR cluster</a></p>
+  <p class="topless"><a href="../release.html"
+                        title="previous chapter">Release Notes</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="presto-port-configuration.html"
-                        title="next chapter">Configuring the Presto Port</a></p>
+  <p class="topless"><a href="release-1.5.html"
+                        title="next chapter">Release 1.5</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/installation/advanced-installation-options.txt"
+      <li><a href="../_sources/release/release-1.5.1.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -125,13 +116,13 @@ with your own certificates:</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="presto-port-configuration.html" title="Configuring the Presto Port"
+          <a href="release-1.5.html" title="Release 1.5"
              >next</a> |</li>
         <li class="right" >
-          <a href="../emr.html" title="Setting up Presto Admin on an Amazon EMR cluster"
+          <a href="../release.html" title="Release Notes"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 1.5.1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../release.html" >Release Notes</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

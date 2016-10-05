@@ -14,7 +14,7 @@ To install, configure and run Presto Admin on an Amazon EMR cluster, follow the 
 
 - To install Presto Admin on an Amazon EMR cluster, follow the instructions in :ref:`presto-admin-installation-label` except for the following difference:
 
-	- Use the online installer instead of the offline installer (see :ref:`advanced-installation-options-label`).
+	- Use the online installer instead of the offline installer (see explanation :ref:`presto-admin-installation-label`).
 
 - To configure Presto Admin on an Amazon EMR cluster, follow the instructions in :ref:`presto-admin-configuration-label`. Specifically, we recommend the following property values during the configuration: 
 

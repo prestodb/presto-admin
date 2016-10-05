@@ -23,6 +23,9 @@ able to login to all of the nodes via SSH as that user (see
 :ref:`ssh-configuration-label` for details on how to set that up). The
 file should be owned by root with R/W permissions (i.e. 622).
 
+.. NOTE::
+   The sudo setup for a non-root user must have the ability to run /bin/bash as root. This can be a security issue. The IT organization should take the necessary steps to address this security hole and select an appropriate presto-admin user.
+
 Configuration for Amazon EMR 
 ----------------------------
 

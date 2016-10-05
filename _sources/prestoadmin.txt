@@ -69,6 +69,14 @@ prestoadmin.fabric_patches module
     :undoc-members:
     :show-inheritance:
 
+prestoadmin.file module
+-----------------------
+
+.. automodule:: prestoadmin.file
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 prestoadmin.main module
 -----------------------
 
@@ -121,14 +129,6 @@ prestoadmin.prestoclient module
 -------------------------------
 
 .. automodule:: prestoadmin.prestoclient
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-prestoadmin.script module
--------------------------
-
-.. automodule:: prestoadmin.script
     :members:
     :undoc-members:
     :show-inheritance:
