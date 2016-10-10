@@ -119,6 +119,7 @@ configurations:
     -Xmx16G
     -XX:-UseBiasedLocking
     -XX:+UseG1GC
+    -XX:G1HeapRegionSize=32M
     -XX:+ExplicitGCInvokesConcurrent
     -XX:+HeapDumpOnOutOfMemoryError
     -XX:+UseGCOverheadLimit
@@ -163,6 +164,7 @@ following ``jvm.config`` to ``/etc/opt/prestoadmin/coordinator``
     -Xmx16G
     -XX:-UseBiasedLocking
     -XX:+UseG1GC
+    -XX:G1HeapRegionSize=32M
     -XX:+ExplicitGCInvokesConcurrent
     -XX:+HeapDumpOnOutOfMemoryError
     -XX:+UseGCOverheadLimit

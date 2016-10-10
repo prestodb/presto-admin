@@ -13,6 +13,7 @@ slave2: Configuration file at /etc/presto/jvm.config:
 -Xmx16G
 -XX:\-UseBiasedLocking
 -XX:\+UseG1GC
+-XX:G1HeapRegionSize=32M
 -XX:\+ExplicitGCInvokesConcurrent
 -XX:\+HeapDumpOnOutOfMemoryError
 -XX:\+UseGCOverheadLimit
@@ -44,6 +45,7 @@ slave3: Configuration file at /etc/presto/jvm.config:
 -Xmx16G
 -XX:\-UseBiasedLocking
 -XX:\+UseG1GC
+-XX:G1HeapRegionSize=32M
 -XX:\+ExplicitGCInvokesConcurrent
 -XX:\+HeapDumpOnOutOfMemoryError
 -XX:\+UseGCOverheadLimit

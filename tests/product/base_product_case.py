@@ -62,6 +62,7 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
 -Xmx16G
 -XX:-UseBiasedLocking
 -XX:+UseG1GC
+-XX:G1HeapRegionSize=32M
 -XX:+ExplicitGCInvokesConcurrent
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
