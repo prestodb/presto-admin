@@ -108,10 +108,10 @@ configurations:
     node.data-dir=/var/lib/presto/data
     node.launcher-log-file=/var/log/presto/launcher.log
     node.server-log-file=/var/log/presto/server.log
-    plugin.config-dir=/etc/presto/catalog
+    catalog.config-dir=/etc/presto/catalog
     plugin.dir=/usr/lib/presto/lib/plugin
 
-.. NOTE:: Do not change the value of plugin.config-dir=/etc/presto/catalog as it is necessary for presto to be able to find the catalog directory when Presto has been installed by RPM.
+.. NOTE:: Do not change the value of catalog.config-dir=/etc/presto/catalog as it is necessary for Presto to be able to find the catalog directory when Presto has been installed by RPM.
 
 *jvm.config* ::
 
@@ -178,7 +178,7 @@ Further, add the following ``node.properties`` to
     node.data-dir=/var/lib/presto/data
     node.launcher-log-file=/var/log/presto/launcher.log
     node.server-log-file=/var/log/presto/server.log
-    plugin.config-dir=/etc/presto/catalog
+    catalog.config-dir=/etc/presto/catalog
     plugin.dir=/usr/lib/presto/lib/plugin
 
 Then run: ::

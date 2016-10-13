@@ -51,11 +51,11 @@ http-server.http.port=8080
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
 
-    default_node_properties_ = """node.data-dir=/var/lib/presto/data
+    default_node_properties_ = """catalog.config-dir=/etc/presto/catalog
+node.data-dir=/var/lib/presto/data
 node.environment=presto
 node.launcher-log-file=/var/log/presto/launcher.log
 node.server-log-file=/var/log/presto/server.log
-plugin.config-dir=/etc/presto/catalog
 plugin.dir=/usr/lib/presto/lib/plugin\n"""
 
     default_jvm_config_ = """-server

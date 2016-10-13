@@ -73,7 +73,7 @@ def lookup_launcher_log_file(host):
 
 def lookup_catalog_directory(host):
     try:
-        return lookup_string_config('plugin.config-dir', NODE_CONFIG_FILE,
+        return lookup_string_config('catalog.config-dir', NODE_CONFIG_FILE,
                                     host, REMOTE_CATALOG_DIR)
     except:
         return REMOTE_CATALOG_DIR

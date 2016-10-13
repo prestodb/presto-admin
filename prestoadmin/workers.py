@@ -41,7 +41,7 @@ class Worker(Node):
                                '/var/log/presto/launcher.log',
                            'node.server-log-file':
                                '/var/log/presto/server.log',
-                           'plugin.config-dir': '/etc/presto/catalog',
+                           'catalog.config-dir': '/etc/presto/catalog',
                            'plugin.dir': '/usr/lib/presto/lib/plugin'},
                           'jvm.config': ['-server',
                                          '-Xmx16G',
