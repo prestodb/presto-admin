@@ -286,7 +286,8 @@ for the change to take effect
             self.cluster.master,
             "curl --silent -X POST http://localhost:8080/v1/statement -H "
             "'X-Presto-User:$USER' -H 'X-Presto-Schema:metadata' -H "
-            "'X-Presto-Catalog:system' -d 'select catalog_name from catalogs'")
+            "'X-Presto-Catalog:system' -H 'X-Presto-Source:presto-admin' "
+            "-d 'select catalog_name from catalogs'")
 
         data = self.get_key_value(output, 'data')
         next_uri = self.get_key_value(output, 'nextUri')

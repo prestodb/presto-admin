@@ -88,7 +88,8 @@ class PrestoClient:
 
         headers = {"X-Presto-Catalog": catalog,
                    "X-Presto-Schema": schema,
-                   "X-Presto-User": self.user}
+                   "X-Presto-User": self.user,
+                   "X-Presto-Source": "presto-admin"}
         answer = ''
         try:
             _LOGGER.info("Connecting to server at: " + self.server +
