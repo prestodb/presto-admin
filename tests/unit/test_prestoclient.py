@@ -50,7 +50,7 @@ class TestPrestoClient(BaseTestCase):
         mock_port.return_value = 8080
         client = PrestoClient('any_host', 'any_user')
         headers = {"X-Presto-Catalog": "hive", "X-Presto-Schema": "default",
-                   "X-Presto-User": 'any_user'}
+                   "X-Presto-User": 'any_user', "X-Presto-Source": "presto-admin"}
 
         client.execute_query("any_sql")
         mock_conn.assert_called_with('any_host', 8080, False, URL_TIMEOUT_MS)
