@@ -36,7 +36,7 @@ need to have SSH access to all of the nodes in the cluster.
 2. Extract and sudo run the installation script from within the ``prestoadmin`` directory.
 ::
 
- $ tar xvf prestoadmin-1.5.1-offline.tar.bz2
+ $ tar xvf prestoadmin-1.5.2-offline.tar.bz2
  $ cd prestoadmin
  $ sudo ./install-prestoadmin.sh
 
