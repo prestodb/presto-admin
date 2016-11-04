@@ -13,18 +13,16 @@
 # limitations under the License.
 
 import os
-import errno
 import re
 
 from distutils.dir_util import remove_tree
 from distutils.dir_util import mkpath
 from mock import patch
+
 from mock import call
 
 from tests.base_test_case import BaseTestCase
 from packaging.bdist_prestoadmin import bdist_prestoadmin
-from packaging import package_dir as packaging_dir
-
 from distutils.dist import Distribution
 
 
@@ -131,8 +129,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
 
         self.bdist.run()
 
-        assert not package_dependencies_mock.called,\
-            'method should not have been called'
+        assert not package_dependencies_mock.called, 'method should not have been called'
 
     @patch('packaging.bdist_prestoadmin.sys')
     @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
@@ -142,8 +139,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
         build_path = os.path.join('build', 'prestoadmin')
         thirdparty_dir = os.path.join(build_path, 'third-party')
         pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
-        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' +\
-                            pycrypto_whl
+        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' + pycrypto_whl
 
         sys_mock.version = '2.7'
         self.bdist.package_dependencies(build_path)
@@ -173,35 +169,19 @@ class TestBDistPrestoAdmin(BaseTestCase):
                           build_path)
 
     def test_generate_online_install_script(self):
-        self.generate_script('install-prestoadmin.sh.online.expected', True)
+        test_input = ['virtualenv-%VIRTUALENV_VERSION%.tar.gz\n',
+                      'pip install %WHEEL_NAME%.whl %ONLINE_OR_OFFLINE_INSTALL%']
+        self.bdist.online_install = True
+        output = self.bdist._fill_in_template(test_input, 'my_wheel')
+        self.assertEqual(output, 'virtualenv-12.0.7.tar.gz\npip install my_wheel.whl ')
 
     def test_generate_offline_install_script(self):
-        self.generate_script('install-prestoadmin.sh.offline.expected', False)
-
-    def generate_script(self, expected_file, is_online):
-        try:
-            self.bdist.online_install = is_online
-
-            os.chdir(packaging_dir)
-            try:
-                os.mkdir('build')
-            except OSError as exception:
-                if exception.errno != errno.EEXIST:
-                    raise
-
-            self.bdist.generate_install_script('wheel_name', 'build')
-
-            actual_install_script = open('build/install-prestoadmin.sh').read()
-
-            file_dir = os.path.abspath(os.path.dirname(__file__))
-            template = os.path.join(file_dir,
-                                    'resources',
-                                    expected_file)
-            expected_install_script = open(template).read()
-
-            self.assertEqual(expected_install_script, actual_install_script)
-        finally:
-            remove_tree('build')
+        test_input = ['virtualenv-%VIRTUALENV_VERSION%.tar.gz\n',
+                      'pip install %WHEEL_NAME%.whl %ONLINE_OR_OFFLINE_INSTALL%']
+        self.bdist.online_install = False
+        output = self.bdist._fill_in_template(test_input, 'my_wheel')
+        self.assertEqual(output,
+                         'virtualenv-12.0.7.tar.gz\npip install my_wheel.whl --no-index --find-links third-party')
 
     def test_archive_dist_offline(self):
         build_path = os.path.join('build', 'prestoadmin')
