@@ -17,12 +17,12 @@
 
 import os
 import re
-import pip
 import sys
 import urllib
-
-from distutils.dir_util import remove_tree
 from distutils import log as logger
+from distutils.dir_util import remove_tree
+
+import pip
 
 try:
     from setuptools import Command
@@ -66,25 +66,26 @@ class bdist_prestoadmin(Command):
         return wheel_name
 
     def generate_install_script(self, wheel_name, build_dir):
-        template = open(os.path.join(package_dir,
-                                     'install-prestoadmin.template'), 'r')
-        install_script = open(os.path.join(build_dir,
-                              'install-prestoadmin.sh'), 'w')
+        with open(os.path.join(package_dir, 'install-prestoadmin.template'), 'r') as template:
+            with open(os.path.join(build_dir, 'install-prestoadmin.sh'), 'w') as install_script_file:
+                install_script = self._fill_in_template(template.readlines(), wheel_name)
+                install_script_file.write(install_script)
+                os.chmod(os.path.join(build_dir, 'install-prestoadmin.sh'), 0755)
+
+    def _fill_in_template(self, template_lines, wheel_name):
         if self.online_install:
             extra_install_args = ''
         else:
             extra_install_args = '--no-index --find-links third-party'
 
-        for line in template.readlines():
-            line = re.sub(r'%ONLINE_OR_OFFLINE_INSTALL%',
-                          extra_install_args, line)
-            line = re.sub(r'%WHEEL_NAME%', wheel_name, line)
-            line = re.sub(r'%VIRTUALENV_VERSION%', self.virtualenv_version,
-                          line)
-            install_script.write(line)
-        install_script.close()
-        template.close()
-        os.chmod(os.path.join(build_dir, 'install-prestoadmin.sh'), 0o755)
+        filled_in = [self._replace_template_values(line, wheel_name, extra_install_args) for line in template_lines]
+        return ''.join(filled_in)
+
+    def _replace_template_values(self, line, wheel_name, extra_install_args):
+        line = re.sub(r'%ONLINE_OR_OFFLINE_INSTALL%', extra_install_args, line)
+        line = re.sub(r'%WHEEL_NAME%', wheel_name, line)
+        line = re.sub(r'%VIRTUALENV_VERSION%', self.virtualenv_version, line)
+        return line
 
     def package_dependencies(self, build_dir):
         thirdparty_dir = os.path.join(build_dir, 'third-party')
