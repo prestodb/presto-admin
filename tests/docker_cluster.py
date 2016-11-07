@@ -316,7 +316,7 @@ class DockerCluster(BaseCluster):
 
     def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
                          tty=False, invoke_sudo=False):
-        ex = self.client.exec_create(self.__get_unique_host(host), cmd,
+        ex = self.client.exec_create(self.__get_unique_host(host), ['sh', '-c', cmd],
                                      tty=tty, user=user)
         output = self.client.exec_start(ex['Id'], tty=tty)
         exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
