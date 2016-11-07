@@ -20,12 +20,9 @@ Installers for installing mode.json onto clusters
 import json
 
 from overrides import overrides
-
 from prestoadmin import config
 from prestoadmin.mode import VALID_MODES, MODE_KEY, MODE_CONF_PATH, \
-    MODE_STANDALONE, MODE_SLIDER
-
-
+    MODE_STANDALONE
 from tests.base_installer import BaseInstaller
 
 
@@ -73,13 +70,3 @@ class StandaloneModeInstaller(BaseModeInstaller):
     @staticmethod
     def assert_installed(testcase):
         BaseModeInstaller._assert_installed(testcase, MODE_STANDALONE)
-
-
-class YarnSliderModeInstaller(BaseModeInstaller):
-    def __init__(self, testcase):
-        super(YarnSliderModeInstaller, self).__init__(
-            testcase, MODE_SLIDER)
-
-    @staticmethod
-    def assert_installed(testcase):
-        BaseModeInstaller._assert_installed(testcase, MODE_SLIDER)
