@@ -1,11 +1,10 @@
 from tests.docker_cluster import DockerCluster
-from tests.hdp_bare_image_provider import HdpBareImageProvider
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.constants import BASE_IMAGES_TAG
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER, STANDALONE_PA_CLUSTER, \
-    STANDALONE_PRESTO_CLUSTER, YARN_SLIDER_PA_CLUSTER, cluster_types
+    STANDALONE_PRESTO_CLUSTER, cluster_types
 
 import argparse
 
@@ -53,18 +52,6 @@ class ImageBuilder:
         cluster_type = STANDALONE_BARE_CLUSTER
         self._setup_image_with_no_hadoop_provider(cluster_type)
 
-    def setup_yarn_slider_presto_admin_images(self):
-        cluster_type = YARN_SLIDER_PA_CLUSTER
-        self._setup_image_with_no_hadoop_provider(cluster_type)
-
-    def _setup_cluster_with_hdp_image_provider(self, cluster_type):
-        self._setup_image(HdpBareImageProvider(self.images_tag),
-                          cluster_type)
-
-    def setup_yarn_slider_presto_admin_and_slider_images(self):
-        cluster_type = self.testcase.YARN_SLIDER_PA_AND_SLIDER_CLUSTER
-        self._setup_cluster_with_hdp_image_provider(cluster_type)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
@@ -72,11 +59,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "image_type", metavar="image_type", type=str, nargs="+",
         choices=["standalone_presto", "standalone_presto_admin",
-                 "standalone_bare", "yarn_slider_presto_admin",
-                 "all"],
+                 "standalone_bare", "all"],
         help="Specify the type of image to create. The available choices are: "
-             "standalone_presto, standalone_presto_admin, standalone_bare, "
-             "yarn_slider_presto_admin, all")
+             "standalone_presto, standalone_presto_admin, standalone_bare, all")
 
     args = parser.parse_args()
 
@@ -93,7 +78,6 @@ if __name__ == "__main__":
         image_builder.setup_standalone_presto_images()
         image_builder.setup_standalone_presto_admin_images()
         image_builder.setup_standalone_bare_images()
-        image_builder.setup_yarn_slider_presto_admin_images()
     else:
         if "standalone_presto" in args.image_type:
             image_builder.setup_standalone_presto_images()
@@ -101,5 +85,3 @@ if __name__ == "__main__":
             image_builder.setup_standalone_presto_admin_images()
         if "standalone_bare" in args.image_type:
             image_builder.setup_standalone_bare_images()
-        if "yarn_slider_presto_admin" in args.image_type:
-            image_builder.setup_yarn_slider_presto_admin_images()
