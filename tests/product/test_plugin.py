@@ -15,12 +15,14 @@
 """
 product tests for presto-admin plugin commands
 """
+import os
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
+from tests.product.config_dir_utils import get_install_directory
 
-TMP_JAR_PATH = '/opt/prestoadmin/pretend.jar'
+TMP_JAR_PATH = os.path.join(get_install_directory(), 'pretend.jar')
 STD_REMOTE_PATH = '/usr/lib/presto/lib/plugin/hive-cdh5/pretend.jar'
 
 
@@ -52,7 +54,7 @@ class TestPlugin(BaseProductTestCase):
         for host in self.cluster.all_hosts():
             temp_jar_location = '/etc/presto/plugin/hive-cdh5/pretend.jar'
             self.assert_path_exists(host, temp_jar_location)
-            self.cluster.exec_cmd_on_host(host, 'rm %s' % temp_jar_location)
+            self.cluster.exec_cmd_on_host(host, 'rm %s' % temp_jar_location, invoke_sudo=True)
 
     def test_lost_coordinator(self):
         internal_bad_host = self.cluster.internal_slaves[0]

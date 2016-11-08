@@ -15,6 +15,8 @@
 """
 tests for connector module
 """
+import os
+
 import fabric.api
 from fabric.operations import _AttributeString
 from mock import patch
@@ -110,8 +112,8 @@ class TestConnector(BaseUnitCase):
     def test_remove_no_such_file(self, exists_mock, sudo_mock):
         exists_mock.return_value = False
         fabric.api.env.host = 'localhost'
-        error_msg = ('Could not remove connector tpch: No such file '
-                     '/etc/opt/prestoadmin/connectors/tpch.properties')
+        error_msg = ('Could not remove connector tpch: No such file ' +
+                     os.path.join(get_connectors_directory(), 'tpch.properties'))
         out = _AttributeString(error_msg)
         out.succeeded = True
         sudo_mock.return_value = out
@@ -180,8 +182,7 @@ class TestConnector(BaseUnitCase):
 
         self.assertRaisesRegexp(
             SystemExit,
-            'Error validating '
-            '/etc/opt/prestoadmin/connectors/example.properties\n\n'
+            'Error validating ' + os.path.join(get_connectors_directory(), 'example.properties') + '\n\n'
             'Underlying exception:\n    No such file or directory',
             connector.add, 'example')
 

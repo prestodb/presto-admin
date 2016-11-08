@@ -22,10 +22,10 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
-from prestoadmin.util.local_config_util import get_coordinator_directory, get_workers_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
+from tests.product.config_dir_utils import get_workers_directory, get_coordinator_directory
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
@@ -231,7 +231,7 @@ class TestConfiguration(BaseProductTestCase):
         self.upload_topology()
 
         for host in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(host, 'rm -rf /etc/presto')
+            self.cluster.exec_cmd_on_host(host, 'rm -rf /etc/presto', invoke_sudo=True)
 
         # configuration show no configuration
         output = self.run_prestoadmin('configuration show')
@@ -329,7 +329,7 @@ class TestConfiguration(BaseProductTestCase):
     def test_configuration_no_presto_user(self):
         for host in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(
-                host, "userdel %s" % (PRESTO_STANDALONE_USER,))
+                host, "userdel %s" % (PRESTO_STANDALONE_USER,), invoke_sudo=True)
 
         self.assertRaisesRegexp(
             OSError, "User presto does not exist", self.run_prestoadmin,
@@ -342,7 +342,7 @@ class TestConfiguration(BaseProductTestCase):
              "username": "app-admin"}
         )
         for host in self.cluster.all_hosts():
-            self.cluster.exec_cmd_on_host(host, 'rm -rf /etc/presto')
+            self.cluster.exec_cmd_on_host(host, 'rm -rf /etc/presto', invoke_sudo=True)
 
         self.run_prestoadmin('configuration deploy -p password')
 

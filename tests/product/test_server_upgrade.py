@@ -21,6 +21,7 @@ import prestoadmin
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
+from tests.product.config_dir_utils import get_install_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -125,7 +126,7 @@ class TestServerUpgrade(BaseProductTestCase):
             self.assert_has_default_connector(container)
 
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
-        symlink = '/opt/prestoadmin/link.rpm'
+        symlink = os.path.join(get_install_directory(), 'link.rpm')
         self.cluster.exec_cmd_on_host(self.cluster.master, 'ln -s %s %s'
                                       % (path_on_cluster, symlink))
         self.upgrade_and_assert_success(symlink)
@@ -139,7 +140,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
         self.add_dummy_properties_to_host(self.cluster.slaves[1])
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
-        symlink = '/opt/prestoadmin/link.rpm'
+        symlink = os.path.join(get_install_directory(), 'link.rpm')
         self.cluster.exec_cmd_on_host(self.cluster.master, 'ln -s %s %s'
                                       % (path_on_cluster, symlink))
 

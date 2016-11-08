@@ -25,6 +25,7 @@ from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
 from constants import LOCAL_RESOURCES_DIR
+from tests.product.config_dir_utils import get_connectors_directory, get_presto_admin_path
 
 
 class TestAuthentication(BaseProductTestCase):
@@ -210,18 +211,17 @@ class TestAuthentication(BaseProductTestCase):
         # We use Popen because docker-py loses the first 8 characters of TTY
         # output.
         args = ['docker', 'exec', '-t', self.cluster.master, 'sudo',
-                '-u', 'app-admin', '/opt/prestoadmin/presto-admin',
+                '-u', 'app-admin', get_presto_admin_path(),
                 'topology show']
         proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        self.assertEqualIgnoringOrder(
+        self.assertRegexpMatchesLineByLine(
             'Please run presto-admin with sudo.\n'
-            '[Errno 13] Permission denied: \'/var/log/prestoadmin/'
+            '\\[Errno 13\\] Permission denied: \'.*/.prestoadmin/log'
             'presto-admin.log\'', proc.stdout.read())
 
     def setup_for_connector_add(self):
-        connector_script = 'mkdir -p /etc/opt/prestoadmin/connectors\n' \
-                           'echo \'connector.name=tpch\' ' \
-                           '>> /etc/opt/prestoadmin/connectors/' \
-                           'tpch.properties\n'
+        connector_script = 'mkdir -p %(connectors)s\n' \
+                           'echo \'connector.name=tpch\' >> %(connectors)s/tpch.properties\n' % \
+                           {'connectors': get_connectors_directory()}
         self.run_script_from_prestoadmin_dir(connector_script)

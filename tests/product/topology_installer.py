@@ -18,6 +18,7 @@ presto
 """
 
 from tests.base_installer import BaseInstaller
+from tests.product.config_dir_utils import get_config_file_path
 
 
 class TopologyInstaller(BaseInstaller):
@@ -35,7 +36,7 @@ class TopologyInstaller(BaseInstaller):
     def assert_installed(testcase, msg=None):
         testcase.cluster.exec_cmd_on_host(
             testcase.cluster.master,
-            'test -r /etc/opt/prestoadmin/config.json')
+            'test -r %s' % get_config_file_path())
 
     def get_keywords(self):
         return {}

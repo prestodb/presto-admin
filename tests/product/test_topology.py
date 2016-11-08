@@ -19,6 +19,7 @@ from nose.plugins.attrib import attr
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
+from tests.product.config_dir_utils import get_config_file_path
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
@@ -70,13 +71,13 @@ class TestTopologyShow(BaseProductTestCase):
         )
         self.cluster.exec_cmd_on_host(
             self.cluster.master,
-            'cp %s /etc/opt/prestoadmin/config.json' %
-            os.path.join(self.cluster.mount_dir, 'invalid_json.json')
+            'cp %s %s' %
+            (os.path.join(self.cluster.mount_dir, 'invalid_json.json'), get_config_file_path())
         )
         self.assertRaisesRegexp(OSError,
                                 'Expecting , delimiter: line 3 column 3 '
                                 '\(char 21\)  More detailed information '
                                 'can be found in '
-                                '/var/log/prestoadmin/presto-admin.log\n',
+                                '.*/.prestoadmin/log/presto-admin.log\n',
                                 self.run_prestoadmin,
                                 'topology show')

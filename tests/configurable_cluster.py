@@ -20,14 +20,15 @@ Test writers should use this module for all of their cluster related needs.
 
 import fnmatch
 import os
-import paramiko
-from subprocess import check_call
 import tempfile
-import yaml
 import uuid
+from subprocess import check_call
 
+import paramiko
+import yaml
 from prestoadmin import main_dir
 from tests.base_cluster import BaseCluster
+from tests.product.config_dir_utils import get_config_file_path, get_install_directory, get_config_directory
 
 CONFIG_FILE_GLOB = r'*.yaml'
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
@@ -104,17 +105,20 @@ class ConfigurableCluster(BaseCluster):
             # Remove the rm -rf /var/log/presto when the following issue
             # is resolved https://github.com/prestodb/presto-admin/issues/226
             script = """
-            service presto stop
-            rpm -e presto-server-rpm
-            rm -rf /opt/prestoadmin
-            rm -rf /opt/prestoadmin*.tar.bz2
-            rm -rf /etc/opt/prestoadmin
-            rm -rf /etc/presto/
-            rm -rf /tmp/presto-debug
-            rm -rf /tmp/presto-debug-remote
-            rm -rf /var/log/presto
-            rm -rf %s
-            """ % self.mount_dir
+            sudo service presto stop
+            sudo rpm -e presto-server-rpm
+            rm -rf {install_dir}
+            rm -rf ~/prestoadmin*.tar.bz2
+            rm -rf {config_dir}
+            sudo rm -rf /etc/presto/
+            sudo rm -rf /usr/lib/presto/
+            sudo rm -rf /tmp/presto-debug
+            sudo rm -rf /tmp/presto-debug-remote
+            sudo rm -rf /var/log/presto
+            rm -rf {mount_dir}
+            """.format(install_dir=get_install_directory(),
+                       config_dir=get_config_directory(),
+                       mount_dir=self.mount_dir)
             self.run_script_on_host(script, host)
 
     def stop_host(self, host_name):
@@ -126,19 +130,16 @@ class ConfigurableCluster(BaseCluster):
         down_hostname = self.get_down_hostname(host_name)
         self.exec_cmd_on_host(
             self.master,
-            'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
-            (host_name, down_hostname)
+            'sed -i s/%s/%s/g %s' % (host_name, down_hostname, get_config_file_path())
         )
         self.exec_cmd_on_host(
             self.master,
-            'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json'
-            % (ips[host_name], down_hostname)
+            'sed -i s/%s/%s/g %s' % (ips[host_name], down_hostname, get_config_file_path())
         )
         index = self.all_hosts().index(host_name)
         self.exec_cmd_on_host(
             self.master,
-            'sed -i s/%s/%s/g /etc/opt/prestoadmin/config.json' %
-            (self.all_internal_hosts()[index], down_hostname)
+            'sed -i s/%s/%s/g %s' % (self.all_internal_hosts()[index], down_hostname, get_config_file_path())
         )
 
         if index >= len(self.internal_slaves):
@@ -150,7 +151,7 @@ class ConfigurableCluster(BaseCluster):
         return '1.0.0.0'
 
     def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
-                         tty=False, invoke_sudo=True):
+                         tty=False, invoke_sudo=False):
         # If the corresponding variable is set, invoke command with sudo since EMR's login
         # user is ec2-user. If sudo is already present in the command then no error will occur
         # as arbitrary nesting of sudo is allowed.
@@ -191,7 +192,7 @@ class ConfigurableCluster(BaseCluster):
         return cluster
 
     def run_script_on_host(self, script_contents, host, tty=True):
-        temp_script = '/tmp/tmp.sh'
+        temp_script = '~/tmp.sh'
         self.write_content_to_host('#!/bin/bash\n%s' % script_contents,
                                    temp_script, host)
         self.exec_cmd_on_host(host, 'chmod +x %s' % temp_script)
@@ -211,8 +212,6 @@ class ConfigurableCluster(BaseCluster):
             dest_path = os.path.join(self.mount_dir,
                                      os.path.basename(source_path))
         self.exec_cmd_on_host(host, 'mkdir -p {dir}'.format(dir=os.path.dirname(dest_path)))
-        self.exec_cmd_on_host(host, 'chown {user}:{group} {file}'.format(
-            user=self.user, group=self.user, file=os.path.dirname(dest_path)))
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -225,14 +224,12 @@ class ConfigurableCluster(BaseCluster):
         dummy_path = '/tmp/{random_dir}/{dest_dir}'.format(
             random_dir=str(uuid.uuid1()), dest_dir=os.path.basename(dest_path))
         self.exec_cmd_on_host(host, 'mkdir -p {dir}'.format(dir=os.path.dirname(dummy_path)))
-        self.exec_cmd_on_host(host, 'chown {user}:{group} {file}'.format(
-            user=self.user, group=self.user, file=os.path.dirname(dummy_path)))
         sftp = ssh.open_sftp()
         sftp.put(source_path, dummy_path)
         sftp.close()
 
         # Move to final location using sudo
-        self.exec_cmd_on_host(host, 'mv {source} {dest}'.format(source=dummy_path, dest=dest_path))
+        self.exec_cmd_on_host(host, 'mv {source} {dest}'.format(source=dummy_path, dest=dest_path), invoke_sudo=True)
 
         # Remove dummy path directory
         self.exec_cmd_on_host(host, 'rm -rf {dir}'.format(dir=os.path.dirname(dummy_path)))

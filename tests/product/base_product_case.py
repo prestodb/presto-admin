@@ -25,11 +25,12 @@ from nose.tools import nottest
 from retrying import Retrying
 
 from prestoadmin.util import constants
-from prestoadmin.util.local_config_util import get_coordinator_directory, get_workers_directory
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster
 from tests.product.cluster_types import cluster_types
+from tests.product.config_dir_utils import get_coordinator_directory, get_workers_directory, get_config_file_path, \
+    get_log_directory, get_install_directory, get_presto_admin_path
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import BASE_IMAGES_TAG
 
@@ -187,7 +188,7 @@ query.max-memory=50GB\n"""
             cluster = self.cluster
         cluster.write_content_to_host(
             json.dumps(topology),
-            '/etc/opt/prestoadmin/config.json',
+            get_config_file_path(),
             cluster.master
         )
 
@@ -229,7 +230,7 @@ query.max-memory=50GB\n"""
     def fetch_log_tail(self, lines=50):
         return self.cluster.exec_cmd_on_host(
             self.cluster.master,
-            'tail -%d /var/log/prestoadmin/presto-admin.log' % (lines,),
+            'tail -%d %s' % (lines, os.path.join(get_log_directory(), 'presto-admin.log')),
             raise_error=False)
 
     def run_prestoadmin(self, command, raise_error=True, cluster=None,
@@ -239,9 +240,9 @@ query.max-memory=50GB\n"""
         command = self.replace_keywords(command, cluster=cluster, **kwargs)
         return cluster.exec_cmd_on_host(
             cluster.master,
-            "/opt/prestoadmin/presto-admin --user {user} {cmd}".format(
-                user=cluster.user, cmd=command),
-            raise_error=raise_error
+            "{path} --user {user} {cmd}".format(path=get_presto_admin_path(), user=cluster.user, cmd=command),
+            raise_error=raise_error,
+            invoke_sudo=False
         )
 
     def run_script_from_prestoadmin_dir(self, script_contents, host='',
@@ -251,9 +252,9 @@ query.max-memory=50GB\n"""
 
         script_contents = self.replace_keywords(script_contents,
                                                 **kwargs)
-        temp_script = '/opt/prestoadmin/tmp.sh'
+        temp_script = os.path.join(get_install_directory(), 'tmp.sh')
         self.cluster.write_content_to_host(
-            '#!/bin/bash\ncd /opt/prestoadmin\n%s' % script_contents,
+            '#!/bin/bash\ncd %s\n%s' % (get_install_directory(), script_contents),
             temp_script, host)
         self.cluster.exec_cmd_on_host(
             host, 'chmod +x %s' % temp_script)
@@ -261,10 +262,10 @@ query.max-memory=50GB\n"""
             host, temp_script, raise_error=raise_error)
 
     def run_prestoadmin_expect(self, command, expect_statements):
-        temp_script = '/opt/prestoadmin/tmp.expect'
+        temp_script = os.path.join(get_install_directory(), 'tmp.expect')
         script_content = '#!/usr/bin/expect\n' + \
-                         'spawn /opt/prestoadmin/presto-admin %s\n%s' % \
-                         (command, expect_statements)
+                         'spawn %s %s\n%s' % \
+                         (get_presto_admin_path(), command, expect_statements)
 
         self.cluster.write_content_to_host(script_content, temp_script,
                                            self.cluster.master)
@@ -278,7 +279,7 @@ query.max-memory=50GB\n"""
             host, ' [ -e %s ] ' % file_path)
 
     def get_file_content(self, host, filepath):
-        return self.cluster.exec_cmd_on_host(host, 'cat %s' % (filepath))
+        return self.cluster.exec_cmd_on_host(host, 'cat %s' % (filepath), invoke_sudo=True)
 
     def assert_config_perms(self, host, filepath):
         self.assert_file_perm_owner(
@@ -462,7 +463,7 @@ query.max-memory=50GB\n"""
 
     def assert_started(self, process_per_host):
         for host, pid in process_per_host:
-            self.cluster.exec_cmd_on_host(host, 'kill -0 %s' % pid)
+            self.cluster.exec_cmd_on_host(host, 'kill -0 %s' % pid, invoke_sudo=True)
         return process_per_host
 
     def replace_keywords(self, text, cluster=None, **kwargs):

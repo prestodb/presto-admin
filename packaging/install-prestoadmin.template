@@ -56,11 +56,11 @@ exec presto-admin \$@
 EOT
 chmod 755 `pwd`/presto-admin
 
-LOG_DIR=/var/log/prestoadmin
-mkdir -p $LOG_DIR
-
-CONF_DIR=/etc/opt/prestoadmin
+CONF_DIR=${PRESTO_ADMIN_CONFIG_DIR:-~/.prestoadmin}
 mkdir -p $CONF_DIR
+
+LOG_DIR=${PRESTO_ADMIN_LOG_DIR:-$CONF_DIR/log}
+mkdir -p $LOG_DIR
 
 CONNECTOR_DIR=$CONF_DIR/connectors
 mkdir -p $CONNECTOR_DIR

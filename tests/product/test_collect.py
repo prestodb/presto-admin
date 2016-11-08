@@ -28,6 +28,7 @@ from prestoadmin.server import run_sql
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, PrestoError
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
+from tests.product.config_dir_utils import get_install_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -223,19 +224,22 @@ class TestCollect(BaseProductTestCase):
 
         self.run_prestoadmin('server start')
         self._collect_logs_and_unzip()
-
-        self.assert_path_exists(self.cluster.master, '/opt/prestoadmin/logs/presto-admin.log')
+        collected_logs_dir = os.path.join(get_install_directory(), 'logs')
+        self.assert_path_exists(self.cluster.master, os.path.join(collected_logs_dir, ' presto-admin.log'))
 
         for host in self.cluster.all_internal_hosts():
-            self.assert_path_exists(self.cluster.master, '/opt/prestoadmin/logs/%s/server.log' % host)
-            self.assert_path_exists(self.cluster.master, '/opt/prestoadmin/logs/%s/launcher.log' % host)
+            host_directory = os.path.join(collected_logs_dir, host)
+            self.assert_path_exists(self.cluster.master, os.path.join(host_directory, 'server.log'))
+            self.assert_path_exists(self.cluster.master, os.path.join(host_directory, 'launcher.log'))
 
     def _assert_no_logs_downloaded(self):
         self._collect_logs_and_unzip()
-        self.assert_path_exists(self.cluster.master, '/opt/prestoadmin/logs/presto-admin.log')
+        collected_logs_dir = os.path.join(get_install_directory(), 'logs')
+        self.assert_path_exists(self.cluster.master, os.path.join(collected_logs_dir, 'presto-admin.log'))
         for host in self.cluster.all_internal_hosts():
-            self.assert_path_exists(self.cluster.master, '/opt/prestoadmin/logs/%s' % host)
-            self.assert_path_removed(self.cluster.master, '/opt/prestoadmin/logs/%s/*' % host)
+            host_directory = os.path.join(collected_logs_dir, host)
+            self.assert_path_exists(self.cluster.master, host_directory)
+            self.assert_path_removed(self.cluster.master, os.path.join(host_directory, '*'))
 
     def test_collect_logs_server_not_installed(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
