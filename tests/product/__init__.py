@@ -29,10 +29,10 @@ def determine_jdk_directory(cluster):
 
     :param cluster: cluster on which to search for the JDK directory
     """
-    number_of_jdks = cluster.exec_cmd_on_host(cluster.master, 'bash -c "ls -ld /usr/java/jdk* | wc -l"')
+    number_of_jdks = cluster.exec_cmd_on_host(cluster.master, 'bash -c "ls -ld /usr/java/j*| wc -l"')
     if int(number_of_jdks) != 1:
         raise Exception('The number of JDK directories matching /usr/java/jdk* is not 1')
-    output = cluster.exec_cmd_on_host(cluster.master, 'bash -c "ls -d /usr/java/jdk*"')
+    output = cluster.exec_cmd_on_host(cluster.master, 'ls -d /usr/java/j*')
     return output.split(os.path.sep)[-1].strip('\n')
 
 
@@ -51,10 +51,10 @@ def relocate_jdk_directory(cluster, destination):
     destination_jdk = os.path.join(destination, jdk_directory)
     for host in cluster.all_hosts():
         cluster.exec_cmd_on_host(
-            host, "mv %s %s" % (source_jdk, destination_jdk))
+            host, "mv %s %s" % (source_jdk, destination_jdk), invoke_sudo=True)
 
     yield destination_jdk
 
     for host in cluster.all_hosts():
         cluster.exec_cmd_on_host(
-            host, "mv %s %s" % (destination_jdk, source_jdk))
+            host, "mv %s %s" % (destination_jdk, source_jdk), invoke_sudo=True)

@@ -343,8 +343,8 @@ def install(rpm_specifier):
     file is missing, then the coordinator and workers will be obtained
     interactively. Install will fail for invalid json configuration.
 
-    The connector configurations will be read from the directory
-    /etc/opt/prestoadmin/connectors. If this directory is missing or empty
+    The connector configurations will be read from the local connectors directory
+    which defaults to ~/.prestoadmin/connectors. If this directory is missing or empty
     then no connector configuration is deployed.
 
     Install will fail for incorrectly formatted configuration files. Expected
@@ -454,8 +454,8 @@ def upgrade(new_rpm_path, local_config_dir=None, overwrite=False):
     presto-server packages have been upgraded, presto-admin pushes the
     collected configuration back out to the hosts on the cluster.
 
-    Note that the configuration files in /etc/opt/prestoadmin are not updated
-    during upgrade.
+    Note that the configuration files in the presto-admin configuration
+    directory are not updated during upgrade.
 
     :param new_rpm_path -       The path to the new Presto RPM to
                                 install

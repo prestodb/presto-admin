@@ -22,11 +22,11 @@ from nose.plugins.attrib import attr
 
 from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
-from prestoadmin.util.local_config_util import get_connectors_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
     PrestoError
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
+from tests.product.config_dir_utils import get_connectors_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
@@ -138,26 +138,25 @@ class TestConnectors(BaseProductTestCase):
 
     def test_connector_add_empty_dir(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
-        output = self.run_prestoadmin('connector remove tpch')
+        self.run_prestoadmin('connector remove tpch')
         output = self.run_prestoadmin('connector add')
-        expected = """
-Warning: [slave3] Directory /etc/opt/prestoadmin/connectors is empty. \
-No connectors will be deployed
-
-
-Warning: [slave2] Directory /etc/opt/prestoadmin/connectors is empty. \
-No connectors will be deployed
-
-
-Warning: [slave1] Directory /etc/opt/prestoadmin/connectors is empty. \
-No connectors will be deployed
-
-
-Warning: [master] Directory /etc/opt/prestoadmin/connectors is empty. \
-No connectors will be deployed
-
-"""
-        self.assertEqualIgnoringOrder(expected, output)
+        expected = [r'',
+                    r'Warning: \[slave3\] Directory .*/.prestoadmin/connectors is empty. '
+                    r'No connectors will be deployed',
+                    r'',
+                    r'',
+                    r'Warning: \[slave2\] Directory .*/.prestoadmin/connectors is empty. '
+                    r'No connectors will be deployed',
+                    r'',
+                    r'',
+                    r'Warning: \[slave1\] Directory .*/.prestoadmin/connectors is empty. '
+                    r'No connectors will be deployed',
+                    r'',
+                    r'',
+                    r'Warning: \[master\] Directory .*/.prestoadmin/connectors is empty. '
+                    r'No connectors will be deployed',
+                    r'']
+        self.assertRegexpMatchesLineByLine(output.splitlines(), expected)
 
     def fatal_error(self, error):
         message = """
@@ -251,7 +250,7 @@ for the change to take effect
         # test remove connector not in directory, but in presto
         self.cluster.exec_cmd_on_host(
             self.cluster.master,
-            'rm /etc/opt/prestoadmin/connectors/tpch.properties'
+            'rm %s' % os.path.join(get_connectors_directory(), 'tpch.properties')
         )
 
         output = self.run_prestoadmin('connector remove tpch')
@@ -275,7 +274,7 @@ for the change to take effect
 
         for host in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(
-                host, "userdel %s" % (PRESTO_STANDALONE_USER,))
+                host, "userdel %s" % (PRESTO_STANDALONE_USER,), invoke_sudo=True)
 
         self.assertRaisesRegexp(
             OSError, "User presto does not exist", self.run_prestoadmin,

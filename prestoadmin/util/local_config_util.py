@@ -14,7 +14,7 @@
 import os
 
 from prestoadmin.util.constants import LOG_DIR_ENV_VARIABLE, CONFIG_DIR_ENV_VARIABLE, DEFAULT_LOCAL_CONF_DIR, \
-    DEFAULT_PRESTOADMIN_LOG_DIR, TOPOLOGY_CONFIG_FILE, COORDINATOR_DIR_NAME, WORKERS_DIR_NAME, CONNECTORS_DIR_NAME
+    TOPOLOGY_CONFIG_FILE, COORDINATOR_DIR_NAME, WORKERS_DIR_NAME, CONNECTORS_DIR_NAME
 
 
 def get_config_directory():
@@ -27,7 +27,7 @@ def get_config_directory():
 def get_log_directory():
     config_directory = os.environ.get(LOG_DIR_ENV_VARIABLE)
     if not config_directory:
-        config_directory = DEFAULT_PRESTOADMIN_LOG_DIR
+        config_directory = os.path.join(get_config_directory(), 'log')
     return config_directory
 
 

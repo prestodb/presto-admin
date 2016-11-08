@@ -25,6 +25,7 @@ import prestoadmin
 
 from tests.base_installer import BaseInstaller
 from tests.configurable_cluster import ConfigurableCluster
+from tests.product.config_dir_utils import get_install_directory
 from tests.product.constants import BASE_IMAGES_TAG, LOCAL_RESOURCES_DIR
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 
@@ -61,8 +62,7 @@ class PrestoadminInstaller(BaseInstaller):
     @staticmethod
     def assert_installed(testcase, msg=None):
         cluster = testcase.cluster
-        cluster.exec_cmd_on_host(cluster.master,
-                                 'test -x /opt/prestoadmin/presto-admin')
+        cluster.exec_cmd_on_host(cluster.master, 'test -x %s' % get_install_directory())
 
     def get_keywords(self):
         return {}

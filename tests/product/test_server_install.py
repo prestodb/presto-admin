@@ -16,12 +16,11 @@ import os
 
 from nose.plugins.attrib import attr
 
-from prestoadmin.util.local_config_util import get_connectors_directory
-
 from tests.product import relocate_jdk_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
+from tests.product.config_dir_utils import get_connectors_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR
 

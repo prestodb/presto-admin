@@ -15,11 +15,14 @@
 """
 Test file run
 """
+import os
+
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
+from tests.product.config_dir_utils import get_install_directory
 
 
 class TestFile(BaseProductTestCase):
@@ -30,11 +33,12 @@ class TestFile(BaseProductTestCase):
 
     @attr('smoketest')
     def test_run_script(self):
+        script_path = os.path.join(get_install_directory(), 'script.sh')
         # basic run script
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
-                                           '/opt/prestoadmin/script.sh',
+                                           script_path,
                                            self.cluster.master)
-        output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh')
+        output = self.run_prestoadmin('file run %s' % script_path)
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
 [slave1] out: hello
@@ -46,10 +50,9 @@ class TestFile(BaseProductTestCase):
 """)
         # specify remote directory
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
-                                           '/opt/prestoadmin/script.sh',
+                                           script_path,
                                            self.cluster.master)
-        output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh',
-                                      '/opt/script.sh')
+        output = self.run_prestoadmin('file run %s' % script_path)
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
 [slave1] out: hello
@@ -64,7 +67,7 @@ class TestFile(BaseProductTestCase):
         self.cluster.write_content_to_host('#!/bin/bash\necho hello',
                                            '/tmp/script.sh',
                                            self.cluster.master)
-        output = self.run_prestoadmin('file run /opt/prestoadmin/script.sh')
+        output = self.run_prestoadmin('file run %s' % script_path)
         self.assertEqualIgnoringOrder(output, """[slave2] out: hello
 [slave2] out:
 [slave1] out: hello
@@ -76,44 +79,44 @@ class TestFile(BaseProductTestCase):
 """)
         # invalid script
         self.cluster.write_content_to_host('not a valid script',
-                                           '/opt/prestoadmin/invalid.sh',
+                                           script_path,
                                            self.cluster.master)
-        output = self.run_prestoadmin('file run /opt/prestoadmin/invalid.sh',
+        output = self.run_prestoadmin('file run %s' % script_path,
                                       raise_error=False)
         self.assertEqualIgnoringOrder(output, """
 Fatal error: [slave2] sudo() received nonzero return code 127 while executing!
 
-Requested: /tmp/invalid.sh
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/invalid.sh"
+Requested: /tmp/script.sh
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/script.sh"
 
 Aborting.
-[slave2] out: /tmp/invalid.sh: line 1: not: command not found
+[slave2] out: /tmp/script.sh: line 1: not: command not found
 [slave2] out:
 
 Fatal error: [master] sudo() received nonzero return code 127 while executing!
 
-Requested: /tmp/invalid.sh
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/invalid.sh"
+Requested: /tmp/script.sh
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/script.sh"
 
 Aborting.
-[master] out: /tmp/invalid.sh: line 1: not: command not found
+[master] out: /tmp/script.sh: line 1: not: command not found
 [master] out:
 
 Fatal error: [slave3] sudo() received nonzero return code 127 while executing!
 
-Requested: /tmp/invalid.sh
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/invalid.sh"
+Requested: /tmp/script.sh
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/script.sh"
 
 Aborting.
-[slave3] out: /tmp/invalid.sh: line 1: not: command not found
+[slave3] out: /tmp/script.sh: line 1: not: command not found
 [slave3] out:
 
 Fatal error: [slave1] sudo() received nonzero return code 127 while executing!
 
-Requested: /tmp/invalid.sh
-Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/invalid.sh"
+Requested: /tmp/script.sh
+Executed: sudo -S -p 'sudo password:'  /bin/bash -l -c "/tmp/script.sh"
 
 Aborting.
-[slave1] out: /tmp/invalid.sh: line 1: not: command not found
+[slave1] out: /tmp/script.sh: line 1: not: command not found
 [slave1] out:
 """)

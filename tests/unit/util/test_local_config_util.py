@@ -12,10 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 
 from mock import patch
 from prestoadmin.util import local_config_util
-from prestoadmin.util.constants import DEFAULT_LOCAL_CONF_DIR, DEFAULT_PRESTOADMIN_LOG_DIR
+from prestoadmin.util.constants import DEFAULT_LOCAL_CONF_DIR
 from tests.base_test_case import BaseTestCase
 
 
@@ -34,7 +35,7 @@ class TestLocalConfigUtil(BaseTestCase):
     @patch('prestoadmin.util.local_config_util.os.environ.get')
     def test_get_default_log_dir(self, get_mock):
         get_mock.return_value = None
-        self.assertEqual(local_config_util.get_log_directory(), DEFAULT_PRESTOADMIN_LOG_DIR)
+        self.assertEqual(local_config_util.get_log_directory(), os.path.join(DEFAULT_LOCAL_CONF_DIR, 'log'))
 
     @patch('prestoadmin.util.local_config_util.os.environ.get')
     def test_get_configured_log_dir(self, get_mock):
