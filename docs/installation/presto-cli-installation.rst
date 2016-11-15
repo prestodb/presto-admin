@@ -17,7 +17,8 @@ To run a query via the Presto CLI:
 
 .. NOTE:: Presto must run with Java 8, so if Java 7 is the default on your cluster, you will need to explicitly specify the Java 8 executable. For example, ``<path_to_java_8_executable> -jar presto``. It may be helpful to add an alias for the Presto CLI: ``alias presto='<path_to_java_8_executable> -jar <path_to_presto>'``.
 
-3. By default, ``presto-admin`` configures the TPC-H connector, which generates TPC-H data on-the-fly.  Using this connector, issue the following commands to run your first Presto query: ::
+3. By default, ``presto-admin`` configures a TPC-H catalog, which generates TPC-H data on-the-fly.
+   Using this catalog, issue the following commands to run your first Presto query: ::
 
     $ ./presto --catalog tpch --schema tiny
     $ select count(*) from lineitem;

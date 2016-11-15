@@ -33,9 +33,9 @@ Troubleshooting
     * Specifying a port that is already in use: Look at
       :ref:`presto-port-configuration-label` to learn how to change the port
       configuration.
-    * An error in a connector configuration file, such as a syntax error or
+    * An error in a catalog configuration file, such as a syntax error or
       a missing connector.name property: correct the file and deploy it to the
-      cluster again using :ref:`connector-add`
+      cluster again using :ref:`catalog-add`
 
 #. The following error can occur if you do not have passwordless ssh enabled
    and have not provided a password or if the user requires a sudo password: ::
