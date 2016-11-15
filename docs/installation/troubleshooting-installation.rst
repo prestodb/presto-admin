@@ -10,7 +10,7 @@ Troubleshooting
     * :ref:`collect-query-info`
     * :ref:`collect-system-info`
 
-#. You can find the ``presto-admin`` logs in the ``/var/log/prestoadmin``
+#. You can find the ``presto-admin`` logs in the ``~/.prestoadmin/log``
    directory.
 #. You can check the status of Presto on your cluster by using
    :ref:`server-status`.
@@ -22,7 +22,7 @@ Troubleshooting
    To fix this, start Presto with:
    ::
 
-     $ sudo ./presto-admin server start
+     $ ./presto-admin server start
 
 #. If the Presto servers fail to start or crash soon after starting, look at
    the presto server logs on the Presto cluster ``/var/log/presto`` for an

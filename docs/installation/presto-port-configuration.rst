@@ -15,7 +15,7 @@ To configure the server to use a different port:
 
 It will return nothing if port 8081 is free. 
 
-2. Modify the following properties in ``/etc/opt/prestoadmin/coordinator/config.properties`` and ``/etc/opt/prestoadmin/workers/config.properties``:
+2. Modify the following properties in ``~/.prestoadmin/coordinator/config.properties`` and ``~/.prestoadmin/workers/config.properties``:
 
 ::
 
@@ -25,9 +25,9 @@ It will return nothing if port 8081 is free.
 
 3. Run the following command to deploy the configuration change to the cluster: ::
 
-    sudo ./presto-admin configuration deploy
+    ./presto-admin configuration deploy
 
 
 4. Restart the Presto servers so that the changes get picked up: ::
 
-    sudo ./presto-admin server restart
+    ./presto-admin server restart

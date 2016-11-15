@@ -20,7 +20,7 @@ To install Java via RPM using ``presto-admin``:
 
 3. Run the following command to install Java 8 on each node in the Presto cluster: ::
 
-    $ sudo ./presto-admin package install <local_path_to_java_rpm>
+    $ ./presto-admin package install <local_path_to_java_rpm>
 
 
 .. NOTE:: The ``server-install-label`` will look for your Oracle Java 1.8 installation at locations where Java is normally installed when using the binary or the RPM based installer. Otherwise, you need to have an environment variable called ``JAVA8_HOME`` set with your Java 1.8 install path. If ``JAVA8_HOME`` is not set or is pointing to an incompatible version of Java, the installer will look for the ``JAVA_HOME`` environment variable for a compatible version of Java. If neither of these environmental variables is set with a compatible version, and ``presto-admin`` fails to find Java 8 at any of the normal installation locations, then ``server install`` will fail. After successfully running ``server install`` you can find the Java being used by Presto at ``/etc/presto/env.sh``.

@@ -31,4 +31,4 @@ To install, configure and run Presto Admin on an Amazon EMR cluster, follow the 
                 * Use the ``-i <path to .pem file>`` input argument when running presto-admin commands on the node.
 		  ::
 
-		   sudo </path/to/presto-admin> -i </path/to/your.pem> <presto_admin_command>
+		   </path/to/presto-admin> -i </path/to/your.pem> <presto_admin_command>

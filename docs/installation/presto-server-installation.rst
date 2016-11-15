@@ -13,10 +13,10 @@ To install the Presto query engine on a cluster of nodes using ``presto-admin``:
 
 3. Run the following command to install Presto: ::
 
-    $ sudo ./presto-admin server install <local_path_to_rpm>
+    $ ./presto-admin server install <local_path_to_rpm>
 
 
-Presto! Presto is now installed on the coordinator and workers specified in your ``/etc/opt/prestoadmin/config.json`` file. 
+Presto! Presto is now installed on the coordinator and workers specified in your ``~/.prestoadmin/config.json`` file.
 
 The default port for Presto is 8080.  If that port is already in use on your cluster, you will not be able to start Presto.
 In order to change the port that Presto uses, proceed to :ref:`presto-port-configuration-label`.
@@ -28,6 +28,6 @@ all configuration changes require a restart of the Presto servers.
 
 4. Now, you are ready to start Presto: ::
 
-    $ sudo ./presto-admin server start
+    $ ./presto-admin server start
 
 This may take a few seconds, since the command doesn't exit until ``presto-admin`` verifies that Presto is fully up and ready to receive queries.

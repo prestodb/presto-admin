@@ -16,12 +16,12 @@ To add a catalog for the Hive connector:
 
 2. Distribute the configuration file to all of the nodes in the cluster: ::
 
-    sudo ./presto-admin catalog add hive
+    ./presto-admin catalog add hive
 
 
 3. Restart Presto: ::
 
-    sudo ./presto-admin server restart
+    ./presto-admin server restart
 
 
 You may need to add additional properties for the Hive connector to work properly, such as if your Hadoop cluster

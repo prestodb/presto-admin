@@ -13,8 +13,9 @@ In order to use ``presto-admin`` to manage software on a cluster of nodes,
 you must specify a configuration for ``presto-admin``. This configuration
 indicates the nodes on which to install as well as other credentials.
 
-To set up a configuration, create a file
-``/etc/opt/prestoadmin/config.json`` with the content below as
+To set up a configuration, create a file ``~/.prestoadmin/config.json``
+(or ``$PRESTO_ADMIN_CONFIG_DIR/config.json`` if you have the ``presto-admin``
+config directory set using the environment variable) with the content below as
 appropriate for your cluster setup. Replace the variables denoted with
 brackets <> with actual values enclosed in double quotations. The user
 specified by ``username`` must have sudo access, unless the username
@@ -47,7 +48,7 @@ Also, for running Presto Admin commands on Amazon EMR, do the following:
 
 	  ::
 
-	   sudo </path/to/presto-admin> -i </path/to/your.pem> <presto_admin_command>
+	   </path/to/presto-admin> -i </path/to/your.pem> <presto_admin_command>
 
 
 Configuration for other clusters
@@ -102,13 +103,13 @@ to specify a sudo password, you do so in one of two ways. You can specify it on
 the command line:
 ::
 
- sudo ./presto-admin <command> -p <password>
+ ./presto-admin <command> -p <password>
 
 Alternatively, you can opt to use an interactive password prompt, which prompts
 you for the initial value of your password before running any commands:
 ::
 
- sudo ./presto-admin <command> -I
+ ./presto-admin <command> -I
  Initial value for env.password: <type your password here>
 
 The sudo password for the user must be the same as the SSH password.

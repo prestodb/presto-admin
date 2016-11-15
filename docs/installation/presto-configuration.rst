@@ -17,11 +17,11 @@ memory (say, 120GB/node), you may want to allocate more memory to Presto for bet
 
 In order to update the max memory value to 60 GB per node:
 
-1. Change the line in ``/etc/opt/prestoadmin/coordinator/jvm.config`` and
-   ``/etc/opt/prestoadmin/workers/jvm.config`` that says ``-Xmx16G`` to ``-Xmx60G``.
+1. Change the line in ``~/.prestoadmin/coordinator/jvm.config`` and
+   ``~/.prestoadmin/workers/jvm.config`` that says ``-Xmx16G`` to ``-Xmx60G``.
 
-2. Change the following lines in ``/etc/opt/prestoadmin/coordinator/config.properties``
-   and ``/etc/opt/prestoadmin/workers/config.properties``: ::
+2. Change the following lines in ``~/.prestoadmin/coordinator/config.properties``
+   and ``~/.prestoadmin/workers/config.properties``: ::
 
         query.max-memory-per-node=8GB
         query.max-memory=50GB
@@ -39,12 +39,12 @@ In order to update the max memory value to 60 GB per node:
 
 3. Run the following command to deploy the configuration change to the cluster: ::
 
-        sudo ./presto-admin configuration deploy
+        ./presto-admin configuration deploy
 
 
 4. Restart the Presto servers so that the changes get picked up: ::
 
-        sudo ./presto-admin server restart
+        ./presto-admin server restart
 
 
    If you are running Presto in a test environment that has less than 16 GB of memory available,
@@ -57,7 +57,7 @@ For most production environments, it will be necessary to change the log locatio
 
 1. Stop the Presto server. ::
 
-    sudo ./presto-admin server stop
+    ./presto-admin server stop
 
 2. Presto stores logs and other data in ``node.data-dir``, ``node.launcher-log-file``,
    and ``node.server-log-file``. It is very important that these locations have enough space for the logs on the filesystem on
@@ -65,8 +65,8 @@ For most production environments, it will be necessary to change the log locatio
    default location for ``node.launcher-log-file`` is ``/var/log/presto/launcher.log``, and the default
    location for ``node.server-log-file`` is ``/var/log/presto/server.log``.
    Assuming the chosen locations are ``/data1/presto`` and ``/data2/presto`` for the data directory
-   and server logs respectively, the properties in ``/etc/opt/prestoadmin/coordinator/node.properties`` and
-   ``/etc/opt/prestoadmin/workers/node.properties`` will be as follows: ::
+   and server logs respectively, the properties in ``~/.prestoadmin/coordinator/node.properties`` and
+   ``~/.prestoadmin/workers/node.properties`` will be as follows: ::
 
         node.data-dir=/data1/presto/data
         node.launcher-log-file=/data2/presto/launcher.log
@@ -86,15 +86,15 @@ For most production environments, it will be necessary to change the log locatio
 
    Then, run the following command: ::
 
-        sudo ./presto-admin run_script script.sh
+        ./presto-admin run_script script.sh
 
 4. Run the following command to deploy the log configuration change to the cluster: ::
 
-    sudo ./presto-admin configuration deploy
+    ./presto-admin configuration deploy
 
 5. Restart the Presto servers so that the changes get picked up: ::
 
-    sudo ./presto-admin server restart
+    ./presto-admin server restart
 
 
 For detailed documentation on ``configuration deploy``, see :ref:`configuration-deploy-label`.

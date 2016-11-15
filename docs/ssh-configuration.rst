@@ -4,7 +4,7 @@
 SSH Configuration
 *****************
 
-In order to run ``presto-admin``, the node that is running ``presto-admin`` must be able to connect to all of the nodes running Presto via SSH. ``presto-admin`` makes the SSH connection with the username and port specified in ``/etc/opt/prestoadmin/config.json``. Even if you have a single-node installation, ``ssh username@localhost`` needs to work properly.
+In order to run ``presto-admin``, the node that is running ``presto-admin`` must be able to connect to all of the nodes running Presto via SSH. ``presto-admin`` makes the SSH connection with the username and port specified in ``~/.prestoadmin/config.json``. Even if you have a single-node installation, ``ssh username@localhost`` needs to work properly.
 
 There are two ways to configure SSH: with keys so that you can use passwordless SSH, or with passwords. If your cluster already has passwordless SSH configured for the username ``user``, you can skip this step if the username is root, otherwise the root public key (id_rsa.pub) needs to be appended to the non-root username’s authorized_keys file. If you are intending to use ``presto-admin`` with passwords, take a look at the documentation below, because there are several ways to specify the password.
 
@@ -35,7 +35,7 @@ Once you have passwordless SSH set up, you can just run ``presto-admin`` command
 
 ::
 
- sudo ./presto-admin <command> -i <path_to_private_key> -i <path_to_second_private_key>
+ ./presto-admin <command> -i <path_to_private_key> -i <path_to_second_private_key>
 
 
 Please also note that it is not common for servers to allow passwordless SSH for root because of security concerns, so it is preferable for the SSH user not to be root.
@@ -46,16 +46,16 @@ If you do not want to set up passwordless SSH on your cluster, it is possible to
 
 ::
 
- sudo ./presto-admin <command> -p <password>
+ ./presto-admin <command> -p <password>
 
 However, from a security perspective, it is preferable not to type your password in plaintext. Thus, it is also possible to add an interactive password prompt, which prompts you for the initial value of your password before running any commands:
 
 ::
 
- sudo ./presto-admin <command> -I
+ ./presto-admin <command> -I
  Initial value for env.password: <type your password here>
 
 If you do not specify a password, the command will fail with a parallel execution failure, since, by default, ``presto-admin`` runs in parallel and cannot prompt for a password while running in parallel. If you specify the ``--serial`` option for ``presto-admin``, ``presto-admin`` will prompt you for a password if it cannot connect.
 
-Please note that the SSH password for the user specified in ``/etc/opt/prestoadmin/config.json`` must match the sudo password for that user.
+Please note that the SSH password for the user specified in ``~/.prestoadmin/config.json`` must match the sudo password for that user.
 

@@ -3,7 +3,7 @@ Presto-Admin Command-Line Options
 =================================
 
 A quick overview of the possible CLI options for ``presto-admin`` can be found
-via ``sudo ./presto-admin --extended-help``. More details on those options can
+via ``./presto-admin --extended-help``. More details on those options can
 be found below.
 
 --version
@@ -18,7 +18,7 @@ be found below.
 
     e.g., to get detailed information about the ``server install`` command, enter: ::
 
-        sudo ./presto-admin -d server install
+        ./presto-admin -d server install
 
 --extended-help
     Prints out a usage string, all the ``presto-admin`` options and the
@@ -28,7 +28,7 @@ be found below.
     Forces password prompt before running any commands on the cluster.
 
     Either this option or the ``--password`` option is necessary if the user from
-    ``/etc/opt/prestoadmin/config.json`` needs a password for sudo.
+    ``~/.prestoadmin/config.json`` needs a password for sudo.
 
     Note that the SSH password and the sudo password must be the same,
     if passwordless SSH is not used.
@@ -37,7 +37,7 @@ be found below.
     Sets password for use with authentication and/or sudo.
 
     Either this option or the ``--initial-password-prompt`` option is necessary
-    if the user from ``/etc/opt/prestoadmin/config.json`` needs a password for sudo.
+    if the user from ``~/.prestoadmin/config.json`` needs a password for sudo.
 
     Note that the SSH password and the sudo password must be the same,
     if passwordless SSH is not used.
@@ -85,7 +85,7 @@ be found below.
 
 --port=PORT
     Sets the SSH connection port. If the SSH port is set both in
-    ``/etc/opt/prestoadmin/config.json`` and on the command line, the port
+    ``~/.prestoadmin/config.json`` and on the command line, the port
     specified on the command line will be used.
 
 -r, --reject-unknown-hosts
@@ -104,7 +104,7 @@ be found below.
 
 -u USER, --user=USER
     Sets the user that is used for SSH connections. If the SSH username is set both in
-    ``/etc/opt/prestoadmin/config.json`` and on the command line, the username
+    ``~/.prestoadmin/config.json`` and on the command line, the username
     specified on the command line will be used.
 
 -x HOSTS, --exclude-hosts=HOSTS
