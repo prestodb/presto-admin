@@ -12,13 +12,13 @@ Options:
 
 
 Commands:
+    catalog add
+    catalog remove
     collect logs
     collect query_info
     collect system_info
     configuration deploy
     configuration show
-    connector add
-    connector remove
     file copy
     file run
     package install

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Product tests for presto-admin connector support.
+Product tests for presto-admin catalog support.
 """
 import json
 import os
@@ -26,84 +26,84 @@ from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, \
     PrestoError
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
-from tests.product.config_dir_utils import get_connectors_directory
+from tests.product.config_dir_utils import get_catalog_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 
-class TestConnectors(BaseProductTestCase):
+class TestCatalog(BaseProductTestCase):
     def setUp(self):
-        super(TestConnectors, self).setUp()
+        super(TestCatalog, self).setUp()
 
-    def setup_cluster_assert_connectors(self):
+    def setup_cluster_assert_catalogs(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         for host in self.cluster.all_hosts():
-            self.assert_has_default_connector(host)
+            self.assert_has_default_catalog(host)
 
-        self._assert_connectors_loaded([['system'], ['tpch']])
+        self._assert_catalogs_loaded([['system'], ['tpch']])
 
     @attr('smoketest')
-    def test_connector_add_remove(self):
-        self.setup_cluster_assert_connectors()
-        self.run_prestoadmin('connector remove tpch')
-        self.assert_path_removed(self.cluster.master, os.path.join(get_connectors_directory(), 'tpch.properties'))
+    def test_catalog_add_remove(self):
+        self.setup_cluster_assert_catalogs()
+        self.run_prestoadmin('catalog remove tpch')
+        self.assert_path_removed(self.cluster.master, os.path.join(get_catalog_directory(), 'tpch.properties'))
         for host in self.cluster.all_hosts():
             self.assert_path_removed(host, os.path.join(constants.REMOTE_CATALOG_DIR, 'tpch.properties'))
 
-        # test add connectors from directory with more than one connector
+        # test add catalogs from directory with more than one catalog
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(get_connectors_directory(), 'tpch.properties'),
+            os.path.join(get_catalog_directory(), 'tpch.properties'),
             self.cluster.master
         )
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(get_connectors_directory(), 'jmx.properties'),
+            os.path.join(get_catalog_directory(), 'jmx.properties'),
             self.cluster.master
         )
-        self.run_prestoadmin('connector add')
+        self.run_prestoadmin('catalog add')
         self.run_prestoadmin('server restart')
         for host in self.cluster.all_hosts():
             filepath = '/etc/presto/catalog/jmx.properties'
-            self.assert_has_default_connector(host)
-            self.assert_connector_perms(host, filepath)
+            self.assert_has_default_catalog(host)
+            self.assert_catalog_perms(host, filepath)
             self.assert_file_content(host, filepath, 'connector.name=jmx')
-        self._assert_connectors_loaded([['system'], ['jmx'], ['tpch']])
+        self._assert_catalogs_loaded([['system'], ['jmx'], ['tpch']])
 
-    def test_connector_add_remove_coord_worker_using_dash_h(self):
-        self.setup_cluster_assert_connectors()
+    def test_catalog_add_remove_coord_worker_using_dash_h(self):
+        self.setup_cluster_assert_catalogs()
 
-        self.run_prestoadmin('connector remove tpch -H %(master)s,%(slave1)s')
+        self.run_prestoadmin('catalog remove tpch -H %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
         self.assert_path_removed(self.cluster.master,
-                                 os.path.join(get_connectors_directory(),
+                                 os.path.join(get_catalog_directory(),
                                               'tpch.properties'))
-        self._assert_connectors_loaded([['system']])
+        self._assert_catalogs_loaded([['system']])
         for host in [self.cluster.master, self.cluster.slaves[0]]:
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
                                                   'tpch.properties'))
-        self.assert_has_default_connector(self.cluster.slaves[1])
-        self.assert_has_default_connector(self.cluster.slaves[2])
+        self.assert_has_default_catalog(self.cluster.slaves[1])
+        self.assert_has_default_catalog(self.cluster.slaves[2])
 
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(get_connectors_directory(), 'tpch.properties'),
+            os.path.join(get_catalog_directory(), 'tpch.properties'),
             self.cluster.master
         )
-        self.run_prestoadmin('connector add tpch -H %(master)s,%(slave1)s')
+        self.run_prestoadmin('catalog add tpch -H %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
-        self.assert_has_default_connector(self.cluster.master)
-        self.assert_has_default_connector(self.cluster.slaves[1])
+        self.assert_has_default_catalog(self.cluster.master)
+        self.assert_has_default_catalog(self.cluster.slaves[1])
 
-    def test_connector_add_remove_coord_worker_using_dash_x(self):
-        self.setup_cluster_assert_connectors()
+    def test_catalog_add_remove_coord_worker_using_dash_x(self):
+        self.setup_cluster_assert_catalogs()
 
-        self.run_prestoadmin('connector remove tpch -x %(master)s,%(slave1)s')
+        self.run_prestoadmin('catalog remove tpch -x %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
-        self._assert_connectors_loaded([['system'], ['tpch']])
-        self.assert_has_default_connector(self.cluster.master)
-        self.assert_has_default_connector(self.cluster.slaves[0])
+        self._assert_catalogs_loaded([['system'], ['tpch']])
+        self.assert_has_default_catalog(self.cluster.master)
+        self.assert_has_default_catalog(self.cluster.slaves[0])
         for host in [self.cluster.slaves[1], self.cluster.slaves[2]]:
             self.assert_path_removed(host,
                                      os.path.join(constants.REMOTE_CATALOG_DIR,
@@ -111,50 +111,50 @@ class TestConnectors(BaseProductTestCase):
 
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(get_connectors_directory(), 'tpch.properties'),
+            os.path.join(get_catalog_directory(), 'tpch.properties'),
             self.cluster.master
         )
-        self.run_prestoadmin('connector add tpch -x %(master)s,%(slave1)s')
+        self.run_prestoadmin('catalog add tpch -x %(master)s,%(slave1)s')
         self.run_prestoadmin('server restart')
-        self._assert_connectors_loaded([['system'], ['tpch']])
+        self._assert_catalogs_loaded([['system'], ['tpch']])
         for slave in [self.cluster.slaves[1], self.cluster.slaves[2]]:
-            self.assert_has_default_connector(slave)
+            self.assert_has_default_catalog(slave)
 
-    def test_connector_add_by_name(self):
+    def test_catalog_add_by_name(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
-        self.run_prestoadmin('connector remove tpch')
+        self.run_prestoadmin('catalog remove tpch')
 
-        # test add connector by name when it exists
+        # test add catalog by name when it exists
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(get_connectors_directory(), 'tpch.properties'),
+            os.path.join(get_catalog_directory(), 'tpch.properties'),
             self.cluster.master
         )
-        self.run_prestoadmin('connector add tpch')
+        self.run_prestoadmin('catalog add tpch')
         self.run_prestoadmin('server start')
         for host in self.cluster.all_hosts():
-            self.assert_has_default_connector(host)
-        self._assert_connectors_loaded([['system'], ['tpch']])
+            self.assert_has_default_catalog(host)
+        self._assert_catalogs_loaded([['system'], ['tpch']])
 
-    def test_connector_add_empty_dir(self):
+    def test_catalog_add_empty_dir(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
-        self.run_prestoadmin('connector remove tpch')
-        output = self.run_prestoadmin('connector add')
+        self.run_prestoadmin('catalog remove tpch')
+        output = self.run_prestoadmin('catalog add')
         expected = [r'',
-                    r'Warning: \[slave3\] Directory .*/.prestoadmin/connectors is empty. '
-                    r'No connectors will be deployed',
+                    r'Warning: \[slave3\] Directory .*/.prestoadmin/catalog is empty. '
+                    r'No catalogs will be deployed',
                     r'',
                     r'',
-                    r'Warning: \[slave2\] Directory .*/.prestoadmin/connectors is empty. '
-                    r'No connectors will be deployed',
+                    r'Warning: \[slave2\] Directory .*/.prestoadmin/catalog is empty. '
+                    r'No catalogs will be deployed',
                     r'',
                     r'',
-                    r'Warning: \[slave1\] Directory .*/.prestoadmin/connectors is empty. '
-                    r'No connectors will be deployed',
+                    r'Warning: \[slave1\] Directory .*/.prestoadmin/catalog is empty. '
+                    r'No catalogs will be deployed',
                     r'',
                     r'',
-                    r'Warning: \[master\] Directory .*/.prestoadmin/connectors is empty. '
-                    r'No connectors will be deployed',
+                    r'Warning: \[master\] Directory .*/.prestoadmin/catalog is empty. '
+                    r'No catalogs will be deployed',
                     r'']
         self.assertRegexpMatchesLineByLine(output.splitlines(), expected)
 
@@ -169,24 +169,23 @@ Aborting.
 """
         return message % {'error': error}
 
-    def test_connector_add_lost_host(self):
+    def test_catalog_add_lost_host(self):
         installer = StandalonePrestoInstaller(self)
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
         self.upload_topology()
         installer.install()
-        self.run_prestoadmin('connector remove tpch')
+        self.run_prestoadmin('catalog remove tpch')
 
         self.cluster.stop_host(
             self.cluster.slaves[0])
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(get_connectors_directory(), 'tpch.properties'),
+            os.path.join(get_catalog_directory(), 'tpch.properties'),
             self.cluster.master
         )
-        output = self.run_prestoadmin('connector add tpch', raise_error=False)
+        output = self.run_prestoadmin('catalog add tpch', raise_error=False)
         for host in self.cluster.all_internal_hosts():
-            deploying_message = 'Deploying tpch.properties connector ' \
-                                'configurations on: %s'
+            deploying_message = 'Deploying tpch.properties catalog configurations on: %s'
             self.assertTrue(deploying_message % host in output,
                             'expected %s \n actual %s'
                             % (deploying_message % host, output))
@@ -202,74 +201,74 @@ Aborting.
         for host in [self.cluster.master,
                      self.cluster.slaves[1],
                      self.cluster.slaves[2]]:
-            self.assert_has_default_connector(host)
-        self._assert_connectors_loaded([['system'], ['tpch']])
+            self.assert_has_default_catalog(host)
+        self._assert_catalogs_loaded([['system'], ['tpch']])
 
-    def test_connector_remove(self):
+    def test_catalog_remove(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
         for host in self.cluster.all_hosts():
-            self.assert_has_default_connector(host)
+            self.assert_has_default_catalog(host)
 
-        missing_connector_message = """[Errno 1] 
-Fatal error: [master] Could not remove connector '%(name)s'. No such file \
+        missing_catalog_message = """[Errno 1] 
+Fatal error: [master] Could not remove catalog '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
 
-Fatal error: [slave1] Could not remove connector '%(name)s'. No such file \
+Fatal error: [slave1] Could not remove catalog '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
 
-Fatal error: [slave2] Could not remove connector '%(name)s'. No such file \
+Fatal error: [slave2] Could not remove catalog '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
 
-Fatal error: [slave3] Could not remove connector '%(name)s'. No such file \
+Fatal error: [slave3] Could not remove catalog '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
 Aborting.
 """  # noqa
 
-        success_message = """[master] Connector removed. Restart the server \
+        success_message = """[master] Catalog removed. Restart the server \
 for the change to take effect
-[slave1] Connector removed. Restart the server for the change to take effect
-[slave2] Connector removed. Restart the server for the change to take effect
-[slave3] Connector removed. Restart the server for the change to take effect"""
+[slave1] Catalog removed. Restart the server for the change to take effect
+[slave2] Catalog removed. Restart the server for the change to take effect
+[slave3] Catalog removed. Restart the server for the change to take effect"""
 
-        # test remove connector does not exist
+        # test remove catalog does not exist
         # expect error
 
         self.assertRaisesMessageIgnoringOrder(
             OSError,
-            missing_connector_message % {'name': 'jmx'},
+            missing_catalog_message % {'name': 'jmx'},
             self.run_prestoadmin,
-            'connector remove jmx')
+            'catalog remove jmx')
 
-        # test remove connector not in directory, but in presto
+        # test remove catalog not in directory, but in presto
         self.cluster.exec_cmd_on_host(
             self.cluster.master,
-            'rm %s' % os.path.join(get_connectors_directory(), 'tpch.properties')
+            'rm %s' % os.path.join(get_catalog_directory(), 'tpch.properties')
         )
 
-        output = self.run_prestoadmin('connector remove tpch')
+        output = self.run_prestoadmin('catalog remove tpch')
         self.assertEqualIgnoringOrder(success_message, output)
 
-        # test remove connector in directory but not in presto
+        # test remove catalog in directory but not in presto
         self.cluster.write_content_to_host(
             'connector.name=tpch',
-            os.path.join(get_connectors_directory(), 'tpch.properties'),
+            os.path.join(get_catalog_directory(), 'tpch.properties'),
             self.cluster.master
         )
 
         self.assertRaisesMessageIgnoringOrder(
             OSError,
-            missing_connector_message % {'name': 'tpch'},
+            missing_catalog_message % {'name': 'tpch'},
             self.run_prestoadmin,
-            'connector remove tpch')
+            'catalog remove tpch')
 
-    def test_connector_add_no_presto_user(self):
+    def test_catalog_add_no_presto_user(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
 
         for host in self.cluster.all_hosts():
@@ -278,9 +277,9 @@ for the change to take effect
 
         self.assertRaisesRegexp(
             OSError, "User presto does not exist", self.run_prestoadmin,
-            'connector add tpch')
+            'catalog add tpch')
 
-    def get_connector_info(self):
+    def get_catalog_info(self):
         output = self.cluster.exec_cmd_on_host(
             self.cluster.master,
             "curl --silent -X POST http://localhost:8080/v1/statement -H "
@@ -313,25 +312,25 @@ for the change to take effect
             raise ValueError(e.message + '\n' + text)
 
     # Presto will be 'query-able' before it has loaded all of its
-    # connectors. When presto-admin restarts presto it returns when it
-    # can query the server but that doesn't mean that all connectors
-    # have been loaded. Thus in order to verify that connectors get
+    # catalogs. When presto-admin restarts presto it returns when it
+    # can query the server but that doesn't mean that all catalogs
+    # have been loaded. Thus in order to verify that catalogs get
     # correctly added we check continuously within a timeout.
-    def _assert_connectors_loaded(self, expected_connectors):
-        self.retry(lambda: self.assertEqual(expected_connectors,
-                                            self.get_connector_info()))
+    def _assert_catalogs_loaded(self, expected_catalogs):
+        self.retry(lambda: self.assertEqual(expected_catalogs,
+                                            self.get_catalog_info()))
 
-    def test_connector_add_remove_non_sudo_user(self):
-        self.setup_cluster_assert_connectors()
+    def test_catalog_add_remove_non_sudo_user(self):
+        self.setup_cluster_assert_catalogs()
         self.upload_topology(
             {"coordinator": "master",
              "workers": ["slave1", "slave2", "slave3"],
              "username": "app-admin"}
         )
 
-        self.run_prestoadmin('connector remove tpch -p password')
+        self.run_prestoadmin('catalog remove tpch -p password')
         self.assert_path_removed(self.cluster.master,
-                                 os.path.join(get_connectors_directory(),
+                                 os.path.join(get_catalog_directory(),
                                               'tpch.properties'))
         for host in self.cluster.all_hosts():
             self.assert_path_removed(host,
@@ -340,11 +339,11 @@ for the change to take effect
 
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(get_connectors_directory(), 'jmx.properties'),
+            os.path.join(get_catalog_directory(), 'jmx.properties'),
             self.cluster.master
         )
-        self.run_prestoadmin('connector add -p password')
+        self.run_prestoadmin('catalog add -p password')
         self.run_prestoadmin('server restart -p password')
         for host in self.cluster.all_hosts():
-            self.assert_has_jmx_connector(host)
-        self._assert_connectors_loaded([['system'], ['jmx']])
+            self.assert_has_jmx_catalog(host)
+        self._assert_catalogs_loaded([['system'], ['jmx']])

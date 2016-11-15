@@ -62,8 +62,8 @@ mkdir -p $CONF_DIR
 LOG_DIR=${PRESTO_ADMIN_LOG_DIR:-$CONF_DIR/log}
 mkdir -p $LOG_DIR
 
-CONNECTOR_DIR=$CONF_DIR/connectors
-mkdir -p $CONNECTOR_DIR
+CATALOG_DIR=$CONF_DIR/catalog
+mkdir -p $CATALOG_DIR
 
 COORDINATOR_DIR=$CONF_DIR/coordinator
 mkdir -p $COORDINATOR_DIR

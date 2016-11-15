@@ -23,7 +23,7 @@ from nose.plugins.attrib import attr
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
-from tests.product.config_dir_utils import get_connectors_directory, get_coordinator_directory, get_workers_directory
+from tests.product.config_dir_utils import get_catalog_directory, get_coordinator_directory, get_workers_directory
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 from tests.docker_cluster import DockerCluster
 from tests.product.constants import BASE_IMAGES_TAG
@@ -57,8 +57,8 @@ class TestInstallation(BaseProductTestCase):
         self.cluster.run_script_on_host(script, self.cluster.master)
 
         pa_config_dir = '/home/app-admin/.prestoadmin'
-        connectors_dir = os.path.join(pa_config_dir, 'connectors')
-        self.assert_path_exists(self.cluster.master, connectors_dir)
+        catalog_dir = os.path.join(pa_config_dir, 'catalog')
+        self.assert_path_exists(self.cluster.master, catalog_dir)
 
         coordinator_dir = os.path.join(pa_config_dir, 'coordinator')
         self.assert_path_exists(self.cluster.master, coordinator_dir)
@@ -140,6 +140,6 @@ class TestInstallation(BaseProductTestCase):
                    install_dir=install_dir)
         self.cluster.run_script_on_host(script, self.cluster.master)
 
-        self.assert_path_exists(self.cluster.master, get_connectors_directory())
+        self.assert_path_exists(self.cluster.master, get_catalog_directory())
         self.assert_path_exists(self.cluster.master, get_coordinator_directory())
         self.assert_path_exists(self.cluster.master, get_workers_directory())

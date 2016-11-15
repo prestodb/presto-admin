@@ -78,8 +78,8 @@ class TestCollect(BaseProductTestCase):
         downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, 'sysinfo')
         self.assert_path_exists(self.cluster.master, downloaded_sys_info_loc)
 
-        conn_file_name = path.join(downloaded_sys_info_loc, 'connector_info.txt')
-        self.assert_path_exists(self.cluster.master, conn_file_name)
+        catalog_file_name = path.join(downloaded_sys_info_loc, 'catalog_info.txt')
+        self.assert_path_exists(self.cluster.master, catalog_file_name)
 
         version_file_name = path.join(TMP_PRESTO_DEBUG_REMOTE, 'version_info.txt')
         for host in hosts:

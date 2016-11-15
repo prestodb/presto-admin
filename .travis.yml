@@ -15,7 +15,7 @@ env:
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN="tests/product/test_server_install.py"
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_status.py"
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_collect.py tests/product/test_server_uninstall.py"
-    - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_connectors.py"
+    - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_catalog.py"
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_control.py"
 install:
   - pip install --upgrade pip==6.1.1

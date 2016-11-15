@@ -46,7 +46,7 @@ class TestStatus(BaseProductTestCase):
     def test_status_happy_path(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
-        status_output = self._server_status_with_retries(check_connectors=True)
+        status_output = self._server_status_with_retries(check_catalogs=True)
         self.check_status(status_output, self.base_status())
 
     def test_status_only_coordinator(self):
@@ -106,7 +106,7 @@ class TestStatus(BaseProductTestCase):
         topology = {"coordinator": "slave1", "workers":
                     ["master", self.cluster.get_down_hostname("slave2"),
                      "slave3"]}
-        status_output = self._server_status_with_retries(check_connectors=True)
+        status_output = self._server_status_with_retries(check_catalogs=True)
         statuses = self.node_not_available_status(
             topology, self.cluster.internal_slaves[1])
         self.check_status(status_output, statuses)
@@ -120,7 +120,7 @@ http-server.http.port=8090"""
 
         self.installer.install(extra_configs=port_config)
         self.run_prestoadmin('server start')
-        status_output = self._server_status_with_retries(check_connectors=True)
+        status_output = self._server_status_with_retries(check_catalogs=True)
 
         self.check_status(status_output, self.base_status(), 8090)
 
@@ -132,7 +132,7 @@ http-server.http.port=8090"""
              "username": "app-admin"}
         )
         self.run_prestoadmin('server start -p password')
-        status_output = self._server_status_with_retries(check_connectors=True, extra_arguments=' -p password')
+        status_output = self._server_status_with_retries(check_catalogs=True, extra_arguments=' -p password')
         self.check_status(status_output, self.base_status())
 
     def base_status(self, topology=None):
@@ -219,7 +219,7 @@ http-server.http.port=8090"""
                                                            str(port)),
                      '\tPresto Version: ' + PRESTO_VERSION,
                      '\tNode status:    active',
-                     '\tConnectors:     system, tpch']
+                     '\tCatalogs:     system, tpch']
 
         expected_regex = '\n'.join(expected_output)
         # The status command is written such that there are a couple ways that
@@ -233,17 +233,17 @@ http-server.http.port=8090"""
             lambda: self.status_fail_msg(cmd_output, expected_regex),
             self.assertRegexpMatches, cmd_output, expected_regex)
 
-    def _server_status_with_retries(self, check_connectors=False, extra_arguments=''):
+    def _server_status_with_retries(self, check_catalogs=False, extra_arguments=''):
         try:
             return self.retry(lambda: self._get_status_until_coordinator_updated(
-                check_connectors, extra_arguments=extra_arguments), 180, 0)
+                check_catalogs, extra_arguments=extra_arguments), 180, 0)
         except PrestoError as e:
             self.assertLazyMessage(
                 lambda: self.status_fail_msg(e.message, "Ran out of time retrying status"),
                 self.fail,
                 "PrestoError: %s" % e.message)
 
-    def _get_status_until_coordinator_updated(self, check_connectors=False, extra_arguments=''):
+    def _get_status_until_coordinator_updated(self, check_catalogs=False, extra_arguments=''):
         status_output = self.run_prestoadmin('server status' + extra_arguments)
         if 'the coordinator has not yet discovered this node' in status_output:
             raise PrestoError('Coordinator has not discovered all nodes yet: '
@@ -252,6 +252,6 @@ http-server.http.port=8090"""
            'unable to query coordinator' in status_output:
             raise PrestoError('Coordinator not started up properly yet.'
                               '\nOutput: %s' % status_output)
-        if check_connectors and 'Connectors:' not in status_output:
-            raise PrestoError('Connectors not loaded yet: %s' % status_output)
+        if check_catalogs and 'Catalogs:' not in status_output:
+            raise PrestoError('Catalogs not loaded yet: %s' % status_output)
         return status_output

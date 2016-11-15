@@ -29,7 +29,7 @@ from prestoadmin.util import constants
 from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
 from prestoadmin.util.fabricapi import get_host_list
-from prestoadmin.util.local_config_util import get_connectors_directory
+from prestoadmin.util.local_config_util import get_catalog_directory
 from tests.unit.base_unit_case import BaseUnitCase
 
 
@@ -474,7 +474,7 @@ class TestInstall(BaseUnitCase):
                          'respond.\nServer started successfully on: '
                          'good_node\n', self.test_stdout.getvalue())
 
-    @patch('prestoadmin.server.connector')
+    @patch('prestoadmin.server.catalog')
     @patch('prestoadmin.server.configure_cmds.deploy')
     @patch('prestoadmin.server.os.path.exists')
     @patch('prestoadmin.server.os.makedirs')
@@ -490,8 +490,8 @@ class TestInstall(BaseUnitCase):
         server.update_configs()
 
         mock_config.assert_called_with()
-        mock_makedir.assert_called_with(get_connectors_directory())
-        mock_open.assert_called_with(os.path.join(get_connectors_directory(),
+        mock_makedir.assert_called_with(get_catalog_directory())
+        mock_open.assert_called_with(os.path.join(get_catalog_directory(),
                                                   'tpch.properties'),
                                      os.O_CREAT | os.O_EXCL | os.O_WRONLY)
         file_manager = mock_fdopen.return_value.__enter__.return_value

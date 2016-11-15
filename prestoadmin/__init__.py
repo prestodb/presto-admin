@@ -53,7 +53,7 @@ ADDITIONAL_TASK_MODULES = {
     MODE_STANDALONE: ['topology',
                       ('configure_cmds', 'configuration'),
                       'server',
-                      'connector',
+                      'catalog',
                       'package',
                       'collect',
                       'file',

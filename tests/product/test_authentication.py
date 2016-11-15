@@ -25,7 +25,7 @@ from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
 from constants import LOCAL_RESOURCES_DIR
-from tests.product.config_dir_utils import get_connectors_directory, get_presto_admin_path
+from tests.product.config_dir_utils import get_catalog_directory, get_presto_admin_path
 
 
 class TestAuthentication(BaseProductTestCase):
@@ -34,10 +34,10 @@ class TestAuthentication(BaseProductTestCase):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
 
     success_output = (
-        'Deploying tpch.properties connector configurations on: slave1 \n'
-        'Deploying tpch.properties connector configurations on: master \n'
-        'Deploying tpch.properties connector configurations on: slave2 \n'
-        'Deploying tpch.properties connector configurations on: slave3 \n'
+        'Deploying tpch.properties catalog configurations on: slave1 \n'
+        'Deploying tpch.properties catalog configurations on: master \n'
+        'Deploying tpch.properties catalog configurations on: slave2 \n'
+        'Deploying tpch.properties catalog configurations on: slave3 \n'
     )
 
     interactive_text = (
@@ -90,19 +90,19 @@ class TestAuthentication(BaseProductTestCase):
     @docker_only
     def test_passwordless_ssh_authentication(self):
         self.upload_topology()
-        self.setup_for_connector_add()
+        self.setup_for_catalog_add()
 
         # Passwordless SSH as root, but specify -I
         # We need to do it as a script because docker_py doesn't support
         # redirecting stdin.
         command_output = self.run_script_from_prestoadmin_dir(
-            'echo "password" | ./presto-admin connector add -I')
+            'echo "password" | ./presto-admin catalog add -I')
 
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text, command_output)
 
         # Passwordless SSH as root, but specify -p
-        command_output = self.run_prestoadmin('connector add --password '
+        command_output = self.run_prestoadmin('catalog add --password '
                                               'password')
         self.assertEqualIgnoringOrder(self.success_output, command_output)
 
@@ -110,13 +110,13 @@ class TestAuthentication(BaseProductTestCase):
         non_root_sudo_warning = self.non_root_sudo_warning_message()
 
         command_output = self.run_script_from_prestoadmin_dir(
-            'echo "password" | ./presto-admin connector add -I -u app-admin')
+            'echo "password" | ./presto-admin catalog add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
             self.sudo_password_prompt + non_root_sudo_warning, command_output)
 
         # Passwordless SSH as app-admin, but specify -p
-        command_output = self.run_prestoadmin('connector add --password '
+        command_output = self.run_prestoadmin('catalog add --password '
                                               'password -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.sudo_password_prompt +
@@ -125,20 +125,20 @@ class TestAuthentication(BaseProductTestCase):
         # Passwordless SSH as app-admin, but specify wrong password with -I
         parallel_password_failure = self.parallel_password_failure_message()
         command_output = self.run_script_from_prestoadmin_dir(
-            'echo "asdf" | ./presto-admin connector add -I -u app-admin',
+            'echo "asdf" | ./presto-admin catalog add -I -u app-admin',
             raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure +
                                       self.interactive_text, command_output)
 
         # Passwordless SSH as app-admin, but specify wrong password with -p
         command_output = self.run_prestoadmin(
-            'connector add --password asdf -u app-admin', raise_error=False)
+            'catalog add --password asdf -u app-admin', raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure,
                                       command_output)
 
         # Passwordless SSH as root, in serial mode
         command_output = self.run_script_from_prestoadmin_dir(
-            './presto-admin connector add --serial')
+            './presto-admin catalog add --serial')
         self.assertEqualIgnoringOrder(
             self.success_output, command_output)
 
@@ -146,13 +146,13 @@ class TestAuthentication(BaseProductTestCase):
     @docker_only
     def test_no_passwordless_ssh_authentication(self):
         self.upload_topology()
-        self.setup_for_connector_add()
+        self.setup_for_catalog_add()
 
         # This is needed because the test for
         # No passwordless SSH, -I correct -u app-admin,
         # was giving Device not a stream error in jenkins
         self.run_script_from_prestoadmin_dir(
-            'echo "password" | ./presto-admin connector add -I')
+            'echo "password" | ./presto-admin catalog add -I')
 
         for host in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(
@@ -164,26 +164,26 @@ class TestAuthentication(BaseProductTestCase):
         parallel_password_failure = self.parallel_password_failure_message(
             with_sudo_prompt=False)
         command_output = self.run_prestoadmin(
-            'connector add', raise_error=False)
+            'catalog add', raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure,
                                       command_output)
 
         # No passwordless SSH, -p incorrect -u root
         command_output = self.run_prestoadmin(
-            'connector add --password password', raise_error=False)
+            'catalog add --password password', raise_error=False)
         self.assertEqualIgnoringOrder(parallel_password_failure,
                                       command_output)
 
         # No passwordless SSH, -I correct -u app-admin
         non_root_sudo_warning = self.non_root_sudo_warning_message()
         command_output = self.run_script_from_prestoadmin_dir(
-            'echo "password" | ./presto-admin connector add -I -u app-admin')
+            'echo "password" | ./presto-admin catalog add -I -u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.interactive_text +
             self.sudo_password_prompt + non_root_sudo_warning, command_output)
 
         # No passwordless SSH, -p correct -u app-admin
-        command_output = self.run_prestoadmin('connector add -p password '
+        command_output = self.run_prestoadmin('catalog add -p password '
                                               '-u app-admin')
         self.assertEqualIgnoringOrder(
             self.success_output + self.sudo_password_prompt +
@@ -193,7 +193,7 @@ class TestAuthentication(BaseProductTestCase):
         self.cluster.exec_cmd_on_host(
             self.cluster.master, 'chmod 600 /root/.ssh/id_rsa.bak')
         command_output = self.run_prestoadmin(
-            'connector add -i /root/.ssh/id_rsa.bak')
+            'catalog add -i /root/.ssh/id_rsa.bak')
         self.assertEqualIgnoringOrder(self.success_output, command_output)
 
         for host in self.cluster.all_hosts():
@@ -206,7 +206,7 @@ class TestAuthentication(BaseProductTestCase):
     @docker_only
     def test_prestoadmin_no_sudo_popen(self):
         self.upload_topology()
-        self.setup_for_connector_add()
+        self.setup_for_catalog_add()
 
         # We use Popen because docker-py loses the first 8 characters of TTY
         # output.
@@ -220,8 +220,8 @@ class TestAuthentication(BaseProductTestCase):
             '\\[Errno 13\\] Permission denied: \'.*/.prestoadmin/log'
             'presto-admin.log\'', proc.stdout.read())
 
-    def setup_for_connector_add(self):
-        connector_script = 'mkdir -p %(connectors)s\n' \
-                           'echo \'connector.name=tpch\' >> %(connectors)s/tpch.properties\n' % \
-                           {'connectors': get_connectors_directory()}
+    def setup_for_catalog_add(self):
+        connector_script = 'mkdir -p %(catalogs)s\n' \
+                           'echo \'connector.name=tpch\' >> %(catalogs)s/tpch.properties\n' % \
+                           {'catalogs': get_catalog_directory()}
         self.run_script_from_prestoadmin_dir(connector_script)

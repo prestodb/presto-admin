@@ -54,7 +54,7 @@ class TestServerUpgrade(BaseProductTestCase):
             # Still should have the same configs
             self.dummy_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
             # However, dummy_rpm.rpm removes /usr/lib/presto/lib and
             # /usr/lib/presto/lib/plugin
@@ -80,7 +80,7 @@ class TestServerUpgrade(BaseProductTestCase):
         for container in self.cluster.all_hosts():
             self.real_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
         self.upgrade_and_assert_success(path_on_cluster)
@@ -123,7 +123,7 @@ class TestServerUpgrade(BaseProductTestCase):
         for container in self.cluster.all_hosts():
             self.real_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
         symlink = os.path.join(get_install_directory(), 'link.rpm')
@@ -136,7 +136,7 @@ class TestServerUpgrade(BaseProductTestCase):
         for container in self.cluster.all_hosts():
             self.real_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
         self.add_dummy_properties_to_host(self.cluster.slaves[1])
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
@@ -157,7 +157,7 @@ class TestServerUpgrade(BaseProductTestCase):
         for container in self.cluster.all_hosts():
             self.real_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
         self.upgrade_and_assert_success(path_on_cluster, extra_arguments=' -p password')

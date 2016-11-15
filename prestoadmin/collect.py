@@ -32,7 +32,7 @@ from fabric.api import env, runs_once, task
 from fabric.utils import abort, warn
 
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.server import get_presto_version, get_connector_info_from
+from prestoadmin.server import get_presto_version, get_catalog_info_from
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.filesystem import ensure_directory_exists
 from prestoadmin.util.local_config_util import get_log_directory
@@ -192,17 +192,16 @@ def system_info():
 
     _LOGGER.debug('Gathered node information in file: ' + node_info_file_name)
 
-    conn_file_name = os.path.join(downloaded_sys_info_loc,
-                                  'connector_info.txt')
+    catalog_file_name = os.path.join(downloaded_sys_info_loc, 'catalog_info.txt')
     client = PrestoClient(env.host, env.user)
-    conn_info = get_connector_info_from(client)
+    catalog_info = get_catalog_info_from(client)
 
-    with open(conn_file_name, 'w') as out_file:
-        out_file.write(conn_info + '\n')
+    with open(catalog_file_name, 'w') as out_file:
+        out_file.write(catalog_info + '\n')
 
-    _LOGGER.debug('Gathered connector information in file: ' + conn_file_name)
+    _LOGGER.debug('Gathered catalog information in file: ' + catalog_file_name)
 
-    execute(get_connector_configs, downloaded_sys_info_loc, roles=env.roles)
+    execute(get_catalog_configs, downloaded_sys_info_loc, roles=env.roles)
     execute(get_system_info, downloaded_sys_info_loc, roles=env.roles)
 
     make_tarfile(OUTPUT_FILENAME_FOR_SYS_INFO, downloaded_sys_info_loc)
@@ -229,7 +228,7 @@ def get_system_info(download_location):
     get_files(version_file_name, download_location)
 
 
-def get_connector_configs(dest_path):
+def get_catalog_configs(dest_path):
     remote_catalog_dir = lookup_catalog_directory(env.host)
     _LOGGER.debug('catalogs to be archived on host ' + env.host + ': ' + remote_catalog_dir)
     get_files(remote_catalog_dir, dest_path)

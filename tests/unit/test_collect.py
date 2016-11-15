@@ -135,7 +135,7 @@ class TestCollect(BaseUnitCase):
         file_obj.write.assert_called_with(json_dumps_mock.return_value)
 
     @patch("prestoadmin.collect.make_tarfile")
-    @patch('prestoadmin.collect.get_connector_info_from')
+    @patch('prestoadmin.collect.get_catalog_info_from')
     @patch("prestoadmin.collect.json.dumps")
     @patch("prestoadmin.collect.requests.models.json")
     @patch('prestoadmin.collect.execute')
@@ -146,18 +146,18 @@ class TestCollect(BaseUnitCase):
     def test_collect_system_info(self, requests_url_mock, requests_get_mock,
                                  makedirs_mock, open_mock,
                                  execute_mock, req_json_mock,
-                                 json_dumps_mock, conn_info_mock,
+                                 json_dumps_mock, catalog_info_mock,
                                  make_tarfile_mock):
         downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, "sysinfo")
         node_info_file_name = path.join(downloaded_sys_info_loc,
                                         "node_info.json")
         conn_info_file_name = path.join(downloaded_sys_info_loc,
-                                        "connector_info.txt")
+                                        "catalog_info.txt")
 
         file_obj = open_mock.return_value.__enter__.return_value
         requests_get_mock.return_value.json.return_value = req_json_mock
         requests_get_mock.return_value.status_code = requests.codes.ok
-        connector_info = conn_info_mock.return_value
+        catalog_info = catalog_info_mock.return_value
 
         env.host = "myhost"
         env.roledefs["coordinator"] = ["myhost"]
@@ -174,9 +174,9 @@ class TestCollect(BaseUnitCase):
 
         open_mock.assert_any_call(conn_info_file_name, "w")
 
-        assert conn_info_mock.called
+        assert catalog_info_mock.called
 
-        file_obj.write.assert_any_call(connector_info + '\n')
+        file_obj.write.assert_any_call(catalog_info + '\n')
 
         execute_mock.assert_called_with(collect.get_system_info,
                                         downloaded_sys_info_loc, roles=[])

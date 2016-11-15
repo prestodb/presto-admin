@@ -1,6 +1,6 @@
 import os
 
-from prestoadmin.util.constants import COORDINATOR_DIR_NAME, WORKERS_DIR_NAME, CONNECTORS_DIR_NAME
+from prestoadmin.util.constants import COORDINATOR_DIR_NAME, WORKERS_DIR_NAME, CATALOG_DIR_NAME
 
 
 # gets the information for presto-admin config directories on the cluster
@@ -20,8 +20,8 @@ def get_workers_directory():
     return os.path.join(get_config_directory(), WORKERS_DIR_NAME)
 
 
-def get_connectors_directory():
-    return os.path.join(get_config_directory(), CONNECTORS_DIR_NAME)
+def get_catalog_directory():
+    return os.path.join(get_config_directory(), CATALOG_DIR_NAME)
 
 
 def get_log_directory():

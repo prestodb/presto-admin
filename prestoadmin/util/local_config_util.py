@@ -14,7 +14,7 @@
 import os
 
 from prestoadmin.util.constants import LOG_DIR_ENV_VARIABLE, CONFIG_DIR_ENV_VARIABLE, DEFAULT_LOCAL_CONF_DIR, \
-    TOPOLOGY_CONFIG_FILE, COORDINATOR_DIR_NAME, WORKERS_DIR_NAME, CONNECTORS_DIR_NAME
+    TOPOLOGY_CONFIG_FILE, COORDINATOR_DIR_NAME, WORKERS_DIR_NAME, CATALOG_DIR_NAME
 
 
 def get_config_directory():
@@ -43,5 +43,5 @@ def get_workers_directory():
     return os.path.join(get_config_directory(), WORKERS_DIR_NAME)
 
 
-def get_connectors_directory():
-    return os.path.join(get_config_directory(), CONNECTORS_DIR_NAME)
+def get_catalog_directory():
+    return os.path.join(get_config_directory(), CATALOG_DIR_NAME)

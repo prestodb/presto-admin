@@ -34,7 +34,7 @@ DEFAULT_LOCAL_CONF_DIR = os.path.join(os.path.expanduser('~'), '.prestoadmin')
 TOPOLOGY_CONFIG_FILE = 'config.json'
 COORDINATOR_DIR_NAME = 'coordinator'
 WORKERS_DIR_NAME = 'workers'
-CONNECTORS_DIR_NAME = 'connectors'
+CATALOG_DIR_NAME = 'catalog'
 
 # remote configuration
 REMOTE_CONF_DIR = '/etc/presto'

@@ -285,7 +285,7 @@ query.max-memory=50GB\n"""
         self.assert_file_perm_owner(
             host, filepath, '-rw-r--r--', 'presto', 'presto')
 
-    def assert_connector_perms(self, host, filepath):
+    def assert_catalog_perms(self, host, filepath):
         self.assert_file_perm_owner(
             host, filepath, '-rw-------', 'presto', 'presto')
 
@@ -353,15 +353,15 @@ query.max-memory=50GB\n"""
         config = self.get_file_content(host, filepath)
         self.assertRegexpMatches(config, expected)
 
-    def assert_has_default_connector(self, host):
+    def assert_has_default_catalog(self, host):
         catalog_dir = constants.REMOTE_CATALOG_DIR
         self.assert_directory_perm_owner(host, catalog_dir, 'drwxr-xr-x', 'presto', 'presto')
 
         filepath = os.path.join(catalog_dir, 'tpch.properties')
-        self.assert_connector_perms(host, filepath)
+        self.assert_catalog_perms(host, filepath)
         self.assert_file_content(host, filepath, 'connector.name=tpch')
 
-    def assert_has_jmx_connector(self, container):
+    def assert_has_jmx_catalog(self, container):
         self.assert_file_content(container,
                                  '/etc/presto/catalog/jmx.properties',
                                  'connector.name=jmx')

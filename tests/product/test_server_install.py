@@ -20,7 +20,7 @@ from tests.product import relocate_jdk_directory
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
-from tests.product.config_dir_utils import get_connectors_directory
+from tests.product.config_dir_utils import get_catalog_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import LOCAL_RESOURCES_DIR
 
@@ -41,13 +41,13 @@ install_with_ext_host_pa_master_out = ['Deploying rpm on slave1...',
                                        'Package installed successfully on: '
                                        'slave2',
                                        'Deploying configuration on: slave3',
-                                       'Deploying tpch.properties connector '
+                                       'Deploying tpch.properties catalog '
                                        'configurations on: slave3 ',
                                        'Deploying configuration on: slave1',
-                                       'Deploying tpch.properties connector '
+                                       'Deploying tpch.properties catalog '
                                        'configurations on: slave1 ',
                                        'Deploying configuration on: slave2',
-                                       'Deploying tpch.properties connector '
+                                       'Deploying tpch.properties catalog '
                                        'configurations on: slave2 ',
                                        'Using rpm_specifier as a local path',
                                        'Fetching local presto rpm at path: .*',
@@ -74,16 +74,16 @@ install_with_worker_pa_master_out = ['Deploying rpm on {master}...',
                                      'Package installed successfully on: '
                                      '{slave2}',
                                      'Deploying configuration on: {slave3}',
-                                     'Deploying tpch.properties connector '
+                                     'Deploying tpch.properties catalog '
                                      'configurations on: {slave3} ',
                                      'Deploying configuration on: {slave1}',
-                                     'Deploying tpch.properties connector '
+                                     'Deploying tpch.properties catalog '
                                      'configurations on: {slave1} ',
                                      'Deploying configuration on: {slave2}',
-                                     'Deploying tpch.properties connector '
+                                     'Deploying tpch.properties catalog '
                                      'configurations on: {slave2} ',
                                      'Deploying configuration on: {master}',
-                                     'Deploying tpch.properties connector '
+                                     'Deploying tpch.properties catalog '
                                      'configurations on: {master} ',
                                      'Using rpm_specifier as a local path',
                                      'Fetching local presto rpm at path: .*',
@@ -102,16 +102,16 @@ installed_all_hosts_output = ['Deploying rpm on {master}...',
                               'Package deployed successfully on: {slave2}',
                               'Package installed successfully on: {slave2}',
                               'Deploying configuration on: {slave3}',
-                              'Deploying tpch.properties connector '
+                              'Deploying tpch.properties catalog '
                               'configurations on: {slave3} ',
                               'Deploying configuration on: {slave1}',
-                              'Deploying tpch.properties connector '
+                              'Deploying tpch.properties catalog '
                               'configurations on: {slave1} ',
                               'Deploying configuration on: {slave2}',
-                              'Deploying tpch.properties connector '
+                              'Deploying tpch.properties catalog '
                               'configurations on: {slave2} ',
                               'Deploying configuration on: {master}',
-                              'Deploying tpch.properties connector '
+                              'Deploying tpch.properties catalog '
                               'configurations on: {master} ',
                               'Using rpm_specifier as a local path',
                               'Fetching local presto rpm at path: .*',
@@ -157,7 +157,7 @@ query.max-memory=50GB\n"""
         self.assert_file_content(host, '/etc/presto/jvm.config',
                                  self.default_jvm_config_)
         self.assert_node_config(host, self.default_node_properties_)
-        self.assert_has_default_connector(host)
+        self.assert_has_default_catalog(host)
 
     def assert_installed_with_configs(self, master, slaves):
         self.assert_common_configs(master)
@@ -200,7 +200,7 @@ query.max-memory=50GB\n"""
             for host in self.cluster.all_hosts():
                 installer.assert_installed(self, host)
                 self.assert_has_default_config(host)
-                self.assert_has_default_connector(host)
+                self.assert_has_default_catalog(host)
 
     def test_install_ext_host_is_pa_master(self):
         installer = StandalonePrestoInstaller(self)
@@ -219,14 +219,14 @@ query.max-memory=50GB\n"""
             [self.cluster.slaves[1],
              self.cluster.slaves[2]])
 
-    def test_install_when_connector_json_exists(self):
+    def test_install_when_catalog_json_exists(self):
         installer = StandalonePrestoInstaller(self)
         topology = {"coordinator": "master",
                     "workers": ["slave1"]}
         self.upload_topology(topology)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(get_connectors_directory(), 'jmx.properties'),
+            os.path.join(get_catalog_directory(), 'jmx.properties'),
             self.cluster.master
         )
 
@@ -239,10 +239,10 @@ query.max-memory=50GB\n"""
                     'Package installed successfully on: master',
                     'Deploying configuration on: master',
                     'Deploying jmx.properties, tpch.properties '
-                    'connector configurations on: master ',
+                    'catalog configurations on: master ',
                     'Deploying configuration on: slave1',
                     'Deploying jmx.properties, tpch.properties '
-                    'connector configurations on: slave1 ',
+                    'catalog configurations on: slave1 ',
                     'Using rpm_specifier as a local path',
                     'Fetching local presto rpm at path: .*',
                     'Found existing rpm at: .*']
@@ -254,8 +254,8 @@ query.max-memory=50GB\n"""
                           self.cluster.slaves[0]]:
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
-            self.assert_has_jmx_connector(container)
+            self.assert_has_default_catalog(container)
+            self.assert_has_jmx_catalog(container)
 
     def test_install_when_topology_has_ips(self):
         installer = StandalonePrestoInstaller(self)
@@ -265,7 +265,7 @@ query.max-memory=50GB\n"""
         self.upload_topology(topology)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(get_connectors_directory(), 'jmx.properties'),
+            os.path.join(get_catalog_directory(), 'jmx.properties'),
             self.cluster.master
         )
 
@@ -284,12 +284,12 @@ query.max-memory=50GB\n"""
             r'Deploying configuration on: ' +
             ips[self.cluster.internal_master],
             r'Deploying jmx.properties, tpch.properties '
-            r'connector configurations on: ' +
+            r'catalog configurations on: ' +
             ips[self.cluster.internal_master] + r' ',
             r'Deploying configuration on: ' +
             ips[self.cluster.internal_slaves[0]],
             r'Deploying jmx.properties, tpch.properties '
-            r'connector configurations on: ' +
+            r'catalog configurations on: ' +
             ips[self.cluster.internal_slaves[0]] + r' ',
             r'Using rpm_specifier as a local path',
             r'Fetching local presto rpm at path: .*',
@@ -303,13 +303,13 @@ query.max-memory=50GB\n"""
             self.cluster.master,
             [self.cluster.slaves[0]])
         for host in [self.cluster.master, self.cluster.slaves[0]]:
-            self.assert_has_jmx_connector(host)
+            self.assert_has_jmx_catalog(host)
 
     def test_install_interactive(self):
         installer = StandalonePrestoInstaller(self)
         self.cluster.write_content_to_host(
             'connector.name=jmx',
-            os.path.join(get_connectors_directory(), 'jmx.properties'),
+            os.path.join(get_catalog_directory(), 'jmx.properties'),
             self.cluster.master
         )
         rpm_name = installer.copy_presto_rpm_to_master()
@@ -347,12 +347,12 @@ query.max-memory=50GB\n"""
                     self.cluster.internal_slaves[0],
                     r'Deploying configuration on: ' +
                     self.cluster.internal_master,
-                    r'Deploying jmx.properties, tpch.properties connector '
+                    r'Deploying jmx.properties, tpch.properties catalog '
                     r'configurations on: ' +
                     self.cluster.internal_master,
                     r'Deploying configuration on: ' +
                     self.cluster.internal_slaves[0],
-                    r'Deploying jmx.properties, tpch.properties connector '
+                    r'Deploying jmx.properties, tpch.properties catalog '
                     r'configurations on: ' +
                     self.cluster.internal_slaves[0],
                     r'Deploying rpm on .*\.\.\.',
@@ -366,8 +366,8 @@ query.max-memory=50GB\n"""
                           self.cluster.slaves[0]]:
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
-            self.assert_has_jmx_connector(container)
+            self.assert_has_default_catalog(container)
+            self.assert_has_jmx_catalog(container)
 
     def test_connection_to_coord_lost(self):
         installer = StandalonePrestoInstaller(self)
@@ -410,7 +410,7 @@ query.max-memory=50GB\n"""
         for container in self.cluster.all_hosts():
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
         output = installer.install(pa_raise_error=False)
 
@@ -427,7 +427,7 @@ query.max-memory=50GB\n"""
         for container in self.cluster.all_hosts():
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
     def test_install_non_root_user(self):
         installer = StandalonePrestoInstaller(self)
@@ -447,7 +447,7 @@ query.max-memory=50GB\n"""
         for container in self.cluster.all_hosts():
             installer.assert_installed(self, container)
             self.assert_has_default_config(container)
-            self.assert_has_default_connector(container)
+            self.assert_has_default_catalog(container)
 
     def format_err_msgs_with_internal_hosts(self, msgs):
         formatted_msg = []

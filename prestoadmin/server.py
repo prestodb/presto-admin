@@ -34,7 +34,7 @@ from retrying import retry, RetryError
 
 import util.filesystem
 from prestoadmin import configure_cmds
-from prestoadmin import connector
+from prestoadmin import catalog
 from prestoadmin import package
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.standalone.config import StandaloneConfig, \
@@ -43,7 +43,7 @@ from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, ConfigurationError
 from prestoadmin.util.fabricapi import get_host_list, get_coordinator_role
-from prestoadmin.util.local_config_util import get_connectors_directory
+from prestoadmin.util.local_config_util import get_catalog_directory
 from prestoadmin.util.remote_config_util import lookup_port, \
     lookup_server_log_file, lookup_launcher_log_file, lookup_string_config
 from prestoadmin.util.version_util import VersionRange, VersionRangeList, \
@@ -83,7 +83,7 @@ NODE_INFO_PER_URI_SQL = VersionRangeList(
 
 EXTERNAL_IP_SQL = 'select url_extract_host(http_uri) from ' \
                   'system.runtime.nodes WHERE node_id = \'%s\''
-CONNECTOR_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
+CATALOG_INFO_SQL = 'select catalog_name from system.metadata.catalogs'
 _LOGGER = logging.getLogger(__name__)
 
 DOWNLOAD_DIRECTORY = '/tmp'
@@ -343,9 +343,9 @@ def install(rpm_specifier):
     file is missing, then the coordinator and workers will be obtained
     interactively. Install will fail for invalid json configuration.
 
-    The connector configurations will be read from the local connectors directory
-    which defaults to ~/.prestoadmin/connectors. If this directory is missing or empty
-    then no connector configuration is deployed.
+    The catalog configurations will be read from the local catalog directory
+    which defaults to ~/.prestoadmin/catalog. If this directory is missing or empty
+    then no catalog configuration is deployed.
 
     Install will fail for incorrectly formatted configuration files. Expected
     format is key=value for .properties files and one option per line for
@@ -389,21 +389,19 @@ def deploy_install_configure(local_path):
     wait_for_presto_user()
 
 
-def add_tpch_connector():
-    tpch_connector_config = os.path.join(get_connectors_directory(),
-                                         'tpch.properties')
-    util.filesystem.write_to_file_if_not_exists('connector.name=tpch',
-                                                tpch_connector_config)
+def add_tpch_catalog():
+    tpch_catalog_config = os.path.join(get_catalog_directory(), 'tpch.properties')
+    util.filesystem.write_to_file_if_not_exists('connector.name=tpch', tpch_catalog_config)
 
 
 def update_configs():
     configure_cmds.deploy()
 
-    add_tpch_connector()
+    add_tpch_catalog()
     try:
-        connector.add()
+        catalog.add()
     except ConfigFileNotFoundError:
-        _LOGGER.info('No connector directory found, not adding connectors.')
+        _LOGGER.info('No catalog directory found, not adding catalogs.')
 
 
 @retry(stop_max_delay=3000, wait_fixed=250)
@@ -477,12 +475,12 @@ def upgrade(new_rpm_path, local_config_dir=None, overwrite=False):
         print('Saving cluster configuration to %s' % local_config_dir)
 
     configure_cmds.gather_directory(local_config_dir, overwrite)
-    filenames = connector.gather_connectors(local_config_dir, overwrite)
+    filenames = catalog.gather_catalogs(local_config_dir, overwrite)
 
     package.deploy_upgrade(new_rpm_path)
 
     configure_cmds.deploy_all(local_config_dir)
-    connector.deploy_files(
+    catalog.deploy_files(
         filenames,
         os.path.join(local_config_dir, env.host, 'catalog'),
         constants.REMOTE_CATALOG_DIR, PRESTO_STANDALONE_USER_GROUP)
@@ -659,14 +657,14 @@ def run_sql(client, sql):
         return []
 
 
-def execute_connector_info_sql(client):
+def execute_catalog_info_sql(client):
     """
     Returns [[catalog_name], [catalog_2]..] from catalogs system table
 
     Parameters:
         client - client that executes the query
     """
-    return run_sql(client, CONNECTOR_INFO_SQL)
+    return run_sql(client, CATALOG_INFO_SQL)
 
 
 def execute_external_ip_sql(client, uuid):
@@ -701,19 +699,19 @@ def get_sysnode_info_from(node_info_row, state_transform):
     return output
 
 
-def get_connector_info_from(client):
+def get_catalog_info_from(client):
     """
-    Returns installed connectors
+    Returns installed catalogs
 
     Parameters:
         client - client that executes the query
 
     Returns:
-        comma delimited connectors eg: tpch, hive, system
+        comma delimited catalogs eg: tpch, hive, system
     """
     syscatalog = []
-    connector_info = execute_connector_info_sql(client)
-    for conn_info in connector_info:
+    catalog_info = execute_catalog_info_sql(client)
+    for conn_info in catalog_info:
         if conn_info:
             syscatalog.append(conn_info[0])
     return ', '.join(syscatalog)
@@ -734,13 +732,13 @@ def get_roles_for(host):
     return roles
 
 
-def print_node_info(node_status, connector_status):
+def print_node_info(node_status, catalog_status):
     for k in node_status:
         print('\tNode URI(http): ' + str(k) +
               '\n\tPresto Version: ' + str(node_status[k][0]) +
               '\n\tNode status:    ' + str(node_status[k][1]))
-        if connector_status:
-            print('\tConnectors:     ' + connector_status)
+        if catalog_status:
+            print('\tCatalogs:     ' + catalog_status)
 
 
 def get_ext_ip_of_node(client):
@@ -797,14 +795,14 @@ def get_status_from_coordinator():
     client = PrestoClient(get_coordinator_role()[0], env.user)
     try:
         coordinator_status = run_sql(client, SYSTEM_RUNTIME_NODES)
-        connector_status = get_connector_info_from(client)
+        catalog_status = get_catalog_info_from(client)
     except BaseException as e:
         # Just log errors that come from a missing port or anything else; if
         # we can't connect to the coordinator, we just want to print out a
         # minimal status anyway.
         _LOGGER.warn(e.message)
         coordinator_status = []
-        connector_status = []
+        catalog_status = []
 
     with settings(hide('running')):
         node_information = execute(collect_node_information,
@@ -833,7 +831,7 @@ def get_status_from_coordinator():
             node_info_row = run_sql(client, query % external_ip)
             node_status = processor(node_info_row)
             if node_status:
-                print_node_info(node_status, connector_status)
+                print_node_info(node_status, catalog_status)
             else:
                 print('\tNo information available: the coordinator has not yet'
                       ' discovered this node')
