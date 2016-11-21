@@ -22,6 +22,7 @@ import re
 import sys
 import urllib2
 import urlparse
+from contextlib import closing
 from tempfile import mkdtemp
 
 from fabric.api import task, sudo, env
@@ -621,13 +622,13 @@ def check_server_status():
     """
     if len(get_coordinator_role()) < 1:
         warn('No coordinator defined.  Cannot verify server status.')
-    client = PrestoClient(get_coordinator_role()[0], env.user)
-    node_id = lookup_string_config('node.id', os.path.join(constants.REMOTE_CONF_DIR, 'node.properties'), env.host)
+    with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
+        node_id = lookup_string_config('node.id', os.path.join(constants.REMOTE_CONF_DIR, 'node.properties'), env.host)
 
-    try:
-        return query_server_for_status(client, node_id)
-    except RetryError:
-        return False
+        try:
+            return query_server_for_status(client, node_id)
+        except RetryError:
+            return False
 
 
 @retry(stop_max_delay=RETRY_TIMEOUT * 1000, wait_fixed=5000, retry_on_result=lambda result: result is False)
@@ -772,69 +773,69 @@ def print_status_header(external_ip, server_status, host):
 
 @parallel
 def collect_node_information():
-    client = PrestoClient(get_coordinator_role()[0], env.user)
-    with settings(hide('warnings')):
-        error_message = check_presto_version()
-    if error_message:
-        external_ip = 'Unknown'
-        is_running = False
-    else:
-        with settings(hide('warnings', 'aborts', 'stdout')):
-            try:
-                external_ip = get_ext_ip_of_node(client)
-            except:
-                external_ip = 'Unknown'
-            try:
-                is_running = service('status')
-            except:
-                is_running = False
-    return external_ip, is_running, error_message
+    with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
+        with settings(hide('warnings')):
+            error_message = check_presto_version()
+        if error_message:
+            external_ip = 'Unknown'
+            is_running = False
+        else:
+            with settings(hide('warnings', 'aborts', 'stdout')):
+                try:
+                    external_ip = get_ext_ip_of_node(client)
+                except:
+                    external_ip = 'Unknown'
+                try:
+                    is_running = service('status')
+                except:
+                    is_running = False
+        return external_ip, is_running, error_message
 
 
 def get_status_from_coordinator():
-    client = PrestoClient(get_coordinator_role()[0], env.user)
-    try:
-        coordinator_status = run_sql(client, SYSTEM_RUNTIME_NODES)
-        catalog_status = get_catalog_info_from(client)
-    except BaseException as e:
-        # Just log errors that come from a missing port or anything else; if
-        # we can't connect to the coordinator, we just want to print out a
-        # minimal status anyway.
-        _LOGGER.warn(e.message)
-        coordinator_status = []
-        catalog_status = []
+    with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
+        try:
+            coordinator_status = run_sql(client, SYSTEM_RUNTIME_NODES)
+            catalog_status = get_catalog_info_from(client)
+        except BaseException as e:
+            # Just log errors that come from a missing port or anything else; if
+            # we can't connect to the coordinator, we just want to print out a
+            # minimal status anyway.
+            _LOGGER.warn(e.message)
+            coordinator_status = []
+            catalog_status = []
 
-    with settings(hide('running')):
-        node_information = execute(collect_node_information,
-                                   hosts=get_host_list())
+        with settings(hide('running')):
+            node_information = execute(collect_node_information,
+                                       hosts=get_host_list())
 
-    for host in get_host_list():
-        if isinstance(node_information[host], Exception):
-            external_ip = 'Unknown'
-            is_running = False
-            error_message = node_information[host].message
-        else:
-            (external_ip, is_running, error_message) = node_information[host]
-
-        print_status_header(external_ip, is_running, host)
-        if error_message:
-            print('\t' + error_message)
-        elif not coordinator_status:
-            print('\tNo information available: unable to query coordinator')
-        elif not is_running:
-            print('\tNo information available')
-        else:
-            version_string = get_presto_version()
-            version = strip_tag(split_version(version_string))
-            query, processor = NODE_INFO_PER_URI_SQL.for_version(version)
-            # just get the node_info row for the host if server is up
-            node_info_row = run_sql(client, query % external_ip)
-            node_status = processor(node_info_row)
-            if node_status:
-                print_node_info(node_status, catalog_status)
+        for host in get_host_list():
+            if isinstance(node_information[host], Exception):
+                external_ip = 'Unknown'
+                is_running = False
+                error_message = node_information[host].message
             else:
-                print('\tNo information available: the coordinator has not yet'
-                      ' discovered this node')
+                (external_ip, is_running, error_message) = node_information[host]
+
+            print_status_header(external_ip, is_running, host)
+            if error_message:
+                print('\t' + error_message)
+            elif not coordinator_status:
+                print('\tNo information available: unable to query coordinator')
+            elif not is_running:
+                print('\tNo information available')
+            else:
+                version_string = get_presto_version()
+                version = strip_tag(split_version(version_string))
+                query, processor = NODE_INFO_PER_URI_SQL.for_version(version)
+                # just get the node_info row for the host if server is up
+                node_info_row = run_sql(client, query % external_ip)
+                node_status = processor(node_info_row)
+                if node_status:
+                    print_node_info(node_status, catalog_status)
+                else:
+                    print('\tNo information available: the coordinator has not yet'
+                          ' discovered this node')
 
 
 @task

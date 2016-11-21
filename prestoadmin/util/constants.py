@@ -44,3 +44,9 @@ DEFAULT_PRESTO_SERVER_LOG_FILE = '/var/log/presto/server.log'
 DEFAULT_PRESTO_LAUNCHER_LOG_FILE = '/var/log/presto/launcher.log'
 REMOTE_PLUGIN_DIR = '/usr/lib/presto/lib/plugin'
 REMOTE_COPY_DIR = '/tmp'
+
+# Presto configuration files
+CONFIG_PROPERTIES = "config.properties"
+LOG_PROPERTIES = "log.properties"
+JVM_CONFIG = "jvm.config"
+NODE_PROPERTIES = "node.properties"

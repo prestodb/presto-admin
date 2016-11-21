@@ -19,26 +19,23 @@ import logging
 import os
 from StringIO import StringIO
 from contextlib import closing
+
+import prestoadmin.deploy
 from fabric.contrib import files
 from fabric.decorators import task, serial
 from fabric.operations import get
 from fabric.state import env
 from fabric.utils import abort, warn
-import prestoadmin.deploy
 from prestoadmin.standalone.config import StandaloneConfig, \
     PRESTO_STANDALONE_USER_GROUP
 from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
+from prestoadmin.util.constants import CONFIG_PROPERTIES, LOG_PROPERTIES, \
+    JVM_CONFIG, NODE_PROPERTIES
 from prestoadmin.util.fabricapi import put_secure
 from prestoadmin.util.filesystem import ensure_parent_directories_exist
 
 __all__ = ['show']
-
-
-CONFIG_PROPERTIES = "config.properties"
-LOG_PROPERTIES = "log.properties"
-JVM_CONFIG = "jvm.config"
-NODE_PROPERTIES = "node.properties"
 
 ALL_CONFIG = [CONFIG_PROPERTIES, LOG_PROPERTIES, JVM_CONFIG, NODE_PROPERTIES]
 

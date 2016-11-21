@@ -20,6 +20,7 @@ from overrides import overrides
 
 import prestoadmin.util.fabricapi as util
 from prestoadmin import config
+from prestoadmin.prestoclient import CERTIFICATE_ALIAS
 from prestoadmin.util.base_config import BaseConfig, SingleConfigItem
 from prestoadmin.util.exception import ConfigurationError
 from prestoadmin.util.local_config_util import get_topology_path
@@ -41,7 +42,7 @@ WORKERS = 'workers'
 STANDALONE_CONFIG_LOADED = 'standalone_config_loaded'
 
 PRESTO_ADMIN_PROPERTIES = ['username', 'port', 'coordinator', 'workers',
-                           'java8_home']
+                           'java8_home', CERTIFICATE_ALIAS]
 
 DEFAULT_PROPERTIES = {USERNAME: 'root',
                       PORT: 22,
@@ -163,6 +164,7 @@ class StandaloneConfig(BaseConfig):
 
     @overrides
     def set_env_from_conf(self, conf):
+        self.config = conf
         env.user = conf['username']
         env.port = conf['port']
         try:
@@ -175,6 +177,7 @@ class StandaloneConfig(BaseConfig):
                                                util.get_worker_role())
 
         env.hosts = env.roledefs['all'][:]
+        env.conf = conf
 
     @staticmethod
     def _dedup_list(host_list):

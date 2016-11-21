@@ -18,6 +18,7 @@ Product tests for presto-admin collect
 import os
 from os import path
 
+from fabric.context_managers import settings
 from nose.plugins.attrib import attr
 from nose.tools import nottest
 
@@ -144,8 +145,9 @@ class TestCollect(BaseProductTestCase):
         installer.install(coordinator='slave1')
         self.run_prestoadmin('server start')
         sql_to_run = 'SELECT * FROM system.runtime.nodes WHERE 1234 = 1234'
-        query_id = self.retry(
-            lambda: self.get_query_id(sql_to_run, host=self.cluster.slaves[0]))
+        with settings(roledefs={'coordinator': ['slave1']}):
+            query_id = self.retry(
+                lambda: self.get_query_id(sql_to_run, host=self.cluster.slaves[0]))
 
         actual = self.run_prestoadmin('collect query_info ' + query_id)
         query_info_file_name = path.join(TMP_PRESTO_DEBUG, 'query_info_' + query_id + '.json')
@@ -158,7 +160,7 @@ class TestCollect(BaseProductTestCase):
         ips = self.cluster.get_ip_address_dict()
         if host is None:
             host = self.cluster.master
-        client = PrestoClient(ips[host], 'root', 8080)
+        client = PrestoClient(ips[host], 'root')
         run_sql(client, sql)
         query_runtime_info = run_sql(client, 'SELECT query_id FROM '
                                              'system.runtime.queries '

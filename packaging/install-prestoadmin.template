@@ -37,7 +37,7 @@ if [ -d "third-party" ]; then
     tar xvzf third-party/virtualenv-%VIRTUALENV_VERSION%.tar.gz -C third-party || true
     "$PYTHON_BIN" third-party/virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
 else
-    wget https://pypi.python.org/packages/source/v/virtualenv/virtualenv-%VIRTUALENV_VERSION%.tar.gz
+    wget --no-check-certificate https://pypi.python.org/packages/source/v/virtualenv/virtualenv-%VIRTUALENV_VERSION%.tar.gz
     tar xvzf virtualenv-%VIRTUALENV_VERSION%.tar.gz || true
     "$PYTHON_BIN" virtualenv-%VIRTUALENV_VERSION%/virtualenv.py presto-admin-install
 fi

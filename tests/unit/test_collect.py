@@ -31,7 +31,7 @@ from prestoadmin.collect import \
     OUTPUT_FILENAME_FOR_SYS_INFO, \
     TMP_PRESTO_DEBUG_REMOTE
 from prestoadmin.util.local_config_util import get_log_directory
-from tests.unit.base_unit_case import BaseUnitCase
+from tests.unit.base_unit_case import BaseUnitCase, PRESTO_CONFIG
 
 
 class TestCollect(BaseUnitCase):
@@ -134,6 +134,8 @@ class TestCollect(BaseUnitCase):
 
         file_obj.write.assert_called_with(json_dumps_mock.return_value)
 
+    @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
+           return_value=PRESTO_CONFIG)
     @patch("prestoadmin.collect.make_tarfile")
     @patch('prestoadmin.collect.get_catalog_info_from')
     @patch("prestoadmin.collect.json.dumps")
@@ -147,7 +149,7 @@ class TestCollect(BaseUnitCase):
                                  makedirs_mock, open_mock,
                                  execute_mock, req_json_mock,
                                  json_dumps_mock, catalog_info_mock,
-                                 make_tarfile_mock):
+                                 make_tarfile_mock, mock_presto_config):
         downloaded_sys_info_loc = path.join(TMP_PRESTO_DEBUG, "sysinfo")
         node_info_file_name = path.join(downloaded_sys_info_loc,
                                         "node_info.json")
