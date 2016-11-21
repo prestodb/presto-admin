@@ -15,11 +15,22 @@
 from mock import patch
 
 from prestoadmin.standalone.config import StandaloneConfig
+from prestoadmin.util.presto_config import PrestoConfig
 
 from tests.base_test_case import BaseTestCase
 
+PRESTO_CONFIG = PrestoConfig({
+    'http-server.http.enabled': 'true',
+    'http-server.https.enabled': 'false',
+    'http-server.http.port': '8080',
+    'http-server.https.port': '7878',
+    'http-server.https.keystore.path': '/UPDATE/THIS/PATH',
+    'http-server.https.keystore.key': 'UPDATE PASSWORD'},
+    "TEST_HOST", "TEST_PATH")
+
 
 class BaseUnitCase(BaseTestCase):
+
     '''
     Tasks generally require that the configuration they need to run has been
     loaded. This takes care of loading the config without going to the

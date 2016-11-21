@@ -103,6 +103,16 @@ class BaseConfig(object):
     def __init__(self, config_path, config_items):
         self.config_path = config_path
         self.config_items = config_items
+        self.config = {}
+
+    def __getitem__(self, key):
+        return self.config[key]
+
+    def __setitem__(self, key, value):
+        self.config[key] = value
+
+    def __delitem__(self, key):
+        del self.config[key]
 
     def read_conf(self):
         return config.get_conf_from_json_file(self.config_path)

@@ -15,17 +15,23 @@
 """
 Simple client to communicate with a Presto server.
 """
-from httplib import HTTPConnection, HTTPException
-import logging
 import json
+import logging
+import os
 import socket
+import urlparse
+from httplib import HTTPConnection, HTTPException
+from tempfile import mkstemp
 
-from urllib2 import HTTPError, urlopen, URLError
-
-from prestoadmin.util.remote_config_util import lookup_port
-
+from StringIO import StringIO
+from fabric.operations import get
+from fabric.utils import error
+from fabric.state import env
+from jks import jks, base64, textwrap
 from prestoadmin.util.exception import InvalidArgumentError
-
+from prestoadmin.util.httpscacertconnection import HTTPSCaCertConnection
+from prestoadmin.util.local_config_util import get_coordinator_directory, get_topology_path
+from prestoadmin.util.presto_config import PrestoConfig
 
 _LOGGER = logging.getLogger(__name__)
 URL_TIMEOUT_MS = 5000
@@ -33,17 +39,33 @@ NUM_ROWS = 1000
 DATA_RESP = "data"
 NEXT_URI_RESP = "nextUri"
 
+CERTIFICATE_ALIAS = 'certificate_alias'
+
 
 class PrestoClient:
-    response_from_server = {}
-    # rows returned by the query
-    rows = []
-    next_uri = ""
-
-    def __init__(self, server, user, port=None):
+    def __init__(self, server, user):
+        # immutable stuff
         self.server = server
         self.user = user
-        self.port = port
+        self.coordinator_config = PrestoConfig.coordinator_config()
+        self.port = PrestoClient._get_configured_port(self.coordinator_config)
+
+        # mutable stuff
+        self.ca_file_path = ""
+        self.keystore_data = ""
+        self.rows = []
+        self.next_uri = ''
+        self.response_from_server = {}
+
+    @staticmethod
+    def _remove_silently(path):
+        try:
+            os.remove(path)
+        except:
+            pass
+
+    def close(self):
+        PrestoClient._remove_silently(self.ca_file_path)
 
     def clear_old_results(self):
         if self.rows:
@@ -81,9 +103,6 @@ class PrestoClient:
         if not self.user:
             raise InvalidArgumentError("Username missing")
 
-        if not self.port:
-            self.port = lookup_port(self.server)
-
         self.clear_old_results()
 
         headers = {"X-Presto-Catalog": catalog,
@@ -95,8 +114,7 @@ class PrestoClient:
             _LOGGER.info("Connecting to server at: " + self.server +
                          ":" + str(self.port) + " as user " + self.user +
                          " to execute query " + sql)
-            conn = HTTPConnection(self.server, self.port, False,
-                                  URL_TIMEOUT_MS)
+            conn = self._get_connection()
             conn.request("POST", "/v1/statement", sql, headers)
             response = conn.getresponse()
 
@@ -126,18 +144,32 @@ class PrestoClient:
         Sends a GET request to the Presto server at the specified next_uri
         and updates the response
         """
-        try:
-            conn = urlopen(uri, None, URL_TIMEOUT_MS)
-            answer = conn.read()
-            conn.close()
 
-            self.response_from_server = json.loads(answer)
-            _LOGGER.info("GET request successful for uri: " + uri)
-            return True
-        except (HTTPError, URLError) as e:
-            _LOGGER.error("Error opening the presto response uri: " +
-                          str(e.reason))
+        """
+        Remove the scheme and host/port from the uri; the connection itself
+        has that information.
+        """
+        parts = list(urlparse.urlsplit(uri))
+        parts[0] = None
+        parts[1] = None
+        location = urlparse.urlunsplit(parts)
+
+        conn = self._get_connection()
+        conn.request("GET", location)
+        response = conn.getresponse()
+
+        if response.status != 200:
+            conn.close()
+            _LOGGER.error("Error making GET request to %s: %s %s" %
+                          (uri, response.status, response.reason))
             return False
+
+        answer = response.read()
+        conn.close()
+
+        self.response_from_server = json.loads(answer)
+        _LOGGER.info("GET request successful for uri: " + uri)
+        return True
 
     def build_results_from_response(self):
         """
@@ -191,3 +223,90 @@ class PrestoClient:
 
     def get_next_uri(self):
         return self.next_uri
+
+    def _get_connection(self):
+        if self.coordinator_config.use_https():
+            return self._get_https_connection()
+        else:
+            return HTTPConnection(self.server, self.port, False, URL_TIMEOUT_MS)
+
+    @staticmethod
+    def _get_configured_port(coordinator_config):
+        if coordinator_config.use_https():
+            return coordinator_config.get_https_port()
+        else:
+            return coordinator_config.get_http_port()
+
+    def _get_https_connection(self):
+        ca_file_path = self._get_pem()
+        result = HTTPSCaCertConnection(
+                self.server, self.port, None, None, ca_file_path, False, URL_TIMEOUT_MS)
+        return result
+
+    def _fetch_keystore_data(self):
+        if not self.keystore_data:
+            remote_keystore_path = self.coordinator_config.get_client_keystore_path()
+            keystore_data = StringIO()
+            get(remote_keystore_path, keystore_data, use_sudo=True)
+            keystore_data.seek(0)
+            self.keystore_data = keystore_data.getvalue()
+        return self.keystore_data
+
+    def _pem_string(self, der_bytes, type):
+        result = "-----BEGIN %s-----\n" % type
+        result += "\r\n".join(
+            textwrap.wrap(base64.b64encode(der_bytes).decode('ascii'), 64))
+        result += "\n-----END %s-----\n" % type
+        return result
+
+    def _write_pem_file(self, directory, der_bytes_list, type):
+        prefix = os.path.join(directory,
+                              '%s-' % type.lower().replace(' ', '-'))
+        fd, pem_path = mkstemp('.pem', prefix)
+        # https://www.digicert.com/ssl-support/pem-ssl-creation.htm
+        with open(pem_path, 'w') as pem_file:
+            for der_bytes in der_bytes_list:
+                pem_file.write(self._pem_string(der_bytes, type))
+        os.close(fd)
+        return pem_path
+
+    def _get_pem(self):
+        keystore_data = self._fetch_keystore_data()
+
+        keystore = jks.KeyStore.loads(
+                keystore_data,
+                self.coordinator_config.get_client_keystore_password())
+
+        if len(keystore.private_keys.items()) == 1:
+            _, private_key = keystore.private_keys.items()[0]
+        else:
+            private_key = self._get_private_key(keystore)
+        if not self.ca_file_path:
+            """
+            Each member of the cert chain is a tuple (cert_type, cert_data)
+            We only need to write the data out to the .PEM file.
+
+            This usage is shown in the example in the README.md on github:
+            https://github.com/kurtbrose/pyjks
+            """
+            self.ca_file_path = self._write_pem_file(
+                    get_coordinator_directory(),
+                    [cert[1] for cert in private_key.cert_chain], 'CERTIFICATE')
+
+        return self.ca_file_path
+
+    def _get_private_key(self, keystore):
+        all_keys = ", ".join(keystore.private_keys.keys())
+        try:
+            alias = env.conf[CERTIFICATE_ALIAS]
+        except KeyError:
+            error('Multiple keys found in %s. Set %s in %s. Available aliases are %s' %
+                  (self.coordinator_config.get_client_keystore_path(),
+                   CERTIFICATE_ALIAS, get_topology_path(), all_keys))
+
+        try:
+            return keystore.private_keys[alias]
+        except KeyError:
+            error('No alias %s found in %s. Available aliases are %s' %
+                  (alias, self.coordinator_config.get_client_keystore_path(),
+                   all_keys))

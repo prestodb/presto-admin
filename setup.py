@@ -55,7 +55,8 @@ requirements = [
     'wheel==0.23.0',
     'flake8==2.5.4',
     'tox==1.9.2',
-    'retrying==1.3.3'
+    'retrying==1.3.3',
+    'pyjks==0.5.1'
 ]
 
 test_requirements = [

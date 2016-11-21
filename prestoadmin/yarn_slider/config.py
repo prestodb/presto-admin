@@ -100,16 +100,6 @@ class SliderConfig(BaseConfig):
 
     def __init__(self):
         super(SliderConfig, self).__init__(SLIDER_CONFIG_PATH, _SLIDER_CONFIG)
-        self.config = {}
-
-    def __getitem__(self, key):
-        return self.config[key]
-
-    def __setitem__(self, key, value):
-        self.config[key] = value
-
-    def __delitem__(self, key):
-        del self.config[key]
 
     @overrides
     def is_config_loaded(self):

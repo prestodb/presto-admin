@@ -43,13 +43,17 @@ def get_conf_from_json_file(path):
 
 def get_conf_from_properties_file(path):
     with open(path, 'r') as conf_file:
-        props = {}
-        for line in conf_file.read().splitlines():
-            line = line.strip()
-            if len(line) > 0 and line[0] not in COMMENT_CHARS:
-                pair = split_to_pair(line)
-                props[pair[0]] = pair[1]
-        return props
+        return get_conf_from_properties_data(conf_file)
+
+
+def get_conf_from_properties_data(data):
+    props = {}
+    for line in data.read().splitlines():
+        line = line.strip()
+        if len(line) > 0 and line[0] not in COMMENT_CHARS:
+            pair = split_to_pair(line)
+            props[pair[0]] = pair[1]
+    return props
 
 
 def split_to_pair(line):

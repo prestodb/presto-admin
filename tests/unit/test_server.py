@@ -30,7 +30,7 @@ from prestoadmin.util.exception import ConfigFileNotFoundError, \
     ConfigurationError
 from prestoadmin.util.fabricapi import get_host_list
 from prestoadmin.util.local_config_util import get_catalog_directory
-from tests.unit.base_unit_case import BaseUnitCase
+from tests.unit.base_unit_case import BaseUnitCase, PRESTO_CONFIG
 
 
 class TestInstall(BaseUnitCase):
@@ -343,6 +343,8 @@ class TestInstall(BaseUnitCase):
         self.assertTrue(mock_package_is_rpm_installed.call_count == 2)
         self.assertTrue(mock_package_rpm_uninstall.call_count == 1)
 
+    @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
+           return_value=PRESTO_CONFIG)
     @patch('prestoadmin.util.remote_config_util.lookup_in_config')
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.sudo')
@@ -352,7 +354,8 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.server.is_port_in_use')
     def test_server_start_fail(self, mock_port_in_use,
                                mock_version_check, mock_warn,
-                               mock_query_for_status, mock_sudo, mock_run, mock_config):
+                               mock_query_for_status, mock_sudo, mock_run, mock_config,
+                               mock_presto_config):
         mock_query_for_status.return_value = False
         env.host = "failed_node1"
         mock_version_check.return_value = ''
@@ -497,11 +500,14 @@ class TestInstall(BaseUnitCase):
         file_manager = mock_fdopen.return_value.__enter__.return_value
         file_manager.write.assert_called_with("connector.name=tpch")
 
+    @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
+           return_value=PRESTO_CONFIG)
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.lookup_string_config')
     @patch.object(PrestoClient, 'execute_query')
     @patch.object(PrestoClient, 'get_rows')
-    def test_check_success_status(self, mock_get_rows, mock_execute, string_config_mock, mock_run):
+    def test_check_success_status(self, mock_get_rows, mock_execute, string_config_mock, mock_run,
+                                  mock_presto_config):
         env.roledefs = {
             'coordinator': ['Node1'],
             'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
@@ -514,10 +520,13 @@ class TestInstall(BaseUnitCase):
         mock_get_rows.return_value = [['Node2', 'some stuff'], ['Node1', 'some other stuff']]
         self.assertEqual(server.check_server_status(), True)
 
+    @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
+           return_value=PRESTO_CONFIG)
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.lookup_string_config')
     @patch('prestoadmin.server.query_server_for_status')
-    def test_check_success_fail(self, mock_query_for_status, string_config_mock, mock_run):
+    def test_check_success_fail(self, mock_query_for_status, string_config_mock, mock_run,
+                                mock_presto_config):
         env.roledefs = {
             'coordinator': ['Node1'],
             'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
@@ -529,11 +538,14 @@ class TestInstall(BaseUnitCase):
         mock_query_for_status.return_value = False
         self.assertEqual(server.check_server_status(), False)
 
+    @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
+           return_value=PRESTO_CONFIG)
     @patch('prestoadmin.server.execute')
     @patch('prestoadmin.server.run_sql')
     @patch('prestoadmin.server.get_presto_version')
     def test_status_from_each_node(
-            self, mock_get_presto_version, mock_run_sql, mock_execute):
+            self, mock_get_presto_version, mock_run_sql, mock_execute,
+            mock_presto_config):
         env.roledefs = {
             'coordinator': ['Node1'],
             'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
@@ -565,11 +577,13 @@ class TestInstall(BaseUnitCase):
             self.test_stdout.getvalue().splitlines()
         )
 
+    @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
+           return_value=PRESTO_CONFIG)
     @patch('prestoadmin.server.check_presto_version')
     @patch('prestoadmin.server.service')
     @patch('prestoadmin.server.get_ext_ip_of_node')
     def test_collect_node_information(self, mock_ext_ip, mock_service,
-                                      mock_version):
+                                      mock_version, mock_presto_config):
         env.roledefs = {
             'coordinator': ['Node1'],
             'all': ['Node1']
@@ -611,11 +625,13 @@ class TestInstall(BaseUnitCase):
         result_file.close()
         return file_content
 
+    @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
+           return_value=PRESTO_CONFIG)
     @patch('prestoadmin.server.run_sql')
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.warn')
     def test_warning_presto_version_not_installed(self, mock_warn, mock_run,
-                                                  mock_run_sql):
+                                                  mock_run_sql, mock_presto_config):
         env.host = 'node1'
         env.roledefs['coordinator'] = ['node1']
         env.roledefs['worker'] = ['node1']
