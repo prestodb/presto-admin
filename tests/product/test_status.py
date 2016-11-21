@@ -239,8 +239,9 @@ http-server.http.port=8090"""
                 check_connectors, extra_arguments=extra_arguments), 180, 0)
         except PrestoError as e:
             self.assertLazyMessage(
-                self.status_fail_msg(e.message, "Ran out of time retrying status"),
-                self.fail("PrestoError %s" % (e.message,)))
+                lambda: self.status_fail_msg(e.message, "Ran out of time retrying status"),
+                self.fail,
+                "PrestoError: %s" % e.message)
 
     def _get_status_until_coordinator_updated(self, check_connectors=False, extra_arguments=''):
         status_output = self.run_prestoadmin('server status' + extra_arguments)
