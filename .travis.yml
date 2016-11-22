@@ -8,7 +8,7 @@ env:
   global:
     - PA_TEST_ONLINE_INSTALLER=true
     - PYTHONPATH=$PYTHONPATH:$(pwd)
-    - LONG_PRODUCT_TESTS="tests/product/test_server_install.py tests/product/test_status.py tests/product/test_collect.py tests/product/test_connectors.py tests/product/test_control.py tests/product/test_server_uninstall.py"
+    - LONG_PRODUCT_TESTS="tests/product/test_server_install.py tests/product/test_status.py tests/product/test_collect.py tests/product/test_catalog.py tests/product/test_control.py tests/product/test_server_uninstall.py"
   matrix:
     - OTHER_TESTS=true
     - SHORT_PRODUCT_TEST_GROUP=0
