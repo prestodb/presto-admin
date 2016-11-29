@@ -28,6 +28,9 @@ HTTP_PORT_KEY = 'http-server.http.port'
 HTTPS_PORT_KEY = 'http-server.https.port'
 CLIENT_KEYSTORE_PATH_KEY = 'internal-communication.https.keystore.path'
 CLIENT_KEYSTORE_PASSWORD_KEY = 'internal-communication.https.keystore.key'
+AUTHENTICATION_KEY = 'http-server.authentication.type'
+LDAP_CLIENT_USER_KEY = 'internal-communication.authentication.ldap.user'
+LDAP_CLIENT_PASSWORD_KEY = 'internal-communication.authentication.ldap.password'
 
 _LOGGER = logging.getLogger(__name__)
 # properties file literals
@@ -44,6 +47,8 @@ class PrestoConfig:
         HTTPS_PORT_KEY: '8443',
         CLIENT_KEYSTORE_PATH_KEY: None,
         CLIENT_KEYSTORE_PASSWORD_KEY: None,
+        LDAP_CLIENT_USER_KEY: None,
+        LDAP_CLIENT_PASSWORD_KEY: None
     }
 
     def __init__(self, config_properties, config_host, config_path):
@@ -96,3 +101,14 @@ class PrestoConfig:
 
     def get_http_port(self):
         return int(self._lookup(HTTP_PORT_KEY))
+
+    def use_ldap(self):
+        if AUTHENTICATION_KEY in self.config_properties:
+            return self.config_properties[AUTHENTICATION_KEY] == 'LDAP'
+        return False
+
+    def get_ldap_user(self):
+        return self._lookup(LDAP_CLIENT_USER_KEY)
+
+    def get_ldap_password(self):
+        return self._lookup(LDAP_CLIENT_PASSWORD_KEY)

@@ -25,13 +25,14 @@ from tempfile import mkstemp
 
 from StringIO import StringIO
 from fabric.operations import get
-from fabric.utils import error
 from fabric.state import env
+from fabric.utils import error
 from jks import jks, base64, textwrap
+from prestoadmin.util.constants import REMOTE_CONF_DIR, CONFIG_PROPERTIES
 from prestoadmin.util.exception import InvalidArgumentError
 from prestoadmin.util.httpscacertconnection import HTTPSCaCertConnection
 from prestoadmin.util.local_config_util import get_coordinator_directory, get_topology_path
-from prestoadmin.util.presto_config import PrestoConfig
+from prestoadmin.util.presto_config import PrestoConfig, LDAP_CLIENT_USER_KEY, LDAP_CLIENT_PASSWORD_KEY
 
 _LOGGER = logging.getLogger(__name__)
 URL_TIMEOUT_MS = 5000
@@ -115,6 +116,7 @@ class PrestoClient:
                          ":" + str(self.port) + " as user " + self.user +
                          " to execute query " + sql)
             conn = self._get_connection()
+            self._add_auth_headers(headers)
             conn.request("POST", "/v1/statement", sql, headers)
             response = conn.getresponse()
 
@@ -153,9 +155,10 @@ class PrestoClient:
         parts[0] = None
         parts[1] = None
         location = urlparse.urlunsplit(parts)
-
         conn = self._get_connection()
-        conn.request("GET", location)
+        headers = {"X-Presto-User": self.user}
+        self._add_auth_headers(headers)
+        conn.request("GET", location, headers=headers)
         response = conn.getresponse()
 
         if response.status != 200:
@@ -310,3 +313,30 @@ class PrestoClient:
             error('No alias %s found in %s. Available aliases are %s' %
                   (alias, self.coordinator_config.get_client_keystore_path(),
                    all_keys))
+
+    def _add_auth_headers(self, headers):
+        if self.coordinator_config.use_ldap():
+            if self.coordinator_config.use_ldap():
+                auth_headers = self.create_auth_headers(
+                    self.coordinator_config.get_ldap_user(),
+                    self.coordinator_config.get_ldap_password())
+                headers.update(auth_headers)
+                _LOGGER.info("Using LDAP = %s" % self.coordinator_config.use_ldap())
+
+    @staticmethod
+    def create_auth_headers(user, password):
+        if not user:
+            error('LDAP user (taken from %s in %s on the coordinator) cannot be null or empty' %
+                  (LDAP_CLIENT_USER_KEY, os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)))
+            return {}
+        if not password:
+            error('LDAP password (taken from %s in %s on the coordinator) cannot be null or empty' %
+                  (LDAP_CLIENT_PASSWORD_KEY, os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)))
+            return {}
+
+        if ':' in user:
+            error("LDAP user cannot contain ':': %s" % user)
+
+        # base64 encode the username and password
+        auth = base64.encodestring('%s:%s' % (user, password)).replace('\n', '')
+        return {'Authorization': 'Basic %s' % auth}

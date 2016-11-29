@@ -177,3 +177,35 @@ class TestPrestoClient(BaseTestCase):
         self.assertEqual(client.rows, [])
         self.assertEqual(client.next_uri, '')
         self.assertEqual(client.response_from_server, {})
+
+    def test_create_authorization_headers(self, mock_presto_config):
+        auth_headers = PrestoClient.create_auth_headers("Aladdin", "open sesame")
+        expected_auth_headers = {"Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="}
+        self.assertEqual(auth_headers, expected_auth_headers)
+
+    @patch('prestoadmin.prestoclient.error')
+    def test_create_authorization_headers_fails_with_empty_user(self, mock_error, mock_presto_config):
+        PrestoClient.create_auth_headers("", "open sesame")
+        error_message = 'LDAP user (taken from internal-communication.authentication.ldap.user in ' \
+                        '/etc/presto/config.properties on the coordinator) cannot be null or empty'
+        mock_error.assert_called_once_with(error_message)
+
+    @patch('prestoadmin.prestoclient.error')
+    def test_create_authorization_headers_fails_with_null_user(self, mock_error, mock_presto_config):
+        PrestoClient.create_auth_headers(None, "open sesame")
+        error_message = 'LDAP user (taken from internal-communication.authentication.ldap.user in ' \
+                        '/etc/presto/config.properties on the coordinator) cannot be null or empty'
+        mock_error.assert_called_once_with(error_message)
+
+    @patch('prestoadmin.prestoclient.error')
+    def test_create_authorization_headers_fails_with_empty_password(self, mock_error, mock_presto_config):
+        PrestoClient.create_auth_headers("Aladdin", "")
+        error_message = 'LDAP password (taken from internal-communication.authentication.ldap.password in ' \
+                        '/etc/presto/config.properties on the coordinator) cannot be null or empty'
+        mock_error.assert_called_once_with(error_message)
+
+    @patch('prestoadmin.prestoclient.error')
+    def test_create_authorization_headers_fails_with_colon_in_user(self, mock_error, mock_presto_config):
+        PrestoClient.create_auth_headers("Aladdin:1", "open sesame")
+        error_message = "LDAP user cannot contain ':': Aladdin:1"
+        mock_error.assert_called_once_with(error_message)
