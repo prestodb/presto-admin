@@ -140,19 +140,25 @@ class TestBDistPrestoAdmin(BaseTestCase):
         thirdparty_dir = os.path.join(build_path, 'third-party')
         pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
         pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' + pycrypto_whl
+        twofish_whl = 'twofish-0.3.0-{0}-none-linux_x86_64.whl'
+        pypi_twofish_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' + twofish_whl
 
         sys_mock.version = '2.7'
         self.bdist.package_dependencies(build_path)
-        urllib_mock.assert_called_with(
-            pypi_pycrypto_url.format('cp26'),
-            os.path.join(thirdparty_dir, pycrypto_whl.format('cp26'))
+        urllib_mock.assert_has_calls(
+            [call(pypi_pycrypto_url.format('cp26'),
+             os.path.join(thirdparty_dir, pycrypto_whl.format('cp26'))),
+             call(pypi_twofish_url.format('cp26'),
+             os.path.join(thirdparty_dir, twofish_whl.format('cp26')))]
         )
 
         sys_mock.version = '2.6'
         self.bdist.package_dependencies(build_path)
-        urllib_mock.assert_called_with(
-            pypi_pycrypto_url.format('cp27'),
-            os.path.join(thirdparty_dir, pycrypto_whl.format('cp27'))
+        urllib_mock.assert_has_calls(
+            [call(pypi_pycrypto_url.format('cp27'),
+             os.path.join(thirdparty_dir, pycrypto_whl.format('cp27'))),
+             call(pypi_twofish_url.format('cp27'),
+             os.path.join(thirdparty_dir, twofish_whl.format('cp27')))]
         )
 
     @patch('packaging.bdist_prestoadmin.sys')

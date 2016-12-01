@@ -53,6 +53,8 @@ class bdist_prestoadmin(Command):
 
     default_virtualenv_version = '12.0.7'
 
+    NATIVE_WHEELS = ['pycrypto-2.6.1-{0}-none-linux_x86_64.whl', 'twofish-0.3.0-{0}-none-linux_x86_64.whl']
+
     def build_wheel(self, build_dir):
         cmd = self.reinitialize_command('bdist_wheel')
         cmd.dist_dir = build_dir
@@ -102,27 +104,27 @@ class bdist_prestoadmin(Command):
                       'bdch-ftp.td.teradata.com'])
 
         # Welcome to HackLand! For our offline installer we need to
-        # include the pycrypto wheel compiled both against the Python
+        # include the wheels with native code compiled both against the Python
         # 2.6 and 2.7 interpreters. We found no way to do that at build
         # time (either compile against both interpreters simultaneously
         # or somehow compile first against 2.6 and then against 2.7
         # serially). To solve this we pre-compiled both and uploaded to
         # the internal PyPI. During the build we download wheels for both
         # interpreters compiled on Centos 6.6.
-        pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
-        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/' + \
-                            'packages/' + pycrypto_whl
-        if sys.version.startswith('2.6'):
-            alternate_interpreter_version = 'cp27'  # fetch 2.7 from PyPI
-        else:
-            alternate_interpreter_version = 'cp26'
+        for wheel in self.NATIVE_WHEELS:
+            pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/' + \
+                                'packages/' + wheel
+            if sys.version.startswith('2.6'):
+                alternate_interpreter_version = 'cp27'  # fetch 2.7 from PyPI
+            else:
+                alternate_interpreter_version = 'cp26'
 
-        urllib.urlretrieve(
-            pypi_pycrypto_url.format(alternate_interpreter_version),
-            os.path.join(
-                thirdparty_dir,
-                pycrypto_whl.format(alternate_interpreter_version))
-            )
+            urllib.urlretrieve(
+                pypi_pycrypto_url.format(alternate_interpreter_version),
+                os.path.join(
+                    thirdparty_dir,
+                    wheel.format(alternate_interpreter_version))
+                )
         # Thank you for visiting HackLand!
 
         pip.main(['install',
