@@ -38,25 +38,24 @@ of the nodes in the cluster.
 .. NOTE::
      For Amazon EMR, use the online installer instead of the offline installer.
    
-2. Extract and sudo run the installation script from within the ``prestoadmin`` directory.
+2. Extract and run the installation script from within the ``prestoadmin`` directory.
 ::
 
  $ tar xvf prestoadmin-1.5-offline.tar.bz2
  $ cd prestoadmin
- $ sudo ./install-prestoadmin.sh
+ $ ./install-prestoadmin.sh
 
 The installation script will create a ``presto-admin-install`` directory and an
-executable ``presto-admin`` script. Make sure to run the installation script
-with sudo when the presto-admin user is non-root.
-
-By default, the ``presto-admin`` config and log directory locations are
-configured to be at ``~/.prestoadmin`` and ``~/.prestoadmin/log``, respectively.  This
-can be changed by modifying the environment variables, PRESTO_ADMIN_CONFIG_DIR and
-PRESTO_ADMIN_LOG_DIR.
+executable ``presto-admin`` script. By default, the ``presto-admin`` config and log
+directory locations are configured to be ``~/.prestoadmin`` and ``~/.prestoadmin/log``,
+respectively.  This can be changed by modifying the environment variables,
+PRESTO_ADMIN_CONFIG_DIR and PRESTO_ADMIN_LOG_DIR. The installation script will also create
+the directories pointed to by PRESTO_ADMIN_CONFIG_DIR and PRESTO_ADMIN_LOG_DIR and if
+those directories require super user privileges to be created you should run the installation
+script as sudo.
 
 3. Verify that ``presto-admin`` was installed properly by running the
-``presto-admin`` help.  Please note that it is necessary to run all
-``presto-admin`` commands with sudo:
+``presto-admin`` help:
 ::
 
  $ ./presto-admin --help
