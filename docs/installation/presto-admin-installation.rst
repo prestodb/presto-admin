@@ -3,7 +3,12 @@
 =======================
 Installing Presto Admin
 =======================
-*Prerequisites:* `Python 2.6 or Python 2.7 <https://www.python.org/downloads>`_
+
+Prerequisites:
+ - `Python 2.6 or Python 2.7 <https://www.python.org/downloads>`_.
+ - If you are using the online installer then make sure you've installed the
+   Python development package for your system. For RedHat/Centos that package is
+   ``python2-devel`` and for Debian/Ubuntu it is ``python-dev``.
 
 Presto Admin is packaged as an offline installer --
 ``prestoadmin-<version>-offline.tar.bz2`` -- and as an online
