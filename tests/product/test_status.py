@@ -79,15 +79,19 @@ class TestStatus(BaseProductTestCase):
 
     def test_connection_to_coordinator_lost(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
-        topology = {"coordinator": "slave1", "workers":
-                    ["master", "slave2", "slave3"]}
+        good_hosts = [self.cluster.internal_master,
+                      self.cluster.internal_slaves[1],
+                      self.cluster.internal_slaves[2]]
+        topology = {"coordinator": self.cluster.internal_slaves[0],
+                    "workers": good_hosts}
         self.upload_topology(topology=topology)
-        self.installer.install(coordinator='slave1')
+        self.installer.install(coordinator=self.cluster.internal_slaves[0])
         self.run_prestoadmin('server start')
-        self.cluster.stop_host(
-            self.cluster.slaves[0])
-        topology = {"coordinator": self.cluster.get_down_hostname("slave1"),
-                    "workers": ["master", "slave2", "slave3"]}
+
+        bad_topology = {"coordinator": self.cluster.get_down_hostname(),
+                        "workers": good_hosts}
+        self.upload_topology(topology=bad_topology)
+
         status_output = self._server_status_with_retries()
         statuses = self.node_not_available_status(
             topology, self.cluster.internal_slaves[0],
@@ -96,16 +100,20 @@ class TestStatus(BaseProductTestCase):
 
     def test_connection_to_worker_lost(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
-        topology = {"coordinator": "slave1", "workers":
-                    ["master", "slave2", "slave3"]}
+        topology = {"coordinator": self.cluster.internal_slaves[0],
+                    "workers": [self.cluster.internal_master,
+                                self.cluster.internal_slaves[1],
+                                self.cluster.internal_slaves[2]]}
         self.upload_topology(topology=topology)
-        self.installer.install(coordinator='slave1')
+        self.installer.install(coordinator=self.cluster.internal_slaves[0])
         self.run_prestoadmin('server start')
-        self.cluster.stop_host(
-            self.cluster.slaves[1])
-        topology = {"coordinator": "slave1", "workers":
-                    ["master", self.cluster.get_down_hostname("slave2"),
-                     "slave3"]}
+
+        bad_topology = {"coordinator": self.cluster.internal_slaves[0],
+                        "workers": [self.cluster.internal_master,
+                                    self.cluster.get_down_hostname(),
+                                    self.cluster.internal_slaves[2]]}
+        self.upload_topology(topology=bad_topology)
+
         status_output = self._server_status_with_retries(check_catalogs=True)
         statuses = self.node_not_available_status(
             topology, self.cluster.internal_slaves[1])
@@ -185,9 +193,9 @@ http-server.http.port=8090"""
             if status['host'] == node:
                 status['is_running'] = 'Not Running'
                 status['error_message'] = \
-                    self.status_node_connection_error(node)
+                    self.status_node_connection_error()
                 status['ip'] = 'Unknown'
-                status['host'] = self.cluster.get_down_hostname(node)
+                status['host'] = self.cluster.get_down_hostname()
             elif coordinator_down:
                 status['error_message'] = '\tNo information available: ' \
                                           'unable to query coordinator'
@@ -236,7 +244,7 @@ http-server.http.port=8090"""
     def _server_status_with_retries(self, check_catalogs=False, extra_arguments=''):
         try:
             return self.retry(lambda: self._get_status_until_coordinator_updated(
-                check_catalogs, extra_arguments=extra_arguments), 360, 0)
+                check_catalogs, extra_arguments=extra_arguments), 180, 0)
         except PrestoError as e:
             self.assertLazyMessage(
                 lambda: self.status_fail_msg(e.message, "Ran out of time retrying status"),

@@ -28,7 +28,7 @@ import paramiko
 import yaml
 from prestoadmin import main_dir
 from tests.base_cluster import BaseCluster
-from tests.product.config_dir_utils import get_config_file_path, get_install_directory, get_config_directory
+from tests.product.config_dir_utils import get_install_directory, get_config_directory
 
 CONFIG_FILE_GLOB = r'*.yaml'
 DIST_DIR = os.path.join(main_dir, 'tmp/installer')
@@ -120,35 +120,6 @@ class ConfigurableCluster(BaseCluster):
                        config_dir=get_config_directory(),
                        mount_dir=self.mount_dir)
             self.run_script_on_host(script, host)
-
-    def stop_host(self, host_name):
-        if host_name not in self.all_hosts():
-            raise Exception('Must specify external hostname to stop_host')
-
-        # Change the topology to something that doesn't exist
-        ips = self.get_ip_address_dict()
-        down_hostname = self.get_down_hostname(host_name)
-        self.exec_cmd_on_host(
-            self.master,
-            'sed -i s/%s/%s/g %s' % (host_name, down_hostname, get_config_file_path())
-        )
-        self.exec_cmd_on_host(
-            self.master,
-            'sed -i s/%s/%s/g %s' % (ips[host_name], down_hostname, get_config_file_path())
-        )
-        index = self.all_hosts().index(host_name)
-        self.exec_cmd_on_host(
-            self.master,
-            'sed -i s/%s/%s/g %s' % (self.all_internal_hosts()[index], down_hostname, get_config_file_path())
-        )
-
-        if index >= len(self.internal_slaves):
-            self.internal_master = down_hostname
-        else:
-            self.internal_slaves[index] = down_hostname
-
-    def get_down_hostname(self, host_name):
-        return '1.0.0.0'
 
     def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
                          tty=False, invoke_sudo=False):
@@ -248,6 +219,7 @@ class ConfigurableCluster(BaseCluster):
         for internal_host in self.all_internal_hosts():
             ip_addresses[internal_host] = self._get_ip_from_hosts_file(
                 hosts_file, internal_host)
+        ip_addresses[self.get_down_hostname()] = self.get_down_ip()
         return ip_addresses
 
     @staticmethod

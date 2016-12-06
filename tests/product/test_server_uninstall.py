@@ -70,11 +70,14 @@ class TestServerUninstall(BaseProductTestCase):
     def test_uninstall_lost_host(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
 
-        self.cluster.stop_host(
-            self.cluster.slaves[0])
+        topology = {'coordinator': self.cluster.internal_master,
+                    'workers': [self.cluster.get_down_hostname(),
+                                self.cluster.internal_slaves[1],
+                                self.cluster.internal_slaves[2]]}
 
-        expected = self.down_node_connection_error(
-            self.cluster.internal_slaves[0])
+        self.upload_topology(topology)
+
+        expected = self.down_node_connection_error()
         cmd_output = self.run_prestoadmin('server uninstall',
                                           raise_error=False)
         self.assertRegexpMatches(cmd_output, expected)

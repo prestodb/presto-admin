@@ -103,7 +103,8 @@ query.max-memory=50GB\n"""
                                   r'socket error connecting to host ' \
                                   r'%(host)s on port 22: Network is unreachable ' \
                                   r'\(tried 1 time\)\n\nUnderlying ' \
-                                  r'exception:\n    Network is unreachable\n'
+                                  r'exception:\n    Network is unreachable\n' \
+                                  r'|Name lookup failed for %(host)s'
 
     status_down_node_string = r'(\tLow level socket error connecting to ' \
                               r'host %(host)s on port 22: No route to host ' \
@@ -111,7 +112,7 @@ query.max-memory=50GB\n"""
                               r'connect to %(host)s \(tried 1 time\))' \
                               r'|\tLow level socket error connecting to ' \
                               r'host %(host)s on port 22: Network is unreachable ' \
-                              r'\(tried 1 time\)'
+                              r'\(tried 1 time\)|\tName lookup failed for %(host)s'
 
     len_down_node_error = 6
 
@@ -494,12 +495,12 @@ query.max-memory=50GB\n"""
         return Retrying(stop_max_delay=retry_timeout * 1000,
                         wait_fixed=retry_interval * 1000).call(method_to_check)
 
-    def down_node_connection_error(self, host):
-        hostname = self.cluster.get_down_hostname(host)
+    def down_node_connection_error(self):
+        hostname = self.cluster.get_down_hostname()
         return self.down_node_connection_string % {'host': hostname}
 
-    def status_node_connection_error(self, host):
-        hostname = self.cluster.get_down_hostname(host)
+    def status_node_connection_error(self):
+        hostname = self.cluster.get_down_hostname()
         return self.status_down_node_string % {'host': hostname}
 
 

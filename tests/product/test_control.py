@@ -81,34 +81,42 @@ class TestControl(BaseProductTestCase):
     def test_start_coordinator_down(self):
         installer = StandalonePrestoInstaller(self)
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
-        topology = {"coordinator": "slave1", "workers":
-                    ["master", "slave2", "slave3"]}
+        good_hosts = [self.cluster.internal_master,
+                      self.cluster.internal_slaves[1],
+                      self.cluster.internal_slaves[2]]
+        topology = {"coordinator": self.cluster.internal_slaves[0],
+                    "workers": good_hosts}
         self.upload_topology(topology=topology)
-        installer.install(coordinator='slave1')
-        self.assert_start_coordinator_down(
-            self.cluster.slaves[0],
-            self.cluster.internal_slaves[0])
+        installer.install(coordinator=self.cluster.internal_slaves[0])
+
+        self.assert_start_coordinator_down(good_hosts)
 
     def test_start_worker_down(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
-        self.assert_start_worker_down(
-            self.cluster.slaves[0],
-            self.cluster.internal_slaves[0])
+        good_hosts = [self.cluster.internal_master,
+                      self.cluster.internal_slaves[1],
+                      self.cluster.internal_slaves[2]]
+        topology = {"coordinator": self.cluster.internal_master,
+                    "workers": [self.cluster.get_down_hostname(),
+                                self.cluster.internal_slaves[1],
+                                self.cluster.internal_slaves[2]]}
+        self.upload_topology(topology=topology)
 
-    def assert_start_coordinator_down(self, coordinator, coordinator_internal):
-        self.cluster.stop_host(coordinator)
-        alive_hosts = self.cluster.all_internal_hosts()[:]
-        alive_hosts.remove(self.cluster.get_down_hostname(coordinator_internal))
+        self.assert_start_worker_down(good_hosts)
+
+    def assert_start_coordinator_down(self, good_hosts):
+        self.upload_topology({'coordinator': self.cluster.get_down_hostname(),
+                              'workers': good_hosts})
 
         # test server start
         start_output = self.run_prestoadmin('server start', raise_error=False)
 
         # when the coordinator is down, you can't confirm that the server is started
         # on any of the nodes
-        expected_start = self.expected_start(failed_hosts=alive_hosts)
-        for host in alive_hosts:
+        expected_start = self.expected_start(failed_hosts=good_hosts)
+        for host in good_hosts:
             expected_start.append(self.expected_no_status_message(host))
-        expected_start.append(self.down_node_connection_error(coordinator_internal))
+        expected_start.append(self.down_node_connection_error())
         for message in expected_start:
             self.assertRegexpMatches(start_output, message, 'expected %s \n '
                                                             'actual %s' % (message, start_output))
@@ -116,20 +124,16 @@ class TestControl(BaseProductTestCase):
         process_per_host = self.get_process_per_host(start_output.splitlines())
         self.assert_started(process_per_host)
 
-    def assert_start_worker_down(self, down_node, down_internal_node):
-        self.cluster.stop_host(down_node)
-        alive_hosts = self.cluster.all_internal_hosts()[:]
-        alive_hosts.remove(self.cluster.get_down_hostname(down_internal_node))
-
+    def assert_start_worker_down(self, good_hosts):
         # test server start
         start_output = self.run_prestoadmin('server start', raise_error=False)
 
         self.assertRegexpMatches(
             start_output,
-            self.down_node_connection_error(down_internal_node)
+            self.down_node_connection_error()
         )
 
-        expected_start = self.expected_start(start_success=alive_hosts)
+        expected_start = self.expected_start(start_success=good_hosts)
         for message in expected_start:
             self.assertRegexpMatches(start_output, message, 'expected %s \n '
                                      'actual %s' % (message, start_output))

@@ -57,20 +57,16 @@ class TestPlugin(BaseProductTestCase):
             self.cluster.exec_cmd_on_host(host, 'rm %s' % temp_jar_location, invoke_sudo=True)
 
     def test_lost_coordinator(self):
-        internal_bad_host = self.cluster.internal_slaves[0]
-        bad_host = self.cluster.slaves[0]
-        good_hosts = [self.cluster.internal_master,
+        good_hosts = [self.cluster.internal_slaves[0],
                       self.cluster.internal_slaves[1],
                       self.cluster.internal_slaves[2]]
-        topology = {'coordinator': internal_bad_host,
+        topology = {'coordinator': self.cluster.get_down_hostname(),
                     'workers': good_hosts}
         self.upload_topology(topology)
-        self.cluster.stop_host(bad_host)
         self.deploy_jar_to_master()
         output = self.run_prestoadmin(
             'plugin add_jar %s hive-cdh5' % TMP_JAR_PATH, raise_error=False)
-        self.assertRegexpMatches(output, self.down_node_connection_error(
-            internal_bad_host))
+        self.assertRegexpMatches(output, self.down_node_connection_error())
         self.assertEqual(len(output.splitlines()), self.len_down_node_error)
         for host in good_hosts:
             self.assert_path_exists(host, STD_REMOTE_PATH)
@@ -78,20 +74,18 @@ class TestPlugin(BaseProductTestCase):
                                           raise_error=False)
 
     def test_lost_worker(self):
-        internal_bad_host = self.cluster.internal_slaves[0]
-        bad_host = self.cluster.slaves[0]
         good_hosts = [self.cluster.internal_master,
                       self.cluster.internal_slaves[1],
                       self.cluster.internal_slaves[2]]
         topology = {'coordinator': self.cluster.internal_master,
-                    'workers': self.cluster.internal_slaves}
+                    'workers': [self.cluster.get_down_hostname(),
+                                self.cluster.internal_slaves[1],
+                                self.cluster.internal_slaves[2]]}
         self.upload_topology(topology)
-        self.cluster.stop_host(bad_host)
         self.deploy_jar_to_master()
         output = self.run_prestoadmin(
             'plugin add_jar %s hive-cdh5' % TMP_JAR_PATH, raise_error=False)
-        self.assertRegexpMatches(output, self.down_node_connection_error(
-            internal_bad_host))
+        self.assertRegexpMatches(output, self.down_node_connection_error())
         self.assertEqual(len(output.splitlines()), self.len_down_node_error)
         for host in good_hosts:
             self.assert_path_exists(host, STD_REMOTE_PATH)

@@ -196,23 +196,23 @@ class TestConfiguration(BaseProductTestCase):
                                      self.default_workers_test_config_)
 
     def test_lost_coordinator_connection(self):
-        internal_bad_host = self.cluster.internal_slaves[0]
-        bad_host = self.cluster.slaves[0]
+        bad_host = self.cluster.get_down_hostname()
         good_hosts = [self.cluster.internal_master,
                       self.cluster.internal_slaves[1],
                       self.cluster.internal_slaves[2]]
-        topology = {'coordinator': internal_bad_host,
+        topology = {'coordinator': bad_host,
                     'workers': good_hosts}
         self.upload_topology(topology)
-        self.cluster.stop_host(bad_host)
+
         output = self.run_prestoadmin('configuration deploy',
                                       raise_error=False)
         self.assertRegexpMatches(
             output,
-            self.down_node_connection_error(internal_bad_host)
+            self.down_node_connection_error()
         )
-        for host in self.cluster.all_internal_hosts():
+        for host in good_hosts:
             self.assertTrue('Deploying configuration on: %s' % host in output)
+            self.assertTrue('Deploying configuration on: %s' % bad_host in output)
         expected_size = self.len_down_node_error + len(self.cluster.all_hosts())
         self.assertEqual(len(output.splitlines()), expected_size)
 
@@ -220,7 +220,7 @@ class TestConfiguration(BaseProductTestCase):
                                       raise_error=False)
         self.assertRegexpMatches(
             output,
-            self.down_node_connection_error(internal_bad_host)
+            self.down_node_connection_error()
         )
         with open(os.path.join(LOCAL_RESOURCES_DIR,
                                'configuration_show_down_node.txt'), 'r') as f:
