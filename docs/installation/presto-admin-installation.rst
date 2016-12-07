@@ -50,9 +50,7 @@ executable ``presto-admin`` script. By default, the ``presto-admin`` config and 
 directory locations are configured to be ``~/.prestoadmin`` and ``~/.prestoadmin/log``,
 respectively.  This can be changed by modifying the environment variables,
 PRESTO_ADMIN_CONFIG_DIR and PRESTO_ADMIN_LOG_DIR. The installation script will also create
-the directories pointed to by PRESTO_ADMIN_CONFIG_DIR and PRESTO_ADMIN_LOG_DIR and if
-those directories require super user privileges to be created you should run the installation
-script as sudo.
+the directories pointed to by PRESTO_ADMIN_CONFIG_DIR and PRESTO_ADMIN_LOG_DIR.
 
 3. Verify that ``presto-admin`` was installed properly by running the
 ``presto-admin`` help:
