@@ -45,3 +45,9 @@ Troubleshooting
    See :ref:`ssh-configuration-label` for information on setting up
    passwordless ssh and on providing a password, and :ref:`sudo-password-spec`
    for information on providing a sudo password.
+
+#. Support for connecting to a cluster with internal HTTPS and/or LDAP communication
+   enabled is experimental. Make sure to check both the Presto server log and the
+   ``presto-admin`` log to troubleshoot problems with your configuration; it may also
+   be helpful to verify that you can connect to the cluster via the Presto CLI using
+   HTTPS/LDAP as appropriate.
