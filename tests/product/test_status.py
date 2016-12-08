@@ -236,7 +236,7 @@ http-server.http.port=8090"""
     def _server_status_with_retries(self, check_catalogs=False, extra_arguments=''):
         try:
             return self.retry(lambda: self._get_status_until_coordinator_updated(
-                check_catalogs, extra_arguments=extra_arguments), 180, 0)
+                check_catalogs, extra_arguments=extra_arguments), 360, 0)
         except PrestoError as e:
             self.assertLazyMessage(
                 lambda: self.status_fail_msg(e.message, "Ran out of time retrying status"),
