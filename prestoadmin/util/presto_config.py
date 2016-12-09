@@ -66,7 +66,7 @@ class PrestoConfig:
         try:
             data = StringIO()
             with settings(host_string='%s@%s' % (env.user, config_host)):
-                get(config_path, data)
+                get(config_path, data, use_sudo=True)
 
             data.seek(0)
             presto_config_dict = get_conf_from_properties_data(data)

@@ -66,7 +66,7 @@ class TestCatalog(BaseProductTestCase):
         for host in self.cluster.all_hosts():
             filepath = '/etc/presto/catalog/jmx.properties'
             self.assert_has_default_catalog(host)
-            self.assert_catalog_perms(host, filepath)
+            self.assert_config_perms(host, filepath)
             self.assert_file_content(host, filepath, 'connector.name=jmx')
         self._assert_catalogs_loaded([['system'], ['jmx'], ['tpch']])
 
