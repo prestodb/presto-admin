@@ -18,7 +18,7 @@
 import os
 import re
 import sys
-import urllib
+import requests
 from distutils import log as logger
 from distutils.dir_util import remove_tree
 
@@ -112,19 +112,23 @@ class bdist_prestoadmin(Command):
         # the internal PyPI. During the build we download wheels for both
         # interpreters compiled on Centos 6.6.
         for wheel in self.NATIVE_WHEELS:
-            pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/' + \
-                                'packages/' + wheel
+            wheel_url = 'http://bdch-ftp.td.teradata.com:8082/' + \
+                        'packages/' + wheel
             if sys.version.startswith('2.6'):
                 alternate_interpreter_version = 'cp27'  # fetch 2.7 from PyPI
             else:
                 alternate_interpreter_version = 'cp26'
 
-            urllib.urlretrieve(
-                pypi_pycrypto_url.format(alternate_interpreter_version),
-                os.path.join(
-                    thirdparty_dir,
-                    wheel.format(alternate_interpreter_version))
-                )
+            target_path = os.path.join(thirdparty_dir, wheel.format(alternate_interpreter_version))
+            with open(target_path, 'wb') as handle:
+                response = requests.get(wheel_url.format(alternate_interpreter_version), stream=True)
+
+                if not response.ok:
+                    # Something went wrong
+                    raise Exception
+
+                for block in response.iter_content(1024):
+                    handle.write(block)
         # Thank you for visiting HackLand!
 
         pip.main(['install',
