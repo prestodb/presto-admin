@@ -41,7 +41,7 @@ of the nodes in the cluster.
 2. Extract and run the installation script from within the ``prestoadmin`` directory.
 ::
 
- $ tar xvf prestoadmin-1.5-offline.tar.bz2
+ $ tar xvf prestoadmin-<version>-offline.tar.bz2
  $ cd prestoadmin
  $ ./install-prestoadmin.sh
 
