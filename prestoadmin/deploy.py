@@ -96,7 +96,7 @@ def deploy(confs, remote_dir):
     sudo("mkdir -p " + remote_dir)
     for name, content in confs.iteritems():
         write_to_remote_file(content, os.path.join(remote_dir, name),
-                             owner=PRESTO_STANDALONE_USER_GROUP, mode=644)
+                             owner=PRESTO_STANDALONE_USER_GROUP, mode=600)
 
 
 def secure_create_file(filepath, user_group, mode=600):
@@ -144,10 +144,10 @@ def deploy_node_properties(content, remote_dir):
     name = "node.properties"
     node_file_path = (os.path.join(remote_dir, name))
     if not exists(node_file_path, use_sudo=True):
-        secure_create_file(node_file_path, PRESTO_STANDALONE_USER_GROUP, mode=644)
+        secure_create_file(node_file_path, PRESTO_STANDALONE_USER_GROUP, mode=600)
     else:
         sudo('chown %(owner)s %(filepath)s && chmod %(mode)s %(filepath)s'
-             % {'owner': PRESTO_STANDALONE_USER_GROUP, 'mode': 644, 'filepath': node_file_path})
+             % {'owner': PRESTO_STANDALONE_USER_GROUP, 'mode': 600, 'filepath': node_file_path})
     node_id_command = (
         "if ! ( grep -q -s 'node.id' " + node_file_path + " ); then "
         "uuid=$(uuidgen); "

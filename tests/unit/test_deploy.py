@@ -100,7 +100,7 @@ class TestDeploy(BaseTestCase):
     @patch('prestoadmin.deploy.secure_create_file')
     def test_deploys_as_presto_user(self, secure_create_file_mock, sudo_mock):
         deploy.deploy({'my_file': 'hello!'}, '/remote/path')
-        secure_create_file_mock.assert_called_with('/remote/path/my_file', 'presto:presto', 644)
+        secure_create_file_mock.assert_called_with('/remote/path/my_file', 'presto:presto', 600)
         sudo_mock.assert_called_with("echo 'hello!' > /remote/path/my_file")
 
     @patch('prestoadmin.deploy.deploy')
