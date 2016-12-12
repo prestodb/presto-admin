@@ -46,10 +46,10 @@ class TestInstallation(BaseProductTestCase):
         install_dir = '/home/app-admin'
         script = """
             set -e
-            cp {mount_dir}/prestoadmin-*.tar.bz2 {install_dir}
-            chown app-admin {install_dir}/prestoadmin-*.tar.bz2
+            cp {mount_dir}/prestoadmin-*.tar.gz {install_dir}
+            chown app-admin {install_dir}/prestoadmin-*.tar.gz
             cd {install_dir}
-            sudo -u app-admin tar jxf prestoadmin-*.tar.bz2
+            sudo -u app-admin tar zxf prestoadmin-*.tar.gz
             cd prestoadmin
             sudo -u app-admin ./install-prestoadmin.sh
         """.format(mount_dir=self.cluster.mount_dir, install_dir=install_dir)
@@ -95,9 +95,9 @@ class TestInstallation(BaseProductTestCase):
         install_dir = '~'
         script = """
             set -e
-            cp {mount_dir}/prestoadmin-*.tar.bz2 {install_dir}
+            cp {mount_dir}/prestoadmin-*.tar.gz {install_dir}
             cd {install_dir}
-            tar jxf prestoadmin-*.tar.bz2
+            tar zxf prestoadmin-*.tar.gz
             cd prestoadmin
              ./install-prestoadmin.sh dummy_cert.cert
         """.format(mount_dir=self.cluster.mount_dir,
@@ -114,9 +114,9 @@ class TestInstallation(BaseProductTestCase):
         cert_file = os.path.basename(certifi.where())
         script = """
             set -e
-            cp {mount_dir}/prestoadmin-*.tar.bz2 {install_dir}
+            cp {mount_dir}/prestoadmin-*.tar.gz {install_dir}
             cd {install_dir}
-            tar jxf prestoadmin-*.tar.bz2
+            tar zxf prestoadmin-*.tar.gz
             cd prestoadmin
              ./install-prestoadmin.sh {mount_dir}/{cacert}
         """.format(mount_dir=self.cluster.mount_dir,
@@ -131,9 +131,9 @@ class TestInstallation(BaseProductTestCase):
         install_dir = '~'
         script = """
             set -e
-            cp {mount_dir}/prestoadmin-*.tar.bz2 {install_dir}
+            cp {mount_dir}/prestoadmin-*.tar.gz {install_dir}
             cd {install_dir}
-            tar jxf prestoadmin-*.tar.bz2
+            tar zxf prestoadmin-*.tar.gz
             cd prestoadmin
              ./install-prestoadmin.sh
         """.format(mount_dir=self.cluster.mount_dir,

@@ -53,7 +53,7 @@ class TestCollect(BaseUnitCase):
                                                PRESTOADMIN_LOG_NAME),
                                      downloaded_logs_loc)
 
-        tarfile_open_mock.assert_called_with(OUTPUT_FILENAME_FOR_LOGS, 'w:bz2')
+        tarfile_open_mock.assert_called_with(OUTPUT_FILENAME_FOR_LOGS, 'w:gz')
         tar = tarfile_open_mock.return_value
         tar.add.assert_called_with(downloaded_logs_loc,
                                    arcname=path.basename(downloaded_logs_loc))

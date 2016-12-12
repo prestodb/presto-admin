@@ -84,7 +84,7 @@ class TestInstaller(BaseProductTestCase):
     def __verify_third_party_dir(self, is_third_party_present):
         matches = fnmatch.filter(
             os.listdir(self.centos_container.get_dist_dir(unique=True)),
-            'prestoadmin-*.tar.bz2')
+            'prestoadmin-*.tar.gz')
         if len(matches) > 1:
             raise RuntimeError(
                 'More than one archive found in the dist directory ' +

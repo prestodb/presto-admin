@@ -108,7 +108,7 @@ class ConfigurableCluster(BaseCluster):
             sudo service presto stop
             sudo rpm -e presto-server-rpm
             rm -rf {install_dir}
-            rm -rf ~/prestoadmin*.tar.bz2
+            rm -rf ~/prestoadmin*.tar.gz
             rm -rf {config_dir}
             sudo rm -rf /etc/presto/
             sudo rm -rf /usr/lib/presto/

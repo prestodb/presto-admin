@@ -289,8 +289,8 @@ class GithubReleaser:
         release_url = latest_release['upload_url'].split('{')[0]
 
         # The expected names of the online and offline installers
-        online_install_name = 'prestoadmin-%s-online.tar.bz2' % release_tag
-        offline_install_name = 'prestoadmin-%s-offline.tar.bz2' % release_tag
+        online_install_name = 'prestoadmin-%s-online.tar.gz' % release_tag
+        offline_install_name = 'prestoadmin-%s-offline.tar.gz' % release_tag
 
         # Upload release assets:
         # https://developer.github.com/v3/repos/releases/#upload-a-release-asset

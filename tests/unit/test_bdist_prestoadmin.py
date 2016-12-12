@@ -195,7 +195,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
             mkpath(build_path)
             self.bdist.archive_dist(build_path, 'dist')
 
-            archive = os.path.join('dist', 'prestoadmin-1.2-offline.tar.bz2')
+            archive = os.path.join('dist', 'prestoadmin-1.2-offline.tar.gz')
             self.assertTrue(os.path.exists(archive))
         finally:
             remove_tree(os.path.dirname(build_path))
@@ -208,7 +208,7 @@ class TestBDistPrestoAdmin(BaseTestCase):
             self.bdist.online_install = True
             self.bdist.archive_dist(build_path, 'dist')
 
-            archive = os.path.join('dist', 'prestoadmin-1.2-online.tar.bz2')
+            archive = os.path.join('dist', 'prestoadmin-1.2-online.tar.gz')
             self.assertTrue(os.path.exists(archive))
         finally:
             remove_tree(os.path.dirname(build_path))

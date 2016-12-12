@@ -142,10 +142,10 @@ class bdist_prestoadmin(Command):
             archive_basename += '-offline'
         archive_file = os.path.join(dist_dir, archive_basename)
         self.mkpath(os.path.dirname(archive_file))
-        self.make_archive(archive_file, 'bztar',
+        self.make_archive(archive_file, 'gztar',
                           root_dir=os.path.dirname(build_dir),
                           base_dir=os.path.basename(build_dir))
-        logger.info('created %s.tar.bz2', archive_file)
+        logger.info('created %s.tar.gz', archive_file)
 
     def run(self):
         build_dir = self.bdist_dir

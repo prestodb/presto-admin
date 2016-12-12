@@ -98,7 +98,7 @@ collect logs
     presto-admin collect logs
 
 This command gathers Presto server logs and launcher logs from the ``/var/log/presto/`` directory across the cluster along with the
-``~/.prestoadmin/log/presto-admin.log`` and creates a tar file. The final tar output will be saved at ``/tmp/presto-debug-logs.tar.bz2``.
+``~/.prestoadmin/log/presto-admin.log`` and creates a tar file. The final tar output will be saved at ``/tmp/presto-debug-logs.tar.gz``.
 
 
 Example
@@ -134,7 +134,7 @@ collect system_info
 
     presto-admin collect system_info
 
-This command gathers various system specific information from the cluster. The information is saved in a tar file at ``/tmp/presto-debug-sysinfo.tar.bz2``.
+This command gathers various system specific information from the cluster. The information is saved in a tar file at ``/tmp/presto-debug-sysinfo.tar.gz``.
 The gathered information includes:
 
  * Node specific information from Presto like node uri, last response time, recent failures, recent requests made to the node, etc.

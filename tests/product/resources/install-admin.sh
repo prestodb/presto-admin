@@ -14,8 +14,8 @@
 
 set -e
 
-cp /{mount_dir}/prestoadmin-*.tar.bz2 ~
+cp /{mount_dir}/prestoadmin-*.tar.gz ~
 cd ~
-tar -jxf prestoadmin-*.tar.bz2
+tar -zxf prestoadmin-*.tar.gz
 cd prestoadmin
 ./install-prestoadmin.sh

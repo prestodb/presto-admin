@@ -45,8 +45,8 @@ import prestoadmin
 
 TMP_PRESTO_DEBUG = '/tmp/presto-debug/'
 TMP_PRESTO_DEBUG_REMOTE = '/tmp/presto-debug-remote'
-OUTPUT_FILENAME_FOR_LOGS = '/tmp/presto-debug-logs.tar.bz2'
-OUTPUT_FILENAME_FOR_SYS_INFO = '/tmp/presto-debug-sysinfo.tar.bz2'
+OUTPUT_FILENAME_FOR_LOGS = '/tmp/presto-debug-logs.tar.gz'
+OUTPUT_FILENAME_FOR_SYS_INFO = '/tmp/presto-debug-sysinfo.tar.gz'
 PRESTOADMIN_LOG_NAME = 'presto-admin.log'
 _LOGGER = logging.getLogger(__name__)
 QUERY_REQUEST_EXT = 'v1/query/'
@@ -79,7 +79,7 @@ def copy_admin_log(log_folder):
 
 
 def make_tarfile(output_filename, source_dir):
-    tar = tarfile.open(output_filename, 'w:bz2')
+    tar = tarfile.open(output_filename, 'w:gz')
 
     try:
         tar.add(source_dir, arcname=os.path.basename(source_dir))

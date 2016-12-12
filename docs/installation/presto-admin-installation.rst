@@ -11,8 +11,8 @@ Prerequisites:
    ``python2-devel`` and for Debian/Ubuntu it is ``python-dev``.
 
 Presto Admin is packaged as an offline installer --
-``prestoadmin-<version>-offline.tar.bz2`` -- and as an online
-installer -- ``prestoadmin-<version>-online.tar.bz2``.
+``prestoadmin-<version>-offline.tar.gz`` -- and as an online
+installer -- ``prestoadmin-<version>-online.tar.gz``.
 
 The offline installer includes all of the dependencies for
 ``presto-admin``, so it can be used on a cluster without an outside
@@ -29,7 +29,7 @@ work.
 
 To install ``presto-admin``:
 
-1. Copy the installer ``prestoadmin-<version>-offline.tar.bz2`` to the
+1. Copy the installer ``prestoadmin-<version>-offline.tar.gz`` to the
 location where you want ``presto-admin`` to run.
 Note that ``presto-admin`` does not have to be on the same node(s)
 where Presto will run, though it does need to have SSH access to all
@@ -41,7 +41,7 @@ of the nodes in the cluster.
 2. Extract and run the installation script from within the ``prestoadmin`` directory.
 ::
 
- $ tar xvf prestoadmin-<version>-offline.tar.bz2
+ $ tar xvf prestoadmin-<version>-offline.tar.gz
  $ cd prestoadmin
  $ ./install-prestoadmin.sh
 

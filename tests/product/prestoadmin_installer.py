@@ -71,7 +71,7 @@ class PrestoadminInstaller(BaseInstaller):
         if (not os.path.isdir(cluster.get_dist_dir(unique)) or
                 not fnmatch.filter(
                     os.listdir(cluster.get_dist_dir(unique)),
-                    'prestoadmin-*.tar.bz2')):
+                    'prestoadmin-*.tar.gz')):
             self._build_installer_in_docker(cluster, unique=unique)
         return cluster.get_dist_dir(unique)
 
@@ -120,7 +120,7 @@ class PrestoadminInstaller(BaseInstaller):
                 'mv %s/presto-admin ~/\n'
                 'cd ~/presto-admin\n'
                 'make %s\n'
-                'cp dist/prestoadmin-*.tar.bz2 %s'
+                'cp dist/prestoadmin-*.tar.gz %s'
                 % (installer_container.mount_dir,
                    'dist' if online_installer else 'dist-offline',
                    installer_container.mount_dir),
@@ -137,7 +137,7 @@ class PrestoadminInstaller(BaseInstaller):
             )
             installer_file = fnmatch.filter(
                 os.listdir(local_container_dist_dir),
-                'prestoadmin-*.tar.bz2')[0]
+                'prestoadmin-*.tar.gz')[0]
             shutil.copy(
                 os.path.join(local_container_dist_dir, installer_file),
                 cluster.get_dist_dir(unique))
@@ -147,7 +147,7 @@ class PrestoadminInstaller(BaseInstaller):
     @staticmethod
     def _copy_dist_to_host(cluster, local_dist_dir, dest_host):
         for dist_file in os.listdir(local_dist_dir):
-            if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.bz2"):
+            if fnmatch.fnmatch(dist_file, "prestoadmin-*.tar.gz"):
                 cluster.copy_to_host(
                     os.path.join(local_dist_dir, dist_file),
                     dest_host)
