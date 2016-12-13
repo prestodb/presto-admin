@@ -16,7 +16,7 @@ import os
 from StringIO import StringIO
 
 from fabric.context_managers import settings, hide
-from fabric.operations import get, sudo
+from fabric.operations import get, run
 from fabric.state import env
 from fabric.utils import error
 from prestoadmin.config import get_conf_from_properties_data
@@ -67,11 +67,11 @@ class PrestoConfig:
             data = StringIO()
             with settings(host_string='%s@%s' % (env.user, config_host)):
                 with hide('stderr', 'stdout'):
-                    temp_dir = sudo('mktemp -d /tmp/prestoadmin.XXXXXXXXXXXXXX')
+                    temp_dir = run('mktemp -d /tmp/prestoadmin.XXXXXXXXXXXXXX')
                 try:
                     get(config_path, data, use_sudo=True, temp_dir=temp_dir)
                 finally:
-                    sudo('rm -r %s' % temp_dir)
+                    run('rm -r %s' % temp_dir)
 
             data.seek(0)
             presto_config_dict = get_conf_from_properties_data(data)
