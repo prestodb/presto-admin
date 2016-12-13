@@ -15,8 +15,8 @@ import logging
 import os
 from StringIO import StringIO
 
-from fabric.context_managers import settings
-from fabric.operations import get
+from fabric.context_managers import settings, hide
+from fabric.operations import get, sudo
 from fabric.state import env
 from fabric.utils import error
 from prestoadmin.config import get_conf_from_properties_data
@@ -66,12 +66,17 @@ class PrestoConfig:
         try:
             data = StringIO()
             with settings(host_string='%s@%s' % (env.user, config_host)):
-                get(config_path, data, use_sudo=True)
+                with hide('stderr', 'stdout'):
+                    temp_dir = sudo('mktemp -d /tmp/prestoadmin.XXXXXXXXXXXXXX')
+                try:
+                    get(config_path, data, use_sudo=True, temp_dir=temp_dir)
+                finally:
+                    sudo('rm -r %s' % temp_dir)
 
             data.seek(0)
             presto_config_dict = get_conf_from_properties_data(data)
-        except:
-            _LOGGER.info('Could not find Presto config.')
+        except BaseException as e:
+            _LOGGER.info('Could not find Presto config.', e)
             presto_config_dict = None
         return PrestoConfig(presto_config_dict, config_path, config_host)
 
