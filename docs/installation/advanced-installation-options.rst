@@ -18,7 +18,7 @@ with your own certificates:
 
 ::
 
- sudo ./install-prestoadmin.sh <path_to_cert>/cacert.pem
+ ./install-prestoadmin.sh <path_to_cert>/cacert.pem
 
 Coordinator failover
 --------------------
