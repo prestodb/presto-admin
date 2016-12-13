@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.package &mdash; presto-admin 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.package</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for rpm package deploy and install using presto-admin</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hide</span><span class="p">,</span> <span class="n">shell_env</span>
+<span class="kn">from</span> <span class="nn">fabric.decorators</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">runs_once</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">put</span><span class="p">,</span> <span class="n">os</span><span class="p">,</span> <span class="n">local</span>
+<span class="kn">from</span> <span class="nn">fabric.state</span> <span class="kn">import</span> <span class="n">env</span>
+<span class="kn">from</span> <span class="nn">fabric.tasks</span> <span class="kn">import</span> <span class="n">execute</span>
+<span class="kn">from</span> <span class="nn">fabric.utils</span> <span class="kn">import</span> <span class="n">abort</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.standalone.config</span> <span class="kn">import</span> <span class="n">StandaloneConfig</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.base_config</span> <span class="kn">import</span> <span class="n">requires_config</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">import</span> <span class="n">get_host_list</span>
+
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;install&#39;</span><span class="p">,</span> <span class="s1">&#39;uninstall&#39;</span><span class="p">]</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="install"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.package.install">[docs]</a><span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Install the rpm package on the cluster</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        local_path: Absolute path to the rpm to be installed</span>
+<span class="sd">        --nodeps (optional): Flag to indicate if rpm install</span>
+<span class="sd">            should ignore checking package dependencies. Equivalent</span>
+<span class="sd">            to adding --nodeps flag to rpm -i.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">check_if_valid_rpm</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">execute</span><span class="p">(</span><span class="n">deploy_install</span><span class="p">,</span> <span class="n">local_path</span><span class="p">,</span> <span class="n">hosts</span><span class="o">=</span><span class="n">get_host_list</span><span class="p">())</span></div>
+
+
+<span class="k">def</span> <span class="nf">check_if_valid_rpm</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Checking rpm checksum to see if it is corrupted&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s1">&#39;warnings&#39;</span><span class="p">,</span> <span class="s1">&#39;stdout&#39;</span><span class="p">),</span> <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">local</span><span class="p">(</span><span class="s1">&#39;rpm -K --nosignature &#39;</span> <span class="o">+</span> <span class="n">local_path</span><span class="p">,</span> <span class="n">capture</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;MD5 NOT OK&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Corrupted RPM. Try downloading the RPM again.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">deploy_install</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="n">deploy_action</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">rpm_install</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">deploy_upgrade</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+    <span class="n">deploy_action</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">rpm_upgrade</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">deploy_action</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">rpm_action</span><span class="p">):</span>
+    <span class="n">deploy</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
+    <span class="n">rpm_action</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">local_path</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="n">local_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+        <span class="n">abort</span><span class="p">(</span><span class="s1">&#39;RPM file not found at </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="n">local_path</span><span class="p">)</span>
+
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deploying rpm on </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Deploying rpm on </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;mkdir -p &#39;</span> <span class="o">+</span> <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">)</span>
+    <span class="n">ret_list</span> <span class="o">=</span> <span class="n">put</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ret_list</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failure during put. Now using /tmp as temp dir...&quot;</span><span class="p">)</span>
+        <span class="n">ret_list</span> <span class="o">=</span> <span class="n">put</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span>
+                       <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="s1">&#39;/tmp&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ret_list</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Package deployed successfully on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_rpm_install</span><span class="p">(</span><span class="n">package_path</span><span class="p">):</span>
+    <span class="n">nodeps</span> <span class="o">=</span> <span class="n">_nodeps_rpm_option</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s1">&#39;java8_home&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">env</span> <span class="ow">or</span> <span class="n">env</span><span class="o">.</span><span class="n">java8_home</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rpm -i </span><span class="si">%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">package_path</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">shell_env</span><span class="p">(</span><span class="n">JAVA8_HOME</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">env</span><span class="o">.</span><span class="n">java8_home</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rpm -i </span><span class="si">%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nodeps</span><span class="p">,</span> <span class="n">package_path</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_nodeps_rpm_option</span><span class="p">():</span>
+    <span class="n">nodeps</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">nodeps</span><span class="p">:</span>
+        <span class="n">nodeps</span> <span class="o">=</span> <span class="s1">&#39;--nodeps &#39;</span>
+    <span class="k">return</span> <span class="n">nodeps</span>
+
+
+<span class="k">def</span> <span class="nf">rpm_install</span><span class="p">(</span><span class="n">rpm_name</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Installing the rpm&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_rpm_install</span><span class="p">(</span><span class="n">_rpm_path</span><span class="p">(</span><span class="n">rpm_name</span><span class="p">))</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Package installed successfully on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_rpm_path</span><span class="p">(</span><span class="n">rpm_filename</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_PACKAGES_PATH</span><span class="p">,</span> <span class="n">rpm_filename</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">rpm_upgrade</span><span class="p">(</span><span class="n">rpm_name</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Upgrading the rpm&quot;</span><span class="p">)</span>
+    <span class="n">rpm_path</span> <span class="o">=</span> <span class="n">_rpm_path</span><span class="p">(</span><span class="n">rpm_name</span><span class="p">)</span>
+    <span class="n">package_name</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rpm -qp --queryformat </span><span class="se">\&#39;</span><span class="si">%%</span><span class="s1">{NAME}</span><span class="se">\&#39;</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">rpm_path</span><span class="p">,</span>
+                        <span class="n">quiet</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">package_name</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Corrupted RPM file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">rpm_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_rpm_uninstall</span><span class="p">(</span><span class="n">package_name</span><span class="p">)</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_rpm_install</span><span class="p">(</span><span class="n">rpm_path</span><span class="p">)</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Package upgraded successfully on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="uninstall"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.package.uninstall">[docs]</a><span class="k">def</span> <span class="nf">uninstall</span><span class="p">(</span><span class="n">rpm_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uninstall the rpm package from the cluster</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rpm_name: Name of the rpm to be uninstalled</span>
+<span class="sd">        --nodeps (optional): Flag to indicate if rpm uninstall) should ignore checking package dependencies. Equivalent</span>
+<span class="sd">            to adding --nodeps flag to rpm -e.</span>
+<span class="sd">        --force (optional): Flag to indicate that rpm uninstall should not fail if package is not installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">execute</span><span class="p">(</span><span class="n">rpm_uninstall</span><span class="p">,</span> <span class="n">rpm_name</span><span class="p">,</span> <span class="n">hosts</span><span class="o">=</span><span class="n">get_host_list</span><span class="p">())</span></div>
+
+
+<span class="k">def</span> <span class="nf">rpm_uninstall</span><span class="p">(</span><span class="n">package_name</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Uninstalling the rpm&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_rpm_installed</span><span class="p">(</span><span class="n">package_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">env</span><span class="o">.</span><span class="n">force</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s1">&#39;Package is not installed: &#39;</span> <span class="o">+</span> <span class="n">package_name</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">_rpm_uninstall</span><span class="p">(</span><span class="n">package_name</span><span class="p">)</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Package uninstalled successfully on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">is_rpm_installed</span><span class="p">(</span><span class="n">package_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rpm -qi </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">package_name</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">succeeded</span>
+
+
+<span class="k">def</span> <span class="nf">_rpm_uninstall</span><span class="p">(</span><span class="n">package_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rpm -e </span><span class="si">%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_nodeps_rpm_option</span><span class="p">(),</span> <span class="n">package_name</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Setting up Presto Admin on an Amazon EMR cluster &mdash; presto-admin 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.0 documentation" href="index.html" />
+    <link rel="up" title="User Guide" href="user-guide.html" />
+    <link rel="next" title="Advanced Installation Options" href="installation/advanced-installation-options.html" />
+    <link rel="prev" title="Upgrading Presto-Admin" href="installation/presto-admin-upgrade.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation/advanced-installation-options.html" title="Advanced Installation Options"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation/presto-admin-upgrade.html" title="Upgrading Presto-Admin"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="presto-admin-on-emr-label"></span><div class="section" id="setting-up-presto-admin-on-an-amazon-emr-cluster">
+<h1>Setting up Presto Admin on an Amazon EMR cluster<a class="headerlink" href="#setting-up-presto-admin-on-an-amazon-emr-cluster" title="Permalink to this headline">¶</a></h1>
+<p>To install, configure and run Presto Admin on an Amazon EMR cluster, follow the instructions in <a class="reference internal" href="quick-start-guide.html#quick-start-guide-label"><span class="std std-ref">Quick Start Guide</span></a>, but pay attention to the notes or sections specfic to EMR cluster. We reiterate these EMR specific caveats below:</p>
+<ul>
+<li><p class="first">To install Presto Admin on an Amazon EMR cluster, follow the instructions in <a class="reference internal" href="installation/presto-admin-installation.html#presto-admin-installation-label"><span class="std std-ref">Installing Presto Admin</span></a> except for the following difference:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Use the online installer instead of the offline installer (see explanation <a class="reference internal" href="installation/presto-admin-installation.html#presto-admin-installation-label"><span class="std std-ref">Installing Presto Admin</span></a>).</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">To configure Presto Admin on an Amazon EMR cluster, follow the instructions in <a class="reference internal" href="installation/presto-admin-configuration.html#presto-admin-configuration-label"><span class="std std-ref">Configuring Presto-Admin</span></a>. Specifically, we recommend the following property values during the configuration:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Use <code class="docutils literal"><span class="pre">hadoop</span></code> as the <code class="docutils literal"><span class="pre">username</span></code> instead of the default username <code class="docutils literal"><span class="pre">root</span></code> in the <code class="docutils literal"><span class="pre">config.json</span></code> file.</li>
+<li>Use the host name of the EMR master node as the <code class="docutils literal"><span class="pre">coordinator</span></code> in the <code class="docutils literal"><span class="pre">config.json</span></code> file.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">To run Presto Admin on EMR, see the sections starting from <a class="reference internal" href="installation/presto-server-installation.html#presto-server-installation-label"><span class="std std-ref">Installing the Presto Server</span></a> onwards in <a class="reference internal" href="quick-start-guide.html#quick-start-guide-label"><span class="std std-ref">Quick Start Guide</span></a>) except for the following caveats:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">The default version of Java installed on an EMR cluster (up to EMR 4.4.0) is 1.7, whereas Presto requires Java 1.8. Install Java 1.8 on the EMR cluster by following the instructions in <a class="reference internal" href="installation/java-installation.html#java-installation-label"><span class="std std-ref">Installing Java 8</span></a>.</p>
+</li>
+<li><dl class="first docutils">
+<dt>For running Presto Admin commands on an EMR cluster, do the following:</dt>
+<dd><ul class="first last">
+<li><p class="first">Copy the <code class="docutils literal"><span class="pre">.pem</span></code> file associated with the Amazon EC2 key pair to the Presto Admin installation node of the EMR cluster.</p>
+</li>
+<li><p class="first">Use the <code class="docutils literal"><span class="pre">-i</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">.pem</span> <span class="pre">file&gt;</span></code> input argument when running presto-admin commands on the node.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">i</span> <span class="o">&lt;/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">.</span><span class="n">pem</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">presto_admin_command</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation/presto-admin-upgrade.html"
+                        title="previous chapter">Upgrading Presto-Admin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installation/advanced-installation-options.html"
+                        title="next chapter">Advanced Installation Options</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/emr.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation/advanced-installation-options.html" title="Advanced Installation Options"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation/presto-admin-upgrade.html" title="Upgrading Presto-Admin"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="user-guide.html" >User Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.yarn_slider.slider &mdash; presto-admin 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.yarn_slider.slider</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for installing and uninstalling slider.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">env</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">abort</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">put</span><span class="p">,</span> <span class="n">sudo</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.yarn_slider.config</span> <span class="kn">import</span> <span class="n">SliderConfig</span><span class="p">,</span> \
+    <span class="n">DIR</span><span class="p">,</span> <span class="n">SLIDER_MASTER</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.base_config</span> <span class="kn">import</span> <span class="n">requires_config</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">import</span> <span class="n">task_by_rolename</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;install&#39;</span><span class="p">,</span> <span class="s1">&#39;uninstall&#39;</span><span class="p">]</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">SliderConfig</span><span class="p">)</span>
+<span class="nd">@task_by_rolename</span><span class="p">(</span><span class="n">SLIDER_MASTER</span><span class="p">)</span>
+<div class="viewcode-block" id="install"><a class="viewcode-back" href="../../../prestoadmin.yarn_slider.html#prestoadmin.yarn_slider.slider.install">[docs]</a><span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="n">slider_tarball</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Install slider on the slider master. You must provide a tar file on the</span>
+<span class="sd">    local machine that contains the slider distribution.</span>
+
+<span class="sd">    :param slider_tarball: The gzipped tar file containing the Apache Slider</span>
+<span class="sd">                           distribution</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">deploy_install</span><span class="p">(</span><span class="n">slider_tarball</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">deploy_install</span><span class="p">(</span><span class="n">slider_tarball</span><span class="p">):</span>
+    <span class="n">slider_dir</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">conf</span><span class="p">[</span><span class="n">DIR</span><span class="p">]</span>
+    <span class="n">slider_parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">slider_dir</span><span class="p">)</span>
+    <span class="n">slider_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">slider_parent</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">slider_tarball</span><span class="p">))</span>
+
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;mkdir -p </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">slider_dir</span><span class="p">))</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">put</span><span class="p">(</span><span class="n">slider_tarball</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">slider_parent</span><span class="p">,</span> <span class="n">slider_file</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="s1">&#39;Failed to send slider tarball </span><span class="si">%s</span><span class="s1"> to directory </span><span class="si">%s</span><span class="s1"> on host </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+              <span class="p">(</span><span class="n">slider_tarball</span><span class="p">,</span> <span class="n">slider_dir</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">))</span>
+
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;gunzip -c </span><span class="si">%s</span><span class="s1"> | tar -x -C </span><span class="si">%s</span><span class="s1"> --strip-components=1 &amp;&amp; rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+         <span class="p">(</span><span class="n">slider_file</span><span class="p">,</span> <span class="n">slider_dir</span><span class="p">,</span> <span class="n">slider_file</span><span class="p">))</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">SliderConfig</span><span class="p">)</span>
+<span class="nd">@task_by_rolename</span><span class="p">(</span><span class="n">SLIDER_MASTER</span><span class="p">)</span>
+<div class="viewcode-block" id="uninstall"><a class="viewcode-back" href="../../../prestoadmin.yarn_slider.html#prestoadmin.yarn_slider.slider.uninstall">[docs]</a><span class="k">def</span> <span class="nf">uninstall</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uninstall slider from the slider master.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rm -r &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">conf</span><span class="p">[</span><span class="n">DIR</span><span class="p">]))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

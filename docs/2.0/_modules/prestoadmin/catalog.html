@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.catalog &mdash; presto-admin 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.catalog</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for presto catalog configurations</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">fabric.utils</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">env</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">hide</span>
+<span class="kn">from</span> <span class="nn">fabric.contrib</span> <span class="kn">import</span> <span class="n">files</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">os</span><span class="p">,</span> <span class="n">get</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.deploy</span> <span class="kn">import</span> <span class="n">secure_create_directory</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.standalone.config</span> <span class="kn">import</span> <span class="n">StandaloneConfig</span><span class="p">,</span> \
+    <span class="n">PRESTO_STANDALONE_USER_GROUP</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.base_config</span> <span class="kn">import</span> <span class="n">requires_config</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigFileNotFoundError</span><span class="p">,</span> \
+    <span class="n">ConfigurationError</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">import</span> <span class="n">put_secure</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.filesystem</span> <span class="kn">import</span> <span class="n">ensure_directory_exists</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.local_config_util</span> <span class="kn">import</span> <span class="n">get_catalog_directory</span>
+
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;add&#39;</span><span class="p">,</span> <span class="s1">&#39;remove&#39;</span><span class="p">]</span>
+<span class="n">COULD_NOT_REMOVE</span> <span class="o">=</span> <span class="s1">&#39;Could not remove catalog&#39;</span>
+
+
+<span class="c1"># we deploy catalog files with 0600 permissions because they can contain passwords</span>
+<span class="c1"># that should not be world readable</span>
+<span class="k">def</span> <span class="nf">deploy_files</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">local_dir</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">,</span> <span class="n">user_group</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mo">0600</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Deploying configurations for &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">filenames</span><span class="p">))</span>
+    <span class="n">secure_create_directory</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="n">PRESTO_STANDALONE_USER_GROUP</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="n">put_secure</span><span class="p">(</span><span class="n">user_group</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">remote_dir</span><span class="p">,</span>
+                   <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">gather_catalogs</span><span class="p">(</span><span class="n">local_config_dir</span><span class="p">,</span> <span class="n">allow_overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">local_catalog_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_config_dir</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="s1">&#39;catalog&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_overwrite</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">local_catalog_dir</span><span class="p">):</span>
+        <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Refusing to overwrite </span><span class="si">%s</span><span class="s2">. Use &#39;overwrite&#39; &quot;</span>
+                           <span class="s2">&quot;option to overwrite.&quot;</span> <span class="o">%</span> <span class="n">local_catalog_dir</span><span class="p">)</span>
+    <span class="n">ensure_directory_exists</span><span class="p">(</span><span class="n">local_catalog_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">files</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CATALOG_DIR</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">get</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CATALOG_DIR</span><span class="p">,</span> <span class="n">local_catalog_dir</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+
+<span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_catalog_directory</span><span class="p">(),</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Validating catalog configuration: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">file_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s1">&#39;connector.name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_content</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Catalog configuration </span><span class="si">%s</span><span class="s1"> does not contain &#39;</span>
+                           <span class="s1">&#39;connector.name&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s1">&#39;Error validating &#39;</span> <span class="o">+</span> <span class="n">file_path</span><span class="p">,</span>
+                               <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="add"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.catalog.add">[docs]</a><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deploy configuration for a catalog onto a cluster.</span>
+
+<span class="sd">    E.g.: &#39;presto-admin catalog add tpch&#39;</span>
+<span class="sd">    deploys a configuration file for the tpch connector.  The configuration is</span>
+<span class="sd">    defined by tpch.properties in the local catalog directory, which defaults to</span>
+<span class="sd">    ~/.prestoadmin/catalog.</span>
+
+<span class="sd">    If no catalog name is specified, then  configurations for all catalogs</span>
+<span class="sd">    in the catalog directory will be deployed</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        name - Name of the catalog to be added</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catalog_dir</span> <span class="o">=</span> <span class="n">get_catalog_directory</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.properties&#39;</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">catalog_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigFileNotFoundError</span><span class="p">(</span>
+                <span class="n">config_path</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="s1">&#39;Configuration for catalog &#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; not found&#39;</span><span class="p">)</span>
+        <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">filename</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">catalog_dir</span><span class="p">):</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Cannot add catalogs because directory </span><span class="si">%s</span><span class="s1"> does not exist&#39;</span>
+                   <span class="o">%</span> <span class="n">catalog_dir</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ConfigFileNotFoundError</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">catalog_dir</span><span class="p">,</span>
+                                      <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">filenames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">catalog_dir</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Directory </span><span class="si">%s</span><span class="s1"> is empty. No catalogs will be deployed&#39;</span> <span class="o">%</span>
+                <span class="n">catalog_dir</span><span class="p">)</span>
+            <span class="k">return</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">validate</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="n">filenames</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Adding catalog configurations: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">filenames</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Deploying </span><span class="si">%s</span><span class="s1"> catalog configurations on: </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span>
+          <span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filenames</span><span class="p">),</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">))</span>
+
+    <span class="n">deploy_files</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">catalog_dir</span><span class="p">,</span>
+                 <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CATALOG_DIR</span><span class="p">,</span> <span class="n">PRESTO_STANDALONE_USER_GROUP</span><span class="p">)</span></div>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="remove"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.catalog.remove">[docs]</a><span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove a catalog from the cluster.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        name - Name of the catalog to be removed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;] Removing catalog: &#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">remove_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CATALOG_DIR</span><span class="p">,</span>
+                                   <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.properties&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">ret</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">COULD_NOT_REMOVE</span> <span class="ow">in</span> <span class="n">ret</span><span class="p">:</span>
+            <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] Catalog removed. Restart the server for the change &#39;</span>
+                  <span class="s1">&#39;to take effect&#39;</span> <span class="o">%</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Failed to remove catalog &#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.</span><span class="se">\n\t</span><span class="s1">&#39;</span> <span class="o">+</span>
+                           <span class="n">ret</span><span class="p">)</span>
+
+    <span class="n">local_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_catalog_directory</span><span class="p">(),</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.properties&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span></div>
+
+
+<span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;if [ -f </span><span class="si">%(path)s</span><span class="s1"> ] ; &#39;</span>
+              <span class="s1">&#39;then rm </span><span class="si">%(path)s</span><span class="s1"> ; &#39;</span>
+              <span class="s1">&#39;else echo &quot;</span><span class="si">%(could_not_remove)s</span><span class="s1"> </span><span class="se">\&#39;</span><span class="si">%(name)s</span><span class="se">\&#39;</span><span class="s1">. &#39;</span>
+              <span class="s1">&#39;No such file </span><span class="se">\&#39;</span><span class="si">%(path)s</span><span class="se">\&#39;</span><span class="s1">&quot;; fi&#39;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">hide</span><span class="p">(</span><span class="s1">&#39;stderr&#39;</span><span class="p">,</span> <span class="s1">&#39;stdout&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">sudo</span><span class="p">(</span><span class="n">script</span> <span class="o">%</span>
+                    <span class="p">{</span><span class="s1">&#39;path&#39;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
+                     <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span>
+                     <span class="s1">&#39;could_not_remove&#39;</span><span class="p">:</span> <span class="n">COULD_NOT_REMOVE</span><span class="p">})</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

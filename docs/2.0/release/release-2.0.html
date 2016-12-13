@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Release 2.0 &mdash; presto-admin 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.0 documentation" href="../index.html" />
+    <link rel="up" title="Release Notes" href="../release.html" />
+    <link rel="next" title="Release 1.5" href="release-1.5.html" />
+    <link rel="prev" title="Release Notes" href="../release.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release-1.5.html" title="Release 1.5"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../release.html" title="Release Notes"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../release.html" accesskey="U">Release Notes</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="release-2-0">
+<h1>Release 2.0<a class="headerlink" href="#release-2-0" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="new-features">
+<h2>New Features<a class="headerlink" href="#new-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Make presto-admin log and configuration directories configurable. They can be
+set using the environment variables <code class="docutils literal"><span class="pre">PRESTO_ADMIN_LOG_DIR</span></code> and
+<code class="docutils literal"><span class="pre">PRESTO_ADMIN_CONFIG_DIR</span></code>.</li>
+<li>Change the default configuration directory to <code class="docutils literal"><span class="pre">~/.prestoadmin</span></code> and the
+default log directory to <code class="docutils literal"><span class="pre">~/.prestoadmin/log</span></code>.</li>
+<li>Remove the requirement for running and installing presto-admin with sudo.
+The user specified in <code class="docutils literal"><span class="pre">config.json</span></code> still needs sudo access on the Presto
+nodes in order to execute commands like installing the RPM and setting
+permissions on the configuration files.</li>
+<li>Rename the <code class="docutils literal"><span class="pre">connectors</span></code> directory to <code class="docutils literal"><span class="pre">catalog</span></code> to match the Presto
+nomenclature.</li>
+<li>Rename the <code class="docutils literal"><span class="pre">connector</span> <span class="pre">add</span></code> and <code class="docutils literal"><span class="pre">connector</span> <span class="pre">remove</span></code>. commands to
+<code class="docutils literal"><span class="pre">catalog</span> <span class="pre">add</span></code> and <code class="docutils literal"><span class="pre">catalog</span> <span class="pre">remove</span></code>.</li>
+<li>Add experimental support for connecting to a Presto server with internal
+communication via HTTPS and LDAP, where the HTTP connection is disabled.</li>
+<li>Allow specifying which python interpreter to use as an argument to the
+presto-admin installation script.</li>
+<li>Add <code class="docutils literal"><span class="pre">G1HeapRegionSize=32M</span></code> to the jvm.config defaults as suggested by the
+Presto documentation.</li>
+</ul>
+</div>
+<div class="section" id="bug-fixes">
+<h2>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Keep the <code class="docutils literal"><span class="pre">node.id</span></code> in Presto&#8217;s <code class="docutils literal"><span class="pre">node.properties</span></code> file consistent across
+configuration updates.</li>
+<li>Change the permissions on the Presto catalog directory to <code class="docutils literal"><span class="pre">755</span></code> and the
+owner to``presto:presto``.</li>
+<li>Use <code class="docutils literal"><span class="pre">catalog.config-dir</span></code> instead of <code class="docutils literal"><span class="pre">plugin.config-dir</span></code> in the
+<code class="docutils literal"><span class="pre">node.properties</span></code> defaults. <code class="docutils literal"><span class="pre">plugin.config-dir</span></code> has been deprecated
+in Presto since version 0.113.</li>
+</ul>
+</div>
+<div class="section" id="compatibility-notes">
+<h2>Compatibility Notes<a class="headerlink" href="#compatibility-notes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The locations of config and log directories have been changed</li>
+<li>The <code class="docutils literal"><span class="pre">connectors</span></code> directory has been renamed to <code class="docutils literal"><span class="pre">catalog</span></code>.</li>
+<li>The <code class="docutils literal"><span class="pre">connector</span></code> commands have been renamed to <code class="docutils literal"><span class="pre">catalog</span></code>.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Release 2.0</a><ul>
+<li><a class="reference internal" href="#new-features">New Features</a></li>
+<li><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
+<li><a class="reference internal" href="#compatibility-notes">Compatibility Notes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../release.html"
+                        title="previous chapter">Release Notes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="release-1.5.html"
+                        title="next chapter">Release 1.5</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/release/release-2.0.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release-1.5.html" title="Release 1.5"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../release.html" title="Release Notes"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../release.html" >Release Notes</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>
