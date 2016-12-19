@@ -66,7 +66,8 @@ class TestConfiguration(BaseProductTestCase):
         return dummy_prop1, dummy_prop2
 
     def _get_node_id(self, host):
-        return self.cluster.exec_cmd_on_host(host, 'grep node.id= /etc/presto/node.properties').strip()
+        return self.cluster.exec_cmd_on_host(host, 'grep node.id= /etc/presto/node.properties',
+                                             invoke_sudo=True).strip()
 
     @attr('smoketest')
     def test_configuration_deploy_show(self):

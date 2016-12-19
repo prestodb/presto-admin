@@ -390,7 +390,7 @@ query.max-memory=50GB\n"""
         node_properties_path = '/etc/presto/node.properties'
         self.assert_config_perms(host, node_properties_path)
         node_properties = self.cluster.exec_cmd_on_host(
-            host, 'cat %s' % (node_properties_path,))
+            host, 'cat %s' % (node_properties_path,), invoke_sudo=True)
         split_properties = node_properties.split('\n', 1)
         if expected_node_id:
             self.assertEqual(expected_node_id, split_properties[0])
