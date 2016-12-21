@@ -19,6 +19,7 @@ from fabric.context_managers import settings, hide
 from fabric.operations import get, run
 from fabric.state import env
 from fabric.utils import error
+
 from prestoadmin.config import get_conf_from_properties_data
 from prestoadmin.util.constants import REMOTE_CONF_DIR, CONFIG_PROPERTIES
 
@@ -60,6 +61,11 @@ class PrestoConfig:
             self.config_properties = config_properties
 
     @staticmethod
+    def from_file(config, config_path=None, config_host=None):
+        presto_config_dict = get_conf_from_properties_data(config)
+        return PrestoConfig(presto_config_dict, config_path, config_host)
+
+    @staticmethod
     def coordinator_config():
         config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
         config_host = env.roledefs['coordinator'][0]
@@ -74,11 +80,10 @@ class PrestoConfig:
                     run('rm -r %s' % temp_dir)
 
             data.seek(0)
-            presto_config_dict = get_conf_from_properties_data(data)
-        except BaseException as e:
-            _LOGGER.info('Could not find Presto config.', e)
-            presto_config_dict = None
-        return PrestoConfig(presto_config_dict, config_path, config_host)
+            return PrestoConfig.from_file(data, config_path, config_host)
+        except:
+            _LOGGER.info('Could not find Presto config.')
+            return PrestoConfig(None, config_path, config_host)
 
     def _lookup(self, key):
         result = self.config_properties.get(key, self.default_config[key])
@@ -108,6 +113,9 @@ class PrestoConfig:
         return int(self._lookup(HTTP_PORT_KEY))
 
     def use_ldap(self):
+        if not self.use_https():
+            return False
+
         if AUTHENTICATION_KEY in self.config_properties:
             return self.config_properties[AUTHENTICATION_KEY] == 'LDAP'
         return False
