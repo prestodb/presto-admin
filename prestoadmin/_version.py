@@ -15,4 +15,4 @@
 
 # This must be the last line in the file and the format must be maintained
 # even when the version is changed
-__version__ = '2.0'
+__version__ = '2.1'
