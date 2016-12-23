@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Troubleshooting &mdash; presto-admin 2.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.1 documentation" href="../index.html" />
+    <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
+    <link rel="next" title="Upgrading Presto-Admin" href="presto-admin-upgrade.html" />
+    <link rel="prev" title="Configuring Presto" href="presto-configuration.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-upgrade.html" title="Upgrading Presto-Admin"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="presto-configuration.html" title="Configuring Presto"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
+<ol class="arabic">
+<li><p class="first">To troubleshoot problems with presto-admin or Presto, you can use the
+incident report gathering commands from presto-admin to gather logs and
+other system information from your cluster. Relevant commands:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../presto-admin-commands.html#collect-logs"><span class="std std-ref">collect logs</span></a></li>
+<li><a class="reference internal" href="../presto-admin-commands.html#collect-query-info"><span class="std std-ref">collect query_info</span></a></li>
+<li><a class="reference internal" href="../presto-admin-commands.html#collect-system-info"><span class="std std-ref">collect system_info</span></a></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">You can find the <code class="docutils literal"><span class="pre">presto-admin</span></code> logs in the <code class="docutils literal"><span class="pre">~/.prestoadmin/log</span></code>
+directory.</p>
+</li>
+<li><p class="first">You can check the status of Presto on your cluster by using
+<a class="reference internal" href="../presto-admin-commands.html#server-status"><span class="std std-ref">server status</span></a>.</p>
+</li>
+<li><p class="first">If Presto is not running and you try to execute any command from the Presto CLI you might get:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ Error running command: Server refused connection: http://localhost:8080/v1/statement
+</pre></div>
+</div>
+<p>To fix this, start Presto with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ ./presto-admin server start
+</pre></div>
+</div>
+</li>
+<li><p class="first">If the Presto servers fail to start or crash soon after starting, look at
+the presto server logs on the Presto cluster <code class="docutils literal"><span class="pre">/var/log/presto</span></code> for an
+error message.  You can collect the logs locally using <a class="reference internal" href="../presto-admin-commands.html#collect-logs"><span class="std std-ref">collect logs</span></a>.
+The relevant error messages should be at the end of the log with the most
+recent timestamp.  Below are tips for some common errors:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Specifying a port that is already in use: Look at
+<a class="reference internal" href="presto-port-configuration.html#presto-port-configuration-label"><span class="std std-ref">Configuring the Presto Port</span></a> to learn how to change the port
+configuration.</li>
+<li>An error in a catalog configuration file, such as a syntax error or
+a missing connector.name property: correct the file and deploy it to the
+cluster again using <a class="reference internal" href="../presto-admin-commands.html#catalog-add"><span class="std std-ref">catalog add</span></a></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">The following error can occur if you do not have passwordless ssh enabled
+and have not provided a password or if the user requires a sudo password:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Fatal</span> <span class="n">error</span><span class="p">:</span> <span class="n">Needed</span> <span class="n">to</span> <span class="n">prompt</span> <span class="k">for</span> <span class="n">a</span> <span class="n">connection</span> <span class="ow">or</span> <span class="n">sudo</span> <span class="n">password</span> <span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="n">master</span><span class="p">),</span> <span class="n">but</span> <span class="nb">input</span> <span class="n">would</span> <span class="n">be</span> <span class="n">ambiguous</span> <span class="ow">in</span> <span class="n">parallel</span> <span class="n">mode</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../ssh-configuration.html#ssh-configuration-label"><span class="std std-ref">SSH Configuration</span></a> for information on setting up
+passwordless ssh and on providing a password, and <a class="reference internal" href="presto-admin-configuration.html#sudo-password-spec"><span class="std std-ref">Sudo Password Specification</span></a>
+for information on providing a sudo password.</p>
+</li>
+<li><p class="first">Support for connecting to a cluster with internal HTTPS and/or LDAP communication
+enabled is experimental. Make sure to check both the Presto server log and the
+<code class="docutils literal"><span class="pre">presto-admin</span></code> log to troubleshoot problems with your configuration; it may also
+be helpful to verify that you can connect to the cluster via the Presto CLI using
+HTTPS/LDAP as appropriate.</p>
+</li>
+</ol>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="presto-configuration.html"
+                        title="previous chapter">Configuring Presto</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="presto-admin-upgrade.html"
+                        title="next chapter">Upgrading Presto-Admin</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/troubleshooting-installation.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-upgrade.html" title="Upgrading Presto-Admin"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="presto-configuration.html" title="Configuring Presto"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

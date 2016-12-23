@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.coordinator &mdash; presto-admin 2.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.coordinator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for the presto coordinator&#39;s configuration.</span>
+<span class="sd">Loads and validates the coordinator.json file and creates the files needed</span>
+<span class="sd">to deploy on the presto cluster</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">env</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.node</span> <span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.presto_conf</span> <span class="kn">import</span> <span class="n">validate_presto_conf</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.local_config_util</span> <span class="kn">import</span> <span class="n">get_coordinator_directory</span>
+
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Coordinator"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.coordinator.Coordinator">[docs]</a><span class="k">class</span> <span class="nc">Coordinator</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="n">DEFAULT_PROPERTIES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;node.properties&#39;</span><span class="p">:</span>
+                          <span class="p">{</span><span class="s1">&#39;node.environment&#39;</span><span class="p">:</span> <span class="s1">&#39;presto&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;node.data-dir&#39;</span><span class="p">:</span> <span class="s1">&#39;/var/lib/presto/data&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;node.launcher-log-file&#39;</span><span class="p">:</span>
+                               <span class="s1">&#39;/var/log/presto/launcher.log&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;node.server-log-file&#39;</span><span class="p">:</span>
+                               <span class="s1">&#39;/var/log/presto/server.log&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;catalog.config-dir&#39;</span><span class="p">:</span> <span class="s1">&#39;/etc/presto/catalog&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;plugin.dir&#39;</span><span class="p">:</span> <span class="s1">&#39;/usr/lib/presto/lib/plugin&#39;</span><span class="p">},</span>
+                          <span class="s1">&#39;jvm.config&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-server&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-Xmx16G&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:-UseBiasedLocking&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:+UseG1GC&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:G1HeapRegionSize=32M&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:+ExplicitGCInvokesConcurrent&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:+HeapDumpOnOutOfMemoryError&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:+UseGCOverheadLimit&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:OnOutOfMemoryError=kill -9 %p&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-XX:ReservedCodeCacheSize=512M&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;-DHADOOP_USER_NAME=hive&#39;</span><span class="p">],</span>
+                          <span class="s1">&#39;config.properties&#39;</span><span class="p">:</span> <span class="p">{</span>
+                              <span class="s1">&#39;coordinator&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;discovery-server.enabled&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;http-server.http.port&#39;</span><span class="p">:</span> <span class="s1">&#39;8080&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;node-scheduler.include-coordinator&#39;</span><span class="p">:</span> <span class="s1">&#39;false&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;query.max-memory&#39;</span><span class="p">:</span> <span class="s1">&#39;50GB&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;query.max-memory-per-node&#39;</span><span class="p">:</span> <span class="s1">&#39;8GB&#39;</span><span class="p">}</span>
+                          <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_get_conf_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">get_coordinator_directory</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Coordinator.default_config"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.coordinator.Coordinator.default_config">[docs]</a>    <span class="k">def</span> <span class="nf">default_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_PROPERTIES</span><span class="p">[</span><span class="n">filename</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;Invalid configuration file name: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                                     <span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">==</span> <span class="s1">&#39;config.properties&#39;</span><span class="p">:</span>
+            <span class="n">coordinator</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s1">&#39;coordinator&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">workers</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">roledefs</span><span class="p">[</span><span class="s1">&#39;worker&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">coordinator</span> <span class="ow">in</span> <span class="n">workers</span><span class="p">:</span>
+                <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;node-scheduler.include-coordinator&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;true&#39;</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;discovery.uri&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;http://</span><span class="si">%s</span><span class="s1">:8080&#39;</span> <span class="o">%</span> <span class="n">coordinator</span>
+        <span class="k">return</span> <span class="n">conf</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Coordinator.validate"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.coordinator.Coordinator.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">conf</span><span class="p">):</span>
+        <span class="n">validate_presto_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;coordinator&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;config.properties&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;Must specify coordinator=true in &#39;</span>
+                                     <span class="s1">&#39;coordinator</span><span class="se">\&#39;</span><span class="s1">s config.properties&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;config.properties&#39;</span><span class="p">][</span><span class="s1">&#39;coordinator&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;Coordinator cannot be false in the &#39;</span>
+                                     <span class="s1">&#39;coordinator</span><span class="se">\&#39;</span><span class="s1">s config.properties.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">conf</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

@@ -1,0 +1,774 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.util package &mdash; presto-admin 2.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.1 documentation" href="index.html" />
+    <link rel="up" title="prestoadmin package" href="prestoadmin.html" />
+    <link rel="next" title="prestoadmin.yarn_slider package" href="prestoadmin.yarn_slider.html" />
+    <link rel="prev" title="prestoadmin.standalone package" href="prestoadmin.standalone.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.yarn_slider.html" title="prestoadmin.yarn_slider package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.standalone.html" title="prestoadmin.standalone package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 2.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="prestoadmin.html" accesskey="U">prestoadmin package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="prestoadmin-util-package">
+<h1>prestoadmin.util package<a class="headerlink" href="#prestoadmin-util-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-prestoadmin.util.all_write_handler">
+<span id="prestoadmin-util-all-write-handler-module"></span><h2>prestoadmin.util.all_write_handler module<a class="headerlink" href="#module-prestoadmin.util.all_write_handler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="prestoadmin.util.all_write_handler.AllWriteTimedRotatingFileHandler">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.all_write_handler.</code><code class="descname">AllWriteTimedRotatingFileHandler</code><span class="sig-paren">(</span><em>filename</em>, <em>when='h'</em>, <em>interval=1</em>, <em>backupCount=0</em>, <em>encoding=None</em>, <em>delay=False</em>, <em>utc=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/all_write_handler.html#AllWriteTimedRotatingFileHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.all_write_handler.AllWriteTimedRotatingFileHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">logging.handlers.TimedRotatingFileHandler</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.application">
+<span id="prestoadmin-util-application-module"></span><h2>prestoadmin.util.application module<a class="headerlink" href="#module-prestoadmin.util.application" title="Permalink to this headline">¶</a></h2>
+<p>Logic at the application level for logging and exception handling</p>
+<dl class="class">
+<dt id="prestoadmin.util.application.Application">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.application.</code><code class="descname">Application</code><span class="sig-paren">(</span><em>name</em>, <em>version=None</em>, <em>log_file_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/application.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.application.Application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A generic application entry point.  Provides logging and exception handling
+features.  This class is expected to be used as a base class for various
+applications.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- human readable name for the application</strong> (<em>name</em>) &#8211; </li>
+<li><strong>- the version of the application, as a string</strong> (<em>version</em>) &#8211; </li>
+<li><strong>- optional name of the log file including whatever</strong> (<em>log_file_path</em>) &#8211; </li>
+<li><strong>you may want to use.  For example, 'foo.log' would create</strong> (<em>extension</em>) &#8211; </li>
+<li><strong>file called 'foo.log' in the default presto-admin logging directory</strong> (<em>a</em>) &#8211; </li>
+<li><strong>tree.</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.application.entry_point">
+<code class="descclassname">prestoadmin.util.application.</code><code class="descname">entry_point</code><span class="sig-paren">(</span><em>name</em>, <em>version=None</em>, <em>log_file_path=None</em>, <em>application_class=&lt;class 'prestoadmin.util.application.Application'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/application.html#entry_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.application.entry_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator for application entry points.  The decorated function will
+be wrapped in an Application object and executed in that safe environment.
+Note that decorating a function with this decorator will not actually
+cause it to be invoked.  You must explicitly call the function in the
+script.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- human readable name for the application</strong> (<em>name</em>) &#8211; </li>
+<li><strong>- the version of the application, as a string</strong> (<em>version</em>) &#8211; </li>
+<li><strong>- optional name of the log file including whatever</strong> (<em>log_file_path</em>) &#8211; </li>
+<li><strong>you may want to use.  For example, 'foo.log' would create</strong> (<em>extension</em>) &#8211; </li>
+<li><strong>file called 'foo.log' in the default prestoadmin logging directory</strong> (<em>a</em>) &#8211; </li>
+<li><strong>tree.</strong> &#8211; </li>
+<li><strong>- Type of application to run. The default is</strong> (<em>application_class</em>) &#8211; </li>
+<li><strong>but there can be subclasses of that class.</strong> (<a class="reference internal" href="#prestoadmin.util.application.Application" title="prestoadmin.util.application.Application"><em>Application</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.base_config">
+<span id="prestoadmin-util-base-config-module"></span><h2>prestoadmin.util.base_config module<a class="headerlink" href="#module-prestoadmin.util.base_config" title="Permalink to this headline">¶</a></h2>
+<p>Module for common configuration stuff.</p>
+<dl class="class">
+<dt id="prestoadmin.util.base_config.BaseConfig">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.base_config.</code><code class="descname">BaseConfig</code><span class="sig-paren">(</span><em>config_path</em>, <em>config_items</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>BaseConfig provides the common config functionality for loading
+configuration files for presto-admin and going through the interactive
+config process if a config file isn&#8217;t present.</p>
+<p>Instances of classes that subclass BaseConfig are intended to be used with
+the &#64;requires_config decorator, which is responsible for adding an
+attribute to the task that tells main() how to load the configuration
+and subsequently for enforcing that the configuration has been loaded at
+the time the task is actually run.</p>
+<p>In order to be compatible with &#64;requires_config, subclasses must define
+a no-arguments constructor.</p>
+<dl class="method">
+<dt id="prestoadmin.util.base_config.BaseConfig.get_conf_interactive">
+<code class="descname">get_conf_interactive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig.get_conf_interactive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig.get_conf_interactive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.BaseConfig.get_config">
+<code class="descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig.get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig.get_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.BaseConfig.is_config_loaded">
+<code class="descname">is_config_loaded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig.is_config_loaded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig.is_config_loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.BaseConfig.read_conf">
+<code class="descname">read_conf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig.read_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig.read_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.BaseConfig.set_config_loaded">
+<code class="descname">set_config_loaded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig.set_config_loaded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig.set_config_loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.BaseConfig.set_env_from_conf">
+<code class="descname">set_env_from_conf</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig.set_env_from_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig.set_env_from_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.BaseConfig.write_conf">
+<code class="descname">write_conf</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#BaseConfig.write_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.BaseConfig.write_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="prestoadmin.util.base_config.MultiConfigItem">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.base_config.</code><code class="descname">MultiConfigItem</code><span class="sig-paren">(</span><em>items</em>, <em>validate</em>, <em>validate_keys</em>, <em>validate_failed_text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#MultiConfigItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.MultiConfigItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="prestoadmin.util.base_config.MultiConfigItem.collect_prompts">
+<code class="descname">collect_prompts</code><span class="sig-paren">(</span><em>l</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#MultiConfigItem.collect_prompts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.MultiConfigItem.collect_prompts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.MultiConfigItem.prompt_user">
+<code class="descname">prompt_user</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#MultiConfigItem.prompt_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.MultiConfigItem.prompt_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="prestoadmin.util.base_config.SingleConfigItem">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.base_config.</code><code class="descname">SingleConfigItem</code><span class="sig-paren">(</span><em>key</em>, <em>prompt</em>, <em>default=None</em>, <em>validate=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#SingleConfigItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.SingleConfigItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="prestoadmin.util.base_config.SingleConfigItem.collect_prompts">
+<code class="descname">collect_prompts</code><span class="sig-paren">(</span><em>l</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#SingleConfigItem.collect_prompts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.SingleConfigItem.collect_prompts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.base_config.SingleConfigItem.prompt_user">
+<code class="descname">prompt_user</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#SingleConfigItem.prompt_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.SingleConfigItem.prompt_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.base_config.requires_config">
+<code class="descclassname">prestoadmin.util.base_config.</code><code class="descname">requires_config</code><span class="sig-paren">(</span><em>config_class</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/base_config.html#requires_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.base_config.requires_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.constants">
+<span id="prestoadmin-util-constants-module"></span><h2>prestoadmin.util.constants module<a class="headerlink" href="#module-prestoadmin.util.constants" title="Permalink to this headline">¶</a></h2>
+<p>This modules contains read-only constants used throughout
+the presto admin project.</p>
+</div>
+<div class="section" id="module-prestoadmin.util.exception">
+<span id="prestoadmin-util-exception-module"></span><h2>prestoadmin.util.exception module<a class="headerlink" href="#module-prestoadmin.util.exception" title="Permalink to this headline">¶</a></h2>
+<p>This module defines error types relevant to the Presto
+administrative suite.</p>
+<dl class="exception">
+<dt id="prestoadmin.util.exception.ConfigFileNotFoundError">
+<em class="property">exception </em><code class="descclassname">prestoadmin.util.exception.</code><code class="descname">ConfigFileNotFoundError</code><span class="sig-paren">(</span><em>message=''</em>, <em>config_path=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/exception.html#ConfigFileNotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.exception.ConfigFileNotFoundError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#prestoadmin.util.exception.ConfigurationError" title="prestoadmin.util.exception.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.util.exception.ConfigurationError</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="prestoadmin.util.exception.ConfigurationError">
+<em class="property">exception </em><code class="descclassname">prestoadmin.util.exception.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>message=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/exception.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.exception.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#prestoadmin.util.exception.ExceptionWithCause" title="prestoadmin.util.exception.ExceptionWithCause"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.util.exception.ExceptionWithCause</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="prestoadmin.util.exception.ExceptionWithCause">
+<em class="property">exception </em><code class="descclassname">prestoadmin.util.exception.</code><code class="descname">ExceptionWithCause</code><span class="sig-paren">(</span><em>message=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/exception.html#ExceptionWithCause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.exception.ExceptionWithCause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
+<dl class="staticmethod">
+<dt id="prestoadmin.util.exception.ExceptionWithCause.get_cause_if_supported">
+<em class="property">static </em><code class="descname">get_cause_if_supported</code><span class="sig-paren">(</span><em>exception</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/exception.html#ExceptionWithCause.get_cause_if_supported"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.exception.ExceptionWithCause.get_cause_if_supported" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="prestoadmin.util.exception.InvalidArgumentError">
+<em class="property">exception </em><code class="descclassname">prestoadmin.util.exception.</code><code class="descname">InvalidArgumentError</code><span class="sig-paren">(</span><em>message=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/exception.html#InvalidArgumentError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.exception.InvalidArgumentError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#prestoadmin.util.exception.ExceptionWithCause" title="prestoadmin.util.exception.ExceptionWithCause"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.util.exception.ExceptionWithCause</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.exception.is_arguments_error">
+<code class="descclassname">prestoadmin.util.exception.</code><code class="descname">is_arguments_error</code><span class="sig-paren">(</span><em>exception</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/exception.html#is_arguments_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.exception.is_arguments_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.fabric_application">
+<span id="prestoadmin-util-fabric-application-module"></span><h2>prestoadmin.util.fabric_application module<a class="headerlink" href="#module-prestoadmin.util.fabric_application" title="Permalink to this headline">¶</a></h2>
+<p>Logic for starting and stopping Fabric applications.</p>
+<dl class="class">
+<dt id="prestoadmin.util.fabric_application.FabricApplication">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.fabric_application.</code><code class="descname">FabricApplication</code><span class="sig-paren">(</span><em>name</em>, <em>version=None</em>, <em>log_file_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabric_application.html#FabricApplication"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabric_application.FabricApplication" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#prestoadmin.util.application.Application" title="prestoadmin.util.application.Application"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.util.application.Application</span></code></a></p>
+<p>A Presto Fabric application entry point.  Provides logging and exception
+handling features.  Additionally cleans up Fabric network connections
+before exiting.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.fabricapi">
+<span id="prestoadmin-util-fabricapi-module"></span><h2>prestoadmin.util.fabricapi module<a class="headerlink" href="#module-prestoadmin.util.fabricapi" title="Permalink to this headline">¶</a></h2>
+<p>Module to add extensions and helpers for fabric api methods</p>
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.by_role_coordinator">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">by_role_coordinator</code><span class="sig-paren">(</span><em>host</em>, <em>f</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#by_role_coordinator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.by_role_coordinator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.by_role_worker">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">by_role_worker</code><span class="sig-paren">(</span><em>host</em>, <em>f</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#by_role_worker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.by_role_worker" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.by_rolename">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">by_rolename</code><span class="sig-paren">(</span><em>host</em>, <em>rolename</em>, <em>f</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#by_rolename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.by_rolename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.get_coordinator_role">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">get_coordinator_role</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#get_coordinator_role"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.get_coordinator_role" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.get_host_list">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">get_host_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#get_host_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.get_host_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.get_worker_role">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">get_worker_role</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#get_worker_role"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.get_worker_role" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.put_secure">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">put_secure</code><span class="sig-paren">(</span><em>user_group</em>, <em>mode</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#put_secure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.put_secure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.fabricapi.task_by_rolename">
+<code class="descclassname">prestoadmin.util.fabricapi.</code><code class="descname">task_by_rolename</code><span class="sig-paren">(</span><em>rolename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/fabricapi.html#task_by_rolename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.fabricapi.task_by_rolename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.filesystem">
+<span id="prestoadmin-util-filesystem-module"></span><h2>prestoadmin.util.filesystem module<a class="headerlink" href="#module-prestoadmin.util.filesystem" title="Permalink to this headline">¶</a></h2>
+<p>Filesystem tools.</p>
+<dl class="function">
+<dt id="prestoadmin.util.filesystem.ensure_directory_exists">
+<code class="descclassname">prestoadmin.util.filesystem.</code><code class="descname">ensure_directory_exists</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/filesystem.html#ensure_directory_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.filesystem.ensure_directory_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.filesystem.ensure_parent_directories_exist">
+<code class="descclassname">prestoadmin.util.filesystem.</code><code class="descname">ensure_parent_directories_exist</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/filesystem.html#ensure_parent_directories_exist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.filesystem.ensure_parent_directories_exist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.filesystem.write_to_file_if_not_exists">
+<code class="descclassname">prestoadmin.util.filesystem.</code><code class="descname">write_to_file_if_not_exists</code><span class="sig-paren">(</span><em>content</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/filesystem.html#write_to_file_if_not_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.filesystem.write_to_file_if_not_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.hiddenoptgroup">
+<span id="prestoadmin-util-hiddenoptgroup-module"></span><h2>prestoadmin.util.hiddenoptgroup module<a class="headerlink" href="#module-prestoadmin.util.hiddenoptgroup" title="Permalink to this headline">¶</a></h2>
+<p>An option group for which you can hide the help text.</p>
+<dl class="class">
+<dt id="prestoadmin.util.hiddenoptgroup.HiddenOptionGroup">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.hiddenoptgroup.</code><code class="descname">HiddenOptionGroup</code><span class="sig-paren">(</span><em>parser</em>, <em>title</em>, <em>description=None</em>, <em>suppress_help=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/hiddenoptgroup.html#HiddenOptionGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.hiddenoptgroup.HiddenOptionGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">optparse.OptionGroup</span></code></p>
+<p>Optparse allows you to suppress Options from the help text, but not
+groups. This class allows you to suppress the help of groups.</p>
+<dl class="method">
+<dt id="prestoadmin.util.hiddenoptgroup.HiddenOptionGroup.format_help">
+<code class="descname">format_help</code><span class="sig-paren">(</span><em>formatter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/hiddenoptgroup.html#HiddenOptionGroup.format_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.hiddenoptgroup.HiddenOptionGroup.format_help" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.httpscacertconnection">
+<span id="prestoadmin-util-httpscacertconnection-module"></span><h2>prestoadmin.util.httpscacertconnection module<a class="headerlink" href="#module-prestoadmin.util.httpscacertconnection" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="prestoadmin.util.httpscacertconnection.HTTPSCaCertConnection">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.httpscacertconnection.</code><code class="descname">HTTPSCaCertConnection</code><span class="sig-paren">(</span><em>host</em>, <em>port</em>, <em>key_file</em>, <em>cert_file</em>, <em>ca_file</em>, <em>strict</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/httpscacertconnection.html#HTTPSCaCertConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.httpscacertconnection.HTTPSCaCertConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">httplib.HTTPSConnection</span></code></p>
+<p>Class to make a HTTPS connection, with support for full client-based SSL Authentication</p>
+<dl class="method">
+<dt id="prestoadmin.util.httpscacertconnection.HTTPSCaCertConnection.connect">
+<code class="descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/httpscacertconnection.html#HTTPSCaCertConnection.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.httpscacertconnection.HTTPSCaCertConnection.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to a host on a given (SSL) port.
+If ca_file is pointing somewhere, use it to check Server Certificate.</p>
+<p>Redefined/copied and extended from httplib.py:1105 (Python 2.6.x).
+This is needed to pass cert_reqs=ssl.CERT_REQUIRED as parameter to ssl.wrap_socket(),
+which forces SSL to check server certificate against our client certificate.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.local_config_util">
+<span id="prestoadmin-util-local-config-util-module"></span><h2>prestoadmin.util.local_config_util module<a class="headerlink" href="#module-prestoadmin.util.local_config_util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="prestoadmin.util.local_config_util.get_catalog_directory">
+<code class="descclassname">prestoadmin.util.local_config_util.</code><code class="descname">get_catalog_directory</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/local_config_util.html#get_catalog_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.local_config_util.get_catalog_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.local_config_util.get_config_directory">
+<code class="descclassname">prestoadmin.util.local_config_util.</code><code class="descname">get_config_directory</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/local_config_util.html#get_config_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.local_config_util.get_config_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.local_config_util.get_coordinator_directory">
+<code class="descclassname">prestoadmin.util.local_config_util.</code><code class="descname">get_coordinator_directory</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/local_config_util.html#get_coordinator_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.local_config_util.get_coordinator_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.local_config_util.get_log_directory">
+<code class="descclassname">prestoadmin.util.local_config_util.</code><code class="descname">get_log_directory</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/local_config_util.html#get_log_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.local_config_util.get_log_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.local_config_util.get_topology_path">
+<code class="descclassname">prestoadmin.util.local_config_util.</code><code class="descname">get_topology_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/local_config_util.html#get_topology_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.local_config_util.get_topology_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.local_config_util.get_workers_directory">
+<code class="descclassname">prestoadmin.util.local_config_util.</code><code class="descname">get_workers_directory</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/local_config_util.html#get_workers_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.local_config_util.get_workers_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.parser">
+<span id="prestoadmin-util-parser-module"></span><h2>prestoadmin.util.parser module<a class="headerlink" href="#module-prestoadmin.util.parser" title="Permalink to this headline">¶</a></h2>
+<p>An extension to optparse for presto-admin which logs user parsing errors.</p>
+<dl class="class">
+<dt id="prestoadmin.util.parser.LoggingOptionParser">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.parser.</code><code class="descname">LoggingOptionParser</code><span class="sig-paren">(</span><em>usage=None</em>, <em>option_list=None</em>, <em>option_class=&lt;class optparse.Option&gt;</em>, <em>version=None</em>, <em>conflict_handler='error'</em>, <em>description=None</em>, <em>formatter=None</em>, <em>add_help_option=True</em>, <em>prog=None</em>, <em>epilog=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/parser.html#LoggingOptionParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.parser.LoggingOptionParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">optparse.OptionParser</span></code></p>
+<p>An extension to optparse which logs exceptions via the logging
+module in addition to writing the out to stderr.</p>
+<p>If used with HiddenOptionGroup, print_extended_help disables the
+suppress_help attribute of HiddenOptionGroup so as to print out
+extended helptext.</p>
+<dl class="method">
+<dt id="prestoadmin.util.parser.LoggingOptionParser.exit">
+<code class="descname">exit</code><span class="sig-paren">(</span><em>status=0</em>, <em>msg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/parser.html#LoggingOptionParser.exit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.parser.LoggingOptionParser.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.parser.LoggingOptionParser.format_epilog">
+<code class="descname">format_epilog</code><span class="sig-paren">(</span><em>formatter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/parser.html#LoggingOptionParser.format_epilog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.parser.LoggingOptionParser.format_epilog" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default format_epilog strips the newlines (using textwrap),
+so we override format_epilog here to use its own epilog</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.parser.LoggingOptionParser.print_extended_help">
+<code class="descname">print_extended_help</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/parser.html#LoggingOptionParser.print_extended_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.parser.LoggingOptionParser.print_extended_help" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.presto_config">
+<span id="prestoadmin-util-presto-config-module"></span><h2>prestoadmin.util.presto_config module<a class="headerlink" href="#module-prestoadmin.util.presto_config" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="prestoadmin.util.presto_config.PrestoConfig">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.presto_config.</code><code class="descname">PrestoConfig</code><span class="sig-paren">(</span><em>config_properties</em>, <em>config_host</em>, <em>config_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="staticmethod">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.coordinator_config">
+<em class="property">static </em><code class="descname">coordinator_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.coordinator_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.coordinator_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.default_config">
+<code class="descname">default_config</code><em class="property"> = {'internal-communication.authentication.ldap.user': None, 'http-server.http.enabled': 'true', 'http-server.https.enabled': 'false', 'http-server.https.port': '8443', 'internal-communication.authentication.ldap.password': None, 'http-server.http.port': '8080', 'internal-communication.https.keystore.path': None, 'internal-communication.https.keystore.key': None}</em><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.default_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.from_file">
+<em class="property">static </em><code class="descname">from_file</code><span class="sig-paren">(</span><em>config</em>, <em>config_path=None</em>, <em>config_host=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.from_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.get_client_keystore_password">
+<code class="descname">get_client_keystore_password</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.get_client_keystore_password"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.get_client_keystore_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.get_client_keystore_path">
+<code class="descname">get_client_keystore_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.get_client_keystore_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.get_client_keystore_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.get_http_port">
+<code class="descname">get_http_port</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.get_http_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.get_http_port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.get_https_port">
+<code class="descname">get_https_port</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.get_https_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.get_https_port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.get_ldap_password">
+<code class="descname">get_ldap_password</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.get_ldap_password"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.get_ldap_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.get_ldap_user">
+<code class="descname">get_ldap_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.get_ldap_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.get_ldap_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.use_https">
+<code class="descname">use_https</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.use_https"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.use_https" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.presto_config.PrestoConfig.use_ldap">
+<code class="descname">use_ldap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/presto_config.html#PrestoConfig.use_ldap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.presto_config.PrestoConfig.use_ldap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.remote_config_util">
+<span id="prestoadmin-util-remote-config-util-module"></span><h2>prestoadmin.util.remote_config_util module<a class="headerlink" href="#module-prestoadmin.util.remote_config_util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="prestoadmin.util.remote_config_util.lookup_catalog_directory">
+<code class="descclassname">prestoadmin.util.remote_config_util.</code><code class="descname">lookup_catalog_directory</code><span class="sig-paren">(</span><em>host</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/remote_config_util.html#lookup_catalog_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.remote_config_util.lookup_catalog_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.remote_config_util.lookup_in_config">
+<code class="descclassname">prestoadmin.util.remote_config_util.</code><code class="descname">lookup_in_config</code><span class="sig-paren">(</span><em>config_key</em>, <em>config_file</em>, <em>host</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/remote_config_util.html#lookup_in_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.remote_config_util.lookup_in_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.remote_config_util.lookup_launcher_log_file">
+<code class="descclassname">prestoadmin.util.remote_config_util.</code><code class="descname">lookup_launcher_log_file</code><span class="sig-paren">(</span><em>host</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/remote_config_util.html#lookup_launcher_log_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.remote_config_util.lookup_launcher_log_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.remote_config_util.lookup_port">
+<code class="descclassname">prestoadmin.util.remote_config_util.</code><code class="descname">lookup_port</code><span class="sig-paren">(</span><em>host</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/remote_config_util.html#lookup_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.remote_config_util.lookup_port" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the http port from config.properties http-server.http.port property
+if available.
+If the property is missing return default port 8080.
+If the file is missing or cannot parse the port number,
+throw ConfigurationError
+:param host:
+:return:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.remote_config_util.lookup_server_log_file">
+<code class="descclassname">prestoadmin.util.remote_config_util.</code><code class="descname">lookup_server_log_file</code><span class="sig-paren">(</span><em>host</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/remote_config_util.html#lookup_server_log_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.remote_config_util.lookup_server_log_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.remote_config_util.lookup_string_config">
+<code class="descclassname">prestoadmin.util.remote_config_util.</code><code class="descname">lookup_string_config</code><span class="sig-paren">(</span><em>config_value</em>, <em>config_file</em>, <em>host</em>, <em>default=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/remote_config_util.html#lookup_string_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.remote_config_util.lookup_string_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.validators">
+<span id="prestoadmin-util-validators-module"></span><h2>prestoadmin.util.validators module<a class="headerlink" href="#module-prestoadmin.util.validators" title="Permalink to this headline">¶</a></h2>
+<p>Module for validating configuration information supplied by the user.</p>
+<dl class="function">
+<dt id="prestoadmin.util.validators.is_valid_hostname">
+<code class="descclassname">prestoadmin.util.validators.</code><code class="descname">is_valid_hostname</code><span class="sig-paren">(</span><em>hostname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/validators.html#is_valid_hostname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.validators.is_valid_hostname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.validators.validate_can_connect">
+<code class="descclassname">prestoadmin.util.validators.</code><code class="descname">validate_can_connect</code><span class="sig-paren">(</span><em>user</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/validators.html#validate_can_connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.validators.validate_can_connect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.validators.validate_can_sudo">
+<code class="descclassname">prestoadmin.util.validators.</code><code class="descname">validate_can_sudo</code><span class="sig-paren">(</span><em>sudo_user</em>, <em>conn_user</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/validators.html#validate_can_sudo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.validators.validate_can_sudo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.validators.validate_host">
+<code class="descclassname">prestoadmin.util.validators.</code><code class="descname">validate_host</code><span class="sig-paren">(</span><em>host</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/validators.html#validate_host"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.validators.validate_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.validators.validate_port">
+<code class="descclassname">prestoadmin.util.validators.</code><code class="descname">validate_port</code><span class="sig-paren">(</span><em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/validators.html#validate_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.validators.validate_port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.validators.validate_username">
+<code class="descclassname">prestoadmin.util.validators.</code><code class="descname">validate_username</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/validators.html#validate_username"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.validators.validate_username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util.version_util">
+<span id="prestoadmin-util-version-util-module"></span><h2>prestoadmin.util.version_util module<a class="headerlink" href="#module-prestoadmin.util.version_util" title="Permalink to this headline">¶</a></h2>
+<p>Stuff to handle version ranges.</p>
+<dl class="class">
+<dt id="prestoadmin.util.version_util.VersionRange">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.version_util.</code><code class="descname">VersionRange</code><span class="sig-paren">(</span><em>min_version</em>, <em>max_version</em>, <em>versioned_thing=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#VersionRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.VersionRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Represents a range of version numbers [min_version, max_version).
+The interval is right-open so that you can construct a numerically
+continuous list of versions like so:
+l = [VersionRange((0, 0), (0, 5)), VersionRange((0, 5), (1, 0))]
+and for all versions v where 0.0 &lt;= v &lt; 1.0 is contained in exactly one
+VersionRange in l.</p>
+<p>Continuity between version ranges can be checked using is_continuous.</p>
+<p>VersionRanges understand how to check if a Teradata version is contained
+in a VersionRange, but do no special handling to accomodate Teradata
+versions in their internal min_version and max_version members. I.e.,
+creating a VersionRange with a Teradata version will work, but __contains__
+will not work correctly. We don&#8217;t currently need this, and hope not to.</p>
+<p>Note that the right-open interval representation of a version range does
+NOT allow the creation of a VersionRange that contains exactly one version.</p>
+<p>Note that empty intervals cannot be constructed as the serve no useful
+purpose. Specifically, we assert that min_version &lt; max_version in the
+constructor.</p>
+<dl class="method">
+<dt id="prestoadmin.util.version_util.VersionRange.is_continuous">
+<code class="descname">is_continuous</code><span class="sig-paren">(</span><em>next</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#VersionRange.is_continuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.VersionRange.is_continuous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="prestoadmin.util.version_util.VersionRange.pad_tuple">
+<em class="property">static </em><code class="descname">pad_tuple</code><span class="sig-paren">(</span><em>tup</em>, <em>length</em>, <em>pad</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#VersionRange.pad_tuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.VersionRange.pad_tuple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="prestoadmin.util.version_util.VersionRange.strip_td_suffix">
+<em class="property">static </em><code class="descname">strip_td_suffix</code><span class="sig-paren">(</span><em>version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#VersionRange.strip_td_suffix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.VersionRange.strip_td_suffix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.util.version_util.VersionRange.zero_pad">
+<code class="descname">zero_pad</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#VersionRange.zero_pad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.VersionRange.zero_pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pad out min_version, max_version, and other with zeroes to the length
+of the longest of the three. This allows subsequent comparisons to work
+as expected when tuples are of unequal length.
+Returns a tuple of tuples padded out to the same length</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="prestoadmin.util.version_util.VersionRangeList">
+<em class="property">class </em><code class="descclassname">prestoadmin.util.version_util.</code><code class="descname">VersionRangeList</code><span class="sig-paren">(</span><em>*range_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#VersionRangeList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.VersionRangeList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A VersionRangeList is a list of continuous, non-overlapping VersionRanges.
+This is guaranteed by calling VersionRange.is_continuous on all pairs of
+VersionRanges vr[i], vr[i + 1] in the list, which ensures that the list is
+both sorted in order of ascending version and that the interval
+[vr[0].min_version, vr[n].max_version) has no discontinuities.</p>
+<dl class="method">
+<dt id="prestoadmin.util.version_util.VersionRangeList.for_version">
+<code class="descname">for_version</code><span class="sig-paren">(</span><em>version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#VersionRangeList.for_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.VersionRangeList.for_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.version_util.intOrT">
+<code class="descclassname">prestoadmin.util.version_util.</code><code class="descname">intOrT</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#intOrT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.intOrT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.version_util.split_version">
+<code class="descclassname">prestoadmin.util.version_util.</code><code class="descname">split_version</code><span class="sig-paren">(</span><em>version_string</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#split_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.split_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.util.version_util.strip_tag">
+<code class="descclassname">prestoadmin.util.version_util.</code><code class="descname">strip_tag</code><span class="sig-paren">(</span><em>version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/util/version_util.html#strip_tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.util.version_util.strip_tag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Strip trailing non-numeric components from a version leaving the Teradata
+&#8216;t&#8217; on the final version component if it&#8217;s present.
+[&#8216;1&#8217;, &#8216;2&#8217;, &#8216;THREE&#8217;] -&gt; (1, 2)
+[&#8216;1&#8217;, &#8216;TWO&#8217;, &#8216;3&#8217;] -&gt; raises a ValueError
+[&#8216;0&#8217;, &#8216;115t&#8217;, &#8216;SNAPSHOT&#8217;] -&gt; (0, &#8216;115t&#8217;)
+[&#8216;ZERO&#8217;, &#8216;123t&#8217;] -&gt; raises a ValueError
+[&#8216;0&#8217;, &#8216;148&#8217;, &#8216;t&#8217;] =&gt; (0, 148, &#8216;t&#8217;)
+[&#8216;0&#8217;, &#8216;148&#8217;, &#8216;t&#8217;, 0, 1] =&gt; (0, 148, &#8216;t&#8217;, 0, 1)
+[&#8216;0&#8217;, &#8216;148&#8217;, &#8216;t&#8217;, 0, 1, &#8216;SNAPSHOT&#8217;] =&gt; (0, 148, &#8216;t&#8217;, 0, 1)</p>
+<p>This checks the components of the version from least to most significant.
+Tags are only allowed at the least significant place in a version number,
+i.e. as the right-most component.</p>
+<p>Anything that can&#8217;t be parsed as an integer that isn&#8217;t in the right-most
+position is considered an error.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>version</strong> &#8211; something that can be sliced</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a tuple containing only integer components, except for possibly
+the last one, which will be a string iff it&#8217;s an integer followed
+by the letter &#8216;t&#8217;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.util">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-prestoadmin.util" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">prestoadmin.util package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.all_write_handler">prestoadmin.util.all_write_handler module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.application">prestoadmin.util.application module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.base_config">prestoadmin.util.base_config module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.constants">prestoadmin.util.constants module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.exception">prestoadmin.util.exception module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.fabric_application">prestoadmin.util.fabric_application module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.fabricapi">prestoadmin.util.fabricapi module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.filesystem">prestoadmin.util.filesystem module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.hiddenoptgroup">prestoadmin.util.hiddenoptgroup module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.httpscacertconnection">prestoadmin.util.httpscacertconnection module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.local_config_util">prestoadmin.util.local_config_util module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.parser">prestoadmin.util.parser module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.presto_config">prestoadmin.util.presto_config module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.remote_config_util">prestoadmin.util.remote_config_util module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.validators">prestoadmin.util.validators module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util.version_util">prestoadmin.util.version_util module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.util">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prestoadmin.standalone.html"
+                        title="previous chapter">prestoadmin.standalone package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prestoadmin.yarn_slider.html"
+                        title="next chapter">prestoadmin.yarn_slider package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/prestoadmin.util.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.yarn_slider.html" title="prestoadmin.yarn_slider package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.standalone.html" title="prestoadmin.standalone package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 2.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="prestoadmin.html" >prestoadmin package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>
