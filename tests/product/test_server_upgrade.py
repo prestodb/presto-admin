@@ -132,11 +132,19 @@ class TestServerUpgrade(BaseProductTestCase):
         self.upgrade_and_assert_success(symlink)
 
     def test_configuration_preserved_on_upgrade(self):
+        book_content = 'Call me Ishmael ... FINIS'
+        book_path = '/etc/presto/moby_dick_abridged'
         self.run_prestoadmin('configuration deploy')
         for container in self.cluster.all_hosts():
             self.real_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_catalog(container)
+
+            self.cluster.write_content_to_host(book_content, book_path, host=container)
+            self.cluster.exec_cmd_on_host(container, "chown presto:games %s" % (book_path,))
+            self.cluster.exec_cmd_on_host(container, "chmod 272 %s" % (book_path,))
+            self.assert_file_content(container, book_path, book_content)
+            self.assert_file_perm_owner(container, book_path, '--w-rwx-w-', 'presto', 'games')
 
         self.add_dummy_properties_to_host(self.cluster.slaves[1])
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
@@ -146,6 +154,10 @@ class TestServerUpgrade(BaseProductTestCase):
 
         self.run_prestoadmin('server upgrade ' + path_on_cluster)
         self.assert_dummy_properties(self.cluster.slaves[1])
+
+        for container in self.cluster.all_hosts():
+            self.assert_file_content(container, book_path, book_content)
+            self.assert_file_perm_owner(container, book_path, '--w-rwx-w-', 'presto', 'games')
 
     def test_upgrade_non_root_user(self):
         self.upload_topology(
