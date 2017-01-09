@@ -34,12 +34,11 @@ from fabric.utils import warn, error, abort
 from retrying import retry, RetryError
 
 import util.filesystem
-from prestoadmin import configure_cmds
 from prestoadmin import catalog
+from prestoadmin import configure_cmds
 from prestoadmin import package
 from prestoadmin.prestoclient import PrestoClient
-from prestoadmin.standalone.config import StandaloneConfig, \
-    PRESTO_STANDALONE_USER_GROUP
+from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.exception import ConfigFileNotFoundError, ConfigurationError
@@ -475,16 +474,11 @@ def upgrade(new_rpm_path, local_config_dir=None, overwrite=False):
         local_config_dir = mkdtemp()
         print('Saving cluster configuration to %s' % local_config_dir)
 
-    configure_cmds.gather_directory(local_config_dir, overwrite)
-    filenames = catalog.gather_catalogs(local_config_dir, overwrite)
+    encoded_tar_conf = configure_cmds.gather_directory()
 
     package.deploy_upgrade(new_rpm_path)
 
-    configure_cmds.deploy_all(local_config_dir)
-    catalog.deploy_files(
-        filenames,
-        os.path.join(local_config_dir, env.host, 'catalog'),
-        constants.REMOTE_CATALOG_DIR, PRESTO_STANDALONE_USER_GROUP)
+    configure_cmds.deploy_all(encoded_tar_conf)
 
 
 def service(control=None):

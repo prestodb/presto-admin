@@ -20,20 +20,19 @@ import os
 from StringIO import StringIO
 from contextlib import closing
 
-import prestoadmin.deploy
+from fabric.context_managers import hide
 from fabric.contrib import files
 from fabric.decorators import task, serial
-from fabric.operations import get
+from fabric.operations import get, sudo
 from fabric.state import env
 from fabric.utils import abort, warn
-from prestoadmin.standalone.config import StandaloneConfig, \
-    PRESTO_STANDALONE_USER_GROUP
+
+import prestoadmin.deploy
+from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util import constants
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.constants import CONFIG_PROPERTIES, LOG_PROPERTIES, \
     JVM_CONFIG, NODE_PROPERTIES
-from prestoadmin.util.fabricapi import put_secure
-from prestoadmin.util.filesystem import ensure_parent_directories_exist
 
 __all__ = ['show']
 
@@ -76,33 +75,17 @@ def deploy(rolename=None):
             abort("Invalid Argument. Possible values: coordinator, workers")
 
 
-def gather_directory(target_directory, allow_overwrite=False):
-    fetch_all(target_directory, allow_overwrite=allow_overwrite)
+def gather_directory():
+    with hide('stdout'):
+        result = sudo(
+            "tar -c -C %s . | base64" % (constants.REMOTE_CONF_DIR,))
+        # Fabric...
+        return result.replace('\r', '')
 
 
-def deploy_all(source_directory, should_warn=True):
-    host_config_dir = os.path.join(source_directory, env.host)
-    for file_name in ALL_CONFIG:
-        local_config_file = os.path.join(host_config_dir, file_name)
-        if not os.path.exists(local_config_file):
-            if should_warn:
-                warn("No configuration file found for %s at %s"
-                     % (env.host, local_config_file))
-            continue
-        remote_config_file = os.path.join(constants.REMOTE_CONF_DIR, file_name)
-        put_secure(PRESTO_STANDALONE_USER_GROUP, 0600, local_config_file,
-                   remote_config_file, use_sudo=True)
-
-
-def fetch_all(target_directory, allow_overwrite=False):
-    host_config_dir = os.path.join(target_directory, env.host)
-    for file_name in ALL_CONFIG:
-        local_config_file = os.path.join(host_config_dir, file_name)
-        ensure_parent_directories_exist(local_config_file)
-        if not allow_overwrite and os.path.exists(local_config_file):
-            abort("Refusing to overwrite %s. Use 'overwrite' parameter "
-                  "to overwrite." % (local_config_file))
-        configuration_fetch(file_name, local_config_file)
+def deploy_all(encoded_tar_conf):
+    sudo('echo -E "%s" | base64 --decode | tar -C %s -x -v' %
+         (encoded_tar_conf, constants.REMOTE_CONF_DIR))
 
 
 def configuration_fetch(file_name, config_destination, should_warn=True):
