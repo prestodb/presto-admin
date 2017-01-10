@@ -23,7 +23,6 @@ import sys
 import urllib2
 import urlparse
 from contextlib import closing
-from tempfile import mkdtemp
 
 from fabric.api import task, sudo, env
 from fabric.context_managers import settings, hide
@@ -470,15 +469,11 @@ def upgrade(new_rpm_path, local_config_dir=None, overwrite=False):
     """
     stop()
 
-    if not local_config_dir:
-        local_config_dir = mkdtemp()
-        print('Saving cluster configuration to %s' % local_config_dir)
-
-    encoded_tar_conf = configure_cmds.gather_directory()
+    temp_config_tar = configure_cmds.gather_config_directory()
 
     package.deploy_upgrade(new_rpm_path)
 
-    configure_cmds.deploy_all(encoded_tar_conf)
+    configure_cmds.deploy_config_directory(temp_config_tar)
 
 
 def service(control=None):

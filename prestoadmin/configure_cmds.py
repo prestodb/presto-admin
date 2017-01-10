@@ -20,7 +20,6 @@ import os
 from StringIO import StringIO
 from contextlib import closing
 
-from fabric.context_managers import hide
 from fabric.contrib import files
 from fabric.decorators import task, serial
 from fabric.operations import get, sudo
@@ -75,17 +74,42 @@ def deploy(rolename=None):
             abort("Invalid Argument. Possible values: coordinator, workers")
 
 
-def gather_directory():
-    with hide('stdout'):
-        result = sudo(
-            "tar -c -C %s . | base64" % (constants.REMOTE_CONF_DIR,))
-        # Fabric...
-        return result.replace('\r', '')
+"""
+gather/deploy_config_directory are used for server upgrade when we want to
+preserve any existing configuration files across the upgrade exactly as they
+were before the upgrade.
+
+In order to preserve not just the data, but also the metadata, we tar up the
+contents of /etc/presto to a temporary tar archive under /tmp. After the
+upgrade, we untar it into /etc/presto and delete the archive.
+"""
 
 
-def deploy_all(encoded_tar_conf):
-    sudo('echo -E "%s" | base64 --decode | tar -C %s -x -v' %
-         (encoded_tar_conf, constants.REMOTE_CONF_DIR))
+def gather_config_directory():
+    """
+    For the benefit of the next person to hack this, a list of some things
+    that didn't work:
+    - passing combine_stderr=False to sudo. Dunno why, still got them
+    combined in the output.
+    - using a StringIO object cfg = StringIO() and passing stdout=cfg. Got
+    the host information at the start of the line.
+    - sucking the tar archive over the network into memory instead of
+    writing it out to a temporary file on the remote host. Since fabric
+    doesn't provide a stdin= kwarg, there's no way to send back a tar
+    archive larger than we can fit in a single bash command (~2MB on a
+    good day), meaning if /etc/presto contains any large files, we'd end
+    up having to send the archive to a temp file anyway.
+    """
+    result = sudo(
+        'tarfile=`mktemp /tmp/presto_config-XXXXXXX.tar`; '
+        'tar -c -z -C %s -f "${tarfile}" . && echo "${tarfile}"' % (
+            constants.REMOTE_CONF_DIR,))
+    return result
+
+
+def deploy_config_directory(tarfile):
+    sudo('tar -C "%s" -x -v -f "%s" ; rm "%s"' %
+         (constants.REMOTE_CONF_DIR, tarfile, tarfile))
 
 
 def configuration_fetch(file_name, config_destination, should_warn=True):
