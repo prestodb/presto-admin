@@ -135,16 +135,29 @@ class TestServerUpgrade(BaseProductTestCase):
         book_content = 'Call me Ishmael ... FINIS'
         book_path = '/etc/presto/moby_dick_abridged'
         self.run_prestoadmin('configuration deploy')
+        big_files = {}
         for container in self.cluster.all_hosts():
             self.real_installer.assert_installed(self, container)
             self.assert_has_default_config(container)
             self.assert_has_default_catalog(container)
+
+            big_file = self.cluster.exec_cmd_on_host(
+                container,
+                "find /usr -size +2M -ls | "
+                "sort -nk7 | "
+                "tail -1 | "
+                "awk '{print $NF}'").strip()
+
+            self.cluster.exec_cmd_on_host(
+                container, "cp %s /etc/presto" % (big_file,))
+            big_files[container] = os.path.join("/etc/presto", os.path.basename(big_file))
 
             self.cluster.write_content_to_host(book_content, book_path, host=container)
             self.cluster.exec_cmd_on_host(container, "chown presto:games %s" % (book_path,))
             self.cluster.exec_cmd_on_host(container, "chmod 272 %s" % (book_path,))
             self.assert_file_content(container, book_path, book_content)
             self.assert_file_perm_owner(container, book_path, '--w-rwx-w-', 'presto', 'games')
+            self.assert_path_exists(container, big_files[container])
 
         self.add_dummy_properties_to_host(self.cluster.slaves[1])
         path_on_cluster = self.copy_upgrade_rpm_to_cluster()
@@ -158,6 +171,8 @@ class TestServerUpgrade(BaseProductTestCase):
         for container in self.cluster.all_hosts():
             self.assert_file_content(container, book_path, book_content)
             self.assert_file_perm_owner(container, book_path, '--w-rwx-w-', 'presto', 'games')
+
+            self.assert_path_exists(container, big_files[container])
 
     def test_upgrade_non_root_user(self):
         self.upload_topology(
