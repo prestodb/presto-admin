@@ -19,102 +19,55 @@ Stuff to handle version ranges.
 import re
 
 TD_VERSION = re.compile(r'^\d+t$')
-ANCIENT_TAGGED_VERSION = re.compile(r'^\d+t?-[A-Z]+$')
 
 
 def split_version(version_string):
-    return version_string.strip().split('.')
+    # We split on '.' and '-' because ancient tagged versions had the tag
+    # delimited by a '-'
+    return re.split('\.|-', version_string.strip())
 
 
-# New versions of the Teradata RPM are of the form 0.148.t.x.y, so the 't'
-# can be not attached to the preceding version number, and we want to
-# preserve it.
-def intOrT(x):
+def get_int_or_t(x):
     try:
         return int(x)
     except ValueError as e:
         if x is 't':
             return x
+        if x[-1] is 't':
+            int(x[:-1])
+            return x
         raise e
+
+
+def is_int_or_t(x):
+    try:
+        get_int_or_t(x)
+        return True
+    except ValueError:
+        return False
 
 
 def strip_tag(version):
     """
-    Strip trailing non-numeric components from a version leaving the Teradata
-    't' on the final version component if it's present.
+    Strip any parts of the version that are not numeric components or t's
+    We leave the 't' on numeric components if it's present.
     ['1', '2', 'THREE'] -> (1, 2)
-    ['1', 'TWO', '3'] -> raises a ValueError
+    ['1', 'TWO', '3'] -> (1, 3)
     ['0', '115t', 'SNAPSHOT'] -> (0, '115t')
-    ['ZERO', '123t'] -> raises a ValueError
+    ['ZERO', '123t'] -> (123t)
     ['0', '148', 't'] => (0, 148, 't')
     ['0', '148', 't', 0, 1] => (0, 148, 't', 0, 1)
     ['0', '148', 't', 0, 1, 'SNAPSHOT'] => (0, 148, 't', 0, 1)
+    ['0', '162', 'SNAPSHOT', 't', 'SNAPSHOT'] => (0, 162, 't')
 
     This checks the components of the version from least to most significant.
-    Tags are only allowed at the least significant place in a version number,
-    i.e. as the right-most component.
-
-    Anything that can't be parsed as an integer that isn't in the right-most
-    position is considered an error.
 
     :param version: something that can be sliced
-    :return: a tuple containing only integer components, except for possibly
-             the last one, which will be a string iff it's an integer followed
-             by the letter 't'
+    :return: a tuple containing only integer components or the letter t
     """
-    is_teradata = False
-    is_ancient = False
 
     result = list(version[:])
-    while True:
-        try:
-            rightmost = result[-1]
-            intOrT(rightmost)
-            # Once we find the right-most/least significant component that
-            # can be represented as an int (doesn't raise a ValueError), break
-            # out of the loop.
-            break
-        except ValueError:
-            # Ancient tagged versions had the tag delimited by a - rather than
-            # a ., spilt on -, and take the left-most token. The pattern
-            # ensures that the component consists of numbers followed by a tag.
-            # Once we've matched the pattern, we know the left-most token can
-            # be converted by the int() function, and we're done removing
-            # components.
-            if ANCIENT_TAGGED_VERSION.match(rightmost):
-                is_ancient = True
-                result[-1] = rightmost.split('-')[0]
-
-            # Do this second, and get the right-most component by index to get
-            # the updated value for an ancient tagged version. If the pattern
-            # matches, we know that except for the trailing t, the remainder of
-            # the last component is a number int can parse.
-            if TD_VERSION.match(result[-1]):
-                is_teradata = True
-                break
-
-            # Non-teradata ancient tag. See above. We know this component is
-            # numeric and we should break out of the loop and check the
-            # components to the left of it.
-            if is_ancient:
-                break
-            result = result[:-1]
-        except IndexError:
-            # If every component of the version has been removed because it's
-            # non-numeric, we'll try to slice [][-1], and get an IndexError.
-            # In that case, we've started with something that wasn't a version.
-            raise ValueError(
-                '%s does not contain any numeric version information' %
-                (version,))
-
-    # Verify that every component left of the right-most int() parseable
-    # component is parseable by int(). For Teradata versions, preserve the
-    # Teradata 't' on the final component.
-    if is_teradata:
-        result = [int(x) for x in result[:-1]] + [result[-1]]
-    else:
-        result = [intOrT(x) for x in result]
-
+    result = [get_int_or_t(x) for x in result if is_int_or_t(x)]
     return tuple(result)
 
 
@@ -213,6 +166,7 @@ class VersionRangeList(object):
     both sorted in order of ascending version and that the interval
     [vr[0].min_version, vr[n].max_version) has no discontinuities.
     """
+
     def __init__(self, *range_list):
         if len(range_list) >= 2:
             for i in range(0, len(range_list) - 1):

@@ -112,31 +112,29 @@ class TestVersionUtils(BaseUnitCase):
     def test_ancient_tags(self):
         # Teradata and non-Teradata versions
         self.assertEqual(
-            (0, '97t'), strip_tag(('0', '97t-SNAPSHOT')))
+            (0, '97t'), strip_tag(('0', '97t', 'SNAPSHOT')))
         self.assertEqual(
-            (0, 99), strip_tag(('0', '99-SNAPSHOT')))
-
-    def test_teradata_version(self):
-        self.assertEqual(
-            (0, '115t'), strip_tag(('0', '115t')))
-        self.assertEqual(
-            (0, '123t'), strip_tag(('0', '123t', 'SNAPSHOT')))
+            (0, 99), strip_tag(('0', '99', 'SNAPSHOT')))
 
     def test_non_trailing_non_numeric(self):
-        self.assertRaises(
-            ValueError, strip_tag, ('1', 'TWO', '3'))
-        self.assertRaises(
-            ValueError, strip_tag, ['1', 'TWO', '3'])
+        self.assertEqual(
+            (1, 3, 't', 4, 't'), strip_tag(('1', 'TWO', '3', 't', '4', 't')))
 
     def test_no_numeric(self):
-        self.assertRaises(
-            ValueError, strip_tag, ('ONE', 'TWO', 'THR'))
-        self.assertRaises(
-            ValueError, strip_tag, ['ONE', 'TWO', 'THR'])
+        self.assertEqual(
+            (), strip_tag(('ONE', 'TWO', 'THREE'))
+        )
 
     def test_split(self):
         self.assertEqual(['1', '2', '3'], split_version(' \t 1.2.3  \t '))
         self.assertEqual(['0', '115t'], split_version('0.115t'))
+        self.assertEqual(['0', '115t', 'SNAPSHOT'], split_version('0.115t-SNAPSHOT'))
+
+    def test_old_teradata_version(self):
+        self.assertEqual(
+            (0, '115t'), strip_tag(('0', '115t')))
+        self.assertEqual(
+            (0, '123t'), strip_tag(('0', '123t', 'SNAPSHOT')))
 
     def test_new_teradata_version(self):
         self.assertEqual(
@@ -144,4 +142,7 @@ class TestVersionUtils(BaseUnitCase):
         )
         self.assertEqual(
             (0, 148, 't', 0, 1), strip_tag(('0', '148', 't', '0', '1'))
+        )
+        self.assertEqual(
+            (0, 148, 't'), strip_tag(('0', '148', 'snapshot', 't', 'snapshot'))
         )
