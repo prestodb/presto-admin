@@ -95,7 +95,8 @@ class StandalonePrestoInstaller(BaseInstaller):
             cluster = self.testcase.cluster
 
         rpm_path = os.path.join(self.rpm_dir, self.rpm_name)
-        if not self._check_rpm_already_uploaded(self.rpm_name, cluster):
+        rpm_modification_time = os.path.getmtime(rpm_path)
+        if not self._check_rpm_already_uploaded(self.rpm_name, cluster, rpm_modification_time):
             cluster.copy_to_host(rpm_path, cluster.master, dest_path=os.path.join(cluster.rpm_cache_dir,
                                                                                   self.rpm_name))
         self._check_if_corrupted_rpm(self.rpm_name, cluster)
@@ -136,13 +137,12 @@ class StandalonePrestoInstaller(BaseInstaller):
             rpm_cmd, msg=msg)
 
     @staticmethod
-    def _check_rpm_already_uploaded(rpm_name, cluster):
-        rpm_already_exists = True
+    def _check_rpm_already_uploaded(rpm_name, cluster, rpm_modification_time):
         try:
-            cluster.exec_cmd_on_host(
+            remote_rpm_modification_time = cluster.exec_cmd_on_host(
                 cluster.master,
-                'ls ' + os.path.join(cluster.rpm_cache_dir, rpm_name)
+                'stat -c %Y ' + os.path.join(cluster.rpm_cache_dir, rpm_name)
             )
+            return rpm_modification_time <= int(remote_rpm_modification_time)
         except OSError:
-            rpm_already_exists = False
-        return rpm_already_exists
+            return False
