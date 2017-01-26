@@ -149,7 +149,7 @@ class TestServerUpgrade(BaseProductTestCase):
                 "awk '{print $NF}'").strip()
 
             self.cluster.exec_cmd_on_host(
-                container, "cp %s /etc/presto" % (big_file,))
+                container, "cp %s /etc/presto" % (big_file,), invoke_sudo=True)
             big_files[container] = os.path.join("/etc/presto", os.path.basename(big_file))
 
             self.cluster.write_content_to_host(book_content, book_path, host=container)
