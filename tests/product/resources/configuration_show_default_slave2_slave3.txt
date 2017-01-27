@@ -24,8 +24,8 @@ slave2: Configuration file at /etc/presto/jvm.config:
 
 slave2: Configuration file at /etc/presto/config.properties:
 coordinator=false
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 query.max-memory-per-node=512MB
 query.max-memory=50GB
 
@@ -56,7 +56,7 @@ slave3: Configuration file at /etc/presto/jvm.config:
 
 slave3: Configuration file at /etc/presto/config.properties:
 coordinator=false
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 query.max-memory-per-node=512MB
 query.max-memory=50GB

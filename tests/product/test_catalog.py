@@ -282,7 +282,7 @@ for the change to take effect
     def get_catalog_info(self):
         output = self.cluster.exec_cmd_on_host(
             self.cluster.master,
-            "curl --silent -X POST http://localhost:8080/v1/statement -H "
+            "curl --silent -X POST http://localhost:28384/v1/statement -H "
             "'X-Presto-User:$USER' -H 'X-Presto-Schema:metadata' -H "
             "'X-Presto-Catalog:system' -H 'X-Presto-Source:presto-admin' "
             "-d 'select catalog_name from catalogs'")
