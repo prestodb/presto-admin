@@ -153,8 +153,8 @@ class TestServerUpgrade(BaseProductTestCase):
             big_files[container] = os.path.join("/etc/presto", os.path.basename(big_file))
 
             self.cluster.write_content_to_host(book_content, book_path, host=container)
-            self.cluster.exec_cmd_on_host(container, "chown presto:games %s" % (book_path,))
-            self.cluster.exec_cmd_on_host(container, "chmod 272 %s" % (book_path,))
+            self.cluster.exec_cmd_on_host(container, "chown presto:games %s" % (book_path,), invoke_sudo=True)
+            self.cluster.exec_cmd_on_host(container, "chmod 272 %s" % (book_path,), invoke_sudo=True)
             self.assert_file_content(container, book_path, book_content)
             self.assert_file_perm_owner(container, book_path, '--w-rwx-w-', 'presto', 'games')
             self.assert_path_exists(container, big_files[container])
