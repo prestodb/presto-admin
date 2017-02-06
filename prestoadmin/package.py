@@ -125,10 +125,12 @@ def rpm_upgrade(rpm_name):
     if not package_name.succeeded:
         abort("Corrupted RPM file: %s" % rpm_path)
 
-    if _rpm_uninstall(package_name).succeeded:
-        if _rpm_install(rpm_path).succeeded:
-            print("Package upgraded successfully on: " + env.host)
+    if _rpm_upgrade(rpm_path).succeeded:
+        print("Package upgraded successfully on: " + env.host)
 
+
+def _rpm_upgrade(package_name):
+    return sudo('rpm -U %s%s' % (_nodeps_rpm_option(), package_name))
 
 @task
 @runs_once

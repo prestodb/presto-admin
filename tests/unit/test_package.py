@@ -51,10 +51,9 @@ class TestPackage(BaseUnitCase):
         mock_sudo.assert_called_with('rpm -i --nodeps '
                                      '/opt/prestoadmin/packages/test.rpm')
 
-    @patch('prestoadmin.package._rpm_uninstall')
-    @patch('prestoadmin.package._rpm_install')
+    @patch('prestoadmin.package._rpm_upgrade')
     @patch('prestoadmin.package.sudo')
-    def test_rpm_upgrade(self, mock_sudo, mock_rpm_install, mock_rpm_uninstall):
+    def test_rpm_upgrade(self, mock_sudo, mock_rpm_upgrade):
         env.host = 'any_host'
         env.nodeps = False
         mock_sudo.return_value = _AttributeString('test_package_name')
@@ -65,8 +64,7 @@ class TestPackage(BaseUnitCase):
                                   '/opt/prestoadmin/packages/test.rpm',
                                   quiet=True)
 
-        mock_rpm_uninstall.assert_any_call('test_package_name')
-        mock_rpm_install.assert_any_call('/opt/prestoadmin/packages/test.rpm')
+        mock_rpm_upgrade.assert_any_call('/opt/prestoadmin/packages/test.rpm')
 
     @patch('prestoadmin.package.rpm_install')
     @patch('prestoadmin.package.deploy')

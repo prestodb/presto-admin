@@ -89,22 +89,6 @@ class TestServerUpgrade(BaseProductTestCase):
         self.run_prestoadmin('server upgrade ' + path_on_cluster + extra_arguments)
         self.assert_upgraded_to_dummy_rpm(self.cluster.all_hosts())
 
-    @docker_only
-    def test_rolling_upgrade(self):
-        # Test that if a node is down, and then you upgrade again, it works
-        self.run_prestoadmin('configuration deploy')
-
-        self.cluster.stop_host(self.cluster.slaves[0])
-        path_on_cluster = self.copy_upgrade_rpm_to_cluster()
-        self.run_prestoadmin('server upgrade ' + path_on_cluster,
-                             raise_error=False)
-        running_hosts = self.cluster.all_hosts()[:]
-        running_hosts.remove(self.cluster.slaves[0])
-        self.assert_upgraded_to_dummy_rpm(running_hosts)
-
-        self.cluster.start_host(self.cluster.slaves[0])
-        self.retry(lambda: self.upgrade_and_assert_success(path_on_cluster))
-
     def copy_upgrade_rpm_to_cluster(self):
         rpm_name = self.dummy_installer.copy_presto_rpm_to_master()
         return os.path.join(self.cluster.rpm_cache_dir, rpm_name)
