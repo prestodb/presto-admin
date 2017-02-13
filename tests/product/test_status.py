@@ -195,15 +195,13 @@ class TestStatus(BaseProductTestCase):
         for status in statuses:
             expected_output += \
                 ['Server Status:',
-                 '\t%s\(IP: %s, Roles: %s\): %s' %
-                 (status['host'], status['ip'], status['role'],
-                  status['is_running'])]
+                 '\t%s\(IP: .+, Roles: %s\): %s' %
+                 (status['host'], status['role'], status['is_running'])]
             if 'error_message' in status and status['error_message']:
                 expected_output += [status['error_message']]
             elif status['is_running'] is 'Running':
                 expected_output += \
-                    ['\tNode URI\(http\): http://%s:%s' % (status['ip'],
-                                                           str(port)),
+                    ['\tNode URI\(http\): http://.+:%s' % str(port),
                      '\tPresto Version: ' + PRESTO_VERSION,
                      '\tNode status:    active',
                      '\tCatalogs:     system, tpch']
