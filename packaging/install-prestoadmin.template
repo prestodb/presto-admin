@@ -70,21 +70,21 @@ export VIRTUAL_ENV="`pwd`/presto-admin-install"
 export PATH="\$VIRTUAL_ENV/bin:\$PATH"
 unset PYTHON_HOME
 
-exec presto-admin \$@
+exec presto-admin "\$@"
 EOT
 chmod 755 `pwd`/presto-admin
 
 CONF_DIR=${PRESTO_ADMIN_CONFIG_DIR:-~/.prestoadmin}
-mkdir -p $CONF_DIR
+mkdir -p "$CONF_DIR"
 
 LOG_DIR=${PRESTO_ADMIN_LOG_DIR:-$CONF_DIR/log}
-mkdir -p $LOG_DIR
+mkdir -p "$LOG_DIR"
 
 CATALOG_DIR=$CONF_DIR/catalog
-mkdir -p $CATALOG_DIR
+mkdir -p "$CATALOG_DIR"
 
 COORDINATOR_DIR=$CONF_DIR/coordinator
-mkdir -p $COORDINATOR_DIR
+mkdir -p "$COORDINATOR_DIR"
 
 WORKERS_DIR=$CONF_DIR/workers
-mkdir -p $WORKERS_DIR
+mkdir -p "$WORKERS_DIR"
