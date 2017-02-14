@@ -52,7 +52,7 @@ class PrestoConfig:
         LDAP_CLIENT_PASSWORD_KEY: None
     }
 
-    def __init__(self, config_properties, config_host, config_path):
+    def __init__(self, config_properties, config_path, config_host):
         self.config_path = config_path
         self.config_host = config_host
         if not config_properties:
