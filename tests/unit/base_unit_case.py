@@ -26,7 +26,8 @@ PRESTO_CONFIG = PrestoConfig({
     'http-server.https.port': '7878',
     'http-server.https.keystore.path': '/UPDATE/THIS/PATH',
     'http-server.https.keystore.key': 'UPDATE PASSWORD'},
-    "TEST_HOST", "TEST_PATH")
+    "TEST_PATH",
+    "TEST_HOST")
 
 
 class BaseUnitCase(BaseTestCase):
