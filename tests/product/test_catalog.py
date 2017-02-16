@@ -172,35 +172,41 @@ Aborting.
     def test_catalog_add_lost_host(self):
         installer = StandalonePrestoInstaller(self)
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
-        self.upload_topology()
         installer.install()
         self.run_prestoadmin('catalog remove tpch')
 
-        self.cluster.stop_host(
-            self.cluster.slaves[0])
+        good_hosts = [self.cluster.internal_master,
+                      self.cluster.internal_slaves[1],
+                      self.cluster.internal_slaves[2]]
+        topology = {"coordinator": self.cluster.internal_master,
+                    "workers": [self.cluster.get_down_hostname(),
+                                self.cluster.internal_slaves[1],
+                                self.cluster.internal_slaves[2]]}
+        self.upload_topology(topology)
         self.cluster.write_content_to_host(
             'connector.name=tpch',
             os.path.join(get_catalog_directory(), 'tpch.properties'),
             self.cluster.master
         )
+
         output = self.run_prestoadmin('catalog add tpch', raise_error=False)
-        for host in self.cluster.all_internal_hosts():
+
+        hosts = good_hosts + [self.cluster.get_down_hostname()]
+        for host in hosts:
             deploying_message = 'Deploying tpch.properties catalog configurations on: %s'
             self.assertTrue(deploying_message % host in output,
                             'expected %s \n actual %s'
                             % (deploying_message % host, output))
         self.assertRegexpMatches(
             output,
-            self.down_node_connection_error(self.cluster.internal_slaves[0])
+            self.down_node_connection_error()
         )
         self.assertEqual(len(output.splitlines()),
                          len(self.cluster.all_hosts()) +
                          self.len_down_node_error)
-        self.run_prestoadmin('server start', raise_error=False)
 
-        for host in [self.cluster.master,
-                     self.cluster.slaves[1],
-                     self.cluster.slaves[2]]:
+        self.run_prestoadmin('server start', raise_error=False)
+        for host in good_hosts:
             self.assert_has_default_catalog(host)
         self._assert_catalogs_loaded([['system'], ['tpch']])
 

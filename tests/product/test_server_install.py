@@ -119,8 +119,8 @@ installed_all_hosts_output = ['Deploying rpm on {master}...',
 
 
 class TestServerInstall(BaseProductTestCase):
-    default_workers_config_with_slave1_ = """coordinator=false
-discovery.uri=http://slave1:8080
+    default_workers_config = """coordinator=false
+discovery.uri=http://{coord_host}:8080
 http-server.http.port=8080
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
@@ -159,7 +159,7 @@ query.max-memory=50GB\n"""
         self.assert_node_config(host, self.default_node_properties_)
         self.assert_has_default_catalog(host)
 
-    def assert_installed_with_configs(self, master, slaves):
+    def assert_installed_with_configs(self, master, internal_master, slaves):
         self.assert_common_configs(master)
         self.assert_file_content(master,
                                  '/etc/presto/config.properties',
@@ -168,7 +168,7 @@ query.max-memory=50GB\n"""
             self.assert_common_configs(container)
             self.assert_file_content(container,
                                      '/etc/presto/config.properties',
-                                     self.default_workers_config_with_slave1_)
+                                     self.default_workers_config.format(coord_host=internal_master))
 
     def assert_installed_with_regex_configs(self, master, slaves):
         self.assert_common_configs(master)
@@ -204,7 +204,7 @@ query.max-memory=50GB\n"""
 
     def test_install_ext_host_is_pa_master(self):
         installer = StandalonePrestoInstaller(self)
-        topology = {"coordinator": "slave1",
+        topology = {"coordinator": self.cluster.internal_slaves[0],
                     "workers": ["slave2", "slave3"]}
         self.upload_topology(topology)
 
@@ -216,6 +216,7 @@ query.max-memory=50GB\n"""
 
         self.assert_installed_with_configs(
             self.cluster.slaves[0],
+            self.cluster.internal_slaves[0],
             [self.cluster.slaves[1],
              self.cluster.slaves[2]])
 
@@ -371,31 +372,28 @@ query.max-memory=50GB\n"""
 
     def test_connection_to_coord_lost(self):
         installer = StandalonePrestoInstaller(self)
-        down_node = self.cluster.internal_slaves[0]
+        good_hosts = [self.cluster.internal_master,
+                      self.cluster.internal_slaves[1],
+                      self.cluster.internal_slaves[2]]
+        down_node = self.cluster.get_down_hostname()
         topology = {"coordinator": down_node,
-                    "workers": [self.cluster.internal_master,
-                                self.cluster.internal_slaves[1],
-                                self.cluster.internal_slaves[2]]}
+                    "workers": good_hosts}
         self.upload_topology(topology=topology)
-        self.cluster.stop_host(
-            self.cluster.slaves[0])
 
         actual_out = installer.install(
             coordinator=down_node, pa_raise_error=False)
 
         self.assertRegexpMatches(
             actual_out,
-            self.down_node_connection_error(down_node)
+            self.down_node_connection_error()
         )
 
-        for host in [self.cluster.master,
-                     self.cluster.slaves[1],
-                     self.cluster.slaves[2]]:
+        for host in good_hosts:
             self.assert_common_configs(host)
             self.assert_file_content(
                 host,
                 '/etc/presto/config.properties',
-                self.default_workers_config_with_slave1_
+                self.default_workers_config.format(coord_host=self.cluster.get_down_hostname())
             )
 
     def test_install_twice(self):

@@ -23,6 +23,7 @@ import abc
 import sys
 
 from tests.product import determine_jdk_directory
+from tests.product.config_dir_utils import get_config_file_path
 
 
 class BaseCluster(object):
@@ -84,20 +85,17 @@ class BaseCluster(object):
         """
         pass
 
-    @abc.abstractmethod
-    def stop_host(self, host_name):
-        """Stops a host. Paradoxically, start_host doesn't seem to be required
-        for the product tests to run successfully."""
-        pass
+    @staticmethod
+    def get_down_hostname():
+        """Fake hostname used to mimic stopping a host by uploading a topology
+        file pointing to an unresolvable host"""
+        return 'dummyhost'
 
-    @abc.abstractmethod
-    def get_down_hostname(self, host_name):
-        """This is part of the magic involved in stopping a host. If you're
-        rolling a new implementation, you should dig more deeply into the
-        existing implementations, figure out how it all works, and update this
-        comment.
-        """
-        pass
+    @staticmethod
+    def get_down_ip():
+        """This method serves the same purpose as get_down_hostname but
+        returns the corresponding fake IP"""
+        return '1.0.0.0'
 
     @abc.abstractmethod
     def postinstall(self, installer):

@@ -152,22 +152,13 @@ class DockerCluster(BaseCluster):
                 raise
 
         try:
-            self.stop_host(container_name)
+            self.client.stop(container_name)
+            self.client.wait(container_name)
             self.client.remove_container(container_name, v=True, force=True)
         except APIError as e:
             # container does not exist
             if e.response.status_code != 404:
                 raise
-
-    def stop_host(self, container_name):
-        self.client.stop(container_name)
-        self.client.wait(container_name)
-
-    def start_host(self, container_name):
-        self.client.start(container_name)
-
-    def get_down_hostname(self, host_name):
-        return host_name
 
     def _remove_host_mount_dirs(self):
         for container_name in self.all_hosts():
@@ -430,6 +421,7 @@ class DockerCluster(BaseCluster):
             ip_addresses[host] = inspect['NetworkSettings']['IPAddress']
             ip_addresses[internal_host] = \
                 inspect['NetworkSettings']['IPAddress']
+        ip_addresses[self.get_down_hostname()] = self.get_down_ip()
         return ip_addresses
 
     def _post_presto_install(self):
