@@ -782,6 +782,8 @@ def collect_node_information():
 
 
 def get_status_from_coordinator():
+    if check_presto_version() != '':
+        return
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
         try:
             coordinator_status = run_sql(client, SYSTEM_RUNTIME_NODES)

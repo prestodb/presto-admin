@@ -543,8 +543,9 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.server.execute')
     @patch('prestoadmin.server.run_sql')
     @patch('prestoadmin.server.get_presto_version')
+    @patch('prestoadmin.server.presto_installed')
     def test_status_from_each_node(
-            self, mock_get_presto_version, mock_run_sql, mock_execute,
+            self, mock_presto_installed, mock_get_presto_version, mock_run_sql, mock_execute,
             mock_presto_config):
         env.roledefs = {
             'coordinator': ['Node1'],
