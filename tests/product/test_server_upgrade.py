@@ -19,7 +19,7 @@ from nose.plugins.attrib import attr
 import prestoadmin
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER
 from tests.product.config_dir_utils import get_install_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
