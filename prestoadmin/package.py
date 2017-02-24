@@ -132,6 +132,7 @@ def rpm_upgrade(rpm_name):
 def _rpm_upgrade(package_name):
     return sudo('rpm -U %s%s' % (_nodeps_rpm_option(), package_name))
 
+
 @task
 @runs_once
 @requires_config(StandaloneConfig)
