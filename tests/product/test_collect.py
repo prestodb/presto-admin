@@ -18,6 +18,7 @@ Product tests for presto-admin collect
 import os
 from os import path
 
+from StringIO import StringIO
 from fabric.context_managers import settings
 from nose.plugins.attrib import attr
 from nose.tools import nottest
@@ -26,6 +27,8 @@ from prestoadmin.collect import OUTPUT_FILENAME_FOR_LOGS, TMP_PRESTO_DEBUG, \
     PRESTOADMIN_LOG_NAME, OUTPUT_FILENAME_FOR_SYS_INFO, TMP_PRESTO_DEBUG_REMOTE
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.server import run_sql
+from prestoadmin.util.constants import CONFIG_PROPERTIES, REMOTE_CONF_DIR
+from prestoadmin.util.presto_config import PrestoConfig
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, PrestoError
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
@@ -160,7 +163,10 @@ class TestCollect(BaseProductTestCase):
         ips = self.cluster.get_ip_address_dict()
         if host is None:
             host = self.cluster.master
-        client = PrestoClient(ips[host], 'root')
+        config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
+        config = self.cluster.exec_cmd_on_host(host, 'cat ' + config_path)
+        user = 'root'
+        client = PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
         run_sql(client, sql)
         query_runtime_info = run_sql(client, 'SELECT query_id FROM '
                                              'system.runtime.queries '
