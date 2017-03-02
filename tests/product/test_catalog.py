@@ -317,8 +317,8 @@ for the change to take effect
     # have been loaded. Thus in order to verify that catalogs get
     # correctly added we check continuously within a timeout.
     def _assert_catalogs_loaded(self, expected_catalogs):
-        self.retry(lambda: self.assertEqual(expected_catalogs,
-                                            self.get_catalog_info()))
+        actual_catalogs = self.get_catalog_info()
+        self.retry(lambda: self.assertEqual(expected_catalogs.sort(), actual_catalogs.sort()))
 
     def test_catalog_add_remove_non_sudo_user(self):
         self.setup_cluster_assert_catalogs()
