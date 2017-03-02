@@ -636,17 +636,6 @@ def _is_in_rows(value, rows):
     return False
 
 
-def run_sql(client, sql):
-    status = client.execute_query(sql)
-    if status:
-        return client.get_rows()
-    else:
-        # TODO: Check if we can get some error cause from server response and
-        # log that to the user
-        _LOGGER.error('Querying server failed')
-        return []
-
-
 def execute_catalog_info_sql(client):
     """
     Returns [[catalog_name], [catalog_2]..] from catalogs system table
@@ -654,7 +643,7 @@ def execute_catalog_info_sql(client):
     Parameters:
         client - client that executes the query
     """
-    return run_sql(client, CATALOG_INFO_SQL)
+    return client.run_sql(CATALOG_INFO_SQL)
 
 
 def execute_external_ip_sql(client, uuid):
@@ -666,7 +655,7 @@ def execute_external_ip_sql(client, uuid):
         client - client that executes the query
         uuid - node_id of the node
     """
-    return run_sql(client, EXTERNAL_IP_SQL % uuid)
+    return client.run_sql(EXTERNAL_IP_SQL % uuid)
 
 
 def get_sysnode_info_from(node_info_row, state_transform):
@@ -784,7 +773,7 @@ def collect_node_information():
 def get_status_from_coordinator():
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
         try:
-            coordinator_status = run_sql(client, SYSTEM_RUNTIME_NODES)
+            coordinator_status = client.run_sql(SYSTEM_RUNTIME_NODES)
             catalog_status = get_catalog_info_from(client)
         except BaseException as e:
             # Just log errors that come from a missing port or anything else; if
@@ -818,7 +807,7 @@ def get_status_from_coordinator():
                 version = strip_tag(split_version(version_string))
                 query, processor = NODE_INFO_PER_URI_SQL.for_version(version)
                 # just get the node_info row for the host if server is up
-                node_info_row = run_sql(client, query % external_ip)
+                node_info_row = client.run_sql(query % external_ip)
                 node_status = processor(node_info_row)
                 if node_status:
                     print_node_info(node_status, catalog_status)

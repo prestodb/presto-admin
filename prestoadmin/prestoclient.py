@@ -80,6 +80,13 @@ class PrestoClient:
         if self.response_from_server:
             self.response_from_server = {}
 
+    def run_sql(self, sql):
+        status = self.execute_query(sql)
+        if status:
+            return self.get_rows()
+        else:
+            return None
+
     def execute_query(self, sql, schema="default", catalog="hive"):
         """
         Execute a query connecting to Presto server using passed parameters.
