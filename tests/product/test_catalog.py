@@ -209,7 +209,7 @@ Aborting.
         for host in self.cluster.all_hosts():
             self.assert_has_default_catalog(host)
 
-        missing_catalog_message = """[Errno 1] 
+        missing_catalog_message = """[Errno 1]
 Fatal error: [master] Could not remove catalog '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
@@ -317,8 +317,7 @@ for the change to take effect
     # have been loaded. Thus in order to verify that catalogs get
     # correctly added we check continuously within a timeout.
     def _assert_catalogs_loaded(self, expected_catalogs):
-        self.retry(lambda: self.assertEqual(expected_catalogs,
-                                            self.get_catalog_info()))
+        self.retry(lambda: self.assertEqual(expected_catalogs.sort(), self.get_catalog_info().sort()))
 
     def test_catalog_add_remove_non_sudo_user(self):
         self.setup_cluster_assert_catalogs()
