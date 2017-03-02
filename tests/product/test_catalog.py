@@ -15,7 +15,6 @@
 """
 Product tests for presto-admin catalog support.
 """
-import json
 import os
 
 from nose.plugins.attrib import attr
@@ -23,8 +22,7 @@ from nose.plugins.attrib import attr
 from prestoadmin.standalone.config import PRESTO_STANDALONE_USER
 from prestoadmin.util import constants
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase, \
-    PrestoError
+from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_PRESTO_CLUSTER, STANDALONE_PA_CLUSTER
 from tests.product.config_dir_utils import get_catalog_directory
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
@@ -209,7 +207,7 @@ Aborting.
         for host in self.cluster.all_hosts():
             self.assert_has_default_catalog(host)
 
-        missing_catalog_message = """[Errno 1] 
+        missing_catalog_message = """[Errno 1]
 Fatal error: [master] Could not remove catalog '%(name)s'. No such file \
 '/etc/presto/catalog/%(name)s.properties'
 
@@ -280,36 +278,8 @@ for the change to take effect
             'catalog add tpch')
 
     def get_catalog_info(self):
-        output = self.cluster.exec_cmd_on_host(
-            self.cluster.master,
-            "curl --silent -X POST http://localhost:8080/v1/statement -H "
-            "'X-Presto-User:$USER' -H 'X-Presto-Schema:metadata' -H "
-            "'X-Presto-Catalog:system' -H 'X-Presto-Source:presto-admin' "
-            "-d 'select catalog_name from catalogs'")
-
-        data = self.get_key_value(output, 'data')
-        next_uri = self.get_key_value(output, 'nextUri')
-        while not data and next_uri:
-            output = self.cluster.exec_cmd_on_host(
-                self.cluster.master,
-                'curl --silent %s' % self.get_key_value(output, 'nextUri')
-            )
-            data = self.get_key_value(output, 'data')
-            next_uri = self.get_key_value(output, 'nextUri')
-
-        if not data:
-            raise PrestoError('Could not get catalogs from json output. '
-                              'Output was: \n%s' % output)
-
-        return data
-
-    def get_key_value(self, text, key):
-        try:
-            return json.loads(text)[key]
-        except KeyError:
-            return ''
-        except ValueError as e:
-            raise ValueError(e.message + '\n' + text)
+        client = self.create_presto_client()
+        return client.run_sql('select catalog_name from catalogs');
 
     # Presto will be 'query-able' before it has loaded all of its
     # catalogs. When presto-admin restarts presto it returns when it
@@ -317,8 +287,8 @@ for the change to take effect
     # have been loaded. Thus in order to verify that catalogs get
     # correctly added we check continuously within a timeout.
     def _assert_catalogs_loaded(self, expected_catalogs):
-        self.retry(lambda: self.assertEqual(expected_catalogs,
-                                            self.get_catalog_info()))
+        actual_catalogs = self.get_catalog_info()
+        self.retry(lambda: self.assertEqual(expected_catalogs.sort(), actual_catalogs.sort()))
 
     def test_catalog_add_remove_non_sudo_user(self):
         self.setup_cluster_assert_catalogs()

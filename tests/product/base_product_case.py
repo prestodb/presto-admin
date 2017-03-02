@@ -21,10 +21,14 @@ import json
 import os
 import re
 
+from StringIO import StringIO
 from nose.tools import nottest
 from retrying import Retrying
 
+from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.util import constants
+from prestoadmin.util.constants import REMOTE_CONF_DIR, CONFIG_PROPERTIES
+from prestoadmin.util.presto_config import PrestoConfig
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster
@@ -41,14 +45,14 @@ RETRY_INTERVAL = 5
 
 class BaseProductTestCase(BaseTestCase):
     default_workers_config_ = """coordinator=false
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 query.max-memory-per-node=8GB
 query.max-memory=50GB\n"""
 
     default_workers_test_config_ = """coordinator=false
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
 
@@ -73,16 +77,16 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
 
     default_coordinator_config_ = """coordinator=true
 discovery-server.enabled=true
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=8GB
 query.max-memory=50GB\n"""
 
     default_coordinator_test_config_ = """coordinator=true
 discovery-server.enabled=true
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
@@ -205,10 +209,10 @@ query.max-memory=50GB\n"""
                            coordinator=None):
         if not coordinator:
             coordinator = self.cluster.internal_master
-        config = 'http-server.http.port=8080\n' \
+        config = 'http-server.http.port=28384\n' \
                  'query.max-memory=50GB\n' \
                  'query.max-memory-per-node=512MB\n' \
-                 'discovery.uri=http://%s:8080' % coordinator
+                 'discovery.uri=http://%s:28384' % coordinator
         if extra_configs:
             config += '\n' + extra_configs
         coordinator_config = '%s\n' \
@@ -501,6 +505,15 @@ query.max-memory=50GB\n"""
     def status_node_connection_error(self, host):
         hostname = self.cluster.get_down_hostname(host)
         return self.status_down_node_string % {'host': hostname}
+
+    def create_presto_client(self, host=None):
+        ips = self.cluster.get_ip_address_dict()
+        if host is None:
+            host = self.cluster.master
+        config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
+        config = self.cluster.exec_cmd_on_host(host, 'cat ' + config_path)
+        user = 'root'
+        return PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
 
 
 def docker_only(original_function):

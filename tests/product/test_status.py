@@ -111,19 +111,6 @@ class TestStatus(BaseProductTestCase):
             topology, self.cluster.internal_slaves[1])
         self.check_status(status_output, statuses)
 
-    def test_status_port_not_8080(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
-        self.upload_topology()
-
-        port_config = """discovery.uri=http://master:8090
-http-server.http.port=8090"""
-
-        self.installer.install(extra_configs=port_config)
-        self.run_prestoadmin('server start')
-        status_output = self._server_status_with_retries(check_catalogs=True)
-
-        self.check_status(status_output, self.base_status(), 8090)
-
     def test_status_non_root_user(self):
         self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
         self.upload_topology(
@@ -203,20 +190,18 @@ http-server.http.port=8090"""
             '=== LOG FOR DEBUGGING ===\n%s=== END OF LOG ===' % (
                 actual_output, expected_regexp, log_tail))
 
-    def check_status(self, cmd_output, statuses, port=8080):
+    def check_status(self, cmd_output, statuses, port=28384):
         expected_output = []
         for status in statuses:
             expected_output += \
                 ['Server Status:',
-                 '\t%s\(IP: %s, Roles: %s\): %s' %
-                 (status['host'], status['ip'], status['role'],
-                  status['is_running'])]
+                 '\t%s\(IP: .+, Roles: %s\): %s' %
+                 (status['host'], status['role'], status['is_running'])]
             if 'error_message' in status and status['error_message']:
                 expected_output += [status['error_message']]
             elif status['is_running'] is 'Running':
                 expected_output += \
-                    ['\tNode URI\(http\): http://%s:%s' % (status['ip'],
-                                                           str(port)),
+                    ['\tNode URI\(http\): http://.+:%s' % str(port),
                      '\tPresto Version: ' + PRESTO_VERSION,
                      '\tNode status:    active',
                      '\tCatalogs:     system, tpch']

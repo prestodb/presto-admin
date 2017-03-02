@@ -214,7 +214,7 @@ class TestControl(BaseProductTestCase):
         return_str = []
         for host in hosts:
             return_str += [r'Fatal error: \[%s\] Server failed to start on %s.'
-                           r' Port 8080 already in use' % (host, host), r'',
+                           r' Port 28384 already in use' % (host, host), r'',
                            r'', r'Aborting.']
         return return_str
 
