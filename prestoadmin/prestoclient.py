@@ -44,11 +44,13 @@ CERTIFICATE_ALIAS = 'certificate_alias'
 
 
 class PrestoClient:
-    def __init__(self, server, user):
+    def __init__(self, server, user, coordinator_config=None):
         # immutable stuff
         self.server = server
         self.user = user
-        self.coordinator_config = PrestoConfig.coordinator_config()
+        if (coordinator_config is None):
+            coordinator_config = PrestoConfig.coordinator_config()
+        self.coordinator_config = coordinator_config
         self.port = PrestoClient._get_configured_port(self.coordinator_config)
 
         # mutable stuff
