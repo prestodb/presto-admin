@@ -41,14 +41,14 @@ RETRY_INTERVAL = 5
 
 class BaseProductTestCase(BaseTestCase):
     default_workers_config_ = """coordinator=false
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 query.max-memory-per-node=8GB
 query.max-memory=50GB\n"""
 
     default_workers_test_config_ = """coordinator=false
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
 
@@ -73,16 +73,16 @@ plugin.dir=/usr/lib/presto/lib/plugin\n"""
 
     default_coordinator_config_ = """coordinator=true
 discovery-server.enabled=true
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=8GB
 query.max-memory=50GB\n"""
 
     default_coordinator_test_config_ = """coordinator=true
 discovery-server.enabled=true
-discovery.uri=http://master:8080
-http-server.http.port=8080
+discovery.uri=http://master:28384
+http-server.http.port=28384
 node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
@@ -205,10 +205,10 @@ query.max-memory=50GB\n"""
                            coordinator=None):
         if not coordinator:
             coordinator = self.cluster.internal_master
-        config = 'http-server.http.port=8080\n' \
+        config = 'http-server.http.port=28384\n' \
                  'query.max-memory=50GB\n' \
                  'query.max-memory-per-node=512MB\n' \
-                 'discovery.uri=http://%s:8080' % coordinator
+                 'discovery.uri=http://%s:28384' % coordinator
         if extra_configs:
             config += '\n' + extra_configs
         coordinator_config = '%s\n' \
