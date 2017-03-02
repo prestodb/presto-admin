@@ -623,10 +623,12 @@ def check_server_status():
 @retry(stop_max_delay=RETRY_TIMEOUT * 1000, wait_fixed=5000, retry_on_result=lambda result: result is False)
 def query_server_for_status(client, node_id):
     try:
-        client.execute_query(SYSTEM_RUNTIME_NODES)
+        rows = client.run_sql(SYSTEM_RUNTIME_NODES)
+        if rows is not None:
+            return _is_in_rows(node_id, rows)
     except ConfigurationError as e:
         _LOGGER.warn(e)
-    return _is_in_rows(node_id, client.get_rows())
+    return False
 
 
 def _is_in_rows(value, rows):
