@@ -504,10 +504,8 @@ class TestInstall(BaseUnitCase):
            return_value=PRESTO_CONFIG)
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.lookup_string_config')
-    @patch.object(PrestoClient, 'execute_query')
-    @patch.object(PrestoClient, 'get_rows')
-    def test_check_success_status(self, mock_get_rows, mock_execute, string_config_mock, mock_run,
-                                  mock_presto_config):
+    @patch.object(PrestoClient, 'run_sql')
+    def test_check_success_status(self, mock_run_sql, string_config_mock, mock_run, mock_presto_config):
         env.roledefs = {
             'coordinator': ['Node1'],
             'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
@@ -516,8 +514,7 @@ class TestInstall(BaseUnitCase):
         env.hosts = env.roledefs['all']
         env.host = 'Node1'
         string_config_mock.return_value = 'Node1'
-        mock_execute.return_value = False
-        mock_get_rows.return_value = [['Node2', 'some stuff'], ['Node1', 'some other stuff']]
+        mock_run_sql.return_value = [['Node2', 'some stuff'], ['Node1', 'some other stuff']]
         self.assertEqual(server.check_server_status(), True)
 
     @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
@@ -541,11 +538,11 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
            return_value=PRESTO_CONFIG)
     @patch('prestoadmin.server.execute')
-    @patch('prestoadmin.server.run_sql')
     @patch('prestoadmin.server.get_presto_version')
+    @patch('prestoadmin.server.presto_installed')
+    @patch.object(PrestoClient, 'run_sql')
     def test_status_from_each_node(
-            self, mock_get_presto_version, mock_run_sql, mock_execute,
-            mock_presto_config):
+            self, mock_run_sql, mock_presto_installed, mock_get_presto_version, mock_execute, mock_presto_config):
         env.roledefs = {
             'coordinator': ['Node1'],
             'worker': ['Node1', 'Node2', 'Node3', 'Node4'],
@@ -602,8 +599,7 @@ class TestInstall(BaseUnitCase):
     @patch('prestoadmin.server.sudo')
     def test_get_external_ip(self, mock_nodeuuid):
         client_mock = MagicMock(PrestoClient)
-        client_mock.execute_query.return_value = True
-        client_mock.get_rows = lambda: [['IP']]
+        client_mock.run_sql.return_value = [['IP']]
         self.assertEqual(server.get_ext_ip_of_node(client_mock), 'IP')
 
     @patch('prestoadmin.server.sudo')
@@ -611,8 +607,7 @@ class TestInstall(BaseUnitCase):
     def test_warn_external_ip(self, mock_warn, mock_nodeuuid):
         env.host = 'node'
         client_mock = MagicMock(PrestoClient)
-        client_mock.execute_query.return_value = True
-        client_mock.get_rows = lambda: [['IP1'], ['IP2']]
+        client_mock.run_sql.return_value = [['IP1'], ['IP2']]
         server.get_ext_ip_of_node(client_mock)
         mock_warn.assert_called_with("More than one external ip found for "
                                      "node. There could be multiple nodes "
@@ -627,7 +622,7 @@ class TestInstall(BaseUnitCase):
 
     @patch('prestoadmin.util.presto_config.PrestoConfig.coordinator_config',
            return_value=PRESTO_CONFIG)
-    @patch('prestoadmin.server.run_sql')
+    @patch.object(PrestoClient, 'run_sql')
     @patch('prestoadmin.server.run')
     @patch('prestoadmin.server.warn')
     def test_warning_presto_version_not_installed(self, mock_warn, mock_run,

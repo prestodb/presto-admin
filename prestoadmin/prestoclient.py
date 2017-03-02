@@ -70,7 +70,7 @@ class PrestoClient:
     def close(self):
         PrestoClient._remove_silently(self.ca_file_path)
 
-    def clear_old_results(self):
+    def _clear_old_results(self):
         if self.rows:
             self.rows = []
 
@@ -80,20 +80,9 @@ class PrestoClient:
         if self.response_from_server:
             self.response_from_server = {}
 
-    def run_sql(self, sql):
-        status = self.execute_query(sql)
-        if status:
-            return self.get_rows()
-        else:
-            return None
-
-    def execute_query(self, sql, schema="default", catalog="hive"):
+    def run_sql(self, sql, schema="default", catalog="hive"):
         """
         Execute a query connecting to Presto server using passed parameters.
-
-        Client sends http POST request to the Presto server, page:
-        "/v1/statement". Header information should
-        include: X-Presto-Catalog, X-Presto-Schema,  X-Presto-User
 
         Args:
             sql: SQL query to be executed
@@ -102,8 +91,15 @@ class PrestoClient:
             catalog: Catalog to be used by the server
 
         Returns:
-            True or False exit status
+            list of rows or None if client was unable to connect to Presto
         """
+        status = self._execute_query(sql, schema, catalog)
+        if status:
+            return self._get_rows()
+        else:
+            return None
+
+    def _execute_query(self, sql, schema, catalog):
         if not sql:
             raise InvalidArgumentError("SQL query missing")
 
@@ -113,7 +109,7 @@ class PrestoClient:
         if not self.user:
             raise InvalidArgumentError("Username missing")
 
-        self.clear_old_results()
+        self._clear_old_results()
 
         headers = {"X-Presto-Catalog": catalog,
                    "X-Presto-Schema": schema,
@@ -150,13 +146,11 @@ class PrestoClient:
                           ' error from server: ' + answer)
             raise e
 
-    def get_response_from(self, uri):
+    def _get_response_from(self, uri):
         """
         Sends a GET request to the Presto server at the specified next_uri
         and updates the response
-        """
 
-        """
         Remove the scheme and host/port from the uri; the connection itself
         has that information.
         """
@@ -183,7 +177,7 @@ class PrestoClient:
         _LOGGER.info("GET request successful for uri: " + uri)
         return True
 
-    def build_results_from_response(self):
+    def _build_results_from_response(self):
         """
         Build result from the response
 
@@ -203,7 +197,7 @@ class PrestoClient:
             else:
                 self.rows = self.response_from_server[DATA_RESP]
 
-    def get_rows(self, num_of_rows=NUM_ROWS):
+    def _get_rows(self, num_of_rows=NUM_ROWS):
         """
         Get the rows returned from the query.
 
@@ -221,19 +215,19 @@ class PrestoClient:
         if num_of_rows == 0:
             return []
 
-        self.build_results_from_response()
+        self._build_results_from_response()
 
-        if not self.get_next_uri():
+        if not self._get_next_uri():
             return []
 
-        while self.get_next_uri():
-            if not self.get_response_from(self.get_next_uri()):
+        while self._get_next_uri():
+            if not self._get_response_from(self._get_next_uri()):
                 return []
             if (len(self.rows) <= num_of_rows):
-                self.build_results_from_response()
+                self._build_results_from_response()
         return self.rows
 
-    def get_next_uri(self):
+    def _get_next_uri(self):
         return self.next_uri
 
     def _get_connection(self):
@@ -326,14 +320,14 @@ class PrestoClient:
     def _add_auth_headers(self, headers):
         if self.coordinator_config.use_ldap():
             if self.coordinator_config.use_ldap():
-                auth_headers = self.create_auth_headers(
+                auth_headers = self._create_auth_headers(
                     self.coordinator_config.get_ldap_user(),
                     self.coordinator_config.get_ldap_password())
                 headers.update(auth_headers)
                 _LOGGER.info("Using LDAP = %s" % self.coordinator_config.use_ldap())
 
     @staticmethod
-    def create_auth_headers(user, password):
+    def _create_auth_headers(user, password):
         if not user:
             error('LDAP user (taken from %s in %s on the coordinator) cannot be null or empty' %
                   (LDAP_CLIENT_USER_KEY, os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)))
