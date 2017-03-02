@@ -160,13 +160,7 @@ class TestCollect(BaseProductTestCase):
         self.assertEqual(actual, expected)
 
     def get_query_id(self, sql, host=None):
-        ips = self.cluster.get_ip_address_dict()
-        if host is None:
-            host = self.cluster.master
-        config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
-        config = self.cluster.exec_cmd_on_host(host, 'cat ' + config_path)
-        user = 'root'
-        client = PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
+        client = self.create_presto_client(self, host)
         run_sql(client, sql)
         query_runtime_info = run_sql(client, 'SELECT query_id FROM '
                                              'system.runtime.queries '

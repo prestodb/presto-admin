@@ -21,10 +21,14 @@ import json
 import os
 import re
 
+from StringIO import StringIO
 from nose.tools import nottest
 from retrying import Retrying
 
+from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.util import constants
+from prestoadmin.util.constants import REMOTE_CONF_DIR, CONFIG_PROPERTIES
+from prestoadmin.util.presto_config import PrestoConfig
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
 from tests.docker_cluster import DockerCluster
@@ -501,6 +505,15 @@ query.max-memory=50GB\n"""
     def status_node_connection_error(self, host):
         hostname = self.cluster.get_down_hostname(host)
         return self.status_down_node_string % {'host': hostname}
+
+    def create_presto_client(self, host=None):
+        ips = self.cluster.get_ip_address_dict()
+        if host is None:
+            host = self.cluster.master
+        config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
+        config = self.cluster.exec_cmd_on_host(host, 'cat ' + config_path)
+        user = 'root'
+        return PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
 
 
 def docker_only(original_function):
