@@ -1,0 +1,35 @@
+language: python
+python:
+  - "2.7"
+sudo: required
+services:
+  - docker
+env:
+  global:
+    - PA_TEST_ONLINE_INSTALLER=true
+  matrix:
+    - OTHER_TESTS=true
+    - PRODUCT_TEST_GROUP=0
+    - PRODUCT_TEST_GROUP=1
+    - PRODUCT_TEST_GROUP=2
+    - PRODUCT_TEST_GROUP=3
+    - PRODUCT_TEST_GROUP=4
+    - PRODUCT_TEST_GROUP=5
+    - PRODUCT_TEST_GROUP=6
+    - PRODUCT_TEST_GROUP=7
+before_script:
+  - pip install --upgrade pip==7.1.2
+  - pip install -r requirements.txt
+  - make docker-images
+install: 
+  - make docker-dist-online
+script: 
+  - |
+    if [ -v PRODUCT_TEST_GROUP ]; then
+      PRODUCT_TESTS=$(find tests/product/ -name '*py' | grep -v __init__ | xargs wc -l | sort -n | head -n -1 | awk '{print $2}' | awk "NR % 8 == $PRODUCT_TEST_GROUP" | tr '\n' ' ')
+      tox -e py26 -- -a '!quarantine,!offline_installer' $PRODUCT_TESTS
+    fi
+  - |
+    if [ -v OTHER_TESTS ]; then
+      make clean lint docs test test-rpm
+    fi

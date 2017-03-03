@@ -18,7 +18,7 @@ env:
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_catalog.py"
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_control.py"
 install:
-  - pip install --upgrade pip==6.1.1
+  - pip install --upgrade pip==7.1.2
   - pip install -r requirements.txt
   - pip install tox-travis
 before_script:
