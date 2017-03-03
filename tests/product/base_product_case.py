@@ -305,10 +305,7 @@ query.max-memory=50GB\n"""
 
         split_path = os.path.split(filepath)
         pa_file = None
-        if (split_path[0] == '/etc/presto' and
-            split_path[1] in ['config.properties',
-                              'log.properties',
-                              'jvm.config']):
+        if (split_path[0] == '/etc/presto' and split_path[1] in ['config.properties', 'log.properties', 'jvm.config']):
             if host in self.cluster.slaves:
                 config_dir = get_workers_directory()
             else:
@@ -336,10 +333,8 @@ query.max-memory=50GB\n"""
                 # other host, display the content of the file as it is on the
                 # presto-admin host. Presumably this will match the actual
                 # file content that we display above.
-                msg += '\t==== Content for presto-admin file %s ====\n' % \
-                       (pa_file,)
-                msg += self.get_file_content(self.cluster.master,
-                                             pa_file)
+                msg += '\t==== Content for presto-admin file %s ====\n' % (pa_file,)
+                msg += self.get_file_content(self.cluster.master, pa_file)
                 msg += '\n\t==========================================\n'
             except OSError as e:
                 msg += e.message
