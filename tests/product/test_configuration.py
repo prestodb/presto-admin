@@ -50,7 +50,6 @@ class TestConfiguration(BaseProductTestCase):
 
         # redeploy configuration to test the default files that we wrote out
         output = self.run_prestoadmin('configuration deploy')
-        deploy_template = 'Deploying configuration on: %s\n'
 
         for host in self.cluster.all_hosts():
             self.assert_has_default_config(host)
