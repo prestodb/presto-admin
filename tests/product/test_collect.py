@@ -157,9 +157,7 @@ class TestCollect(BaseProductTestCase):
     def get_query_id(self, sql, host=None):
         client = self.create_presto_client(host)
         client.run_sql(sql)
-        query_runtime_info = client.run_sql('SELECT query_id FROM '
-                                             'system.runtime.queries '
-                                             'WHERE query = \'' + sql + '\'')
+        query_runtime_info = client.run_sql('SELECT query_id FROM system.runtime.queries WHERE query = \'%s\'' % (sql,))
         if not query_runtime_info:
             raise PrestoError('Presto not started up yet.')
         for row in query_runtime_info:
