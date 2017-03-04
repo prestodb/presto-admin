@@ -15,6 +15,8 @@
 """
 Module for setting and validating the presto-admin config
 """
+import re
+
 from fabric.api import env
 from overrides import overrides
 
@@ -116,6 +118,7 @@ def validate(conf):
     except KeyError:
         pass
     else:
+        workers = [h for host in workers for h in _expand_host(host)]
         conf['workers'] = validate_workers(workers)
 
     try:
@@ -138,6 +141,26 @@ def validate_workers(workers):
     for worker in workers:
         validate_host(worker)
     return workers
+
+
+def _expand_host(host):
+    match = re.match("(.*)\[(\d{1,})-(\d{1,})\](.*)", host)
+    if match is not None and len(match.groups()) == 4:
+        prefix, start, end, suffix = match.groups()
+        if int(start) > int(end):
+            raise ValueError("the range format must be ascending order")
+        if len(start) == len(end) and len(start) > 1:
+            number_format = "{0:0" + str(len(start)) + "d}"
+            host_list = [number_format.format(i) for i in range(int(start), int(end) + 1)]
+            return [_format_hostname(prefix, i, suffix) for i in host_list]
+        else:
+            return [_format_hostname(prefix, i, suffix) for i in range(int(start), int(end) + 1)]
+    else:
+        return [host]
+
+
+def _format_hostname(prefix, number, suffix):
+    return "{prefix}{num}{suffix}".format(prefix=prefix, num=number, suffix=suffix)
 
 
 class StandaloneConfig(BaseConfig):
