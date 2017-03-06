@@ -753,22 +753,25 @@ def print_status_header(external_ip, server_status, host):
 
 @parallel
 def collect_node_information():
+    """
+    :return: tuple (triple) of external_ip, is_running, and optional error string (blank if empty)
+    """
+    with settings(hide('warnings')):
+        error_message = check_presto_version()
+
+    if error_message:
+        return 'Unknown', False, error_message
+
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
-        with settings(hide('warnings')):
-            error_message = check_presto_version()
-        if error_message:
-            external_ip = 'Unknown'
-            is_running = False
-        else:
-            with settings(hide('warnings', 'aborts', 'stdout')):
-                try:
-                    external_ip = get_ext_ip_of_node(client)
-                except:
-                    external_ip = 'Unknown'
-                try:
-                    is_running = service('status')
-                except:
-                    is_running = False
+        with settings(hide('warnings', 'aborts', 'stdout')):
+            try:
+                external_ip = get_ext_ip_of_node(client)
+            except:
+                external_ip = 'Unknown'
+            try:
+                is_running = service('status')
+            except:
+                is_running = False
         return external_ip, is_running, error_message
 
 
