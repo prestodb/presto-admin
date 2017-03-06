@@ -789,8 +789,7 @@ def print_cluster_status():
             catalog_status = []
 
         with settings(hide('running')):
-            node_information = execute(collect_node_information,
-                                       hosts=get_host_list())
+            node_information = execute(collect_node_information, hosts=get_host_list())
 
         for host in get_host_list():
             if isinstance(node_information[host], Exception):
@@ -817,8 +816,7 @@ def print_cluster_status():
                 if node_status:
                     print_node_info(node_status, catalog_status)
                 else:
-                    print('\tNo information available: the coordinator has not yet'
-                          ' discovered this node')
+                    print('\tNo information available: the coordinator has not yet discovered this node')
 
 
 @task
