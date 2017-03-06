@@ -775,7 +775,7 @@ def collect_node_information():
         return external_ip, is_running, error_message
 
 
-def get_status_from_coordinator():
+def print_cluster_status():
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
         try:
             coordinator_status = client.run_sql(SYSTEM_RUNTIME_NODES)
@@ -829,4 +829,4 @@ def status():
     """
     Print the status of presto in the cluster
     """
-    get_status_from_coordinator()
+    print_cluster_status()
