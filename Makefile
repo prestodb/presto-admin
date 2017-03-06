@@ -135,7 +135,7 @@ BASE_IMAGES_TAG := $(shell awk '/base_images_tag/ \
 	{split($$NF, a, "\""); print a[2]}' base-images-tag.json)
 
 test-images: docker-images presto-server-rpm.rpm
-	python tests/product/image_builder.py $(IMAGE_NAMES)
+	PYTHONPATH=${PYTHONPATH}:$(shell pwd) python tests/product/image_builder.py $(IMAGE_NAMES)
 
 DOCKER_IMAGES := \
 	teradatalabs/centos6-ssh-oj8:$(BASE_IMAGES_TAG) \
