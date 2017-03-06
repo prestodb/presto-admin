@@ -745,7 +745,10 @@ def collect_node_information():
 
 
 def print_cluster_status():
-    node_statuses = _collect_node_statuses()
+    if not presto_installed():
+        node_statuses = [NodeStatus(host) for host in get_host_list()]
+    else:
+        node_statuses = _collect_node_statuses()
 
     for node_status in node_statuses:
         print node_status.status(),
@@ -754,16 +757,8 @@ def print_cluster_status():
 def _collect_node_statuses():
     node_statuses = []
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
-        try:
-            coordinator_status = client.run_sql(SYSTEM_RUNTIME_NODES) is not None
-            catalogs = get_catalog_info_from(client)
-        except BaseException as e:
-            # Just log errors that come from a missing port or anything else; if
-            # we can't connect to the coordinator, we just want to print out a
-            # minimal status anyway.
-            _LOGGER.warn(e.message)
-            coordinator_status = False
-            catalogs = ''
+        coordinator_status = client.run_sql(SYSTEM_RUNTIME_NODES) is not None
+        catalogs = get_catalog_info_from(client)
 
         with settings(hide('running')):
             node_information = execute(collect_node_information, hosts=get_host_list())
