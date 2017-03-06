@@ -279,7 +279,7 @@ for the change to take effect
 
     def get_catalog_info(self):
         client = self.create_presto_client()
-        return client.run_sql('select catalog_name from catalogs');
+        return client.run_sql('select catalog_name from catalogs')
 
     # Presto will be 'query-able' before it has loaded all of its
     # catalogs. When presto-admin restarts presto it returns when it
