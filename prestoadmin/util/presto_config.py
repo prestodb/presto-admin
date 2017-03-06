@@ -69,21 +69,17 @@ class PrestoConfig:
     def coordinator_config():
         config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
         config_host = env.roledefs['coordinator'][0]
-        try:
-            data = StringIO()
-            with settings(host_string='%s@%s' % (env.user, config_host)):
-                with hide('stderr', 'stdout'):
-                    temp_dir = run('mktemp -d /tmp/prestoadmin.XXXXXXXXXXXXXX')
-                try:
-                    get(config_path, data, use_sudo=True, temp_dir=temp_dir)
-                finally:
-                    run('rm -r %s' % temp_dir)
+        data = StringIO()
+        with settings(host_string='%s@%s' % (env.user, config_host)):
+            with hide('stderr', 'stdout'):
+                temp_dir = run('mktemp -d /tmp/prestoadmin.XXXXXXXXXXXXXX')
+            try:
+                get(config_path, data, use_sudo=True, temp_dir=temp_dir)
+            finally:
+                run('rm -r %s' % temp_dir)
 
-            data.seek(0)
-            return PrestoConfig.from_file(data, config_path, config_host)
-        except:
-            _LOGGER.info('Could not find Presto config.')
-            return PrestoConfig(None, config_path, config_host)
+        data.seek(0)
+        return PrestoConfig.from_file(data, config_path, config_host)
 
     def _lookup(self, key):
         result = self.config_properties.get(key, self.default_config[key])
