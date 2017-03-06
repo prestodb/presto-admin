@@ -745,6 +745,14 @@ def collect_node_information():
 
 
 def print_cluster_status():
+    node_statuses = _collect_node_statuses()
+
+    for node_status in node_statuses:
+        print node_status.status(),
+
+
+def _collect_node_statuses():
+    node_statuses = []
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
         try:
             coordinator_status = client.run_sql(SYSTEM_RUNTIME_NODES) is not None
@@ -760,7 +768,6 @@ def print_cluster_status():
         with settings(hide('running')):
             node_information = execute(collect_node_information, hosts=get_host_list())
 
-        node_statuses = []
         for host in get_host_list():
             if isinstance(node_information[host], Exception):
                 external_ip = 'Unknown'
@@ -780,8 +787,7 @@ def print_cluster_status():
             node_statuses.append(
                 NodeStatus(host, external_ip, is_running, node_info, coordinator_status, catalogs, error_message))
 
-        for node_status in node_statuses:
-            print node_status.status()
+        return node_statuses
 
 
 class NodeStatus:
