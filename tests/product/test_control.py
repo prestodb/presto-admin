@@ -240,7 +240,6 @@ class TestControl(BaseProductTestCase):
                                r' does not respond.'
                                % (host, RETRY_TIMEOUT / 60),
                                r'Server started successfully on: %s' % host,
-                               r'\[%s\] out: ' % host,
                                r'\[%s\] out: Started as .*' % host,
                                r'\[%s\] out: Starting presto' % host]
         if already_started:
@@ -251,13 +250,11 @@ class TestControl(BaseProductTestCase):
                                r' does not respond.'
                                % (host, RETRY_TIMEOUT / 60),
                                r'Server started successfully on: %s' % host,
-                               r'\[%s\] out: ' % host,
                                r'\[%s\] out: Already running as .*' % host,
                                r'\[%s\] out: Starting presto' % host]
         if failed_hosts:
             for host in failed_hosts:
-                return_str += [r'\[%s\] out: ' % host,
-                               r'\[%s\] out: Starting presto' % host]
+                return_str += [r'\[%s\] out: Starting presto' % host]
         return return_str
 
     def presto_not_installed_message(self):
