@@ -44,12 +44,6 @@ RETRY_INTERVAL = 5
 
 
 class BaseProductTestCase(BaseTestCase):
-    default_workers_config_ = """coordinator=false
-discovery.uri=http://master:28384
-http-server.http.port=28384
-query.max-memory-per-node=8GB
-query.max-memory=50GB\n"""
-
     default_workers_test_config_ = """coordinator=false
 discovery.uri=http://master:28384
 http-server.http.port=28384
