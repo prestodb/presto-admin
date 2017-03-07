@@ -757,7 +757,6 @@ def print_cluster_status():
 def _collect_node_statuses():
     node_statuses = []
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
-        coordinator_status = client.run_sql(SYSTEM_RUNTIME_NODES) is not None
         catalogs = get_catalog_info_from(client)
 
         with settings(hide('running')):
@@ -780,7 +779,7 @@ def _collect_node_statuses():
                 node_info = processor(node_info_row)
 
             node_statuses.append(
-                NodeStatus(host, external_ip, is_running, node_info, coordinator_status, catalogs, error_message))
+                NodeStatus(host, external_ip, is_running, node_info, catalogs, error_message))
 
         return node_statuses
 
@@ -792,14 +791,12 @@ class NodeStatus:
             external_ip='Unknown',
             is_running=False,
             node_info={},
-            coordinator_status=False,
             catalogs=[],
-            error_message='No information available'):
+            error_message='No information available: unable to query coordinator'):
         self.host = host
         self.external_ip = external_ip
         self.is_running = is_running
         self.node_info = node_info
-        self.coordinator_status = coordinator_status
         self.catalogs = catalogs
         self.error_message = error_message
 
@@ -814,8 +811,6 @@ class NodeStatus:
 
         if self.error_message:
             status += '\t%s\n' % self.error_message
-        elif not self.coordinator_status:
-            status += '\tNo information available: unable to query coordinator\n'
         elif not self.is_running:
             status += '\tNo information available\n'
         else:
