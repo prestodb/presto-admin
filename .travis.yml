@@ -27,31 +27,24 @@ before_script:
 script:
   - |
     if [ -v SHORT_PRODUCT_TEST_GROUP ]; then
-      ALL_PRODUCT_TESTS=$(find tests/product/ -name 'test_*py' | grep -v __init__ | xargs wc -l | sort -n | head -n -1 | awk '{print $2}' | tr '\n' ' ') &&
+      ALL_PRODUCT_TESTS=$(find tests/product/ -name 'test_*py' | grep -v __init__ | xargs wc -l | sort -n | head -n -1 | awk '{print $2}' | tr '\n' ' ')
       for LONG_PRODUCT_TEST in ${LONG_PRODUCT_TESTS[@]}; do
         ALL_PRODUCT_TESTS=${ALL_PRODUCT_TESTS//$LONG_PRODUCT_TEST/};
         if [ $? -ne 0 ]; then
           exit 1
         fi
-      done &&
-      SHORT_PRODUCT_TESTS=$(echo $ALL_PRODUCT_TESTS | tr ' ' '\n' | awk "NR % 1 == $SHORT_PRODUCT_TEST_GROUP" | tr '\n' ' ') &&
-      make test-images &&
-      nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${SHORT_PRODUCT_TESTS};
+      done
+      SHORT_PRODUCT_TESTS=$(echo $ALL_PRODUCT_TESTS | tr ' ' '\n' | awk "NR % 1 == $SHORT_PRODUCT_TEST_GROUP" | tr '\n' ' ')
+      ./bin/ci-product.sh ${SHORT_PRODUCT_TESTS};
     elif [ -v LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN ]; then
-      export IMAGE_NAMES="standalone_presto_admin" &&
-      make test-images &&
-      nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN};
+      export IMAGE_NAMES="standalone_presto_admin"
+      ./bin/ci-product.sh ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN};
     elif [ -v LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO ]; then
-      export IMAGE_NAMES="standalone_presto standalone_presto_admin" &&
-      make test-images &&
-      nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO};
+      export IMAGE_NAMES="standalone_presto standalone_presto_admin"
+      ./bin/ci-product.sh ${LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO}
     elif [ -v OTHER_TESTS ]; then
-      make clean lint dist docs &&
-      tox -e py26 -- -s tests.unit &&
-      tox -e py26 -- -s tests.integration;
-      tox -e py27 -- -s tests.unit &&
-      tox -e py27 -- -s tests.integration;
+      ./bin/ci-basic.sh
     else
-      echo "Unknown test" &&
-      exit 1;
+      echo "Unknown test"
+      exit 1
     fi
