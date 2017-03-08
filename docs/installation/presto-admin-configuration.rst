@@ -93,6 +93,18 @@ username and port, a sample ``config.json`` would be:
  "workers": ["slave1","slave2","slave3","slave4","slave5"]
  }
 
+You can specify a range of workers by including the number range in brackets in the worker name.  For example:
+
+::
+
+    "workers": ["worker[01-03]"]
+
+is the same as
+
+::
+
+    "workers": ["worker01", "worker02", "worker03"]
+
 
 .. _sudo-password-spec:
 
