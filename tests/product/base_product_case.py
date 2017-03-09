@@ -20,14 +20,14 @@ other utilities
 import json
 import os
 import re
-
 from StringIO import StringIO
+
 from nose.tools import nottest
 from retrying import Retrying
 
 from prestoadmin.prestoclient import PrestoClient
 from prestoadmin.util import constants
-from prestoadmin.util.constants import REMOTE_CONF_DIR, CONFIG_PROPERTIES
+from prestoadmin.util.constants import CONFIG_PROPERTIES, DEFAULT_LOCAL_CONF_DIR, COORDINATOR_DIR_NAME
 from prestoadmin.util.presto_config import PrestoConfig
 from tests.base_test_case import BaseTestCase
 from tests.configurable_cluster import ConfigurableCluster
@@ -35,8 +35,8 @@ from tests.docker_cluster import DockerCluster
 from tests.product.cluster_types import cluster_types
 from tests.product.config_dir_utils import get_coordinator_directory, get_workers_directory, get_config_file_path, \
     get_log_directory, get_install_directory, get_presto_admin_path
-from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 from tests.product.constants import BASE_IMAGES_TAG
+from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 PRESTO_VERSION = r'.+'
 RETRY_TIMEOUT = 120
@@ -498,7 +498,7 @@ query.max-memory=50GB\n"""
         ips = self.cluster.get_ip_address_dict()
         if host is None:
             host = self.cluster.master
-        config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
+        config_path = os.path.join(DEFAULT_LOCAL_CONF_DIR, COORDINATOR_DIR_NAME, CONFIG_PROPERTIES)
         config = self.cluster.exec_cmd_on_host(host, 'cat ' + config_path)
         user = 'root'
         return PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
