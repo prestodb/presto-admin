@@ -499,7 +499,7 @@ query.max-memory=50GB\n"""
         if host is None:
             host = self.cluster.master
         config_path = os.path.join(REMOTE_CONF_DIR, CONFIG_PROPERTIES)
-        config = self.cluster.exec_cmd_on_host(host, 'cat ' + config_path)
+        config = self.cluster.exec_cmd_on_host(host, 'sudo cat ' + config_path)
         user = 'root'
         return PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
 
