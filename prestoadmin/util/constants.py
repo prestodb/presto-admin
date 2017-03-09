@@ -30,7 +30,8 @@ LOGGING_CONFIG_FILE_DIRECTORIES = [
 # local configuration
 LOG_DIR_ENV_VARIABLE = 'PRESTO_ADMIN_LOG_DIR'
 CONFIG_DIR_ENV_VARIABLE = 'PRESTO_ADMIN_CONFIG_DIR'
-DEFAULT_LOCAL_CONF_DIR = os.path.join(os.path.expanduser('~'), '.prestoadmin')
+LOCAL_CONF_DIR = '.prestoadmin'
+DEFAULT_LOCAL_CONF_DIR = os.path.join(os.path.expanduser('~'), LOCAL_CONF_DIR)
 TOPOLOGY_CONFIG_FILE = 'config.json'
 COORDINATOR_DIR_NAME = 'coordinator'
 WORKERS_DIR_NAME = 'workers'
