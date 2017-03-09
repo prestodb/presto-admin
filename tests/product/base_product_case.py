@@ -496,11 +496,11 @@ query.max-memory=50GB\n"""
 
     def create_presto_client(self, host=None):
         ips = self.cluster.get_ip_address_dict()
+        config_path = os.path.join('~', LOCAL_CONF_DIR, COORDINATOR_DIR_NAME, CONFIG_PROPERTIES)
+        config = self.cluster.exec_cmd_on_host(self.cluster.master, 'cat ' + config_path)
+        user = 'root'
         if host is None:
             host = self.cluster.master
-        config_path = os.path.join('~', LOCAL_CONF_DIR, COORDINATOR_DIR_NAME, CONFIG_PROPERTIES)
-        config = self.cluster.exec_cmd_on_host(host, 'cat ' + config_path)
-        user = 'root'
         return PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
 
 
