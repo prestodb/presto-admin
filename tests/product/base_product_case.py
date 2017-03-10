@@ -494,14 +494,13 @@ query.max-memory=50GB\n"""
         hostname = self.cluster.get_down_hostname(host)
         return self.status_down_node_string % {'host': hostname}
 
-    def create_presto_client(self, host=None):
+    def create_presto_client(self):
         ips = self.cluster.get_ip_address_dict()
         config_path = os.path.join('~', LOCAL_CONF_DIR, COORDINATOR_DIR_NAME, CONFIG_PROPERTIES)
-        config = self.cluster.exec_cmd_on_host(self.cluster.master, 'cat ' + config_path)
+        master = self.cluster.master
+        config = self.cluster.exec_cmd_on_host(master, 'cat ' + config_path)
         user = 'root'
-        if host is None:
-            host = self.cluster.master
-        return PrestoClient(ips[host], user, PrestoConfig.from_file(StringIO(config), config_path, host))
+        return PrestoClient(ips[master], user, PrestoConfig.from_file(StringIO(config), config_path, master))
 
 
 def docker_only(original_function):
