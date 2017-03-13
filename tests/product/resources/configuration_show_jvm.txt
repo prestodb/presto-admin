@@ -8,7 +8,7 @@ master: Configuration file at /etc/presto/jvm.config:
 -XX:+ExplicitGCInvokesConcurrent
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
--XX:OnOutOfMemoryError=kill -9 %p
+-XX:+ExitOnOutOfMemoryError
 -XX:ReservedCodeCacheSize=512M
 -DHADOOP_USER_NAME=hive
 
@@ -22,7 +22,7 @@ slave1: Configuration file at /etc/presto/jvm.config:
 -XX:+ExplicitGCInvokesConcurrent
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
--XX:OnOutOfMemoryError=kill -9 %p
+-XX:+ExitOnOutOfMemoryError
 -XX:ReservedCodeCacheSize=512M
 -DHADOOP_USER_NAME=hive
 
@@ -36,7 +36,7 @@ slave2: Configuration file at /etc/presto/jvm.config:
 -XX:+ExplicitGCInvokesConcurrent
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
--XX:OnOutOfMemoryError=kill -9 %p
+-XX:+ExitOnOutOfMemoryError
 -XX:ReservedCodeCacheSize=512M
 -DHADOOP_USER_NAME=hive
 
@@ -50,7 +50,7 @@ slave3: Configuration file at /etc/presto/jvm.config:
 -XX:+ExplicitGCInvokesConcurrent
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:+UseGCOverheadLimit
--XX:OnOutOfMemoryError=kill -9 %p
+-XX:+ExitOnOutOfMemoryError
 -XX:ReservedCodeCacheSize=512M
 -DHADOOP_USER_NAME=hive
 
