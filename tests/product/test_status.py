@@ -190,7 +190,7 @@ class TestStatus(BaseProductTestCase):
             '=== LOG FOR DEBUGGING ===\n%s=== END OF LOG ===' % (
                 actual_output, expected_regexp, log_tail))
 
-    def check_status(self, cmd_output, statuses, port=28384):
+    def check_status(self, cmd_output, statuses, port=7070):
         expected_output = []
         for status in statuses:
             expected_output += \

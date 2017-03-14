@@ -1,23 +1,23 @@
 
 master: Configuration file at /etc/presto/config.properties:
 coordinator=false
-discovery.uri=http://.*:28384
-http-server.http.port=28384
+discovery.uri=http://.*:7070
+http-server.http.port=7070
 query.max-memory-per-node=512MB
 query.max-memory=50GB
 
 
 slave2: Configuration file at /etc/presto/config.properties:
 coordinator=false
-discovery.uri=http://.*:28384
-http-server.http.port=28384
+discovery.uri=http://.*:7070
+http-server.http.port=7070
 query.max-memory-per-node=512MB
 query.max-memory=50GB
 
 
 slave3: Configuration file at /etc/presto/config.properties:
 coordinator=false
-discovery.uri=http://.*:28384
-http-server.http.port=28384
+discovery.uri=http://.*:7070
+http-server.http.port=7070
 query.max-memory-per-node=512MB
 query.max-memory=50GB
