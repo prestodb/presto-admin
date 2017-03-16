@@ -77,7 +77,7 @@ class PrestoConfig:
                 try:
                     get(config_path, data, use_sudo=True, temp_dir=temp_dir)
                 finally:
-                    run('rm -r %s' % temp_dir)
+                    run('rm -rf %s' % temp_dir)
 
             data.seek(0)
             return PrestoConfig.from_file(data, config_path, config_host)
