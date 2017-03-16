@@ -552,7 +552,6 @@ class TestInstall(BaseUnitCase):
 
         mock_get_presto_version.return_value = '0.97-SNAPSHOT'
         mock_run_sql.side_effect = [
-            [['select * from system.runtime.nodes']],
             [['hive'], ['system'], ['tpch']],
             [['http://active/statement', 'presto-main:0.97-SNAPSHOT', True]],
             [['http://inactive/stmt', 'presto-main:0.99-SNAPSHOT', False]],

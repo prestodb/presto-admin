@@ -698,30 +698,6 @@ def get_catalog_info_from(client):
     return ', '.join(syscatalog)
 
 
-def is_server_up(status):
-    if status:
-        return 'Running'
-    else:
-        return 'Not Running'
-
-
-def get_roles_for(host):
-    roles = []
-    for role in ['coordinator', 'worker']:
-        if host in env.roledefs[role]:
-            roles.append(role)
-    return roles
-
-
-def print_node_info(node_status, catalog_status):
-    for k in node_status:
-        print('\tNode URI(http): ' + str(k) +
-              '\n\tPresto Version: ' + str(node_status[k][0]) +
-              '\n\tNode status:    ' + str(node_status[k][1]))
-        if catalog_status:
-            print('\tCatalogs:     ' + catalog_status)
-
-
 def get_ext_ip_of_node(client):
     node_properties_file = os.path.join(constants.REMOTE_CONF_DIR,
                                         'node.properties')
@@ -744,78 +720,118 @@ def get_ext_ip_of_node(client):
     return external_ip
 
 
-def print_status_header(external_ip, server_status, host):
-    print('Server Status:')
-    print('\t%s(IP: %s, Roles: %s): %s' % (host, external_ip,
-                                           ', '.join(get_roles_for(host)),
-                                           is_server_up(server_status)))
-
-
 @parallel
 def collect_node_information():
+    """
+    :return: tuple (triple) of external_ip, is_running, and optional error string (blank if empty)
+    """
+    with settings(hide('warnings')):
+        error_message = check_presto_version()
+
+    if error_message:
+        return 'Unknown', False, error_message
+
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
-        with settings(hide('warnings')):
-            error_message = check_presto_version()
-        if error_message:
-            external_ip = 'Unknown'
-            is_running = False
-        else:
-            with settings(hide('warnings', 'aborts', 'stdout')):
-                try:
-                    external_ip = get_ext_ip_of_node(client)
-                except:
-                    external_ip = 'Unknown'
-                try:
-                    is_running = service('status')
-                except:
-                    is_running = False
+        with settings(hide('warnings', 'aborts', 'stdout')):
+            try:
+                external_ip = get_ext_ip_of_node(client)
+            except:
+                external_ip = 'Unknown'
+            try:
+                is_running = service('status')
+            except:
+                is_running = False
         return external_ip, is_running, error_message
 
 
-def get_status_from_coordinator():
+def print_cluster_status():
+    if not presto_installed():
+        node_statuses = [NodeStatus(host) for host in get_host_list()]
+    else:
+        node_statuses = _collect_node_statuses()
+
+    for node_status in node_statuses:
+        print node_status.status(),
+
+
+def _collect_node_statuses():
+    node_statuses = []
     with closing(PrestoClient(get_coordinator_role()[0], env.user)) as client:
-        try:
-            coordinator_status = client.run_sql(SYSTEM_RUNTIME_NODES)
-            catalog_status = get_catalog_info_from(client)
-        except BaseException as e:
-            # Just log errors that come from a missing port or anything else; if
-            # we can't connect to the coordinator, we just want to print out a
-            # minimal status anyway.
-            _LOGGER.warn(e.message)
-            coordinator_status = []
-            catalog_status = []
+        catalogs = get_catalog_info_from(client)
 
         with settings(hide('running')):
-            node_information = execute(collect_node_information,
-                                       hosts=get_host_list())
+            node_information = execute(collect_node_information, hosts=get_host_list())
 
         for host in get_host_list():
             if isinstance(node_information[host], Exception):
                 external_ip = 'Unknown'
                 is_running = False
                 error_message = node_information[host].message
+                node_info = {}
             else:
                 (external_ip, is_running, error_message) = node_information[host]
 
-            print_status_header(external_ip, is_running, host)
-            if error_message:
-                print('\t' + error_message)
-            elif not coordinator_status:
-                print('\tNo information available: unable to query coordinator')
-            elif not is_running:
-                print('\tNo information available')
-            else:
                 version_string = get_presto_version()
                 version = strip_tag(split_version(version_string))
                 query, processor = NODE_INFO_PER_URI_SQL.for_version(version)
                 # just get the node_info row for the host if server is up
                 node_info_row = client.run_sql(query % external_ip)
-                node_status = processor(node_info_row)
-                if node_status:
-                    print_node_info(node_status, catalog_status)
-                else:
-                    print('\tNo information available: the coordinator has not yet'
-                          ' discovered this node')
+                node_info = processor(node_info_row)
+
+            node_statuses.append(
+                NodeStatus(host, external_ip, is_running, node_info, catalogs, error_message))
+
+        return node_statuses
+
+
+class NodeStatus:
+    def __init__(
+            self,
+            host='Unknown',
+            external_ip='Unknown',
+            is_running=False,
+            node_info={},
+            catalogs=[],
+            error_message='No information available: unable to query coordinator'):
+        self.host = host
+        self.external_ip = external_ip
+        self.is_running = is_running
+        self.node_info = node_info
+        self.catalogs = catalogs
+        self.error_message = error_message
+
+    def status(self):
+        roles = ', '.join(self._get_roles_for(self.host))
+        running = 'Not Running'
+        if self.is_running:
+            running = 'Running'
+
+        status = 'Server Status:\n'
+        status += '\t%s(IP: %s, Roles: %s): %s\n' % (self.host, self.external_ip, roles, running)
+
+        if self.error_message:
+            status += '\t%s\n' % self.error_message
+        elif not self.is_running:
+            status += '\tNo information available\n'
+        else:
+            if self.node_info:
+                for k in self.node_info:
+                    status += '\tNode URI(http): %s\n' % str(k)
+                    status += '\tPresto Version: %s\n' % str(self.node_info[k][0])
+                    status += '\tNode status:    %s\n' % str(self.node_info[k][1])
+
+                    status += '\tCatalogs:     %s\n' % self.catalogs
+            else:
+                status += '\tNo information available: the coordinator has not yet discovered this node\n'
+        return status
+
+    @staticmethod
+    def _get_roles_for(host):
+        roles = []
+        for role in ['coordinator', 'worker']:
+            if host in env.roledefs[role]:
+                roles.append(role)
+        return roles
 
 
 @task
@@ -826,4 +842,4 @@ def status():
     """
     Print the status of presto in the cluster
     """
-    get_status_from_coordinator()
+    print_cluster_status()
