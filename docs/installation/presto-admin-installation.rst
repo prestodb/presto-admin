@@ -37,7 +37,7 @@ of the nodes in the cluster.
 
 .. NOTE::
      For Amazon EMR, use the online installer instead of the offline installer.
-   
+
 2. Extract and run the installation script from within the ``prestoadmin`` directory.
 ::
 

@@ -13,7 +13,7 @@ To configure the server to use a different port:
 
     netstat -an |grep 8081 |grep LISTEN
 
-It will return nothing if port 8081 is free. 
+It will return nothing if port 8081 is free.
 
 2. Modify the following properties in ``~/.prestoadmin/coordinator/config.properties`` and ``~/.prestoadmin/workers/config.properties``:
 

@@ -16,7 +16,7 @@ To install, configure and run Presto Admin on an Amazon EMR cluster, follow the 
 
 	- Use the online installer instead of the offline installer (see explanation :ref:`presto-admin-installation-label`).
 
-- To configure Presto Admin on an Amazon EMR cluster, follow the instructions in :ref:`presto-admin-configuration-label`. Specifically, we recommend the following property values during the configuration: 
+- To configure Presto Admin on an Amazon EMR cluster, follow the instructions in :ref:`presto-admin-configuration-label`. Specifically, we recommend the following property values during the configuration:
 
 	- Use ``hadoop`` as the ``username`` instead of the default username ``root`` in the ``config.json`` file.
 
