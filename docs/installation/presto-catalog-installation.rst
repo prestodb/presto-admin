@@ -7,7 +7,7 @@ In Presto, connectors allow you to access different data sources -- e.g.,
 Hive, PostgreSQL, or MySQL.
 
 To add a catalog for the Hive connector:
- 
+
 1. Create a file ``hive.properties`` in ``~/.prestoadmin/catalog`` with the following content: ::
 
     connector.name=hive-hadoop2

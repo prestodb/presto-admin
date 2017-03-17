@@ -30,7 +30,7 @@ For non-root username, log into all of those nodes and append the root user publ
 ::
 
    ssh <username>@<ip> "sudo cat /root/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
- 
+
 Once you have passwordless SSH set up, you can just run ``presto-admin`` commands as they appear in the documentation. If your private key is not in ``~/.ssh``, it is possible to specify one or several private keys using the -i CLI option:
 
 ::
