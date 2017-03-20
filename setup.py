@@ -33,9 +33,6 @@ from util import __version__
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read().replace('.. :changelog:', '')
-
 # Requirements for both development and testing are duplicated here
 # and in the requirements.txt. Unfortunately this is required by
 # tox which relies on the existence of both.
@@ -98,7 +95,7 @@ setup(
     version=__version__,
     description="Presto-admin installs, configures, and manages Presto " + \
                 "installations.",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author="Teradata Coporation",
     author_email='christina.wallin@teradata.com',
     url='https://github.com/teradatalabs/presto-admin',
