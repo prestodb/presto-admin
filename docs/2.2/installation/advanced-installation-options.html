@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Advanced Installation Options &mdash; presto-admin 2.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.2 documentation" href="../index.html" />
+    <link rel="up" title="User Guide" href="../user-guide.html" />
+    <link rel="next" title="Configuring the Presto Port" href="presto-port-configuration.html" />
+    <link rel="prev" title="Setting up Presto Admin on an Amazon EMR cluster" href="../emr.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-port-configuration.html" title="Configuring the Presto Port"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../emr.html" title="Setting up Presto Admin on an Amazon EMR cluster"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="advanced-installation-options">
+<h1>Advanced Installation Options<a class="headerlink" href="#advanced-installation-options" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="specifying-a-certificate-authority-for-the-online-installer">
+<h2>Specifying a Certificate Authority for the Online Installer<a class="headerlink" href="#specifying-a-certificate-authority-for-the-online-installer" title="Permalink to this headline">¶</a></h2>
+<p>The online installer downloads its dependencies from <code class="docutils literal"><span class="pre">pypi.python.org</span></code>, the
+standard Python location for hosting packages. For some operating systems,
+the certificate for pypi.python.org is not included in the CA cert bundle,
+so our installation scripts specify <code class="docutils literal"><span class="pre">--trusted-host</span> <span class="pre">pypi.python.org</span></code> when
+downloading the dependencies.</p>
+<p>If using <code class="docutils literal"><span class="pre">--trusted-host</span></code> is not suitable for your security needs, it is
+possible to supply your own certificates to use to authenticate to
+<code class="docutils literal"><span class="pre">pypi.python.org</span></code>.  Please note that if these certificates do not work to
+access <code class="docutils literal"><span class="pre">pypi.python.org</span></code>, the installation will fail. For example, to install
+with your own certificates:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">install</span><span class="o">-</span><span class="n">prestoadmin</span><span class="o">.</span><span class="n">sh</span> <span class="o">&lt;</span><span class="n">path_to_cert</span><span class="o">&gt;/</span><span class="n">cacert</span><span class="o">.</span><span class="n">pem</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="coordinator-failover">
+<h2>Coordinator failover<a class="headerlink" href="#coordinator-failover" title="Permalink to this headline">¶</a></h2>
+<p>Presto does not yet support automatic failover for the coordinator. You can
+migrate to a new coordinator using the <code class="docutils literal"><span class="pre">presto-admin</span></code> -H and -x flags
+to include and exclude hosts in your command, respectively.</p>
+<p>To view these <code class="docutils literal"><span class="pre">presto-admin</span></code> options, use the <code class="docutils literal"><span class="pre">--extended-help</span></code> flag.</p>
+<p>You can switch to a new coordinator by following the steps below:</p>
+<ol class="arabic">
+<li><p class="first">Stop Presto on all the nodes where it is running using the command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">stop</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Edit the <code class="docutils literal"><span class="pre">presto-admin</span></code> topology file and replace the old coordinator
+with the new one.  By default, the topology file is located at
+<code class="docutils literal"><span class="pre">~/.prestoadmin/config.json</span></code>.</p>
+</li>
+<li><p class="first">To install Presto on the new node, run the following two <code class="docutils literal"><span class="pre">presto-admin</span></code>
+commands. The first command is needed only if Java 8 is not already installed
+on the new coordinator:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">package</span> <span class="n">install</span> <span class="o">-</span><span class="n">H</span> <span class="n">new_coordinator</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">jdk8</span><span class="o">.</span><span class="n">rpm</span>
+<span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">install</span> <span class="o">-</span><span class="n">H</span> <span class="n">new_coordinator</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">presto</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">rpm</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Update the coordinator and worker configuration files controlled by
+<code class="docutils literal"><span class="pre">presto-admin</span></code>. By default, these files are available at <code class="docutils literal"><span class="pre">~/.prestoadmin/</span></code>.</p>
+</li>
+<li><p class="first">Run the following commands to deploy the new configurations to all nodes,
+including the new coordinator and start the server:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">configuration</span> <span class="n">deploy</span>
+<span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="n">server</span> <span class="n">start</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Advanced Installation Options</a><ul>
+<li><a class="reference internal" href="#specifying-a-certificate-authority-for-the-online-installer">Specifying a Certificate Authority for the Online Installer</a></li>
+<li><a class="reference internal" href="#coordinator-failover">Coordinator failover</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../emr.html"
+                        title="previous chapter">Setting up Presto Admin on an Amazon EMR cluster</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="presto-port-configuration.html"
+                        title="next chapter">Configuring the Presto Port</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/advanced-installation-options.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="presto-port-configuration.html" title="Configuring the Presto Port"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../emr.html" title="Setting up Presto Admin on an Amazon EMR cluster"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuring Presto-Admin &mdash; presto-admin 2.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.2 documentation" href="../index.html" />
+    <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
+    <link rel="next" title="Installing Java 8" href="java-installation.html" />
+    <link rel="prev" title="Installing Presto Admin" href="presto-admin-installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="java-installation.html" title="Installing Java 8"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-installation.html" title="Installing Presto Admin"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="configuring-presto-admin">
+<span id="presto-admin-configuration-label"></span><h1>Configuring Presto-Admin<a class="headerlink" href="#configuring-presto-admin" title="Permalink to this headline">¶</a></h1>
+<p>A Presto cluster consists of a coordinator node and one or more workers nodes.
+A coordinator and worker may be located on the same node, meaning that you can
+have a single-node installation of Presto, but having a dedicated node for the
+coordinator is recommended for better performance, especially on larger
+clusters.</p>
+<p>In order to use <code class="docutils literal"><span class="pre">presto-admin</span></code> to manage software on a cluster of nodes,
+you must specify a configuration for <code class="docutils literal"><span class="pre">presto-admin</span></code>. This configuration
+indicates the nodes on which to install as well as other credentials.</p>
+<p>To set up a configuration, create a file <code class="docutils literal"><span class="pre">~/.prestoadmin/config.json</span></code>
+(or <code class="docutils literal"><span class="pre">$PRESTO_ADMIN_CONFIG_DIR/config.json</span></code> if you have the <code class="docutils literal"><span class="pre">presto-admin</span></code>
+config directory set using the environment variable) with the content below as
+appropriate for your cluster setup. Replace the variables denoted with
+brackets &lt;&gt; with actual values enclosed in double quotations. The user
+specified by <code class="docutils literal"><span class="pre">username</span></code> must have sudo access, unless the username
+is root, on all the Presto nodes, and <code class="docutils literal"><span class="pre">presto-admin</span></code> also must be
+able to login to all of the nodes via SSH as that user (see
+<a class="reference internal" href="../ssh-configuration.html#ssh-configuration-label"><span class="std std-ref">SSH Configuration</span></a> for details on how to set that up). The
+file should be owned by root with R/W permissions (i.e. 622).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The sudo setup for a non-root user must have the ability to run /bin/bash as root. This can be a security issue. The IT organization should take the necessary steps to address this security hole and select an appropriate presto-admin user.</p>
+</div>
+<div class="section" id="configuration-for-amazon-emr">
+<h2>Configuration for Amazon EMR<a class="headerlink" href="#configuration-for-amazon-emr" title="Permalink to this headline">¶</a></h2>
+<p>Use the following configuration as a template for Amazon EMR:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;hadoop&quot;</span><span class="p">,</span>
+<span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;ssh_port&gt;&quot;</span><span class="p">,</span>
+<span class="s2">&quot;coordinator&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;EMR_master_node_host_name&gt;&quot;</span><span class="p">,</span>
+<span class="s2">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;host_name_1&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;host_name_2&gt;&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="s2">&quot;&lt;host_name_n&gt;&quot;</span><span class="p">],</span>
+<span class="s2">&quot;java8_home&quot;</span><span class="p">:</span><span class="s2">&quot;&lt;path/to/java8/on/presto/nodes&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Also, for running Presto Admin commands on Amazon EMR, do the following:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Copy the <code class="docutils literal"><span class="pre">.pem</span></code> file associated with the Amazon EC2 key pair to the Presto Admin installation node of the EMR cluster.</p>
+</li>
+<li><p class="first">Use the <code class="docutils literal"><span class="pre">-i</span> <span class="pre">&lt;/path/to/your.pem&gt;</span></code> input argument when running presto-admin commands on the node.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">i</span> <span class="o">&lt;/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">.</span><span class="n">pem</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">presto_admin_command</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="configuration-for-other-clusters">
+<h2>Configuration for other clusters<a class="headerlink" href="#configuration-for-other-clusters" title="Permalink to this headline">¶</a></h2>
+<p>Use the following configuration as a template for other clusters:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;ssh_user_name&gt;&quot;</span><span class="p">,</span>
+<span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;ssh_port&gt;&quot;</span><span class="p">,</span>
+<span class="s2">&quot;coordinator&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;host_name&gt;&quot;</span><span class="p">,</span>
+<span class="s2">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;host_name_1&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;host_name_2&gt;&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="s2">&quot;&lt;host_name_n&gt;&quot;</span><span class="p">],</span>
+<span class="s2">&quot;java8_home&quot;</span><span class="p">:</span><span class="s2">&quot;&lt;path/to/java8/on/presto/nodes&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>All of the properties are optional, and if left out the following defaults will
+be used:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;root&quot;</span><span class="p">,</span>
+<span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;22&quot;</span><span class="p">,</span>
+<span class="s2">&quot;coordinator&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+<span class="s2">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;localhost&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal"><span class="pre">java8_home</span></code> is not set by default.  It only needs to be set if
+Java 8 is in a non-standard location on the Presto nodes.  The property is used
+to tell the Presto RPM where to find Java 8.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you have installed the JDK, <code class="docutils literal"><span class="pre">java8_home</span></code> should be set so refer to the <code class="docutils literal"><span class="pre">jre</span></code> subdirectory of the JDK.</p>
+</div>
+<p>You can also specify some but not all of the properties. For example, the
+default configuration is for a single-node installation of Presto on the same
+node that <code class="docutils literal"><span class="pre">presto-admin</span></code> is installed on. For a 6 node cluster with default
+username and port, a sample <code class="docutils literal"><span class="pre">config.json</span></code> would be:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;coordinator&quot;</span><span class="p">:</span> <span class="s2">&quot;master&quot;</span><span class="p">,</span>
+<span class="s2">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;slave1&quot;</span><span class="p">,</span><span class="s2">&quot;slave2&quot;</span><span class="p">,</span><span class="s2">&quot;slave3&quot;</span><span class="p">,</span><span class="s2">&quot;slave4&quot;</span><span class="p">,</span><span class="s2">&quot;slave5&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You can specify a range of workers by including the number range in brackets in the worker name.  For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;worker[01-03]&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>is the same as</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;workers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;worker01&quot;</span><span class="p">,</span> <span class="s2">&quot;worker02&quot;</span><span class="p">,</span> <span class="s2">&quot;worker03&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="sudo-password-specification">
+<span id="sudo-password-spec"></span><h2>Sudo Password Specification<a class="headerlink" href="#sudo-password-specification" title="Permalink to this headline">¶</a></h2>
+<p>Please note that if the username you specify is not root, and that user needs
+to specify a sudo password, you do so in one of two ways. You can specify it on
+the command line:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">p</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Alternatively, you can opt to use an interactive password prompt, which prompts
+you for the initial value of your password before running any commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">presto</span><span class="o">-</span><span class="n">admin</span> <span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">I</span>
+<span class="n">Initial</span> <span class="n">value</span> <span class="k">for</span> <span class="n">env</span><span class="o">.</span><span class="n">password</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">type</span> <span class="n">your</span> <span class="n">password</span> <span class="n">here</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The sudo password for the user must be the same as the SSH password.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configuring Presto-Admin</a><ul>
+<li><a class="reference internal" href="#configuration-for-amazon-emr">Configuration for Amazon EMR</a></li>
+<li><a class="reference internal" href="#configuration-for-other-clusters">Configuration for other clusters</a></li>
+<li><a class="reference internal" href="#sudo-password-specification">Sudo Password Specification</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="presto-admin-installation.html"
+                        title="previous chapter">Installing Presto Admin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="java-installation.html"
+                        title="next chapter">Installing Java 8</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/presto-admin-configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="java-installation.html" title="Installing Java 8"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="presto-admin-installation.html" title="Installing Presto Admin"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

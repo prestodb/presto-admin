@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.collect &mdash; presto-admin 2.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.2 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.collect</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for gathering various debug information for incident reporting</span>
+<span class="sd">using presto-admin</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">fabric.contrib.files</span> <span class="kn">import</span> <span class="n">append</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hide</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">os</span><span class="p">,</span> <span class="n">get</span><span class="p">,</span> <span class="n">run</span>
+<span class="kn">from</span> <span class="nn">fabric.tasks</span> <span class="kn">import</span> <span class="n">execute</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">env</span><span class="p">,</span> <span class="n">runs_once</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span> <span class="nn">fabric.utils</span> <span class="kn">import</span> <span class="n">abort</span><span class="p">,</span> <span class="n">warn</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.prestoclient</span> <span class="kn">import</span> <span class="n">PrestoClient</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.server</span> <span class="kn">import</span> <span class="n">get_presto_version</span><span class="p">,</span> <span class="n">get_catalog_info_from</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.base_config</span> <span class="kn">import</span> <span class="n">requires_config</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.filesystem</span> <span class="kn">import</span> <span class="n">ensure_directory_exists</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.local_config_util</span> <span class="kn">import</span> <span class="n">get_log_directory</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.remote_config_util</span> <span class="kn">import</span> <span class="n">lookup_server_log_file</span><span class="p">,</span>\
+    <span class="n">lookup_launcher_log_file</span><span class="p">,</span>  <span class="n">lookup_port</span><span class="p">,</span> <span class="n">lookup_catalog_directory</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.standalone.config</span> <span class="kn">import</span> <span class="n">StandaloneConfig</span>
+<span class="kn">import</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">as</span> <span class="nn">fabricapi</span>
+<span class="kn">import</span> <span class="nn">prestoadmin</span>
+
+
+<span class="n">TMP_PRESTO_DEBUG</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug/&#39;</span>
+<span class="n">TMP_PRESTO_DEBUG_REMOTE</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug-remote&#39;</span>
+<span class="n">OUTPUT_FILENAME_FOR_LOGS</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug-logs.tar.gz&#39;</span>
+<span class="n">OUTPUT_FILENAME_FOR_SYS_INFO</span> <span class="o">=</span> <span class="s1">&#39;/tmp/presto-debug-sysinfo.tar.gz&#39;</span>
+<span class="n">PRESTOADMIN_LOG_NAME</span> <span class="o">=</span> <span class="s1">&#39;presto-admin.log&#39;</span>
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">QUERY_REQUEST_EXT</span> <span class="o">=</span> <span class="s1">&#39;v1/query/&#39;</span>
+<span class="n">NODES_REQUEST_EXT</span> <span class="o">=</span> <span class="s1">&#39;v1/node&#39;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;logs&#39;</span><span class="p">,</span> <span class="s1">&#39;query_info&#39;</span><span class="p">,</span> <span class="s1">&#39;system_info&#39;</span><span class="p">]</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@runs_once</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="logs"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.collect.logs">[docs]</a><span class="k">def</span> <span class="nf">logs</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather all the server logs and presto-admin log and create a tar file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">downloaded_logs_location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG</span><span class="p">,</span> <span class="s2">&quot;logs&quot;</span><span class="p">)</span>
+    <span class="n">ensure_directory_exists</span><span class="p">(</span><span class="n">downloaded_logs_location</span><span class="p">)</span>
+
+    <span class="k">print</span> <span class="s1">&#39;Downloading logs from all the nodes...&#39;</span>
+    <span class="n">execute</span><span class="p">(</span><span class="n">get_remote_log_files</span><span class="p">,</span> <span class="n">downloaded_logs_location</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">roles</span><span class="p">)</span>
+
+    <span class="n">copy_admin_log</span><span class="p">(</span><span class="n">downloaded_logs_location</span><span class="p">)</span>
+
+    <span class="n">make_tarfile</span><span class="p">(</span><span class="n">OUTPUT_FILENAME_FOR_LOGS</span><span class="p">,</span> <span class="n">downloaded_logs_location</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s1">&#39;logs archive created: &#39;</span> <span class="o">+</span> <span class="n">OUTPUT_FILENAME_FOR_LOGS</span></div>
+
+
+<span class="k">def</span> <span class="nf">copy_admin_log</span><span class="p">(</span><span class="n">log_folder</span><span class="p">):</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_log_directory</span><span class="p">(),</span> <span class="n">PRESTOADMIN_LOG_NAME</span><span class="p">),</span> <span class="n">log_folder</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">make_tarfile</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">source_dir</span><span class="p">):</span>
+    <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="s1">&#39;w:gz&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">source_dir</span><span class="p">,</span> <span class="n">arcname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">source_dir</span><span class="p">))</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">get_remote_log_files</span><span class="p">(</span><span class="n">dest_path</span><span class="p">):</span>
+    <span class="n">remote_server_log</span> <span class="o">=</span> <span class="n">lookup_server_log_file</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Logs to be archived on host &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="n">remote_server_log</span><span class="p">)</span>
+    <span class="n">get_files</span><span class="p">(</span><span class="n">remote_server_log</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span>
+
+    <span class="n">remote_launcher_log</span> <span class="o">=</span> <span class="n">lookup_launcher_log_file</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;LOG directory to be archived on host &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="n">remote_launcher_log</span><span class="p">)</span>
+    <span class="n">get_files</span><span class="p">(</span><span class="n">remote_launcher_log</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_files</span><span class="p">(</span><span class="n">remote_path</span><span class="p">,</span> <span class="n">local_path</span><span class="p">):</span>
+    <span class="n">path_with_host_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_with_host_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path_with_host_name</span><span class="p">):</span>
+            <span class="k">raise</span>
+
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;local path used &#39;</span> <span class="o">+</span> <span class="n">path_with_host_name</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">get</span><span class="p">(</span><span class="n">remote_path</span><span class="p">,</span> <span class="n">path_with_host_name</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;remote path &#39;</span> <span class="o">+</span> <span class="n">remote_path</span> <span class="o">+</span> <span class="s1">&#39; not found on &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">request_url</span><span class="p">(</span><span class="n">url_extension</span><span class="p">):</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">lookup_port</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;http://</span><span class="si">%(host)s</span><span class="s1">:</span><span class="si">%(port)i</span><span class="s1">/</span><span class="si">%(url_ext)s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="n">host</span><span class="p">,</span>
+                                                     <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="n">port</span><span class="p">,</span>
+                                                     <span class="s1">&#39;url_ext&#39;</span><span class="p">:</span> <span class="n">url_extension</span><span class="p">}</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="query_info"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.collect.query_info">[docs]</a><span class="k">def</span> <span class="nf">query_info</span><span class="p">(</span><span class="n">query_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather information about the query identified by the given</span>
+<span class="sd">    query_id and store that in a JSON file.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        query_id - id of the query for which info has to be gathered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fabricapi</span><span class="o">.</span><span class="n">get_coordinator_role</span><span class="p">():</span>
+        <span class="k">return</span>
+
+    <span class="n">err_msg</span> <span class="o">=</span> <span class="s1">&#39;Unable to retrieve information. Please check that the &#39;</span> \
+              <span class="s1">&#39;query_id is correct, or check that server is up with &#39;</span> \
+              <span class="s1">&#39;command: server status&#39;</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">get_request</span><span class="p">(</span><span class="n">request_url</span><span class="p">(</span><span class="n">QUERY_REQUEST_EXT</span> <span class="o">+</span> <span class="n">query_id</span><span class="p">),</span> <span class="n">err_msg</span><span class="p">)</span>
+    <span class="n">query_info_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG</span><span class="p">,</span> <span class="s1">&#39;query_info_&#39;</span> <span class="o">+</span> <span class="n">query_id</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG</span><span class="p">):</span>
+            <span class="k">raise</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">query_info_file_name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+        <span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">json</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Gathered query information in file: &#39;</span> <span class="o">+</span> <span class="n">query_info_file_name</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">err_msg</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">ConnectionError</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">req</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">requests</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">req</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="system_info"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.collect.system_info">[docs]</a><span class="k">def</span> <span class="nf">system_info</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather system information like nodes in the system, presto</span>
+<span class="sd">    version, presto-admin version, os version etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fabricapi</span><span class="o">.</span><span class="n">get_coordinator_role</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="n">err_msg</span> <span class="o">=</span> <span class="s1">&#39;Unable to access node information. &#39;</span> \
+              <span class="s1">&#39;Please check that server is up with command: server status&#39;</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">get_request</span><span class="p">(</span><span class="n">request_url</span><span class="p">(</span><span class="n">NODES_REQUEST_EXT</span><span class="p">),</span> <span class="n">err_msg</span><span class="p">)</span>
+
+    <span class="n">downloaded_sys_info_loc</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG</span><span class="p">,</span> <span class="s2">&quot;sysinfo&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">downloaded_sys_info_loc</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">downloaded_sys_info_loc</span><span class="p">):</span>
+            <span class="k">raise</span>
+
+    <span class="n">node_info_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">downloaded_sys_info_loc</span><span class="p">,</span> <span class="s1">&#39;node_info.json&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">node_info_file_name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+        <span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">json</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Gathered node information in file: &#39;</span> <span class="o">+</span> <span class="n">node_info_file_name</span><span class="p">)</span>
+
+    <span class="n">catalog_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">downloaded_sys_info_loc</span><span class="p">,</span> <span class="s1">&#39;catalog_info.txt&#39;</span><span class="p">)</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">PrestoClient</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">catalog_info</span> <span class="o">=</span> <span class="n">get_catalog_info_from</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">catalog_file_name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+        <span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">catalog_info</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Gathered catalog information in file: &#39;</span> <span class="o">+</span> <span class="n">catalog_file_name</span><span class="p">)</span>
+
+    <span class="n">execute</span><span class="p">(</span><span class="n">get_catalog_configs</span><span class="p">,</span> <span class="n">downloaded_sys_info_loc</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">roles</span><span class="p">)</span>
+    <span class="n">execute</span><span class="p">(</span><span class="n">get_system_info</span><span class="p">,</span> <span class="n">downloaded_sys_info_loc</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">roles</span><span class="p">)</span>
+
+    <span class="n">make_tarfile</span><span class="p">(</span><span class="n">OUTPUT_FILENAME_FOR_SYS_INFO</span><span class="p">,</span> <span class="n">downloaded_sys_info_loc</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s1">&#39;System info archive created: &#39;</span> <span class="o">+</span> <span class="n">OUTPUT_FILENAME_FOR_SYS_INFO</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_system_info</span><span class="p">(</span><span class="n">download_location</span><span class="p">):</span>
+
+    <span class="n">run</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">TMP_PRESTO_DEBUG_REMOTE</span><span class="p">)</span>
+
+    <span class="n">version_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TMP_PRESTO_DEBUG_REMOTE</span><span class="p">,</span> <span class="s1">&#39;version_info.txt&#39;</span><span class="p">)</span>
+    <span class="n">run</span><span class="p">(</span><span class="s1">&#39;rm -f &#39;</span> <span class="o">+</span> <span class="n">version_file_name</span><span class="p">)</span>
+
+    <span class="n">append</span><span class="p">(</span><span class="n">version_file_name</span><span class="p">,</span> <span class="s2">&quot;platform information : &quot;</span> <span class="o">+</span>
+           <span class="n">get_platform_information</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">append</span><span class="p">(</span><span class="n">version_file_name</span><span class="p">,</span> <span class="s1">&#39;Java version: &#39;</span> <span class="o">+</span> <span class="n">get_java_version</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">append</span><span class="p">(</span><span class="n">version_file_name</span><span class="p">,</span> <span class="s1">&#39;Presto-admin version: &#39;</span> <span class="o">+</span>
+           <span class="n">prestoadmin</span><span class="o">.</span><span class="n">__version__</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">append</span><span class="p">(</span><span class="n">version_file_name</span><span class="p">,</span> <span class="s1">&#39;Presto server version: &#39;</span> <span class="o">+</span>
+           <span class="n">get_presto_version</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Gathered version information in file: &#39;</span> <span class="o">+</span> <span class="n">version_file_name</span><span class="p">)</span>
+
+    <span class="n">get_files</span><span class="p">(</span><span class="n">version_file_name</span><span class="p">,</span> <span class="n">download_location</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_catalog_configs</span><span class="p">(</span><span class="n">dest_path</span><span class="p">):</span>
+    <span class="n">remote_catalog_dir</span> <span class="o">=</span> <span class="n">lookup_catalog_directory</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;catalogs to be archived on host &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="n">remote_catalog_dir</span><span class="p">)</span>
+    <span class="n">get_files</span><span class="p">(</span><span class="n">remote_catalog_dir</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_platform_information</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s1">&#39;warnings&#39;</span><span class="p">,</span> <span class="s1">&#39;stdout&#39;</span><span class="p">),</span> <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">platform_info</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="s1">&#39;uname -a&#39;</span><span class="p">)</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;platform info: &#39;</span> <span class="o">+</span> <span class="n">platform_info</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">platform_info</span>
+
+
+<span class="k">def</span> <span class="nf">get_java_version</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">hide</span><span class="p">(</span><span class="s1">&#39;warnings&#39;</span><span class="p">,</span> <span class="s1">&#39;stdout&#39;</span><span class="p">),</span> <span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="s1">&#39;java -version&#39;</span><span class="p">)</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;java version: &#39;</span> <span class="o">+</span> <span class="n">version</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">version</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

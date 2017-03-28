@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.fabric_patches &mdash; presto-admin 2.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.2 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.fabric_patches</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;Monkey patches needed to change logging and error handling in Fabric&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">traceback</span> <span class="kn">import</span> <span class="n">format_exc</span>
+
+<span class="kn">from</span> <span class="nn">fabric</span> <span class="kn">import</span> <span class="n">state</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">fabric.exceptions</span> <span class="kn">import</span> <span class="n">NetworkError</span>
+<span class="kn">from</span> <span class="nn">fabric.job_queue</span> <span class="kn">import</span> <span class="n">JobQueue</span>
+<span class="kn">from</span> <span class="nn">fabric.tasks</span> <span class="kn">import</span> <span class="n">_is_task</span><span class="p">,</span> <span class="n">WrappedCallableTask</span><span class="p">,</span> <span class="n">requires_parallel</span>
+<span class="kn">from</span> <span class="nn">fabric.task_utils</span> <span class="kn">import</span> <span class="n">crawl</span><span class="p">,</span> <span class="n">parse_kwargs</span>
+<span class="kn">from</span> <span class="nn">fabric.utils</span> <span class="kn">import</span> <span class="n">error</span>
+<span class="kn">import</span> <span class="nn">fabric.api</span>
+<span class="kn">import</span> <span class="nn">fabric.operations</span>
+<span class="kn">import</span> <span class="nn">fabric.tasks</span>
+<span class="kn">from</span> <span class="nn">fabric.network</span> <span class="kn">import</span> <span class="n">needs_host</span><span class="p">,</span> <span class="n">to_dict</span><span class="p">,</span> <span class="n">disconnect_all</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">exception</span>
+
+
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">old_warn</span> <span class="o">=</span> <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">warn</span>
+<span class="n">old_abort</span> <span class="o">=</span> <span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">abort</span>
+<span class="n">old_run</span> <span class="o">=</span> <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">run</span>
+<span class="n">old_sudo</span> <span class="o">=</span> <span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">sudo</span>
+
+
+<span class="c1"># Need to monkey patch Fabric&#39;s warn method in order to print out</span>
+<span class="c1"># all exceptions seen to the logs.</span>
+<div class="viewcode-block" id="warn"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.warn">[docs]</a><span class="k">def</span> <span class="nf">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;] &#39;</span> <span class="o">+</span> <span class="n">msg</span>
+    <span class="n">old_warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">format_exc</span><span class="p">())</span></div>
+
+<span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">warn</span> <span class="o">=</span> <span class="n">warn</span>
+<span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">warn</span> <span class="o">=</span> <span class="n">warn</span>
+
+
+<div class="viewcode-block" id="abort"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.abort">[docs]</a><span class="k">def</span> <span class="nf">abort</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;] &#39;</span> <span class="o">+</span> <span class="n">msg</span>
+    <span class="n">old_abort</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<span class="n">fabric</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">abort</span> <span class="o">=</span> <span class="n">abort</span>
+<span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">abort</span> <span class="o">=</span> <span class="n">abort</span>
+
+
+<span class="c1"># Monkey patch run and sudo so that the stdout and stderr</span>
+<span class="c1"># also go to the logs.</span>
+<span class="nd">@needs_host</span>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">combine_stderr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">warn_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">shell_escape</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">old_run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="n">shell</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="n">pty</span><span class="p">,</span>
+                  <span class="n">combine_stderr</span><span class="o">=</span><span class="n">combine_stderr</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="n">quiet</span><span class="p">,</span>
+                  <span class="n">warn_only</span><span class="o">=</span><span class="n">warn_only</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
+                  <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">shell_escape</span><span class="o">=</span><span class="n">shell_escape</span><span class="p">)</span>
+    <span class="n">log_output</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">run</span>
+<span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">run</span>
+
+
+<span class="nd">@needs_host</span>
+<div class="viewcode-block" id="sudo"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.sudo">[docs]</a><span class="k">def</span> <span class="nf">sudo</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">combine_stderr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+         <span class="n">quiet</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">warn_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+         <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shell_escape</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">old_sudo</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="n">shell</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="n">pty</span><span class="p">,</span>
+                   <span class="n">combine_stderr</span><span class="o">=</span><span class="n">combine_stderr</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="n">quiet</span><span class="p">,</span>
+                   <span class="n">warn_only</span><span class="o">=</span><span class="n">warn_only</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span>
+                   <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">shell_escape</span><span class="o">=</span><span class="n">shell_escape</span><span class="p">)</span>
+    <span class="n">log_output</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<span class="n">fabric</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">sudo</span> <span class="o">=</span> <span class="n">sudo</span>
+<span class="n">fabric</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">sudo</span> <span class="o">=</span> <span class="n">sudo</span>
+
+
+<div class="viewcode-block" id="log_output"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.log_output">[docs]</a><span class="k">def</span> <span class="nf">log_output</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">COMMAND: &#39;</span> <span class="o">+</span> <span class="n">out</span><span class="o">.</span><span class="n">command</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">FULL COMMAND: &#39;</span> <span class="o">+</span>
+                 <span class="n">out</span><span class="o">.</span><span class="n">real_command</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">STDOUT: &#39;</span> <span class="o">+</span> <span class="n">out</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">STDERR: &#39;</span> <span class="o">+</span>
+                 <span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div>
+
+
+<span class="c1"># Monkey patch _execute and execute so that we can handle errors differently</span>
+<span class="k">def</span> <span class="nf">_execute</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">my_env</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">jobs</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">multiprocessing</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Primary single-host work body of execute().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Log to stdout</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">running</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;return_value&#39;</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Executing task &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;command&#39;</span><span class="p">]))</span>
+    <span class="c1"># Create per-run env with connection settings</span>
+    <span class="n">local_env</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">local_env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">my_env</span><span class="p">)</span>
+    <span class="c1"># Set a few more env flags for parallelism</span>
+    <span class="k">if</span> <span class="n">queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">local_env</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;parallel&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="s1">&#39;linewise&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">})</span>
+    <span class="c1"># Handle parallel execution</span>
+    <span class="k">if</span> <span class="n">queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>  <span class="c1"># Since queue is only set for parallel</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">local_env</span><span class="p">[</span><span class="s1">&#39;host_string&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Wrap in another callable that:</span>
+        <span class="c1"># * expands the env it&#39;s given to ensure parallel, linewise, etc are</span>
+        <span class="c1"># all set correctly and explicitly. Such changes are naturally</span>
+        <span class="c1"># insulted from the parent process.</span>
+        <span class="c1"># * nukes the connection cache to prevent shared-access problems</span>
+        <span class="c1"># * knows how to send the tasks&#39; return value back over a Queue</span>
+        <span class="c1"># * captures exceptions raised by the task</span>
+        <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">submit</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+                <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">state</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">submit</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">_LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+                <span class="n">submit</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Stuff into Process wrapper</span>
+        <span class="n">kwarg_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>
+            <span class="s1">&#39;kwargs&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span>
+            <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="n">queue</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="n">local_env</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">inner</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwarg_dict</span><span class="p">)</span>
+        <span class="c1"># Name/id is host string</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="c1"># Add to queue</span>
+        <span class="n">jobs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="c1"># Handle serial execution</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="o">**</span><span class="n">local_env</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="execute"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.fabric_patches.execute">[docs]</a><span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Patched version of fabric&#39;s execute task with alternative error handling</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">my_env</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;clean_revert&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># Obtain task</span>
+    <span class="n">is_callable</span> <span class="o">=</span> <span class="nb">callable</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">is_callable</span> <span class="ow">or</span> <span class="n">_is_task</span><span class="p">(</span><span class="n">task</span><span class="p">)):</span>
+        <span class="c1"># Assume string, set env.command to it</span>
+        <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;command&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">crawl</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">commands</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">task</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not callable or a valid task name&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;command&#39;</span><span class="p">],)</span>
+            <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;skip_unknown_tasks&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">abort</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="c1"># Set env.command if we were given a real function or callable task obj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dunder_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;command&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">dunder_name</span><span class="p">)</span>
+    <span class="c1"># Normalize to Task instance if we ended up with a regular callable</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_task</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">WrappedCallableTask</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+    <span class="c1"># Filter out hosts/roles kwargs</span>
+    <span class="n">new_kwargs</span><span class="p">,</span> <span class="n">hosts</span><span class="p">,</span> <span class="n">roles</span><span class="p">,</span> <span class="n">exclude_hosts</span> <span class="o">=</span> <span class="n">parse_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># Set up host list</span>
+    <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;all_hosts&#39;</span><span class="p">],</span> <span class="n">my_env</span><span class="p">[</span>
+        <span class="s1">&#39;effective_roles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">get_hosts_and_effective_roles</span><span class="p">(</span><span class="n">hosts</span><span class="p">,</span> <span class="n">roles</span><span class="p">,</span>
+                                                                <span class="n">exclude_hosts</span><span class="p">,</span>
+                                                                <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+
+    <span class="n">parallel</span> <span class="o">=</span> <span class="n">requires_parallel</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+        <span class="c1"># Import multiprocessing if needed, erroring out usefully</span>
+        <span class="c1"># if it can&#39;t.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">multiprocessing</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">traceback</span>
+
+            <span class="n">tb</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+            <span class="n">abort</span><span class="p">(</span><span class="n">tb</span> <span class="o">+</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    At least one task needs to be run in parallel, but the</span>
+<span class="s2">    multiprocessing module cannot be imported (see above</span>
+<span class="s2">    traceback.) Please make sure the module is installed</span>
+<span class="s2">    or that the above ImportError is fixed.&quot;&quot;&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">multiprocessing</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="c1"># Get pool size for this task</span>
+    <span class="n">pool_size</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">get_pool_size</span><span class="p">(</span><span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;all_hosts&#39;</span><span class="p">],</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">pool_size</span><span class="p">)</span>
+    <span class="c1"># Set up job queue in case parallel is needed</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span> <span class="k">if</span> <span class="n">parallel</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="n">jobs</span> <span class="o">=</span> <span class="n">JobQueue</span><span class="p">(</span><span class="n">pool_size</span><span class="p">,</span> <span class="n">queue</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+        <span class="n">jobs</span><span class="o">.</span><span class="n">_debug</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c1"># Call on host list</span>
+    <span class="k">if</span> <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;all_hosts&#39;</span><span class="p">]:</span>
+        <span class="c1"># Attempt to cycle on hosts, skipping if needed</span>
+        <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;all_hosts&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="n">_execute</span><span class="p">(</span>
+                    <span class="n">task</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">my_env</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">new_kwargs</span><span class="p">,</span> <span class="n">jobs</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span>
+                    <span class="n">multiprocessing</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">NetworkError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+                <span class="c1"># Backwards compat test re: whether to use an exception or</span>
+                <span class="c1"># abort</span>
+                <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">skip_bad_hosts</span> <span class="ow">or</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">warn_only</span><span class="p">:</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">warn</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">func</span> <span class="o">=</span> <span class="n">abort</span>
+                <span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">wrapped</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+
+            <span class="c1"># If requested, clear out connections here and not just at the end.</span>
+            <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">eagerly_disconnect</span><span class="p">:</span>
+                <span class="n">disconnect_all</span><span class="p">()</span>
+
+        <span class="c1"># If running in parallel, block until job queue is emptied</span>
+        <span class="k">if</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="n">jobs</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="c1"># Abort if any children did not exit cleanly (fail-fast).</span>
+            <span class="c1"># This prevents Fabric from continuing on to any other tasks.</span>
+            <span class="c1"># Otherwise, pull in results from the child run.</span>
+            <span class="n">ran_jobs</span> <span class="o">=</span> <span class="n">jobs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ran_jobs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;exit_code&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="n">NetworkError</span><span class="p">):</span>
+                        <span class="n">func</span> <span class="o">=</span> <span class="n">warn</span> <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">skip_bad_hosts</span> \
+                            <span class="ow">or</span> <span class="n">state</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">warn_only</span> <span class="k">else</span> <span class="n">abort</span>
+                        <span class="n">error</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                              <span class="n">exception</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">exception</span><span class="o">.</span><span class="n">is_arguments_error</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]):</span>
+                        <span class="k">raise</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="ne">SystemExit</span><span class="p">):</span>
+                        <span class="c1"># System exit indicates abort</span>
+                        <span class="k">pass</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="ne">BaseException</span><span class="p">):</span>
+                        <span class="n">error</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">error</span><span class="p">(</span><span class="s1">&#39;One or more hosts failed while executing task.&#39;</span><span class="p">)</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Or just run once for local-only</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="o">**</span><span class="n">my_env</span><span class="p">):</span>
+            <span class="n">results</span><span class="p">[</span><span class="s1">&#39;&lt;local-only&gt;&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">new_kwargs</span><span class="p">)</span>
+    <span class="c1"># Return what we can from the inner task executions</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<span class="n">fabric</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">_execute</span> <span class="o">=</span> <span class="n">_execute</span>
+<span class="n">fabric</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">execute</span> <span class="o">=</span> <span class="n">execute</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

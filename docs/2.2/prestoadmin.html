@@ -1,0 +1,1059 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin package &mdash; presto-admin 2.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.2 documentation" href="index.html" />
+    <link rel="up" title="prestoadmin" href="modules.html" />
+    <link rel="next" title="prestoadmin.standalone package" href="prestoadmin.standalone.html" />
+    <link rel="prev" title="prestoadmin" href="modules.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.standalone.html" title="prestoadmin.standalone package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="prestoadmin"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">prestoadmin</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="prestoadmin-package">
+<h1>prestoadmin package<a class="headerlink" href="#prestoadmin-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="prestoadmin.standalone.html">prestoadmin.standalone package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.standalone.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.standalone.html#module-prestoadmin.standalone.config">prestoadmin.standalone.config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.standalone.html#module-prestoadmin.standalone">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="prestoadmin.util.html">prestoadmin.util package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.all_write_handler">prestoadmin.util.all_write_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.application">prestoadmin.util.application module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.base_config">prestoadmin.util.base_config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.constants">prestoadmin.util.constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.exception">prestoadmin.util.exception module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.fabric_application">prestoadmin.util.fabric_application module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.fabricapi">prestoadmin.util.fabricapi module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.filesystem">prestoadmin.util.filesystem module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.hiddenoptgroup">prestoadmin.util.hiddenoptgroup module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.httpscacertconnection">prestoadmin.util.httpscacertconnection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.local_config_util">prestoadmin.util.local_config_util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.parser">prestoadmin.util.parser module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.presto_config">prestoadmin.util.presto_config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.remote_config_util">prestoadmin.util.remote_config_util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.validators">prestoadmin.util.validators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util.version_util">prestoadmin.util.version_util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.util.html#module-prestoadmin.util">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="prestoadmin.yarn_slider.html">prestoadmin.yarn_slider package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.yarn_slider.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider.config">prestoadmin.yarn_slider.config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider.server">prestoadmin.yarn_slider.server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider.slider">prestoadmin.yarn_slider.slider module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prestoadmin.yarn_slider.html#module-prestoadmin.yarn_slider">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-prestoadmin.catalog">
+<span id="prestoadmin-catalog-module"></span><h2>prestoadmin.catalog module<a class="headerlink" href="#module-prestoadmin.catalog" title="Permalink to this headline">¶</a></h2>
+<p>Module for presto catalog configurations</p>
+<dl class="attribute">
+<dt id="prestoadmin.catalog.add">
+<code class="descclassname">prestoadmin.catalog.</code><code class="descname">add</code><a class="reference internal" href="_modules/prestoadmin/catalog.html#add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.catalog.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deploy configuration for a catalog onto a cluster.</p>
+<p>E.g.: &#8216;presto-admin catalog add tpch&#8217;
+deploys a configuration file for the tpch connector.  The configuration is
+defined by tpch.properties in the local catalog directory, which defaults to
+~/.prestoadmin/catalog.</p>
+<p>If no catalog name is specified, then  configurations for all catalogs
+in the catalog directory will be deployed</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>- Name of the catalog to be added</strong> (<em>name</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.catalog.remove">
+<code class="descclassname">prestoadmin.catalog.</code><code class="descname">remove</code><a class="reference internal" href="_modules/prestoadmin/catalog.html#remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.catalog.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a catalog from the cluster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>- Name of the catalog to be removed</strong> (<em>name</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.collect">
+<span id="prestoadmin-collect-module"></span><h2>prestoadmin.collect module<a class="headerlink" href="#module-prestoadmin.collect" title="Permalink to this headline">¶</a></h2>
+<p>Module for gathering various debug information for incident reporting
+using presto-admin</p>
+<dl class="attribute">
+<dt id="prestoadmin.collect.logs">
+<code class="descclassname">prestoadmin.collect.</code><code class="descname">logs</code><a class="reference internal" href="_modules/prestoadmin/collect.html#logs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.collect.logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather all the server logs and presto-admin log and create a tar file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.collect.query_info">
+<code class="descclassname">prestoadmin.collect.</code><code class="descname">query_info</code><a class="reference internal" href="_modules/prestoadmin/collect.html#query_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.collect.query_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather information about the query identified by the given
+query_id and store that in a JSON file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>- id of the query for which info has to be gathered</strong> (<em>query_id</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.collect.system_info">
+<code class="descclassname">prestoadmin.collect.</code><code class="descname">system_info</code><a class="reference internal" href="_modules/prestoadmin/collect.html#system_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.collect.system_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather system information like nodes in the system, presto
+version, presto-admin version, os version etc.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.config">
+<span id="prestoadmin-config-module"></span><h2>prestoadmin.config module<a class="headerlink" href="#module-prestoadmin.config" title="Permalink to this headline">¶</a></h2>
+<p>Module for reading, writing, and processing configuration files</p>
+<dl class="function">
+<dt id="prestoadmin.config.fill_defaults">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">fill_defaults</code><span class="sig-paren">(</span><em>conf</em>, <em>defaults</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#fill_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.fill_defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.get_conf_from_config_file">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">get_conf_from_config_file</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#get_conf_from_config_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.get_conf_from_config_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.get_conf_from_json_file">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">get_conf_from_json_file</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#get_conf_from_json_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.get_conf_from_json_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.get_conf_from_properties_data">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">get_conf_from_properties_data</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#get_conf_from_properties_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.get_conf_from_properties_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.get_conf_from_properties_file">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">get_conf_from_properties_file</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#get_conf_from_properties_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.get_conf_from_properties_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.json_to_string">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">json_to_string</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#json_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.json_to_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.split_to_pair">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">split_to_pair</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#split_to_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.split_to_pair" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.write">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">write</code><span class="sig-paren">(</span><em>output</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.write_conf_to_file">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">write_conf_to_file</code><span class="sig-paren">(</span><em>conf</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#write_conf_to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.write_conf_to_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.write_config_file">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">write_config_file</code><span class="sig-paren">(</span><em>conf</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#write_config_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.write_config_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.config.write_properties_file">
+<code class="descclassname">prestoadmin.config.</code><code class="descname">write_properties_file</code><span class="sig-paren">(</span><em>conf</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/config.html#write_properties_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.config.write_properties_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.configure_cmds">
+<span id="prestoadmin-configure-cmds-module"></span><h2>prestoadmin.configure_cmds module<a class="headerlink" href="#module-prestoadmin.configure_cmds" title="Permalink to this headline">¶</a></h2>
+<p>Module for various configuration management tasks using presto-admin</p>
+<dl class="attribute">
+<dt id="prestoadmin.configure_cmds.deploy">
+<code class="descclassname">prestoadmin.configure_cmds.</code><code class="descname">deploy</code><a class="reference internal" href="_modules/prestoadmin/configure_cmds.html#deploy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.configure_cmds.deploy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deploy configuration on the remote hosts.</p>
+<dl class="docutils">
+<dt>Possible arguments are -</dt>
+<dd>coordinator - Deploy the coordinator configuration to the coordinator
+node
+workers - Deploy workers configuration to the worker nodes. This will
+not deploy configuration for a coordinator that is also a worker</dd>
+</dl>
+<p>If no rolename is specified, then configuration for all roles will be
+deployed.  If there is no presto configuration file found in the
+configuration directory, default files will be deployed</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>- [coordinator|workers]</strong> (<em>rolename</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.configure_cmds.show">
+<code class="descclassname">prestoadmin.configure_cmds.</code><code class="descname">show</code><a class="reference internal" href="_modules/prestoadmin/configure_cmds.html#show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.configure_cmds.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print to the user the contents of the configuration files deployed</p>
+<p>If no config_type is specified, then all four configurations will be
+printed.  No warning will be printed for a missing log.properties since
+it is not a required configuration file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config_type</strong> &#8211; [node|jvm|config|log]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.coordinator">
+<span id="prestoadmin-coordinator-module"></span><h2>prestoadmin.coordinator module<a class="headerlink" href="#module-prestoadmin.coordinator" title="Permalink to this headline">¶</a></h2>
+<p>Module for the presto coordinator&#8217;s configuration.
+Loads and validates the coordinator.json file and creates the files needed
+to deploy on the presto cluster</p>
+<dl class="class">
+<dt id="prestoadmin.coordinator.Coordinator">
+<em class="property">class </em><code class="descclassname">prestoadmin.coordinator.</code><code class="descname">Coordinator</code><a class="reference internal" href="_modules/prestoadmin/coordinator.html#Coordinator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.coordinator.Coordinator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#prestoadmin.node.Node" title="prestoadmin.node.Node"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.node.Node</span></code></a></p>
+<dl class="attribute">
+<dt id="prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES">
+<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:G1HeapRegionSize=32M', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-XX:ReservedCodeCacheSize=512M', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'true', 'discovery-server.enabled': 'true', 'http-server.http.port': '8080', 'node-scheduler.include-coordinator': 'false', 'query.max-memory-per-node': '8GB'}, 'node.properties': {'node.launcher-log-file': '/var/log/presto/launcher.log', 'node.server-log-file': '/var/log/presto/server.log', 'catalog.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data', 'node.environment': 'presto', 'plugin.dir': '/usr/lib/presto/lib/plugin'}}</em><a class="headerlink" href="#prestoadmin.coordinator.Coordinator.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.coordinator.Coordinator.default_config">
+<code class="descname">default_config</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/coordinator.html#Coordinator.default_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.coordinator.Coordinator.default_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="prestoadmin.coordinator.Coordinator.validate">
+<em class="property">static </em><code class="descname">validate</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/coordinator.html#Coordinator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.coordinator.Coordinator.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.deploy">
+<span id="prestoadmin-deploy-module"></span><h2>prestoadmin.deploy module<a class="headerlink" href="#module-prestoadmin.deploy" title="Permalink to this headline">¶</a></h2>
+<p>Common module for deploying the presto configuration</p>
+<dl class="function">
+<dt id="prestoadmin.deploy.configure_presto">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">configure_presto</code><span class="sig-paren">(</span><em>conf</em>, <em>remote_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#configure_presto"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.configure_presto" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.coordinator">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">coordinator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#coordinator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.coordinator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deploy the coordinator configuration to the coordinator node</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.deploy">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">deploy</code><span class="sig-paren">(</span><em>confs</em>, <em>remote_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#deploy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.deploy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.deploy_node_properties">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">deploy_node_properties</code><span class="sig-paren">(</span><em>content</em>, <em>remote_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#deploy_node_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.deploy_node_properties" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.dict_to_equal_format">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">dict_to_equal_format</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#dict_to_equal_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.dict_to_equal_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.escape_single_quotes">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">escape_single_quotes</code><span class="sig-paren">(</span><em>text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#escape_single_quotes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.escape_single_quotes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.key_val_to_equal">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">key_val_to_equal</code><span class="sig-paren">(</span><em>items</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#key_val_to_equal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.key_val_to_equal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.list_to_line_separated">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">list_to_line_separated</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#list_to_line_separated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.list_to_line_separated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.output_format">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">output_format</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#output_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.output_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.secure_create_directory">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">secure_create_directory</code><span class="sig-paren">(</span><em>filepath</em>, <em>user_group</em>, <em>mode=755</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#secure_create_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.secure_create_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.secure_create_file">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">secure_create_file</code><span class="sig-paren">(</span><em>filepath</em>, <em>user_group</em>, <em>mode=600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#secure_create_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.secure_create_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.workers">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">workers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#workers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.workers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deploy workers configuration to the worker nodes.
+This will not deploy configuration for a coordinator that is also a worker</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.deploy.write_to_remote_file">
+<code class="descclassname">prestoadmin.deploy.</code><code class="descname">write_to_remote_file</code><span class="sig-paren">(</span><em>text</em>, <em>filepath</em>, <em>owner</em>, <em>mode=600</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/deploy.html#write_to_remote_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.deploy.write_to_remote_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.fabric_patches">
+<span id="prestoadmin-fabric-patches-module"></span><h2>prestoadmin.fabric_patches module<a class="headerlink" href="#module-prestoadmin.fabric_patches" title="Permalink to this headline">¶</a></h2>
+<p>Monkey patches needed to change logging and error handling in Fabric</p>
+<dl class="function">
+<dt id="prestoadmin.fabric_patches.abort">
+<code class="descclassname">prestoadmin.fabric_patches.</code><code class="descname">abort</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/fabric_patches.html#abort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.fabric_patches.abort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.fabric_patches.execute">
+<code class="descclassname">prestoadmin.fabric_patches.</code><code class="descname">execute</code><span class="sig-paren">(</span><em>task</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/fabric_patches.html#execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.fabric_patches.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Patched version of fabric&#8217;s execute task with alternative error handling</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.fabric_patches.log_output">
+<code class="descclassname">prestoadmin.fabric_patches.</code><code class="descname">log_output</code><span class="sig-paren">(</span><em>out</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/fabric_patches.html#log_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.fabric_patches.log_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.fabric_patches.run">
+<code class="descclassname">prestoadmin.fabric_patches.</code><code class="descname">run</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/fabric_patches.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.fabric_patches.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.fabric_patches.sudo">
+<code class="descclassname">prestoadmin.fabric_patches.</code><code class="descname">sudo</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/fabric_patches.html#sudo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.fabric_patches.sudo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.fabric_patches.warn">
+<code class="descclassname">prestoadmin.fabric_patches.</code><code class="descname">warn</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/fabric_patches.html#warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.fabric_patches.warn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.file">
+<span id="prestoadmin-file-module"></span><h2>prestoadmin.file module<a class="headerlink" href="#module-prestoadmin.file" title="Permalink to this headline">¶</a></h2>
+<p>Commands for running scripts on a cluster</p>
+<dl class="attribute">
+<dt id="prestoadmin.file.run">
+<code class="descclassname">prestoadmin.file.</code><code class="descname">run</code><a class="reference internal" href="_modules/prestoadmin/file.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.file.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run an arbitrary script on all nodes in the cluster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- The path to the script</strong> (<em>script</em>) &#8211; </li>
+<li><strong>- Where to put the script on the cluster.  Default is /tmp.</strong> (<em>remote_dir</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.file.copy">
+<code class="descclassname">prestoadmin.file.</code><code class="descname">copy</code><a class="reference internal" href="_modules/prestoadmin/file.html#copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.file.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy a file to all nodes in the cluster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- The path to the file</strong> (<em>local_file</em>) &#8211; </li>
+<li><strong>- Where to put the file on the cluster.  Default is /tmp.</strong> (<em>remote_dir</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.main">
+<span id="prestoadmin-main-module"></span><h2>prestoadmin.main module<a class="headerlink" href="#module-prestoadmin.main" title="Permalink to this headline">¶</a></h2>
+<p>This module contains Fab&#8217;s <cite>main</cite> method plus related subroutines.</p>
+<p><cite>main</cite> is executed as the command line <code class="docutils literal"><span class="pre">fab</span></code> program and takes care of
+parsing options and commands, loading the user settings file, loading a
+fabfile, and executing the commands given.</p>
+<p>The other callables defined in this module are internal only. Anything useful
+to individuals leveraging Fabric as a library, should be kept elsewhere.</p>
+<dl class="function">
+<dt id="prestoadmin.main.display_command">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">display_command</code><span class="sig-paren">(</span><em>name</em>, <em>code=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#display_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.display_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print command function&#8217;s docstring, then exit. Invoked with -d/&#8211;display.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.extract_tasks">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">extract_tasks</code><span class="sig-paren">(</span><em>imported_vars</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#extract_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.extract_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle extracting tasks from a given list of variables</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.get_default_options">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">get_default_options</code><span class="sig-paren">(</span><em>options</em>, <em>non_default_options</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#get_default_options"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.get_default_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a dictionary of options containing the defaults optparse has filled
+in, and a dictionary of options containing only options parsed from the
+command line, returns a dictionary containing the default options that
+remain after removing the default options that were overridden by the
+options passed on the command line.</p>
+<p>Mathematically, this returns a dictionary with
+default_options.keys = options.keys() non_default_options.keys()
+where is the set difference operator.
+The value of a key present in default_options is the value of the same key
+in options.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.get_task_docstring">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">get_task_docstring</code><span class="sig-paren">(</span><em>task</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#get_task_docstring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.get_task_docstring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.invalid_command_error">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">invalid_command_error</code><span class="sig-paren">(</span><em>arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#invalid_command_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.invalid_command_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.is_classic_task">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">is_classic_task</code><span class="sig-paren">(</span><em>tup</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#is_classic_task"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.is_classic_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes (name, object) tuple, returns True if it&#8217;s a non-Fab public callable.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.is_task_module">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">is_task_module</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#is_task_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.is_task_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the provided value is a task module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.is_task_object">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">is_task_object</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#is_task_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.is_task_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the provided value is a <code class="docutils literal"><span class="pre">Task</span></code> object.</p>
+<p>This returning True signals that all tasks within the fabfile
+module must be Task objects.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.list_commands">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">list_commands</code><span class="sig-paren">(</span><em>docstring</em>, <em>format_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#list_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.list_commands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print all found commands/tasks, then exit. Invoked with <code class="docutils literal"><span class="pre">-l/--list.</span></code></p>
+<p>If <code class="docutils literal"><span class="pre">docstring</span></code> is non-empty, it will be printed before the task list.</p>
+<p><code class="docutils literal"><span class="pre">format_</span></code> should conform to the options specified in
+<code class="docutils literal"><span class="pre">LIST_FORMAT_OPTIONS</span></code>, e.g. <code class="docutils literal"><span class="pre">&quot;short&quot;</span></code>, <code class="docutils literal"><span class="pre">&quot;normal&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.load_config">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">load_config</code><span class="sig-paren">(</span><em>load_config_callback</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#load_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.load_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>This provides a patch point for the unit tests so that individual test
+cases don&#8217;t need to know the internal details of what happens in
+_load_topology. See test_main.py for examples.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.load_fabfile">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">load_fabfile</code><span class="sig-paren">(</span><em>path</em>, <em>importer=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#load_fabfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.load_fabfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import given fabfile path and return (docstring, callables).</p>
+<p>Specifically, the fabfile&#8217;s <code class="docutils literal"><span class="pre">__doc__</span></code> attribute (a string) and a
+dictionary of <code class="docutils literal"><span class="pre">{'name':</span> <span class="pre">callable}</span></code> containing all callables which pass
+the &#8220;is a Fabric task&#8221; test.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.load_tasks_from_module">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">load_tasks_from_module</code><span class="sig-paren">(</span><em>imported</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#load_tasks_from_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.load_tasks_from_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles loading all of the tasks for a given <cite>imported</cite> module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.main">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">main</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main command-line execution loop.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.parse_and_validate_commands">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">parse_and_validate_commands</code><span class="sig-paren">(</span><em>args=['-b', 'html', '-W', '-d', '_build/doctrees', '.', '_build/html']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#parse_and_validate_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.parse_and_validate_commands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.parse_arguments">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">parse_arguments</code><span class="sig-paren">(</span><em>arguments</em>, <em>commands</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#parse_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.parse_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse string list into list of tuples: command, args.</p>
+<p>commands is formatted like {&#8216;install&#8217; : {&#8216;server&#8217; : WrappedCallable,
+&#8216;cli&#8217; : WrappedCallable}, &#8216;topology&#8217;: {&#8216;show&#8217; : WrappedCallable}}</p>
+<p>Thus, since our arguments are separated by spaces, and is of the form
+[&#8216;install&#8217;, &#8216;server&#8217;], we iterate through the commands, progressively
+going deeper into the dict.  If we run out of elements in the dict,
+the rest of the tokens are arguments to the function. If we don&#8217;t
+get down to the bottom-most level, the command is not valid. If
+at any point the next token is not in the possible_cmd map, the
+command is invalid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.parser_for_options">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">parser_for_options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#parser_for_options"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.parser_for_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle command-line options with LoggingOptionParser.</p>
+<p>Return parser, largely for use in <cite>parse_arguments</cite>.</p>
+<p>On this parser, you must call parser.parse_args()</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.run_tasks">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">run_tasks</code><span class="sig-paren">(</span><em>task_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#run_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.run_tasks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.show_commands">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">show_commands</code><span class="sig-paren">(</span><em>docstring</em>, <em>format</em>, <em>code=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#show_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.show_commands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.update_output_levels">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">update_output_levels</code><span class="sig-paren">(</span><em>show</em>, <em>hide</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#update_output_levels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.update_output_levels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update state.output values as per given comma-separated list of key names.</p>
+<p>For example, <code class="docutils literal"><span class="pre">update_output_levels(show='debug,warnings')</span></code> is
+functionally equivalent to <code class="docutils literal"><span class="pre">state.output['debug']</span> <span class="pre">=</span> <span class="pre">True</span> <span class="pre">;</span>
+<span class="pre">state.output['warnings']</span> <span class="pre">=</span> <span class="pre">True</span></code>. Conversely, anything given to <code class="docutils literal"><span class="pre">hide</span></code>
+sets the values to <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.main.validate_hosts">
+<code class="descclassname">prestoadmin.main.</code><code class="descname">validate_hosts</code><span class="sig-paren">(</span><em>cli_hosts</em>, <em>config_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/main.html#validate_hosts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.main.validate_hosts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.mode">
+<span id="prestoadmin-mode-module"></span><h2>prestoadmin.mode module<a class="headerlink" href="#module-prestoadmin.mode" title="Permalink to this headline">¶</a></h2>
+<p>Module for handling presto-admin mode-related functionality.</p>
+<dl class="function">
+<dt id="prestoadmin.mode.for_mode">
+<code class="descclassname">prestoadmin.mode.</code><code class="descname">for_mode</code><span class="sig-paren">(</span><em>mode</em>, <em>mode_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/mode.html#for_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.mode.for_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.mode.get">
+<code class="descclassname">prestoadmin.mode.</code><code class="descname">get</code><a class="reference internal" href="_modules/prestoadmin/mode.html#get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.mode.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the current mode.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.mode.get_mode">
+<code class="descclassname">prestoadmin.mode.</code><code class="descname">get_mode</code><span class="sig-paren">(</span><em>validate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/mode.html#get_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.mode.get_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.mode.list">
+<code class="descclassname">prestoadmin.mode.</code><code class="descname">list</code><a class="reference internal" href="_modules/prestoadmin/mode.html#list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.mode.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List the supported modes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.mode.select">
+<code class="descclassname">prestoadmin.mode.</code><code class="descname">select</code><a class="reference internal" href="_modules/prestoadmin/mode.html#select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.mode.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the mode.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.mode.validate_mode">
+<code class="descclassname">prestoadmin.mode.</code><code class="descname">validate_mode</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/mode.html#validate_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.mode.validate_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.node">
+<span id="prestoadmin-node-module"></span><h2>prestoadmin.node module<a class="headerlink" href="#module-prestoadmin.node" title="Permalink to this headline">¶</a></h2>
+<p>Module for the presto coordinator&#8217;s configuration.
+Loads and validates the coordinator.json file and creates the files needed
+to deploy on the presto cluster</p>
+<dl class="class">
+<dt id="prestoadmin.node.Node">
+<em class="property">class </em><code class="descclassname">prestoadmin.node.</code><code class="descname">Node</code><a class="reference internal" href="_modules/prestoadmin/node.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.node.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="prestoadmin.node.Node.build_all_defaults">
+<code class="descname">build_all_defaults</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/node.html#Node.build_all_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.node.Node.build_all_defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.node.Node.default_config">
+<code class="descname">default_config</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/node.html#Node.default_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.node.Node.default_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.node.Node.get_conf">
+<code class="descname">get_conf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/node.html#Node.get_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.node.Node.get_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="prestoadmin.node.Node.validate">
+<em class="property">static </em><code class="descname">validate</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/node.html#Node.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.node.Node.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.package">
+<span id="prestoadmin-package-module"></span><h2>prestoadmin.package module<a class="headerlink" href="#module-prestoadmin.package" title="Permalink to this headline">¶</a></h2>
+<p>Module for rpm package deploy and install using presto-admin</p>
+<dl class="attribute">
+<dt id="prestoadmin.package.install">
+<code class="descclassname">prestoadmin.package.</code><code class="descname">install</code><a class="reference internal" href="_modules/prestoadmin/package.html#install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.package.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install the rpm package on the cluster</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>local_path</strong> &#8211; Absolute path to the rpm to be installed</li>
+<li><strong>--nodeps</strong> (<em>optional</em>) &#8211; Flag to indicate if rpm install
+should ignore checking package dependencies. Equivalent
+to adding &#8211;nodeps flag to rpm -i.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.package.uninstall">
+<code class="descclassname">prestoadmin.package.</code><code class="descname">uninstall</code><a class="reference internal" href="_modules/prestoadmin/package.html#uninstall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.package.uninstall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uninstall the rpm package from the cluster</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rpm_name</strong> &#8211; Name of the rpm to be uninstalled</li>
+<li><strong>--nodeps</strong> (<em>optional</em>) &#8211; Flag to indicate if rpm uninstall) should ignore checking package dependencies. Equivalent
+to adding &#8211;nodeps flag to rpm -e.</li>
+<li><strong>--force</strong> (<em>optional</em>) &#8211; Flag to indicate that rpm uninstall should not fail if package is not installed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.plugin">
+<span id="prestoadmin-plugin-module"></span><h2>prestoadmin.plugin module<a class="headerlink" href="#module-prestoadmin.plugin" title="Permalink to this headline">¶</a></h2>
+<p>module for tasks relating to presto plugins</p>
+<dl class="attribute">
+<dt id="prestoadmin.plugin.add_jar">
+<code class="descclassname">prestoadmin.plugin.</code><code class="descname">add_jar</code><a class="reference internal" href="_modules/prestoadmin/plugin.html#add_jar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.plugin.add_jar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deploy jar for the specified plugin to the plugin directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- Local path to the jar to be deployed</strong> (<em>local_path</em>) &#8211; </li>
+<li><strong>- Name of the plugin subdirectory to deploy jars to</strong> (<em>plugin_name</em>) &#8211; </li>
+<li><strong>-</strong> (<em>plugin_dir</em>) &#8211; given, &#8216;/usr/lib/presto/lib/plugin&#8217; is used by default.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.presto_conf">
+<span id="prestoadmin-presto-conf-module"></span><h2>prestoadmin.presto_conf module<a class="headerlink" href="#module-prestoadmin.presto_conf" title="Permalink to this headline">¶</a></h2>
+<p>Module for processing presto configuration files</p>
+<dl class="function">
+<dt id="prestoadmin.presto_conf.get_presto_conf">
+<code class="descclassname">prestoadmin.presto_conf.</code><code class="descname">get_presto_conf</code><span class="sig-paren">(</span><em>conf_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/presto_conf.html#get_presto_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.presto_conf.get_presto_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="prestoadmin.presto_conf.validate_presto_conf">
+<code class="descclassname">prestoadmin.presto_conf.</code><code class="descname">validate_presto_conf</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/presto_conf.html#validate_presto_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.presto_conf.validate_presto_conf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.prestoclient">
+<span id="prestoadmin-prestoclient-module"></span><h2>prestoadmin.prestoclient module<a class="headerlink" href="#module-prestoadmin.prestoclient" title="Permalink to this headline">¶</a></h2>
+<p>Simple client to communicate with a Presto server.</p>
+<dl class="class">
+<dt id="prestoadmin.prestoclient.PrestoClient">
+<em class="property">class </em><code class="descclassname">prestoadmin.prestoclient.</code><code class="descname">PrestoClient</code><span class="sig-paren">(</span><em>server</em>, <em>user</em>, <em>coordinator_config=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/prestoclient.html#PrestoClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.prestoclient.PrestoClient" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="prestoadmin.prestoclient.PrestoClient.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/prestoclient.html#PrestoClient.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.prestoclient.PrestoClient.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.prestoclient.PrestoClient.run_sql">
+<code class="descname">run_sql</code><span class="sig-paren">(</span><em>sql</em>, <em>schema='default'</em>, <em>catalog='hive'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/prestoclient.html#PrestoClient.run_sql"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.prestoclient.PrestoClient.run_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a query connecting to Presto server using passed parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sql</strong> &#8211; SQL query to be executed</li>
+<li><strong>schema</strong> &#8211; Presto schema to be used while executing query
+(default=default)</li>
+<li><strong>catalog</strong> &#8211; Catalog to be used by the server</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of rows or None if client was unable to connect to Presto</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.server">
+<span id="prestoadmin-server-module"></span><h2>prestoadmin.server module<a class="headerlink" href="#module-prestoadmin.server" title="Permalink to this headline">¶</a></h2>
+<p>Module for installing, monitoring, and controlling presto server
+using presto-admin</p>
+<dl class="attribute">
+<dt id="prestoadmin.server.install">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">install</code><a class="reference internal" href="_modules/prestoadmin/server.html#install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy and install the presto-server rpm to all the nodes in the cluster and
+configure the nodes.</p>
+<p>The topology information will be read from the config.json file. If this
+file is missing, then the coordinator and workers will be obtained
+interactively. Install will fail for invalid json configuration.</p>
+<p>The catalog configurations will be read from the local catalog directory
+which defaults to ~/.prestoadmin/catalog. If this directory is missing or empty
+then no catalog configuration is deployed.</p>
+<p>Install will fail for incorrectly formatted configuration files. Expected
+format is key=value for .properties files and one option per line for
+jvm.config</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>- String specifying location of presto rpm to copy and install</strong> (<em>rpm_specifier</em>) &#8211; <p>to nodes in the cluster. The string can specify a presto rpm
+in the following ways:</p>
+<ol class="arabic">
+<li>&#8216;latest&#8217; to download the latest release</li>
+<li>Url to download</li>
+<li>Version number to download</li>
+<li>Path to a local copy</li>
+</ol>
+<p>If rpm_specifier matches multiple forms, it is interpreted as the form with
+highest precedence. The forms are listed from highest to lowest precedence
+(going top to bottom) For example, if the rpm_specifier matches the criteria
+to be a url to download, it will be interpreted as such and will never be
+interpreted as a version number or a local path.</p>
+<p>Before downloading an rpm, install will attempt to find a local
+copy with a matching version number to the requested rpm. If such
+a match is found, it will use the local copy instead of downloading
+the rpm again.</p>
+</li>
+<li><strong>-</strong> (<em>--nodeps</em>) &#8211; should ignore checking Presto rpm package
+dependencies. Equivalent to adding &#8211;nodeps
+flag to rpm -i.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.server.uninstall">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">uninstall</code><a class="reference internal" href="_modules/prestoadmin/server.html#uninstall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.uninstall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uninstall Presto after stopping the services on all nodes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>-</strong> (<em>--nodeps</em>) &#8211; should ignore checking Presto rpm package
+dependencies. Equivalent to adding &#8211;nodeps
+flag to rpm -e.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.server.upgrade">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">upgrade</code><a class="reference internal" href="_modules/prestoadmin/server.html#upgrade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.upgrade" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy and upgrade a new presto-server rpm to all of the nodes in the
+cluster. Retains existing node configuration.</p>
+<p>The existing topology information is read from the config.json file.
+Unlike install, there is no provision to supply topology information
+interactively.</p>
+<p>The existing cluster configuration is collected from the nodes on the
+cluster and stored on the host running presto-admin. After the
+presto-server packages have been upgraded, presto-admin pushes the
+collected configuration back out to the hosts on the cluster.</p>
+<p>Note that the configuration files in the presto-admin configuration
+directory are not updated during upgrade.</p>
+<dl class="docutils">
+<dt>:param new_rpm_path -       The path to the new Presto RPM to</dt>
+<dd>install</dd>
+<dt>:param local_config_dir -   (optional) Directory to store the cluster</dt>
+<dd>configuration in. If not specified, a temp
+directory is used.</dd>
+<dt>:param overwrite -          (optional) if set to True then existing</dt>
+<dd>configuration will be orerwriten.</dd>
+<dt>:param &#8211;nodeps -           (optional) Flag to indicate if server upgrade</dt>
+<dd>should ignore checking Presto rpm package
+dependencies. Equivalent to adding &#8211;nodeps
+flag to rpm -U.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.server.start">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">start</code><a class="reference internal" href="_modules/prestoadmin/server.html#start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the Presto server on all nodes</p>
+<p>A status check is performed on the entire cluster and a list of
+servers that did not start, if any, are reported at the end.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.server.stop">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">stop</code><a class="reference internal" href="_modules/prestoadmin/server.html#stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the Presto server on all nodes</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.server.restart">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">restart</code><a class="reference internal" href="_modules/prestoadmin/server.html#restart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.restart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restart the Presto server on all nodes.</p>
+<p>A status check is performed on the entire cluster and a list of
+servers that did not start, if any, are reported at the end.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.server.status">
+<code class="descclassname">prestoadmin.server.</code><code class="descname">status</code><a class="reference internal" href="_modules/prestoadmin/server.html#status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.server.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the status of presto in the cluster</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.topology">
+<span id="prestoadmin-topology-module"></span><h2>prestoadmin.topology module<a class="headerlink" href="#module-prestoadmin.topology" title="Permalink to this headline">¶</a></h2>
+<p>Module for setting and validating the presto-admin config</p>
+<dl class="function">
+<dt id="prestoadmin.topology.get_conf_from_fabric">
+<code class="descclassname">prestoadmin.topology.</code><code class="descname">get_conf_from_fabric</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/topology.html#get_conf_from_fabric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.topology.get_conf_from_fabric" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="prestoadmin.topology.show">
+<code class="descclassname">prestoadmin.topology.</code><code class="descname">show</code><a class="reference internal" href="_modules/prestoadmin/topology.html#show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.topology.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows the current topology configuration for the cluster (including the
+coordinators, workers, SSH port, and SSH username)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin.workers">
+<span id="prestoadmin-workers-module"></span><h2>prestoadmin.workers module<a class="headerlink" href="#module-prestoadmin.workers" title="Permalink to this headline">¶</a></h2>
+<p>Module for the presto worker`&#8217;s configuration.
+Loads and validates the workers.json file and creates the files needed
+to deploy on the presto cluster</p>
+<dl class="class">
+<dt id="prestoadmin.workers.Worker">
+<em class="property">class </em><code class="descclassname">prestoadmin.workers.</code><code class="descname">Worker</code><a class="reference internal" href="_modules/prestoadmin/workers.html#Worker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.workers.Worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#prestoadmin.node.Node" title="prestoadmin.node.Node"><code class="xref py py-class docutils literal"><span class="pre">prestoadmin.node.Node</span></code></a></p>
+<dl class="attribute">
+<dt id="prestoadmin.workers.Worker.DEFAULT_PROPERTIES">
+<code class="descname">DEFAULT_PROPERTIES</code><em class="property"> = {'jvm.config': ['-server', '-Xmx16G', '-XX:-UseBiasedLocking', '-XX:+UseG1GC', '-XX:G1HeapRegionSize=32M', '-XX:+ExplicitGCInvokesConcurrent', '-XX:+HeapDumpOnOutOfMemoryError', '-XX:+UseGCOverheadLimit', '-XX:OnOutOfMemoryError=kill -9 %p', '-XX:ReservedCodeCacheSize=512M', '-DHADOOP_USER_NAME=hive'], 'config.properties': {'query.max-memory': '50GB', 'coordinator': 'false', 'query.max-memory-per-node': '8GB', 'http-server.http.port': '8080'}, 'node.properties': {'node.launcher-log-file': '/var/log/presto/launcher.log', 'node.server-log-file': '/var/log/presto/server.log', 'catalog.config-dir': '/etc/presto/catalog', 'node.data-dir': '/var/lib/presto/data', 'node.environment': 'presto', 'plugin.dir': '/usr/lib/presto/lib/plugin'}}</em><a class="headerlink" href="#prestoadmin.workers.Worker.DEFAULT_PROPERTIES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prestoadmin.workers.Worker.default_config">
+<code class="descname">default_config</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/workers.html#Worker.default_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.workers.Worker.default_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="prestoadmin.workers.Worker.is_localhost">
+<em class="property">static </em><code class="descname">is_localhost</code><span class="sig-paren">(</span><em>hostname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/workers.html#Worker.is_localhost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.workers.Worker.is_localhost" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="prestoadmin.workers.Worker.validate">
+<em class="property">static </em><code class="descname">validate</code><span class="sig-paren">(</span><em>conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prestoadmin/workers.html#Worker.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prestoadmin.workers.Worker.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-prestoadmin">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-prestoadmin" title="Permalink to this headline">¶</a></h2>
+<p>Presto-Admin tool for deploying and managing Presto clusters</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">prestoadmin package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.catalog">prestoadmin.catalog module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.collect">prestoadmin.collect module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.config">prestoadmin.config module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.configure_cmds">prestoadmin.configure_cmds module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.coordinator">prestoadmin.coordinator module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.deploy">prestoadmin.deploy module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.fabric_patches">prestoadmin.fabric_patches module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.file">prestoadmin.file module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.main">prestoadmin.main module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.mode">prestoadmin.mode module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.node">prestoadmin.node module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.package">prestoadmin.package module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.plugin">prestoadmin.plugin module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.presto_conf">prestoadmin.presto_conf module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.prestoclient">prestoadmin.prestoclient module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.server">prestoadmin.server module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.topology">prestoadmin.topology module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin.workers">prestoadmin.workers module</a></li>
+<li><a class="reference internal" href="#module-prestoadmin">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">prestoadmin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prestoadmin.standalone.html"
+                        title="next chapter">prestoadmin.standalone package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/prestoadmin.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prestoadmin.standalone.html" title="prestoadmin.standalone package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="prestoadmin"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">presto-admin 2.2 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >prestoadmin</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>
