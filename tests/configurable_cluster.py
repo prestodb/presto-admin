@@ -116,9 +116,11 @@ class ConfigurableCluster(BaseCluster):
             sudo rm -rf /tmp/presto-debug-remote
             sudo rm -rf /var/log/presto
             rm -rf {mount_dir}
+            rm -rf {rpm_cache_dir}
             """.format(install_dir=get_install_directory(),
                        config_dir=get_config_directory(),
-                       mount_dir=self.mount_dir)
+                       mount_dir=self.mount_dir,
+                       rpm_cache_dir=self.rpm_cache_dir)
             self.run_script_on_host(script, host)
 
     def stop_host(self, host_name):
