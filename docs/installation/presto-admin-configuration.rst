@@ -64,6 +64,7 @@ Use the following configuration as a template for other clusters:
  "java8_home":"<path/to/java8/on/presto/nodes>"
  }
 
+Do not use localhost as host_name for a multi-node cluster.
 All of the properties are optional, and if left out the following defaults will
 be used:
 ::
