@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.configure_cmds &mdash; presto-admin 2.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.3 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.configure_cmds</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for various configuration management tasks using presto-admin</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">closing</span>
+
+<span class="kn">from</span> <span class="nn">fabric.contrib</span> <span class="kn">import</span> <span class="n">files</span>
+<span class="kn">from</span> <span class="nn">fabric.decorators</span> <span class="kn">import</span> <span class="n">task</span><span class="p">,</span> <span class="n">serial</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">get</span><span class="p">,</span> <span class="n">sudo</span>
+<span class="kn">from</span> <span class="nn">fabric.state</span> <span class="kn">import</span> <span class="n">env</span>
+<span class="kn">from</span> <span class="nn">fabric.utils</span> <span class="kn">import</span> <span class="n">abort</span><span class="p">,</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">prestoadmin.deploy</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.standalone.config</span> <span class="kn">import</span> <span class="n">StandaloneConfig</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.base_config</span> <span class="kn">import</span> <span class="n">requires_config</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.constants</span> <span class="kn">import</span> <span class="n">CONFIG_PROPERTIES</span><span class="p">,</span> <span class="n">LOG_PROPERTIES</span><span class="p">,</span> \
+    <span class="n">JVM_CONFIG</span><span class="p">,</span> <span class="n">NODE_PROPERTIES</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;show&#39;</span><span class="p">]</span>
+
+<span class="n">ALL_CONFIG</span> <span class="o">=</span> <span class="p">[</span><span class="n">CONFIG_PROPERTIES</span><span class="p">,</span> <span class="n">LOG_PROPERTIES</span><span class="p">,</span> <span class="n">JVM_CONFIG</span><span class="p">,</span> <span class="n">NODE_PROPERTIES</span><span class="p">]</span>
+
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;deploy&#39;</span><span class="p">,</span> <span class="s1">&#39;show&#39;</span><span class="p">]</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<div class="viewcode-block" id="deploy"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.configure_cmds.deploy">[docs]</a><span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="n">rolename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deploy configuration on the remote hosts.</span>
+
+<span class="sd">    Possible arguments are -</span>
+<span class="sd">        coordinator - Deploy the coordinator configuration to the coordinator</span>
+<span class="sd">        node</span>
+<span class="sd">        workers - Deploy workers configuration to the worker nodes. This will</span>
+<span class="sd">        not deploy configuration for a coordinator that is also a worker</span>
+
+<span class="sd">    If no rolename is specified, then configuration for all roles will be</span>
+<span class="sd">    deployed.  If there is no presto configuration file found in the</span>
+<span class="sd">    configuration directory, default files will be deployed</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        rolename - [coordinator|workers]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">rolename</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running configuration deploy&quot;</span><span class="p">)</span>
+        <span class="n">prestoadmin</span><span class="o">.</span><span class="n">deploy</span><span class="o">.</span><span class="n">coordinator</span><span class="p">()</span>
+        <span class="n">prestoadmin</span><span class="o">.</span><span class="n">deploy</span><span class="o">.</span><span class="n">workers</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rolename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;coordinator&#39;</span><span class="p">:</span>
+            <span class="n">prestoadmin</span><span class="o">.</span><span class="n">deploy</span><span class="o">.</span><span class="n">coordinator</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">rolename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;workers&#39;</span><span class="p">:</span>
+            <span class="n">prestoadmin</span><span class="o">.</span><span class="n">deploy</span><span class="o">.</span><span class="n">workers</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Invalid Argument. Possible values: coordinator, workers&quot;</span><span class="p">)</span>
+
+</div>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">gather/deploy_config_directory are used for server upgrade when we want to</span>
+<span class="sd">preserve any existing configuration files across the upgrade exactly as they</span>
+<span class="sd">were before the upgrade.</span>
+
+<span class="sd">In order to preserve not just the data, but also the metadata, we tar up the</span>
+<span class="sd">contents of /etc/presto to a temporary tar archive under /tmp. After the</span>
+<span class="sd">upgrade, we untar it into /etc/presto and delete the archive.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">gather_config_directory</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For the benefit of the next person to hack this, a list of some things</span>
+<span class="sd">    that didn&#39;t work:</span>
+<span class="sd">    - passing combine_stderr=False to sudo. Dunno why, still got them</span>
+<span class="sd">    combined in the output.</span>
+<span class="sd">    - using a StringIO object cfg = StringIO() and passing stdout=cfg. Got</span>
+<span class="sd">    the host information at the start of the line.</span>
+<span class="sd">    - sucking the tar archive over the network into memory instead of</span>
+<span class="sd">    writing it out to a temporary file on the remote host. Since fabric</span>
+<span class="sd">    doesn&#39;t provide a stdin= kwarg, there&#39;s no way to send back a tar</span>
+<span class="sd">    archive larger than we can fit in a single bash command (~2MB on a</span>
+<span class="sd">    good day), meaning if /etc/presto contains any large files, we&#39;d end</span>
+<span class="sd">    up having to send the archive to a temp file anyway.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span>
+        <span class="s1">&#39;tarfile=`mktemp /tmp/presto_config-XXXXXXX.tar`; &#39;</span>
+        <span class="s1">&#39;tar -c -z -C </span><span class="si">%s</span><span class="s1"> -f &quot;${tarfile}&quot; . &amp;&amp; echo &quot;${tarfile}&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span><span class="p">,))</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">deploy_config_directory</span><span class="p">(</span><span class="n">tarfile</span><span class="p">):</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;tar -C &quot;</span><span class="si">%s</span><span class="s1">&quot; -x -v -f &quot;</span><span class="si">%s</span><span class="s1">&quot; ; rm &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span>
+         <span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span><span class="p">,</span> <span class="n">tarfile</span><span class="p">,</span> <span class="n">tarfile</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">configuration_fetch</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">config_destination</span><span class="p">,</span> <span class="n">should_warn</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">remote_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">remote_file_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">should_warn</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No configuration file found for </span><span class="si">%s</span><span class="s2"> at </span><span class="si">%s</span><span class="s2">&quot;</span>
+                 <span class="o">%</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">remote_file_path</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">get</span><span class="p">(</span><span class="n">remote_file_path</span><span class="p">,</span> <span class="n">config_destination</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">remote_file_path</span>
+
+
+<span class="k">def</span> <span class="nf">configuration_show</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">should_warn</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">StringIO</span><span class="p">())</span> <span class="k">as</span> <span class="n">file_content_buffer</span><span class="p">:</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">configuration_fetch</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">file_content_buffer</span><span class="p">,</span>
+                                        <span class="n">should_warn</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">file_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">config_values</span> <span class="o">=</span> <span class="n">file_content_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+        <span class="n">file_content_buffer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Configuration file at </span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">file_path</span><span class="p">))</span>
+        <span class="k">print</span> <span class="n">config_values</span>
+
+
+<span class="nd">@task</span>
+<span class="nd">@requires_config</span><span class="p">(</span><span class="n">StandaloneConfig</span><span class="p">)</span>
+<span class="nd">@serial</span>
+<div class="viewcode-block" id="show"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.configure_cmds.show">[docs]</a><span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">config_type</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print to the user the contents of the configuration files deployed</span>
+
+<span class="sd">    If no config_type is specified, then all four configurations will be</span>
+<span class="sd">    printed.  No warning will be printed for a missing log.properties since</span>
+<span class="sd">    it is not a required configuration file.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        config_type: [node|jvm|config|log]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">config_type</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">configuration_show</span><span class="p">(</span><span class="n">NODE_PROPERTIES</span><span class="p">)</span>
+        <span class="n">configuration_show</span><span class="p">(</span><span class="n">JVM_CONFIG</span><span class="p">)</span>
+        <span class="n">configuration_show</span><span class="p">(</span><span class="n">CONFIG_PROPERTIES</span><span class="p">)</span>
+        <span class="n">configuration_show</span><span class="p">(</span><span class="n">LOG_PROPERTIES</span><span class="p">,</span> <span class="n">should_warn</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">config_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;node&#39;</span><span class="p">:</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">NODE_PROPERTIES</span>
+        <span class="k">elif</span> <span class="n">config_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;jvm&#39;</span><span class="p">:</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">JVM_CONFIG</span>
+        <span class="k">elif</span> <span class="n">config_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;config&#39;</span><span class="p">:</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">CONFIG_PROPERTIES</span>
+        <span class="k">elif</span> <span class="n">config_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;log&#39;</span><span class="p">:</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">LOG_PROPERTIES</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Invalid Argument. Possible values: node, jvm, config, log&quot;</span><span class="p">)</span>
+
+        <span class="n">configuration_show</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

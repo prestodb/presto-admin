@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Release 2.2 &mdash; presto-admin 2.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.3 documentation" href="../index.html" />
+    <link rel="up" title="Release Notes" href="../release.html" />
+    <link rel="next" title="Release 2.1" href="release-2.1.html" />
+    <link rel="prev" title="Release 2.3" href="release-2.3.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release-2.1.html" title="Release 2.1"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="release-2.3.html" title="Release 2.3"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../release.html" accesskey="U">Release Notes</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="release-2-2">
+<h1>Release 2.2<a class="headerlink" href="#release-2-2" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="new-features">
+<h2>New Features<a class="headerlink" href="#new-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Support specifying a range of workers in <code class="docutils literal"><span class="pre">config.json</span></code></li>
+</ul>
+</div>
+<div class="section" id="bug-fixes-and-enhancements">
+<h2>Bug Fixes and Enhancements<a class="headerlink" href="#bug-fixes-and-enhancements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fix error with getting server status for complex Presto version names</li>
+<li>Preserve all of <code class="docutils literal"><span class="pre">/etc/presto</span></code> during upgrade</li>
+<li>Use <code class="docutils literal"><span class="pre">rpm</span> <span class="pre">-U</span></code> for <code class="docutils literal"><span class="pre">package</span> <span class="pre">upgrade</span></code> and <code class="docutils literal"><span class="pre">server</span> <span class="pre">upgrade</span></code> instead of uninstalling and reinstalling fresh</li>
+<li>Use <code class="docutils literal"><span class="pre">.gz</span></code> instead of <code class="docutils literal"><span class="pre">.bz2</span></code> for the installation tarballs and for the files collected by <code class="docutils literal"><span class="pre">collect</span> <span class="pre">logs</span></code>
+and <code class="docutils literal"><span class="pre">collect</span> <span class="pre">system_info</span></code></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Release 2.2</a><ul>
+<li><a class="reference internal" href="#new-features">New Features</a></li>
+<li><a class="reference internal" href="#bug-fixes-and-enhancements">Bug Fixes and Enhancements</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="release-2.3.html"
+                        title="previous chapter">Release 2.3</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="release-2.1.html"
+                        title="next chapter">Release 2.1</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/release/release-2.2.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release-2.1.html" title="Release 2.1"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="release-2.3.html" title="Release 2.3"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../release.html" >Release Notes</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

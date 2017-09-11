@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.util.local_config_util &mdash; presto-admin 2.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.util.local_config_util</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.util.constants</span> <span class="kn">import</span> <span class="n">LOG_DIR_ENV_VARIABLE</span><span class="p">,</span> <span class="n">CONFIG_DIR_ENV_VARIABLE</span><span class="p">,</span> <span class="n">DEFAULT_LOCAL_CONF_DIR</span><span class="p">,</span> \
+    <span class="n">TOPOLOGY_CONFIG_FILE</span><span class="p">,</span> <span class="n">COORDINATOR_DIR_NAME</span><span class="p">,</span> <span class="n">WORKERS_DIR_NAME</span><span class="p">,</span> <span class="n">CATALOG_DIR_NAME</span>
+
+
+<div class="viewcode-block" id="get_config_directory"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.local_config_util.get_config_directory">[docs]</a><span class="k">def</span> <span class="nf">get_config_directory</span><span class="p">():</span>
+    <span class="n">config_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">CONFIG_DIR_ENV_VARIABLE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config_directory</span><span class="p">:</span>
+        <span class="n">config_directory</span> <span class="o">=</span> <span class="n">DEFAULT_LOCAL_CONF_DIR</span>
+    <span class="k">return</span> <span class="n">config_directory</span>
+
+</div>
+<div class="viewcode-block" id="get_log_directory"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.local_config_util.get_log_directory">[docs]</a><span class="k">def</span> <span class="nf">get_log_directory</span><span class="p">():</span>
+    <span class="n">config_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">LOG_DIR_ENV_VARIABLE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config_directory</span><span class="p">:</span>
+        <span class="n">config_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_config_directory</span><span class="p">(),</span> <span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">config_directory</span>
+
+</div>
+<div class="viewcode-block" id="get_topology_path"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.local_config_util.get_topology_path">[docs]</a><span class="k">def</span> <span class="nf">get_topology_path</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_config_directory</span><span class="p">(),</span> <span class="n">TOPOLOGY_CONFIG_FILE</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_coordinator_directory"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.local_config_util.get_coordinator_directory">[docs]</a><span class="k">def</span> <span class="nf">get_coordinator_directory</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_config_directory</span><span class="p">(),</span> <span class="n">COORDINATOR_DIR_NAME</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_workers_directory"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.local_config_util.get_workers_directory">[docs]</a><span class="k">def</span> <span class="nf">get_workers_directory</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_config_directory</span><span class="p">(),</span> <span class="n">WORKERS_DIR_NAME</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_catalog_directory"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.local_config_util.get_catalog_directory">[docs]</a><span class="k">def</span> <span class="nf">get_catalog_directory</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_config_directory</span><span class="p">(),</span> <span class="n">CATALOG_DIR_NAME</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

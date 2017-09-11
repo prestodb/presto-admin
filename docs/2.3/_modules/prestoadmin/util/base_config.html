@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.util.base_config &mdash; presto-admin 2.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.util.base_config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for common configuration stuff.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">prompt</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.config</span> <span class="kn">import</span> <span class="n">ConfigFileNotFoundError</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.util.exception</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
+
+
+<div class="viewcode-block" id="SingleConfigItem"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.SingleConfigItem">[docs]</a><span class="k">class</span> <span class="nc">SingleConfigItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span> <span class="o">=</span> <span class="n">prompt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">default</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span> <span class="o">=</span> <span class="n">validate</span>
+
+<div class="viewcode-block" id="SingleConfigItem.prompt_user"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.SingleConfigItem.prompt_user">[docs]</a>    <span class="k">def</span> <span class="nf">prompt_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prompt</span><span class="p">,</span>
+                                <span class="n">default</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">),</span>
+                                <span class="n">validate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SingleConfigItem.collect_prompts"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.SingleConfigItem.collect_prompts">[docs]</a>    <span class="k">def</span> <span class="nf">collect_prompts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">prompt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="MultiConfigItem"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.MultiConfigItem">[docs]</a><span class="k">class</span> <span class="nc">MultiConfigItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">validate</span><span class="p">,</span> <span class="n">validate_keys</span><span class="p">,</span>
+                 <span class="n">validate_failed_text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">items</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span> <span class="o">=</span> <span class="n">validate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_keys</span> <span class="o">=</span> <span class="n">validate_keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_failed_text</span> <span class="o">=</span> <span class="n">validate_failed_text</span>
+
+<div class="viewcode-block" id="MultiConfigItem.prompt_user"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.MultiConfigItem.prompt_user">[docs]</a>    <span class="k">def</span> <span class="nf">prompt_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">prompt_user</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+
+            <span class="n">validate_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">conf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_keys</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="o">*</span><span class="n">validate_args</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="k">print</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validate_failed_text</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_keys</span><span class="p">)</span> <span class="o">%</span> <span class="n">conf</span>
+</div>
+<div class="viewcode-block" id="MultiConfigItem.collect_prompts"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.MultiConfigItem.collect_prompts">[docs]</a>    <span class="k">def</span> <span class="nf">collect_prompts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">collect_prompts</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="requires_config"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.requires_config">[docs]</a><span class="k">def</span> <span class="nf">requires_config</span><span class="p">(</span><span class="n">config_class</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">config_instance</span> <span class="o">=</span> <span class="n">config_class</span><span class="p">()</span>
+        <span class="n">func</span><span class="o">.</span><span class="n">pa_config_callback</span> <span class="o">=</span> <span class="n">config_instance</span><span class="o">.</span><span class="n">get_config</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">config_instance</span><span class="o">.</span><span class="n">is_config_loaded</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;Required config not loaded at task &#39;</span>
+                                         <span class="s1">&#39;execution time.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">wrap</span>
+
+</div>
+<div class="viewcode-block" id="BaseConfig"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig">[docs]</a><span class="k">class</span> <span class="nc">BaseConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    BaseConfig provides the common config functionality for loading</span>
+<span class="sd">    configuration files for presto-admin and going through the interactive</span>
+<span class="sd">    config process if a config file isn&#39;t present.</span>
+
+<span class="sd">    Instances of classes that subclass BaseConfig are intended to be used with</span>
+<span class="sd">    the @requires_config decorator, which is responsible for adding an</span>
+<span class="sd">    attribute to the task that tells main() how to load the configuration</span>
+<span class="sd">    and subsequently for enforcing that the configuration has been loaded at</span>
+<span class="sd">    the time the task is actually run.</span>
+
+<span class="sd">    In order to be compatible with @requires_config, subclasses must define</span>
+<span class="sd">    a no-arguments constructor.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">config_items</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span> <span class="o">=</span> <span class="n">config_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_items</span> <span class="o">=</span> <span class="n">config_items</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BaseConfig.read_conf"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig.read_conf">[docs]</a>    <span class="k">def</span> <span class="nf">read_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">get_conf_from_json_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BaseConfig.write_conf"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig.write_conf">[docs]</a>    <span class="k">def</span> <span class="nf">write_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">json_to_string</span><span class="p">(</span><span class="n">conf</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span>
+</div>
+<div class="viewcode-block" id="BaseConfig.get_conf_interactive"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig.get_conf_interactive">[docs]</a>    <span class="k">def</span> <span class="nf">get_conf_interactive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_items</span><span class="p">:</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">prompt_user</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">conf</span>
+</div>
+<div class="viewcode-block" id="BaseConfig.get_config"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">parallel</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_config_loaded</span><span class="p">():</span>
+                <span class="n">conf</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_conf</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">ConfigFileNotFoundError</span><span class="p">:</span>
+                    <span class="n">conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_conf_interactive</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">write_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_env_from_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_config_loaded</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="BaseConfig.is_config_loaded"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig.is_config_loaded">[docs]</a>    <span class="k">def</span> <span class="nf">is_config_loaded</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="BaseConfig.set_config_loaded"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig.set_config_loaded">[docs]</a>    <span class="k">def</span> <span class="nf">set_config_loaded</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="BaseConfig.set_env_from_conf"><a class="viewcode-back" href="../../../prestoadmin.util.html#prestoadmin.util.base_config.BaseConfig.set_env_from_conf">[docs]</a>    <span class="k">def</span> <span class="nf">set_env_from_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>prestoadmin.deploy &mdash; presto-admin 2.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.3 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for prestoadmin.deploy</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Common module for deploying the presto configuration</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">fabric.contrib</span> <span class="kn">import</span> <span class="n">files</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">fabric.contrib.files</span> <span class="kn">import</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">fabric.operations</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">abort</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">env</span>
+
+<span class="kn">from</span> <span class="nn">prestoadmin.util</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">prestoadmin.standalone.config</span> <span class="kn">import</span> <span class="n">PRESTO_STANDALONE_USER_GROUP</span>
+<span class="kn">import</span> <span class="nn">coordinator</span> <span class="kn">as</span> <span class="nn">coord</span>
+<span class="kn">import</span> <span class="nn">prestoadmin.util.fabricapi</span> <span class="kn">as</span> <span class="nn">util</span>
+<span class="kn">import</span> <span class="nn">workers</span> <span class="kn">as</span> <span class="nn">w</span>
+
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="coordinator"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.coordinator">[docs]</a><span class="k">def</span> <span class="nf">coordinator</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deploy the coordinator configuration to the coordinator node</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="ow">in</span> <span class="n">util</span><span class="o">.</span><span class="n">get_coordinator_role</span><span class="p">():</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting coordinator configuration for &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">configure_presto</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">Coordinator</span><span class="p">()</span><span class="o">.</span><span class="n">get_conf</span><span class="p">(),</span>
+                         <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="workers"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.workers">[docs]</a><span class="k">def</span> <span class="nf">workers</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deploy workers configuration to the worker nodes.</span>
+<span class="sd">    This will not deploy configuration for a coordinator that is also a worker</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> <span class="ow">in</span> <span class="n">util</span><span class="o">.</span><span class="n">get_worker_role</span><span class="p">()</span> <span class="ow">and</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span> \
+            <span class="ow">not</span> <span class="ow">in</span> <span class="n">util</span><span class="o">.</span><span class="n">get_coordinator_role</span><span class="p">():</span>
+        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting worker configuration for &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">configure_presto</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">Worker</span><span class="p">()</span><span class="o">.</span><span class="n">get_conf</span><span class="p">(),</span> <span class="n">constants</span><span class="o">.</span><span class="n">REMOTE_CONF_DIR</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="configure_presto"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.configure_presto">[docs]</a><span class="k">def</span> <span class="nf">configure_presto</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Deploying configuration on: &quot;</span> <span class="o">+</span> <span class="n">env</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">deploy</span><span class="p">(</span><span class="nb">dict</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">output_format</span><span class="p">(</span><span class="n">content</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+                <span class="ow">in</span> <span class="n">conf</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;node.properties&quot;</span><span class="p">),</span> <span class="n">remote_dir</span><span class="p">)</span>
+    <span class="n">deploy_node_properties</span><span class="p">(</span><span class="n">output_format</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;node.properties&#39;</span><span class="p">]),</span> <span class="n">remote_dir</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="output_format"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.output_format">[docs]</a><span class="k">def</span> <span class="nf">output_format</span><span class="p">(</span><span class="n">conf</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dict_to_equal_format</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">list_to_line_separated</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="dict_to_equal_format"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.dict_to_equal_format">[docs]</a><span class="k">def</span> <span class="nf">dict_to_equal_format</span><span class="p">(</span><span class="n">conf</span><span class="p">):</span>
+    <span class="n">sorted_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">key_val_to_equal</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">list_to_line_separated</span><span class="p">(</span><span class="n">sorted_list</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="key_val_to_equal"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.key_val_to_equal">[docs]</a><span class="k">def</span> <span class="nf">key_val_to_equal</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;=&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="list_to_line_separated"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.list_to_line_separated">[docs]</a><span class="k">def</span> <span class="nf">list_to_line_separated</span><span class="p">(</span><span class="n">conf</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="deploy"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.deploy">[docs]</a><span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="n">confs</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deploying configurations for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">confs</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">remote_dir</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">confs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">write_to_remote_file</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                             <span class="n">owner</span><span class="o">=</span><span class="n">PRESTO_STANDALONE_USER_GROUP</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="secure_create_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.secure_create_file">[docs]</a><span class="k">def</span> <span class="nf">secure_create_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">user_group</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">600</span><span class="p">):</span>
+    <span class="n">user</span><span class="p">,</span> <span class="n">group</span> <span class="o">=</span> <span class="n">user_group</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">missing_owner_code</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="n">command</span> <span class="o">=</span> \
+        <span class="s2">&quot;( getent passwd {user} &gt;/dev/null || exit {missing_owner_code} ) &amp;&amp;&quot;</span> \
+        <span class="s2">&quot; echo &#39;&#39; &gt; {filepath} &amp;&amp; &quot;</span> \
+        <span class="s2">&quot;chown {user_group} {filepath} &amp;&amp; &quot;</span> \
+        <span class="s2">&quot;chmod {mode} {filepath} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">user_group</span><span class="o">=</span><span class="n">user_group</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">missing_owner_code</span><span class="o">=</span><span class="n">missing_owner_code</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">return_code</span> <span class="o">==</span> <span class="n">missing_owner_code</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;User </span><span class="si">%s</span><span class="s2"> does not exist. Make sure the Presto server RPM &quot;</span>
+                  <span class="s2">&quot;is installed and try again&quot;</span> <span class="o">%</span> <span class="n">user</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Failed to securely create file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filepath</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="secure_create_directory"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.secure_create_directory">[docs]</a><span class="k">def</span> <span class="nf">secure_create_directory</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">user_group</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">755</span><span class="p">):</span>
+    <span class="n">user</span><span class="p">,</span> <span class="n">group</span> <span class="o">=</span> <span class="n">user_group</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">missing_owner_code</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="n">command</span> <span class="o">=</span> \
+        <span class="s2">&quot;( getent passwd {user} &gt;/dev/null || exit {missing_owner_code} ) &amp;&amp; &quot;</span> \
+        <span class="s2">&quot;mkdir -p {filepath} &amp;&amp; &quot;</span> \
+        <span class="s2">&quot;chown {user_group} {filepath} &amp;&amp; &quot;</span> \
+        <span class="s2">&quot;chmod {mode} {filepath} &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">user_group</span><span class="o">=</span><span class="n">user_group</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">missing_owner_code</span><span class="o">=</span><span class="n">missing_owner_code</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">warn_only</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">return_code</span> <span class="o">==</span> <span class="n">missing_owner_code</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;User </span><span class="si">%s</span><span class="s2"> does not exist. Make sure the Presto server RPM &quot;</span>
+                  <span class="s2">&quot;is installed and try again&quot;</span> <span class="o">%</span> <span class="n">user</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
+            <span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Failed to securely create file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filepath</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="deploy_node_properties"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.deploy_node_properties">[docs]</a><span class="k">def</span> <span class="nf">deploy_node_properties</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
+    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deploying node.properties configuration&quot;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;node.properties&quot;</span>
+    <span class="n">node_file_path</span> <span class="o">=</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">node_file_path</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">secure_create_file</span><span class="p">(</span><span class="n">node_file_path</span><span class="p">,</span> <span class="n">PRESTO_STANDALONE_USER_GROUP</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;chown </span><span class="si">%(owner)s</span><span class="s1"> </span><span class="si">%(filepath)s</span><span class="s1"> &amp;&amp; chmod </span><span class="si">%(mode)s</span><span class="s1"> </span><span class="si">%(filepath)s</span><span class="s1">&#39;</span>
+             <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;owner&#39;</span><span class="p">:</span> <span class="n">PRESTO_STANDALONE_USER_GROUP</span><span class="p">,</span> <span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span> <span class="s1">&#39;filepath&#39;</span><span class="p">:</span> <span class="n">node_file_path</span><span class="p">})</span>
+    <span class="n">node_id_command</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;if ! ( grep -q -s &#39;node.id&#39; &quot;</span> <span class="o">+</span> <span class="n">node_file_path</span> <span class="o">+</span> <span class="s2">&quot; ); then &quot;</span>
+        <span class="s2">&quot;uuid=$(uuidgen); &quot;</span>
+        <span class="s2">&quot;echo node.id=$uuid &gt;&gt; &quot;</span> <span class="o">+</span> <span class="n">node_file_path</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
+        <span class="s2">&quot;fi; &quot;</span>
+        <span class="s2">&quot;sed -i &#39;/node.id/!d&#39; &quot;</span> <span class="o">+</span> <span class="n">node_file_path</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span>
+        <span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="n">node_id_command</span><span class="p">)</span>
+    <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">content</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="write_to_remote_file"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.write_to_remote_file">[docs]</a><span class="k">def</span> <span class="nf">write_to_remote_file</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">600</span><span class="p">):</span>
+    <span class="n">secure_create_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;echo &#39;{text}&#39; &gt; {filepath}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">text</span><span class="o">=</span><span class="n">escape_single_quotes</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="escape_single_quotes"><a class="viewcode-back" href="../../prestoadmin.html#prestoadmin.deploy.escape_single_quotes">[docs]</a><span class="k">def</span> <span class="nf">escape_single_quotes</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="c1"># replace a single quote with a (closing) single quote followed by</span>
+    <span class="c1"># an escaped quote followed by an (opening) single quote</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;&#39;\&#39;&#39;&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

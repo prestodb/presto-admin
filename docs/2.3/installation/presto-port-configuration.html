@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuring the Presto Port &mdash; presto-admin 2.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.3 documentation" href="../index.html" />
+    <link rel="up" title="User Guide" href="../user-guide.html" />
+    <link rel="next" title="SSH Configuration" href="../ssh-configuration.html" />
+    <link rel="prev" title="Advanced Installation Options" href="advanced-installation-options.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ssh-configuration.html" title="SSH Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="advanced-installation-options.html" title="Advanced Installation Options"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" accesskey="U">User Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="configuring-the-presto-port">
+<span id="presto-port-configuration-label"></span><h1>Configuring the Presto Port<a class="headerlink" href="#configuring-the-presto-port" title="Permalink to this headline">¶</a></h1>
+<p>By default, Presto uses 8080 for the HTTP port. If the port is already in use on any given node on your cluster, Presto will not start on that node(s).</p>
+<p>To configure the server to use a different port:</p>
+<p>1. Select a port that is free on all of the nodes. You can check if a port is already in use on a node by running the following on that node:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>netstat -an |grep 8081 |grep LISTEN
+</pre></div>
+</div>
+<p>It will return nothing if port 8081 is free.</p>
+<ol class="arabic simple" start="2">
+<li>Modify the following properties in <code class="docutils literal"><span class="pre">~/.prestoadmin/coordinator/config.properties</span></code> and <code class="docutils literal"><span class="pre">~/.prestoadmin/workers/config.properties</span></code>:</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span>http-server.http.port=&lt;port&gt;
+discovery.uri=http://&lt;coordinator_ip_or_host&gt;:&lt;port&gt;
+</pre></div>
+</div>
+<ol class="arabic" start="3">
+<li><p class="first">Run the following command to deploy the configuration change to the cluster:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin configuration deploy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Restart the Presto servers so that the changes get picked up:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin server restart
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="advanced-installation-options.html"
+                        title="previous chapter">Advanced Installation Options</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../ssh-configuration.html"
+                        title="next chapter">SSH Configuration</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/presto-port-configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ssh-configuration.html" title="SSH Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="advanced-installation-options.html" title="Advanced Installation Options"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuring Presto &mdash; presto-admin 2.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="presto-admin 2.3 documentation" href="../index.html" />
+    <link rel="up" title="Quick Start Guide" href="../quick-start-guide.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting-installation.html" />
+    <link rel="prev" title="Adding a Catalog" href="presto-catalog-installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="troubleshooting-installation.html" title="Troubleshooting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="presto-catalog-installation.html" title="Adding a Catalog"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" accesskey="U">Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="configuring-presto">
+<span id="presto-configuration-label"></span><h1>Configuring Presto<a class="headerlink" href="#configuring-presto" title="Permalink to this headline">¶</a></h1>
+<p>Presto configuration parameters can be modified to
+tweak performance or add/remove features. While Presto is designed to work well out-of-the-box,
+you still may need to make some changes.</p>
+<div class="section" id="memory-configuration">
+<h2>Memory configuration<a class="headerlink" href="#memory-configuration" title="Permalink to this headline">¶</a></h2>
+<p>It is often necessary to change the default memory configuration based on your cluster&#8217;s
+capacity. The default max memory for each Presto server is 16 GB, but if you have a lot of
+memory (say, 120GB/node), you may want to allocate more memory to Presto for better performance.</p>
+<p>In order to update the max memory value to 60 GB per node:</p>
+<ol class="arabic">
+<li><p class="first">Change the line in <code class="docutils literal"><span class="pre">~/.prestoadmin/coordinator/jvm.config</span></code> and
+<code class="docutils literal"><span class="pre">~/.prestoadmin/workers/jvm.config</span></code> that says <code class="docutils literal"><span class="pre">-Xmx16G</span></code> to <code class="docutils literal"><span class="pre">-Xmx60G</span></code>.</p>
+</li>
+<li><p class="first">Change the following lines in <code class="docutils literal"><span class="pre">~/.prestoadmin/coordinator/config.properties</span></code>
+and <code class="docutils literal"><span class="pre">~/.prestoadmin/workers/config.properties</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>query.max-memory-per-node=8GB
+query.max-memory=50GB
+</pre></div>
+</div>
+<p>to</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>query.max-memory-per-node=30GB
+query.max-memory=&lt;30GB * number of nodes&gt;
+</pre></div>
+</div>
+<p>We recommend setting <code class="docutils literal"><span class="pre">query.max-memory-per-node</span></code> to half of the JVM config max memory, though if your workload is highly concurrent, you may want
+to use a lower value for <code class="docutils literal"><span class="pre">query.max-memory-per-node</span></code>. If you have large data skew, <code class="docutils literal"><span class="pre">query.max-memory-per-node</span></code> should.
+By default in Presto 148t and higher, <code class="docutils literal"><span class="pre">query.max-memory-per-node</span></code> is 10% of the <code class="docutils literal"><span class="pre">Xmx</span></code> value specified in <code class="docutils literal"><span class="pre">jvm.config</span></code>.</p>
+</li>
+<li><p class="first">Run the following command to deploy the configuration change to the cluster:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin configuration deploy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Restart the Presto servers so that the changes get picked up:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin server restart
+</pre></div>
+</div>
+<p>If you are running Presto in a test environment that has less than 16 GB of memory available,
+you will need to follow similar procedures to set the memory configurations lower.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="log-file-location-configurations">
+<h2>Log file location configurations<a class="headerlink" href="#log-file-location-configurations" title="Permalink to this headline">¶</a></h2>
+<p>For most production environments, it will be necessary to change the log locations. In order to update these:</p>
+<ol class="arabic">
+<li><p class="first">Stop the Presto server.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin server stop
+</pre></div>
+</div>
+</li>
+<li><p class="first">Presto stores logs and other data in <code class="docutils literal"><span class="pre">node.data-dir</span></code>, <code class="docutils literal"><span class="pre">node.launcher-log-file</span></code>,
+and <code class="docutils literal"><span class="pre">node.server-log-file</span></code>. It is very important that these locations have enough space for the logs on the filesystem on
+each node where Presto is running. The default location for <code class="docutils literal"><span class="pre">node.data-dir</span></code> is <code class="docutils literal"><span class="pre">/var/lib/presto/data</span></code>, the
+default location for <code class="docutils literal"><span class="pre">node.launcher-log-file</span></code> is <code class="docutils literal"><span class="pre">/var/log/presto/launcher.log</span></code>, and the default
+location for <code class="docutils literal"><span class="pre">node.server-log-file</span></code> is <code class="docutils literal"><span class="pre">/var/log/presto/server.log</span></code>.
+Assuming the chosen locations are <code class="docutils literal"><span class="pre">/data1/presto</span></code> and <code class="docutils literal"><span class="pre">/data2/presto</span></code> for the data directory
+and server logs respectively, the properties in <code class="docutils literal"><span class="pre">~/.prestoadmin/coordinator/node.properties</span></code> and
+<code class="docutils literal"><span class="pre">~/.prestoadmin/workers/node.properties</span></code> will be as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>node.data-dir=/data1/presto/data
+node.launcher-log-file=/data2/presto/launcher.log
+node.server-log-file=/data2/presto/server.log
+</pre></div>
+</div>
+</li>
+<li><p class="first">The log directory(ies) (in the above example, <code class="docutils literal"><span class="pre">/data1/presto</span></code> and <code class="docutils literal"><span class="pre">/data2/presto</span></code>; the <code class="docutils literal"><span class="pre">data</span></code> directory
+for <code class="docutils literal"><span class="pre">node.data-dir</span></code> is created by Presto) need to
+exist on all nodes and be owned by the <code class="docutils literal"><span class="pre">presto</span></code> user. The command <code class="docutils literal"><span class="pre">presto-admin</span> <span class="pre">run_script</span></code>
+can be used to perform these actions on all of the nodes. First, create a script in the same
+directory as <code class="docutils literal"><span class="pre">presto-admin</span></code>, called <code class="docutils literal"><span class="pre">script.sh</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>#!/bin/bash
+mkdir -p /data1/presto
+mkdir -p /data2/presto
+chown presto:presto /data1/presto
+chown presto:presto /data2/presto
+</pre></div>
+</div>
+<p>Then, run the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin run_script script.sh
+</pre></div>
+</div>
+</li>
+<li><p class="first">Run the following command to deploy the log configuration change to the cluster:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin configuration deploy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Restart the Presto servers so that the changes get picked up:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./presto-admin server restart
+</pre></div>
+</div>
+</li>
+</ol>
+<p>For detailed documentation on <code class="docutils literal"><span class="pre">configuration</span> <span class="pre">deploy</span></code>, see <a class="reference internal" href="../presto-admin-commands.html#configuration-deploy-label"><span>configuration deploy</span></a>.
+For more configuration parameters, see the Presto documentation.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configuring Presto</a><ul>
+<li><a class="reference internal" href="#memory-configuration">Memory configuration</a></li>
+<li><a class="reference internal" href="#log-file-location-configurations">Log file location configurations</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="presto-catalog-installation.html"
+                        title="previous chapter">Adding a Catalog</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="troubleshooting-installation.html"
+                        title="next chapter">Troubleshooting</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/presto-configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="troubleshooting-installation.html" title="Troubleshooting"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="presto-catalog-installation.html" title="Adding a Catalog"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">presto-admin 2.3 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../user-guide.html" >User Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../quick-start-guide.html" >Quick Start Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    </div>
+  </body>
+</html>
