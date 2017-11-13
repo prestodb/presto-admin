@@ -81,7 +81,7 @@ lint:
 	flake8 prestoadmin packaging tests
 
 presto-server-rpm.rpm:
-	wget 'https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&g=com.facebook.presto&a=presto-server-rpm&e=rpm&v=RELEASE' -O $@
+	wget -q 'https://repository.sonatype.org/service/local/artifact/maven/content?r=central-proxy&g=com.facebook.presto&a=presto-server-rpm&e=rpm&v=RELEASE' -O $@
 
 smoke: clean-test-all test-images _smoke
 
