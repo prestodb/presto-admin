@@ -25,7 +25,7 @@ import subprocess
 import sys
 import uuid
 
-from docker import Client
+from docker import DockerClient
 from docker.errors import APIError
 from docker.utils.utils import kwargs_from_env
 from prestoadmin import main_dir
@@ -78,7 +78,7 @@ class DockerCluster(BaseCluster):
         if 'tls' in kwargs:
             kwargs['tls'].assert_hostname = False
         kwargs['timeout'] = 300
-        self.client = Client(**kwargs)
+        self.client = DockerClient(**kwargs)
         self._user = 'root'
 
         DockerCluster.__check_if_docker_exists()
@@ -118,21 +118,16 @@ class DockerCluster(BaseCluster):
             sys.exit('Docker is not installed. Try installing it with '
                      'presto-admin/bin/install-docker.sh.')
 
-    def start_containers(self, master_image, slave_image=None,
-                         cmd=None, **kwargs):
+    def start_containers(self, master_image, slave_image=None, cmd=None, **kwargs):
         self._create_host_mount_dirs()
 
-        self._create_and_start_containers(master_image, slave_image,
-                                          cmd, **kwargs)
+        self._create_and_start_containers(master_image, slave_image, cmd, **kwargs)
         self._ensure_docker_containers_started(master_image)
 
     def tear_down(self):
         for container_name in self.all_hosts():
             self._tear_down_container(container_name)
         self._remove_host_mount_dirs()
-        if self.client:
-            self.client.close()
-            self.client = None
 
     def _tear_down_container(self, container_name):
         try:
@@ -144,18 +139,21 @@ class DockerCluster(BaseCluster):
 
         try:
             self.stop_host(container_name)
-            self.client.remove_container(container_name, v=True, force=True)
+            container = self.client.containers.get(container_name)
+            container.remove(v=True, force=True)
         except APIError as e:
             # container does not exist
             if e.response.status_code != 404:
                 raise
 
     def stop_host(self, container_name):
-        self.client.stop(container_name)
-        self.client.wait(container_name)
+        container = self.client.containers.get(container_name)
+        container.stop()
+        container.wait()
 
     def start_host(self, container_name):
-        self.client.start(container_name)
+        container = self.client.containers.get(container_name)
+        container.start()
 
     def get_down_hostname(self, host_name):
         return host_name
@@ -180,53 +178,35 @@ class DockerCluster(BaseCluster):
                 if e.errno != errno.EEXIST:
                     raise
 
-    @staticmethod
-    def _execute_and_wait(func, *args, **kwargs):
-        ret = func(*args, **kwargs)
-        # go through all lines in returned stream to ensure func finishes
-        output = ''
-        for line in ret:
-            output += line
-        return output
-
-    def _create_and_start_containers(self, master_image, slave_image=None,
-                                     cmd=None, **kwargs):
+    def _create_and_start_containers(self, master_image, slave_image=None, cmd=None, **kwargs):
         if slave_image:
             for container_name in self.slaves:
-                container_mount_dir = \
-                    self.get_local_mount_dir(container_name)
-                self._create_container(
-                    slave_image, container_name,
-                    container_name.split('-')[0], cmd
-                )
-                self.client.start(container_name,
-                                  binds={container_mount_dir:
-                                         {'bind': self.mount_dir,
-                                          'ro': False}},
-                                  **kwargs)
+                self._create_container(slave_image, container_name, container_name.split('-')[0], cmd, **kwargs)
+                container = self.client.containers.get(container_name)
+                container.start()
 
-        master_mount_dir = self.get_local_mount_dir(self.master)
         self._create_container(
-            master_image, self.master, hostname=self.internal_master,
-            cmd=cmd
-        )
-        self.client.start(self.master,
-                          binds={master_mount_dir:
-                                 {'bind': self.mount_dir,
-                                  'ro': False}},
-                          links=zip(self.slaves, self.slaves), **kwargs)
+            master_image,
+            self.master,
+            hostname=self.internal_master,
+            cmd=cmd,
+            links=zip(self.slaves, self.slaves),
+            **kwargs)
+        container = self.client.containers.get(self.master)
+        container.start()
         self._add_hostnames_to_slaves()
 
-    def _create_container(self, image, container_name, hostname=None,
-                          cmd=None):
-        self._execute_and_wait(self.client.create_container,
+    def _create_container(self, image, container_name, hostname, cmd, **kwargs):
+        master_mount_dir = self.get_local_mount_dir(container_name)
+        self.client.containers.create(
                                image,
                                detach=True,
                                name=container_name,
                                hostname=hostname,
-                               volumes=self.local_mount_dir,
+                               volumes={master_mount_dir: {'bind': self.mount_dir, 'mode': 'rw'}},
                                command=cmd,
-                               host_config={'mem_limit': '2g'})
+                               mem_limit='2g',
+                               **kwargs)
 
     def _add_hostnames_to_slaves(self):
         ips = self.get_ip_address_dict()
@@ -252,9 +232,7 @@ class DockerCluster(BaseCluster):
         for host in host_started.keys():
             if host_started[host]:
                 continue
-            is_started = True
-            is_started &= \
-                self.client.inspect_container(host)['State']['Running']
+            is_started = self.client.containers.get(host).status == 'running'
             if is_started and image_no_tag not in NO_WAIT_SSH_IMAGES:
                 is_started &= self._are_centos_container_services_up(host)
             host_started[host] = is_started
@@ -307,10 +285,13 @@ class DockerCluster(BaseCluster):
 
     def exec_cmd_on_host(self, host, cmd, user=None, raise_error=True,
                          tty=False, invoke_sudo=False):
-        ex = self.client.exec_create(self.__get_unique_host(host), ['sh', '-c', cmd],
-                                     tty=tty, user=user)
-        output = self.client.exec_start(ex['Id'], tty=tty)
-        exit_code = self.client.exec_inspect(ex['Id'])['ExitCode']
+        ex = self.client.api.exec_create(
+            self.__get_unique_host(host),
+            ['sh', '-c', cmd],
+            tty=tty,
+            user=user)
+        output = self.client.api.exec_start(ex['Id'], tty=tty)
+        exit_code = self.client.api.exec_inspect(ex['Id'])['ExitCode']
         if raise_error and exit_code:
             raise OSError(exit_code, output)
         return output
@@ -369,25 +350,23 @@ class DockerCluster(BaseCluster):
     def _check_for_images(master_image_name, slave_image_name, tag='latest'):
         master_repotag = '%s:%s' % (master_image_name, tag)
         slave_repotag = '%s:%s' % (slave_image_name, tag)
-        with Client(timeout=180) as client:
-            images = client.images()
+        client = DockerClient(timeout=180)
+        images = client.images.list()
         has_master_image = False
         has_slave_image = False
         for image in images:
-            if image['RepoTags'] is not None and master_repotag in image['RepoTags']:
+            if master_repotag in image.tags:
                 has_master_image = True
-            if image['RepoTags'] is not None and slave_repotag in image['RepoTags']:
+            if slave_repotag in image.tags:
                 has_slave_image = True
         return has_master_image and has_slave_image
 
     def commit_images(self, bare_image_provider, cluster_type):
-        self.client.commit(self.master,
-                           self._get_master_image_name(bare_image_provider,
-                                                       cluster_type))
+        container = self.client.containers.get(self.master)
+        container.commit(self._get_master_image_name(bare_image_provider, cluster_type))
         if self.slaves:
-            self.client.commit(self.slaves[0],
-                               self._get_slave_image_name(bare_image_provider,
-                                                          cluster_type))
+            container = self.client.containers.get(self.slaves[0])
+            container.commit(self._get_slave_image_name(bare_image_provider, cluster_type))
 
     def run_script_on_host(self, script_contents, host, tty=True):
         temp_script = '/tmp/tmp.sh'
@@ -417,7 +396,7 @@ class DockerCluster(BaseCluster):
         ip_addresses = {}
         for host, internal_host in zip(self.all_hosts(),
                                        self.all_internal_hosts()):
-            inspect = self.client.inspect_container(host)
+            inspect = self.client.api.inspect_container(host)
             ip_addresses[host] = inspect['NetworkSettings']['IPAddress']
             ip_addresses[internal_host] = \
                 inspect['NetworkSettings']['IPAddress']
