@@ -118,15 +118,6 @@ class DockerCluster(BaseCluster):
             sys.exit('Docker is not installed. Try installing it with '
                      'presto-admin/bin/install-docker.sh.')
 
-    def _is_image_present_locally(self, image_name, tag):
-        image_name_and_tag = image_name + ':' + tag
-        images = self.client.images(image_name)
-        if images:
-            for image in images:
-                if image_name_and_tag in image['RepoTags']:
-                    return True
-        return False
-
     def start_containers(self, master_image, slave_image=None,
                          cmd=None, **kwargs):
         self._create_host_mount_dirs()
