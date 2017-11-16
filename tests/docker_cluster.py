@@ -198,7 +198,7 @@ class DockerCluster(BaseCluster):
 
     def _create_container(self, image, container_name, hostname, cmd, **kwargs):
         master_mount_dir = self.get_local_mount_dir(container_name)
-        self._execute_and_wait(self.client.containers.create,
+        self.client.containers.create(
                                image,
                                detach=True,
                                name=container_name,
