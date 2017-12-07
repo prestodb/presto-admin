@@ -206,7 +206,6 @@ class DockerCluster(BaseCluster):
             **kwargs)
         container = self.client.containers.get(self.master)
         container.start()
-        self._add_hostnames_to_slaves()
 
     def _create_container(self, image, container_name, hostname, cmd, **kwargs):
         master_mount_dir = self.get_local_mount_dir(container_name)
@@ -224,19 +223,6 @@ class DockerCluster(BaseCluster):
         self._get_network().connect(
             container_name,
             aliases=[hostname.split('-')[0]])
-
-    def _add_hostnames_to_slaves(self):
-        ips = self.get_ip_address_dict()
-        additions_to_etc_hosts = ''
-        for host in self.all_internal_hosts():
-            additions_to_etc_hosts += '%s\t%s\n' % (ips[host], host)
-
-        for host in self.slaves:
-            self.exec_cmd_on_host(
-                host,
-                'bin/bash -c \'echo "%s" >> /etc/hosts\''
-                % additions_to_etc_hosts
-            )
 
     @retry(stop_max_delay=_DOCKER_START_TIMEOUT, wait_fixed=_DOCKER_START_WAIT)
     def _ensure_docker_containers_started(self, image):
