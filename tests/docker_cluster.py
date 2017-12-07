@@ -28,8 +28,9 @@ import uuid
 from docker import DockerClient
 from docker.errors import APIError
 from docker.utils.utils import kwargs_from_env
-from prestoadmin import main_dir
 from retrying import retry
+
+from prestoadmin import main_dir
 from tests.base_cluster import BaseCluster
 from tests.product.constants import \
     DEFAULT_DOCKER_MOUNT_POINT, DEFAULT_LOCAL_MOUNT_POINT
@@ -80,6 +81,7 @@ class DockerCluster(BaseCluster):
         kwargs['timeout'] = 300
         self.client = DockerClient(**kwargs)
         self._user = 'root'
+        self._network_name = 'presto-admin-test-' + str(uuid.uuid4())
 
         DockerCluster.__check_if_docker_exists()
 
@@ -120,6 +122,7 @@ class DockerCluster(BaseCluster):
 
     def start_containers(self, master_image, slave_image=None, cmd=None, **kwargs):
         self._create_host_mount_dirs()
+        self._create_network()
 
         self._create_and_start_containers(master_image, slave_image, cmd, **kwargs)
         self._ensure_docker_containers_started(master_image)
@@ -128,6 +131,7 @@ class DockerCluster(BaseCluster):
         for container_name in self.all_hosts():
             self._tear_down_container(container_name)
         self._remove_host_mount_dirs()
+        self._remove_network()
 
     def _tear_down_container(self, container_name):
         try:
@@ -178,6 +182,15 @@ class DockerCluster(BaseCluster):
                 if e.errno != errno.EEXIST:
                     raise
 
+    def _create_network(self):
+        self.client.networks.create(self._network_name)
+
+    def _get_network(self):
+        return self.client.networks.get(self._network_name)
+
+    def _remove_network(self):
+        self._get_network().remove()
+
     def _create_and_start_containers(self, master_image, slave_image=None, cmd=None, **kwargs):
         if slave_image:
             for container_name in self.slaves:
@@ -190,8 +203,8 @@ class DockerCluster(BaseCluster):
             self.master,
             hostname=self.internal_master,
             cmd=cmd,
-            links=zip(self.slaves, self.slaves),
             **kwargs)
+
         container = self.client.containers.get(self.master)
         container.start()
         self._add_hostnames_to_slaves()
@@ -206,7 +219,12 @@ class DockerCluster(BaseCluster):
                                volumes={master_mount_dir: {'bind': self.mount_dir, 'mode': 'rw'}},
                                command=cmd,
                                mem_limit='2g',
+                               network=None,
                                **kwargs)
+
+        self._get_network().connect(
+            container_name,
+            aliases=[hostname.split('-')[0]])
 
     def _add_hostnames_to_slaves(self):
         ips = self.get_ip_address_dict()
