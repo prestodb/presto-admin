@@ -85,10 +85,7 @@ node-scheduler.include-coordinator=false
 query.max-memory-per-node=512MB
 query.max-memory=50GB\n"""
 
-    # The two strings below (down_node_connection_string and status_down_node_string) aggregate
-    # all possible error messages one might encounter when trying to perform an action when a
-    # node is not accessible. The variety in error messages comes from differences in the OS.
-    down_node_connection_string = r'(\nWarning: (\[%(host)s\] )?Low level ' \
+    network_unreachable = r'(\nWarning: (\[%(host)s\] )?Low level ' \
                                   r'socket error connecting to host ' \
                                   r'%(host)s on port 22: No route to host ' \
                                   r'\(tried 1 time\)\n\nUnderlying ' \
@@ -102,6 +99,13 @@ query.max-memory=50GB\n"""
                                   r'%(host)s on port 22: Network is unreachable ' \
                                   r'\(tried 1 time\)\n\nUnderlying ' \
                                   r'exception:\n    Network is unreachable\n'
+
+    name_lookup_failed = r'\nWarning: \[%(host)s\] Name lookup failed for %(host)s'
+
+    # The two strings below (down_node_connection_string and status_down_node_string) aggregate
+    # all possible error messages one might encounter when trying to perform an action when a
+    # node is not accessible. The variety in error messages comes from differences in the OS.
+    down_node_connection_string = network_unreachable + r'|' + name_lookup_failed
 
     status_down_node_string = r'(\tLow level socket error connecting to ' \
                               r'host %(host)s on port 22: No route to host ' \
