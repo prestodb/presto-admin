@@ -88,28 +88,9 @@ query.max-memory=50GB\n"""
     # The two strings below (down_node_connection_string and status_down_node_string) aggregate
     # all possible error messages one might encounter when trying to perform an action when a
     # node is not accessible. The variety in error messages comes from differences in the OS.
-    down_node_connection_string = r'(\nWarning: (\[%(host)s\] )?Low level ' \
-                                  r'socket error connecting to host ' \
-                                  r'%(host)s on port 22: No route to host ' \
-                                  r'\(tried 1 time\)\n\nUnderlying ' \
-                                  r'exception:\n    No route to host\n' \
-                                  r'|\nWarning: (\[%(host)s] )?Timed out ' \
-                                  r'trying to connect to %(host)s \(tried 1 ' \
-                                  r'time\)\n\nUnderlying exception:' \
-                                  r'\n    timed out\n)' \
-                                  r'|\nWarning: (\[%(host)s\] )?Low level ' \
-                                  r'socket error connecting to host ' \
-                                  r'%(host)s on port 22: Network is unreachable ' \
-                                  r'\(tried 1 time\)\n\nUnderlying ' \
-                                  r'exception:\n    Network is unreachable\n'
+    down_node_connection_string = r'\nWarning: (\[%(host)s\] )?Name lookup failed for %(host)s'
 
-    status_down_node_string = r'(\tLow level socket error connecting to ' \
-                              r'host %(host)s on port 22: No route to host ' \
-                              r'\(tried 1 time\)|\tTimed out trying to ' \
-                              r'connect to %(host)s \(tried 1 time\))' \
-                              r'|\tLow level socket error connecting to ' \
-                              r'host %(host)s on port 22: Network is unreachable ' \
-                              r'\(tried 1 time\)'
+    status_down_node_string = r'\tName lookup failed for %(host)s'
 
     len_down_node_error = 6
 

@@ -18,6 +18,11 @@ env:
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_collect.py tests/product/test_server_uninstall.py"
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_catalog.py"
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN_AND_PRESTO="tests/product/test_control.py"
+before_install:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y install docker-ce
 install:
   - pip install --upgrade pip==9.0.1
   - pip install -r requirements.txt
