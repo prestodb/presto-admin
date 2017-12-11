@@ -37,6 +37,8 @@ except KeyError:
     print "base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
     sys.exit(1)
 
+BASE_IMAGE_NAME = 'teradatalabs/centos6-ssh-oj8'
+
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
                                    'tests/product/resources/')
 
