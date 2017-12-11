@@ -37,6 +37,8 @@ if BASE_IMAGE_TAG is None:
     except KeyError:
         raise Exception("base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,))
 
+print "using test BASE_IMAGE %s:%s" % (BASE_IMAGE_NAME, BASE_IMAGE_TAG)
+
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
                                    'tests/product/resources/')
 
