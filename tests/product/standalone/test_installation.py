@@ -36,7 +36,7 @@ class TestInstallation(BaseProductTestCase):
     def setUp(self):
         super(TestInstallation, self).setUp()
         self.pa_installer = PrestoadminInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_BARE_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_BARE_CLUSTER)
         dist_dir = self.pa_installer._build_dist_if_necessary(self.cluster)
         self.pa_installer._copy_dist_to_host(self.cluster, dist_dir, self.cluster.master)
 

@@ -32,25 +32,25 @@ class TestStatus(BaseProductTestCase):
         self.installer = StandalonePrestoInstaller(self)
 
     def test_status_uninstalled(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
         status_output = self._server_status_with_retries()
         self.check_status(status_output, self.not_installed_status())
 
     def test_status_not_started(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         status_output = self._server_status_with_retries()
         self.check_status(status_output, self.not_started_status())
 
     @attr('smoketest')
     def test_status_happy_path(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         status_output = self._server_status_with_retries(check_catalogs=True)
         self.check_status(status_output, self.base_status())
 
     def test_status_only_coordinator(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
 
         self.run_prestoadmin('server start -H master')
         # don't run with retries because it won't be able to query the
@@ -62,7 +62,7 @@ class TestStatus(BaseProductTestCase):
         )
 
     def test_status_only_worker(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
 
         self.run_prestoadmin('server start -H slave1')
         status_output = self._server_status_with_retries()
@@ -78,7 +78,7 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, self.not_started_status())
 
     def test_connection_to_coordinator_lost(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -95,7 +95,7 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, statuses)
 
     def test_connection_to_worker_lost(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         topology = {"coordinator": "slave1", "workers":
                     ["master", "slave2", "slave3"]}
         self.upload_topology(topology=topology)
@@ -112,7 +112,7 @@ class TestStatus(BaseProductTestCase):
         self.check_status(status_output, statuses)
 
     def test_status_non_root_user(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.upload_topology(
             {"coordinator": "master",
              "workers": ["slave1", "slave2", "slave3"],

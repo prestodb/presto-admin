@@ -18,18 +18,16 @@ Module for installing prestoadmin on a cluster.
 
 import errno
 import fnmatch
-import shutil
 import os
+import shutil
 
 import prestoadmin
-
 from tests.base_installer import BaseInstaller
 from tests.configurable_cluster import ConfigurableCluster
-from tests.product.config_dir_utils import get_install_directory
-from tests.product.constants import BASE_IMAGES_TAG, LOCAL_RESOURCES_DIR
-from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-
 from tests.docker_cluster import DockerCluster
+from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
+from tests.product.config_dir_utils import get_install_directory
+from tests.product.constants import LOCAL_RESOURCES_DIR
 
 
 class PrestoadminInstaller(BaseInstaller):
@@ -86,7 +84,7 @@ class PrestoadminInstaller(BaseInstaller):
 
         container_name = 'installer'
         cluster_type = 'installer_builder'
-        bare_image_provider = NoHadoopBareImageProvider(BASE_IMAGES_TAG)
+        bare_image_provider = NoHadoopBareImageProvider()
 
         installer_container, created_bare = DockerCluster.start_cluster(
             bare_image_provider, cluster_type, 'installer', [])

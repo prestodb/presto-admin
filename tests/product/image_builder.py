@@ -1,20 +1,17 @@
+import argparse
+
 from tests.docker_cluster import DockerCluster
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-
 from tests.product.base_product_case import BaseProductTestCase
-from tests.product.constants import BASE_IMAGES_TAG
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER, STANDALONE_PA_CLUSTER, \
     STANDALONE_PRESTO_CLUSTER, cluster_types
 
-import argparse
-
 
 class ImageBuilder:
-    def __init__(self, testcase, images_tag):
+    def __init__(self, testcase):
         self.testcase = testcase
         self.testcase.default_keywords = {}
         self.testcase.cluster = None
-        self.images_tag = images_tag
 
     def _setup_image(self, bare_image_provider, cluster_type):
         installers = cluster_types[cluster_type]
@@ -37,7 +34,7 @@ class ImageBuilder:
         self.testcase.cluster.tear_down()
 
     def _setup_image_with_no_hadoop_provider(self, cluster_type):
-        self._setup_image(NoHadoopBareImageProvider(self.images_tag),
+        self._setup_image(NoHadoopBareImageProvider(),
                           cluster_type)
 
     def setup_standalone_presto_images(self):
@@ -72,7 +69,7 @@ if __name__ == "__main__":
     # unittest. A unittest instance can be successfully created if the name
     # of an existing method of the class is passed into the constructor.
     dummy_testcase = BaseProductTestCase('__init__')
-    image_builder = ImageBuilder(dummy_testcase, BASE_IMAGES_TAG)
+    image_builder = ImageBuilder(dummy_testcase)
 
     if "all" in args.image_type:
         image_builder.setup_standalone_presto_images()
