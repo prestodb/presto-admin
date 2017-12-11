@@ -149,7 +149,7 @@ query.max-memory=50GB\n"""
 
     def setUp(self):
         super(TestServerInstall, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
 
     def assert_common_configs(self, host):
         installer = StandalonePrestoInstaller(self)

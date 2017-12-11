@@ -31,7 +31,7 @@ from tests.product.config_dir_utils import get_catalog_directory, get_presto_adm
 class TestAuthentication(BaseProductTestCase):
     def setUp(self):
         super(TestAuthentication, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
 
     success_output = (
         'Deploying tpch.properties catalog configurations on: slave1 \n'

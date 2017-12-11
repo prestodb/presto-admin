@@ -15,10 +15,11 @@
 """
 Product tests for generating an online and offline installer for presto-admin
 """
-import subprocess
-import os
 import fnmatch
+import os
 import re
+import subprocess
+
 from nose.plugins.attrib import attr
 
 from prestoadmin import main_dir
@@ -26,7 +27,6 @@ from tests.docker_cluster import DockerCluster
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
 from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
-from tests.product.constants import BASE_IMAGES_TAG
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
@@ -34,7 +34,7 @@ class TestInstaller(BaseProductTestCase):
 
     def setUp(self):
         super(TestInstaller, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_BARE_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_BARE_CLUSTER)
         self.centos_container = \
             self.__create_and_start_single_centos_container()
         self.pa_installer = PrestoadminInstaller(self)
@@ -71,7 +71,7 @@ class TestInstaller(BaseProductTestCase):
 
     def __create_and_start_single_centos_container(self):
         cluster_type = 'installer_tester'
-        bare_image_provider = NoHadoopBareImageProvider(BASE_IMAGES_TAG)
+        bare_image_provider = NoHadoopBareImageProvider()
         centos_container, bare_cluster = DockerCluster.start_cluster(
             bare_image_provider, cluster_type, 'master', [],
             cap_add=['NET_ADMIN'])

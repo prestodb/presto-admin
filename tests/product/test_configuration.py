@@ -32,7 +32,7 @@ from tests.product.constants import LOCAL_RESOURCES_DIR
 class TestConfiguration(BaseProductTestCase):
     def setUp(self):
         super(TestConfiguration, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.write_test_configs(self.cluster)
 
     def deploy_and_assert_default_config(self):

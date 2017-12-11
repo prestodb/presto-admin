@@ -17,10 +17,11 @@ Provides bare images for standalone clusters.
 """
 
 from tests.bare_image_provider import TagBareImageProvider
+from tests.product.constants import BASE_IMAGES_TAG
 
 
 class NoHadoopBareImageProvider(TagBareImageProvider):
-    def __init__(self, images_tag):
+    def __init__(self):
         super(NoHadoopBareImageProvider, self).__init__(
             'teradatalabs/centos6-ssh-oj8', 'teradatalabs/centos6-ssh-oj8',
-            images_tag, 'nohadoop')
+            BASE_IMAGES_TAG, 'nohadoop')

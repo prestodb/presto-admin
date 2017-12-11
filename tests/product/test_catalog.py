@@ -33,7 +33,7 @@ class TestCatalog(BaseProductTestCase):
         super(TestCatalog, self).setUp()
 
     def setup_cluster_assert_catalogs(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('server start')
         for host in self.cluster.all_hosts():
             self.assert_has_default_catalog(host)
@@ -119,7 +119,7 @@ class TestCatalog(BaseProductTestCase):
             self.assert_has_default_catalog(slave)
 
     def test_catalog_add_by_name(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('catalog remove tpch')
 
         # test add catalog by name when it exists
@@ -135,7 +135,7 @@ class TestCatalog(BaseProductTestCase):
         self._assert_catalogs_loaded([['system'], ['tpch']])
 
     def test_catalog_add_empty_dir(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         self.run_prestoadmin('catalog remove tpch')
         output = self.run_prestoadmin('catalog add')
         expected = [r'',
@@ -169,7 +169,7 @@ Aborting.
 
     def test_catalog_add_lost_host(self):
         installer = StandalonePrestoInstaller(self)
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PA_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PA_CLUSTER)
         self.upload_topology()
         installer.install()
         self.run_prestoadmin('catalog remove tpch')
@@ -203,7 +203,7 @@ Aborting.
         self._assert_catalogs_loaded([['system'], ['tpch']])
 
     def test_catalog_remove(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
         for host in self.cluster.all_hosts():
             self.assert_has_default_catalog(host)
 
@@ -267,7 +267,7 @@ for the change to take effect
             'catalog remove tpch')
 
     def test_catalog_add_no_presto_user(self):
-        self.setup_cluster(NoHadoopBareImageProvider, STANDALONE_PRESTO_CLUSTER)
+        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_PRESTO_CLUSTER)
 
         for host in self.cluster.all_hosts():
             self.cluster.exec_cmd_on_host(

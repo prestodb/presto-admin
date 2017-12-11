@@ -35,7 +35,6 @@ from tests.docker_cluster import DockerCluster
 from tests.product.cluster_types import cluster_types
 from tests.product.config_dir_utils import get_coordinator_directory, get_workers_directory, get_config_file_path, \
     get_log_directory, get_install_directory, get_presto_admin_path
-from tests.product.constants import BASE_IMAGES_TAG
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
 PRESTO_VERSION = r'.+'
@@ -127,7 +126,6 @@ query.max-memory=50GB\n"""
             self.cluster.ensure_correct_execution_environment()
             BaseProductTestCase.run_installers(self.cluster, installers, self)
         else:
-            bare_image_provider = bare_image_provider(BASE_IMAGES_TAG)
             self.cluster, bare_cluster = DockerCluster.start_cluster(
                 bare_image_provider, cluster_type)
             self.cluster.ensure_correct_execution_environment()
