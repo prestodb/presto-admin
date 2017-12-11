@@ -62,10 +62,13 @@ class TagBareImageProvider(BareImageProvider):
     def __init__(
             self, base_master_name, base_slave_name, base_tag, tag_decoration):
         super(TagBareImageProvider, self).__init__(tag_decoration)
-        self.base_master_name = base_master_name + ":" + base_tag
-        self.base_slave_name = base_slave_name + ":" + base_tag
+        self.base_master_name = base_master_name
+        self.base_slave_name = base_slave_name
+        self.base_tag = base_tag
         self.client = DockerClient()
 
     def create_bare_images(self, cluster, master_name, slave_name):
-        self.client.api.tag(self.base_master_name, master_name)
-        self.client.api.tag(self.base_slave_name, slave_name)
+        self.client.images.pull(self.base_master_name, self.base_tag)
+        self.client.images.pull(self.base_slave_name, self.base_tag)
+        self.client.api.tag(self.base_master_name + ":" + self.base_tag, master_name)
+        self.client.api.tag(self.base_slave_name + ":" + self.base_tag, slave_name)
