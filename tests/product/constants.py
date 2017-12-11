@@ -15,29 +15,27 @@
 """
 Module defining constants global to the product tests
 """
-
 import json
 import os
-import sys
 
 import prestoadmin
 from prestoadmin import main_dir
 
 BASE_IMAGES_TAG_CONFIG = 'base-images-tag.json'
 
-#
-# See the Makefile for an in-depth explanation of how we're using the base
-# Docker images.
-#
-try:
-    with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as tag_config:
-        tag_json = json.load(tag_config)
-    BASE_IMAGE_TAG = tag_json['base_images_tag']
-except KeyError:
-    print "base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
-    sys.exit(1)
+BASE_IMAGE_NAME = os.environ.get('BASE_IMAGE_NAME')
+BASE_IMAGE_TAG = os.environ.get('BASE_IMAGE_TAG')
 
-BASE_IMAGE_NAME = 'teradatalabs/centos6-ssh-oj8'
+if BASE_IMAGE_NAME is None:
+    BASE_IMAGE_NAME = 'teradatalabs/centos6-ssh-oj8'
+
+if BASE_IMAGE_TAG is None:
+    try:
+        with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as tag_config:
+            tag_json = json.load(tag_config)
+        BASE_IMAGE_TAG = tag_json['base_images_tag']
+    except KeyError:
+        raise Exception("base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,))
 
 LOCAL_RESOURCES_DIR = os.path.join(prestoadmin.main_dir,
                                    'tests/product/resources/')
