@@ -19,7 +19,7 @@ Provides bare images for standalone clusters.
 import re
 
 from tests.bare_image_provider import TagBareImageProvider
-from tests.product.constants import BASE_IMAGES_TAG
+from tests.product.constants import BASE_IMAGE_TAG
 from tests.product.constants import BASE_IMAGE_NAME
 
 
@@ -29,4 +29,4 @@ class NoHadoopBareImageProvider(TagBareImageProvider):
         decoration = 'nohadoop_' + re.sub(r"[^A-Za-z0-9]", "_", BASE_IMAGE_NAME)
         super(NoHadoopBareImageProvider, self).__init__(
             BASE_IMAGE_NAME, BASE_IMAGE_NAME,
-            BASE_IMAGES_TAG, decoration)
+            BASE_IMAGE_TAG, decoration)
