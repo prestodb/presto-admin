@@ -32,7 +32,7 @@ BASE_IMAGES_TAG_CONFIG = 'base-images-tag.json'
 try:
     with open(os.path.join(main_dir, BASE_IMAGES_TAG_CONFIG)) as tag_config:
         tag_json = json.load(tag_config)
-    BASE_IMAGES_TAG = tag_json['base_images_tag']
+    BASE_IMAGE_TAG = tag_json['base_images_tag']
 except KeyError:
     print "base_images_tag must be set in %s" % (BASE_IMAGES_TAG_CONFIG,)
     sys.exit(1)
