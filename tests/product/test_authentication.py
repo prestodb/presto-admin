@@ -18,6 +18,7 @@ Product tests for SSH authentication for presto-admin commands
 
 import os
 import subprocess
+import re
 
 from nose.plugins.attrib import attr
 
@@ -99,7 +100,8 @@ class TestAuthentication(BaseProductTestCase):
             'echo "password" | ./presto-admin catalog add -I')
 
         self.assertEqualIgnoringOrder(
-            self.success_output + self.interactive_text, command_output)
+            re.sub(r'python2\.6|python2\.7', '', self.success_output + self.interactive_text),
+            re.sub(r'python2\.6|python2\.7', '', command_output))
 
         # Passwordless SSH as root, but specify -p
         command_output = self.run_prestoadmin('catalog add --password '
@@ -179,8 +181,9 @@ class TestAuthentication(BaseProductTestCase):
         command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin catalog add -I -u app-admin')
         self.assertEqualIgnoringOrder(
-            self.success_output + self.interactive_text +
-            self.sudo_password_prompt + non_root_sudo_warning, command_output)
+            re.sub(r'python2\.6|python2\.7', '', self.success_output + self.interactive_text +
+                   self.sudo_password_prompt + non_root_sudo_warning),
+            re.sub(r'python2\.6|python2\.7', '', command_output))
 
         # No passwordless SSH, -p correct -u app-admin
         command_output = self.run_prestoadmin('catalog add -p password '

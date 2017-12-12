@@ -97,12 +97,12 @@ class TestPackageInstall(BaseProductTestCase):
     def test_install_rpm_missing_dependency(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'rpm -e --nodeps python-2.6.6')
+            self.cluster.master, 'rpm -e --nodeps python-*')
         self.assertRaisesRegexp(OSError,
-                                'package python-2.6.6 is not installed',
+                                'package python-.* is not installed',
                                 self.cluster.exec_cmd_on_host,
                                 self.cluster.master,
-                                'rpm -q python-2.6.6')
+                                'rpm -q python-*')
 
         cmd_output = self.run_prestoadmin(
             'package install %(rpm)s -H %(master)s',
@@ -131,12 +131,12 @@ Package deployed successfully on: %(master)s
     def test_install_rpm_with_nodeps(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
-            self.cluster.master, 'rpm -e --nodeps python-2.6.6')
+            self.cluster.master, 'rpm -e --nodeps python-*')
         self.assertRaisesRegexp(OSError,
-                                'package python-2.6.6 is not installed',
+                                'package python-.* is not installed',
                                 self.cluster.exec_cmd_on_host,
                                 self.cluster.master,
-                                'rpm -q python-2.6.6')
+                                'rpm -q python-*')
 
         cmd_output = self.run_prestoadmin(
             'package install %(rpm)s -H %(master)s --nodeps',
