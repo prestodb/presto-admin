@@ -269,9 +269,9 @@ class TestCollect(BaseProductTestCase):
              "username": "app-admin"}
         )
 
-        self.run_script_from_prestoadmin_dir('./presto-admin server start -p password')
+        self.run_prestoadmin('server start -p password')
 
-        self.run_script_from_prestoadmin_dir('./presto-admin collect logs -p password')
+        self.run_prestoadmin('collect logs -p password')
 
-        actual = self.run_script_from_prestoadmin_dir('./presto-admin collect system_info -p password')
+        actual = self.run_prestoadmin('collect system_info -p password')
         self._test_basic_system_info(actual)
