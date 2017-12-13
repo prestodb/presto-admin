@@ -18,6 +18,7 @@ Product tests for SSH authentication for presto-admin commands
 
 import os
 import subprocess
+import re
 
 from nose.plugins.attrib import attr
 
@@ -99,7 +100,8 @@ class TestAuthentication(BaseProductTestCase):
             'echo "password" | ./presto-admin catalog add -I')
 
         self.assertEqualIgnoringOrder(
-            self.success_output + self.interactive_text, command_output)
+            self._remove_python_string(self.success_output + self.interactive_text),
+            self._remove_python_string(command_output))
 
         # Passwordless SSH as root, but specify -p
         command_output = self.run_prestoadmin('catalog add --password '
@@ -112,8 +114,10 @@ class TestAuthentication(BaseProductTestCase):
         command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin catalog add -I -u app-admin')
         self.assertEqualIgnoringOrder(
-            self.success_output + self.interactive_text +
-            self.sudo_password_prompt + non_root_sudo_warning, command_output)
+            self._remove_python_string(
+                self.success_output + self.interactive_text +
+                self.sudo_password_prompt + non_root_sudo_warning),
+            self._remove_python_string(command_output))
 
         # Passwordless SSH as app-admin, but specify -p
         command_output = self.run_prestoadmin('catalog add --password '
@@ -127,8 +131,9 @@ class TestAuthentication(BaseProductTestCase):
         command_output = self.run_script_from_prestoadmin_dir(
             'echo "asdf" | ./presto-admin catalog add -I -u app-admin',
             raise_error=False)
-        self.assertEqualIgnoringOrder(parallel_password_failure +
-                                      self.interactive_text, command_output)
+        self.assertEqualIgnoringOrder(
+            self._remove_python_string(parallel_password_failure + self.interactive_text),
+            self._remove_python_string(command_output))
 
         # Passwordless SSH as app-admin, but specify wrong password with -p
         command_output = self.run_prestoadmin(
@@ -179,8 +184,10 @@ class TestAuthentication(BaseProductTestCase):
         command_output = self.run_script_from_prestoadmin_dir(
             'echo "password" | ./presto-admin catalog add -I -u app-admin')
         self.assertEqualIgnoringOrder(
-            self.success_output + self.interactive_text +
-            self.sudo_password_prompt + non_root_sudo_warning, command_output)
+            self._remove_python_string(
+                self.success_output + self.interactive_text +
+                self.sudo_password_prompt + non_root_sudo_warning),
+            self._remove_python_string(command_output))
 
         # No passwordless SSH, -p correct -u app-admin
         command_output = self.run_prestoadmin('catalog add -p password '
@@ -225,3 +232,6 @@ class TestAuthentication(BaseProductTestCase):
                            'echo \'connector.name=tpch\' >> %(catalogs)s/tpch.properties\n' % \
                            {'catalogs': get_catalog_directory()}
         self.run_script_from_prestoadmin_dir(connector_script)
+
+    def _remove_python_string(self, text):
+        return re.sub(r'python2\.6|python2\.7', '', text)
