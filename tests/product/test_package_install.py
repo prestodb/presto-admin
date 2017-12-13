@@ -17,7 +17,8 @@ import os
 from nose.plugins.attrib import attr
 
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase
+from tests.product.base_product_case import BaseProductTestCase, \
+    docker_only
 from tests.product.cluster_types import STANDALONE_PA_CLUSTER
 from tests.product.standalone.presto_installer import StandalonePrestoInstaller
 
@@ -93,8 +94,9 @@ class TestPackageInstall(BaseProductTestCase):
             self.installer.assert_uninstalled(container, msg=output)
 
     # skip this tests as it depends on OS package names
-    # @docker_only
-    def _test_install_rpm_missing_dependency(self):
+    @attr('quarantine')
+    @docker_only
+    def test_install_rpm_missing_dependency(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
             self.cluster.master, 'rpm -e --nodeps python-2.6.6')
@@ -128,8 +130,9 @@ Package deployed successfully on: %(master)s
         )
 
     # skip this tests as it depends on OS package names
-    # @docker_only
-    def _test_install_rpm_with_nodeps(self):
+    @attr('quarantine')
+    @docker_only
+    def test_install_rpm_with_nodeps(self):
         rpm_name = self.installer.copy_presto_rpm_to_master()
         self.cluster.exec_cmd_on_host(
             self.cluster.master, 'rpm -e --nodeps python-2.6.6')
