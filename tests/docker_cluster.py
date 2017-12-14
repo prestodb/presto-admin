@@ -121,7 +121,7 @@ class DockerCluster(BaseCluster):
         self._create_network()
 
         self._create_and_start_containers(master_image, slave_image, cmd, **kwargs)
-        self._ensure_docker_containers_started(master_image)
+        self._ensure_docker_containers_started()
 
     def tear_down(self):
         for container_name in self.all_hosts():
@@ -221,8 +221,7 @@ class DockerCluster(BaseCluster):
             aliases=[hostname.split('-')[0]])
 
     @retry(stop_max_delay=_DOCKER_START_TIMEOUT, wait_fixed=_DOCKER_START_WAIT)
-    def _ensure_docker_containers_started(self, image):
-        image_no_tag = image.split(':')[0]
+    def _ensure_docker_containers_started(self):
         host_started = {}
         for host in self.all_hosts():
             host_started[host] = False
