@@ -94,21 +94,15 @@ class TestBDistPrestoAdmin(BaseTestCase):
         self.assertEquals('prestoadmin-1.2-py2-none-any',
                           self.bdist.build_wheel('build'))
 
-    @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
     @patch('packaging.bdist_prestoadmin.pip.main')
-    def test_package_dependencies_for_offline_installer(self, pip_mock,
-                                                        urlretrieve_mock):
+    def test_package_dependencies_for_offline_installer(self, pip_mock):
         build_path = os.path.join('build', 'prestoadmin')
         self.bdist.package_dependencies(build_path)
 
         calls = [call(['wheel',
                        '--wheel-dir=build/prestoadmin/third-party',
                        '--no-cache',
-                       'fabric',
-                       '--extra-index-url',
-                       'http://bdch-ftp.td.teradata.com:8082',
-                       '--trusted-host',
-                       'bdch-ftp.td.teradata.com']),
+                       'fabric']),
                  call(['install',
                        '-d',
                        'build/prestoadmin/third-party',
@@ -130,49 +124,6 @@ class TestBDistPrestoAdmin(BaseTestCase):
         self.bdist.run()
 
         assert not package_dependencies_mock.called, 'method should not have been called'
-
-    @patch('packaging.bdist_prestoadmin.sys')
-    @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
-    @patch('packaging.bdist_prestoadmin.pip.main')
-    def test_correct_use_of_precompiled_pycrypto(self, pip_mock, urllib_mock,
-                                                 sys_mock):
-        build_path = os.path.join('build', 'prestoadmin')
-        thirdparty_dir = os.path.join(build_path, 'third-party')
-        pycrypto_whl = 'pycrypto-2.6.1-{0}-none-linux_x86_64.whl'
-        pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' + pycrypto_whl
-        twofish_whl = 'twofish-0.3.0-{0}-none-linux_x86_64.whl'
-        pypi_twofish_url = 'http://bdch-ftp.td.teradata.com:8082/packages/' + twofish_whl
-
-        sys_mock.version = '2.7'
-        self.bdist.package_dependencies(build_path)
-        urllib_mock.assert_has_calls(
-            [call(pypi_pycrypto_url.format('cp26'),
-             os.path.join(thirdparty_dir, pycrypto_whl.format('cp26'))),
-             call(pypi_twofish_url.format('cp26'),
-             os.path.join(thirdparty_dir, twofish_whl.format('cp26')))]
-        )
-
-        sys_mock.version = '2.6'
-        self.bdist.package_dependencies(build_path)
-        urllib_mock.assert_has_calls(
-            [call(pypi_pycrypto_url.format('cp27'),
-             os.path.join(thirdparty_dir, pycrypto_whl.format('cp27'))),
-             call(pypi_twofish_url.format('cp27'),
-             os.path.join(thirdparty_dir, twofish_whl.format('cp27')))]
-        )
-
-    @patch('packaging.bdist_prestoadmin.sys')
-    @patch('packaging.bdist_prestoadmin.urllib.urlretrieve')
-    @patch('packaging.bdist_prestoadmin.pip.main')
-    def test_offline_installer_fails_when_not_on_td_network(
-            self, pip_mock, urllib_mock, sys_mock):
-        build_path = os.path.join('build', 'prestoadmin')
-        exception = IOError()
-        exception.errno = 'socket error'
-        urllib_mock.side_effect = exception
-
-        self.assertRaises(IOError, self.bdist.package_dependencies,
-                          build_path)
 
     def test_generate_online_install_script(self):
         test_input = ['virtualenv-%VIRTUALENV_VERSION%.tar.gz\n',
