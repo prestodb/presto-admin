@@ -138,8 +138,7 @@ test-images: docker-images presto-server-rpm.rpm
 	python tests/product/image_builder.py $(IMAGE_NAMES)
 
 DOCKER_IMAGES := \
-	teradatalabs/centos6-ssh-oj8:$(BASE_IMAGES_TAG) \
-	teradatalabs/ubuntu-trusty-python2.6:$(BASE_IMAGES_TAG)
+	teradatalabs/centos6-ssh-oj8:$(BASE_IMAGES_TAG)
 
 docker-images:
 	for image in $(DOCKER_IMAGES); do docker pull $$image || exit 1; done
