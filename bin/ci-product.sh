@@ -13,4 +13,4 @@
 # limitations under the License.
 
 make test-images 
-nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine,!offline_installer' "$@"
+nosetests --with-timer --timer-ok 60s --timer-warning 300s -a '!quarantine' "$@"
