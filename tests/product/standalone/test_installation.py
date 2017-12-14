@@ -25,9 +25,6 @@ from tests.product.base_product_case import BaseProductTestCase, docker_only
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
 from tests.product.config_dir_utils import get_catalog_directory, get_coordinator_directory, get_workers_directory
 from tests.product.prestoadmin_installer import PrestoadminInstaller
-from tests.docker_cluster import DockerCluster
-from tests.product.constants import DEFAULT_DOCKER_MOUNT_POINT, \
-    DEFAULT_LOCAL_MOUNT_POINT
 
 
 class TestInstallation(BaseProductTestCase):
