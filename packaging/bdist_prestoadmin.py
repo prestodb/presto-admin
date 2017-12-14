@@ -17,8 +17,6 @@
 
 import os
 import re
-import sys
-import urllib
 from distutils import log as logger
 from distutils.dir_util import remove_tree
 
@@ -97,35 +95,7 @@ class bdist_prestoadmin(Command):
             pip.main(['wheel',
                       '--wheel-dir={0}'.format(thirdparty_dir),
                       '--no-cache',
-                      requirement,
-                      '--extra-index-url',
-                      'http://bdch-ftp.td.teradata.com:8082',
-                      '--trusted-host',
-                      'bdch-ftp.td.teradata.com'])
-
-        # Welcome to HackLand! For our offline installer we need to
-        # include the wheels with native code compiled both against the Python
-        # 2.6 and 2.7 interpreters. We found no way to do that at build
-        # time (either compile against both interpreters simultaneously
-        # or somehow compile first against 2.6 and then against 2.7
-        # serially). To solve this we pre-compiled both and uploaded to
-        # the internal PyPI. During the build we download wheels for both
-        # interpreters compiled on Centos 6.6.
-        for wheel in self.NATIVE_WHEELS:
-            pypi_pycrypto_url = 'http://bdch-ftp.td.teradata.com:8082/' + \
-                                'packages/' + wheel
-            if sys.version.startswith('2.6'):
-                alternate_interpreter_version = 'cp27'  # fetch 2.7 from PyPI
-            else:
-                alternate_interpreter_version = 'cp26'
-
-            urllib.urlretrieve(
-                pypi_pycrypto_url.format(alternate_interpreter_version),
-                os.path.join(
-                    thirdparty_dir,
-                    wheel.format(alternate_interpreter_version))
-                )
-        # Thank you for visiting HackLand!
+                      requirement])
 
         pip.main(['install',
                   '-d',
