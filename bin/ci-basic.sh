@@ -13,7 +13,5 @@
 # limitations under the License.
 
 make clean lint dist docs
-tox -e py26 -- -s tests.unit
-tox -e py26 -- -s tests.integration
-tox -e py27 -- -s tests.unit
-tox -e py27 -- -s tests.integration
+tox -- -s tests.unit
+tox -- -s tests.integration
