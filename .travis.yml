@@ -11,6 +11,7 @@ env:
     - PYTHONPATH=$PYTHONPATH:$(pwd)
     - LONG_PRODUCT_TESTS="tests/product/test_server_install.py tests/product/test_status.py tests/product/test_collect.py tests/product/test_catalog.py tests/product/test_control.py tests/product/test_server_uninstall.py"
   matrix:
+    - ARTIFACTS=true
     - OTHER_TESTS=true
     - SHORT_PRODUCT_TEST_GROUP=0
     - LONG_PRODUCT_TEST_GROUP_PRESTO_ADMIN="tests/product/test_server_install.py"
@@ -32,7 +33,9 @@ before_script:
   - make presto-server-rpm.rpm
 script:
   - |
-    if [ -v SHORT_PRODUCT_TEST_GROUP ]; then
+    if [ -v ARTIFACTS ]; then
+      ./bin/build-artifacts-in-docker.sh
+    elif [ -v SHORT_PRODUCT_TEST_GROUP ]; then
       ALL_PRODUCT_TESTS=$(find tests/product/ -name 'test_*py' | grep -v __init__ | xargs wc -l | sort -n | head -n -1 | awk '{print $2}' | tr '\n' ' ')
       for LONG_PRODUCT_TEST in ${LONG_PRODUCT_TESTS[@]}; do
         ALL_PRODUCT_TESTS=${ALL_PRODUCT_TESTS//$LONG_PRODUCT_TEST/};
