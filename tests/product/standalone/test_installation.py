@@ -65,30 +65,6 @@ class TestInstallation(BaseProductTestCase):
         workers_dir = os.path.join(pa_config_dir, 'workers')
         self.assert_path_exists(self.cluster.master, workers_dir)
 
-    @attr('smoketest', 'offline_installer')
-    @docker_only
-    def test_install_on_wrong_os_offline_installer(self):
-        image = 'teradatalabs/ubuntu-trusty-python2.6'
-        tag = 'latest'
-        host = 'wrong-os-master'
-        ubuntu_container = DockerCluster(host, [], DEFAULT_LOCAL_MOUNT_POINT, DEFAULT_DOCKER_MOUNT_POINT)
-
-        if not DockerCluster._check_for_images(image, image, tag):
-            raise RuntimeError("Docker images have not been created")
-
-        try:
-            ubuntu_container.start_containers(image + ':' + tag, cmd='tail -f /var/log/bootstrap.log')
-
-            self.assertRaisesRegexp(
-                OSError,
-                r'ERROR\n'
-                r'Paramiko could not be imported. This usually means that',
-                self.pa_installer.install,
-                cluster=ubuntu_container
-            )
-        finally:
-            ubuntu_container.tear_down()
-
     @attr('smoketest')
     def test_cert_arg_to_installation_nonexistent_file(self):
         install_dir = '~'
