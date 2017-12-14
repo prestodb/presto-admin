@@ -40,10 +40,6 @@ DIST_DIR = os.path.join(main_dir, 'tmp/installer')
 _DOCKER_START_TIMEOUT = 60000
 _DOCKER_START_WAIT = 1000
 
-NO_WAIT_SSH_IMAGES = [
-    'teradatalabs/ubuntu-trusty-python2.6'
-]
-
 
 class NotStartedException(Exception):
     def __init__(self, hosts):
@@ -226,8 +222,6 @@ class DockerCluster(BaseCluster):
 
     @retry(stop_max_delay=_DOCKER_START_TIMEOUT, wait_fixed=_DOCKER_START_WAIT)
     def _ensure_docker_containers_started(self, image):
-        # Strip off the tag, if there is one. We don't want to have to update
-        # the NO_WAIT_SSH_IMAGES list every time we update the docker images.
         image_no_tag = image.split(':')[0]
         host_started = {}
         for host in self.all_hosts():
@@ -236,7 +230,7 @@ class DockerCluster(BaseCluster):
             if host_started[host]:
                 continue
             is_started = self.client.containers.get(host).status == 'running'
-            if is_started and image_no_tag not in NO_WAIT_SSH_IMAGES:
+            if is_started:
                 is_started &= self._are_centos_container_services_up(host)
             host_started[host] = is_started
         not_started = [host for (host, started) in host_started.items() if not started]
