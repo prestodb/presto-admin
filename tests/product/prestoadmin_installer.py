@@ -84,7 +84,7 @@ class PrestoadminInstaller(BaseInstaller):
 
         container_name = 'installer'
         cluster_type = 'installer_builder'
-        bare_image_provider = NoHadoopBareImageProvider()
+        bare_image_provider = NoHadoopBareImageProvider("build")
 
         installer_container, created_bare = DockerCluster.start_cluster(
             bare_image_provider, cluster_type, 'installer', [])
