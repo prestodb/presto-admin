@@ -10,6 +10,8 @@ if [[ -z "${BASE_IMAGE_NAME}" ]]; then
   BASE_IMAGE_NAME="teradatalabs/centos6-ssh-oj8"
 fi
 
+BASE_IMAGE_NAME=${BASE_IMAGE_NAME}-build
+
 if [[ -z "${BASE_IMAGE_TAG}" ]]; then
   BASE_IMAGE_TAG=$(cat ${ROOT_DIR}/base-images-tag.json | python -c 'import sys, json; print json.load(sys.stdin)["base_images_tag"]')
 fi
