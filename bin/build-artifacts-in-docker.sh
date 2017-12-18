@@ -7,7 +7,7 @@ set -x
 ROOT_DIR=$(readlink -f $(dirname $0)/..)
 
 if [[ -z "${BASE_IMAGE_NAME}" ]]; then
-  BASE_IMAGE_NAME="teradatalabs/centos6-ssh-oj8"
+  BASE_IMAGE_NAME="prestodb/centos6-presto-admin-tests"
 fi
 
 BASE_IMAGE_NAME=${BASE_IMAGE_NAME}-build
@@ -30,4 +30,3 @@ docker run --name ${CONTAINER_NAME} -v ${ROOT_DIR}:${CONTAINER_DIR} --rm -i ${BA
     export PYTHONPATH=${PYTHONPATH}:$(pwd)
     make dist dist-offline
 EOF
-

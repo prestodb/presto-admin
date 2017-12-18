@@ -27,7 +27,7 @@ _BASE_IMAGE_NAME = os.environ.get('BASE_IMAGE_NAME')
 BASE_IMAGE_TAG = os.environ.get('BASE_IMAGE_TAG')
 
 if _BASE_IMAGE_NAME is None:
-    _BASE_IMAGE_NAME = 'teradatalabs/centos6-ssh-oj8'
+    _BASE_IMAGE_NAME = 'prestodb/centos6-presto-admin-tests'
 
 if BASE_IMAGE_TAG is None:
     try:
