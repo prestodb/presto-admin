@@ -20,13 +20,22 @@ import re
 
 from tests.bare_image_provider import TagBareImageProvider
 from tests.product.constants import BASE_IMAGE_TAG
-from tests.product.constants import BASE_IMAGE_NAME
+from tests.product.constants import BASE_IMAGE_NAME_BUILD
+from tests.product.constants import BASE_IMAGE_NAME_RUNTIME
 
 
 class NoHadoopBareImageProvider(TagBareImageProvider):
-    def __init__(self):
+    def __init__(self, build_or_runtime="runtime"):
+        if build_or_runtime == "runtime":
+            base_image_name = BASE_IMAGE_NAME_RUNTIME
+        elif build_or_runtime == "build":
+            base_image_name = BASE_IMAGE_NAME_BUILD
+        else:
+            raise Exception("build_or_runtime must be one of \"build\" or \"runtime\"")
+
         # encode base image name into name of created test image, to prevent image name clash.
-        decoration = 'nohadoop_' + re.sub(r"[^A-Za-z0-9]", "_", BASE_IMAGE_NAME)
+        decoration = 'nohadoop_' + re.sub(r"[^A-Za-z0-9]", "_", base_image_name)
+
         super(NoHadoopBareImageProvider, self).__init__(
-            BASE_IMAGE_NAME, BASE_IMAGE_NAME,
+            base_image_name, base_image_name,
             BASE_IMAGE_TAG, decoration)
