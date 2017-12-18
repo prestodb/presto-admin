@@ -20,58 +20,29 @@ import os
 import re
 import subprocess
 
-from nose.plugins.attrib import attr
-
 from prestoadmin import main_dir
 from tests.docker_cluster import DockerCluster
 from tests.no_hadoop_bare_image_provider import NoHadoopBareImageProvider
-from tests.product.base_product_case import BaseProductTestCase, docker_only
+from tests.product.base_product_case import BaseProductTestCase
 from tests.product.cluster_types import STANDALONE_BARE_CLUSTER
 from tests.product.prestoadmin_installer import PrestoadminInstaller
 
 
-class TestInstaller(BaseProductTestCase):
-
-    def setUp(self):
-        super(TestInstaller, self).setUp()
-        self.setup_cluster(NoHadoopBareImageProvider(), STANDALONE_BARE_CLUSTER)
+class BaseTestInstaller(BaseProductTestCase):
+    def setUp(self, build_or_runtime):
+        super(BaseTestInstaller, self).setUp()
+        self.setup_cluster(NoHadoopBareImageProvider(build_or_runtime), STANDALONE_BARE_CLUSTER)
         self.centos_container = \
-            self.__create_and_start_single_centos_container()
+            self.__create_and_start_single_centos_container(build_or_runtime)
         self.pa_installer = PrestoadminInstaller(self)
 
     def tearDown(self):
-        super(TestInstaller, self).tearDown()
+        super(BaseTestInstaller, self).tearDown()
         self.centos_container.tear_down()
 
-    @attr('smoketest')
-    def test_online_installer(self):
-        self.pa_installer._build_installer_in_docker(self.centos_container,
-                                                     online_installer=True,
-                                                     unique=True)
-        self.__verify_third_party_dir(False)
-        self.pa_installer.install(
-            dist_dir=self.centos_container.get_dist_dir(unique=True))
-        self.run_prestoadmin('--help', raise_error=True)
-
-    @attr('smoketest', 'offline_installer')
-    @docker_only
-    def test_offline_installer(self):
-        self.pa_installer._build_installer_in_docker(
-            self.centos_container, online_installer=False, unique=True)
-        self.__verify_third_party_dir(True)
-        self.centos_container.exec_cmd_on_host(
-            # IMPORTANT: ifdown eth0 fails silently without taking the
-            # interface down if the NET_ADMIN capability isn't set for the
-            # container. ifconfig eth0 down accomplishes the same thing, but
-            # results in a failure if it fails.
-            self.centos_container.master, 'ifconfig eth0 down')
-        self.pa_installer.install(
-            dist_dir=self.centos_container.get_dist_dir(unique=True))
-        self.run_prestoadmin('--help', raise_error=True)
-
-    def __create_and_start_single_centos_container(self):
+    def __create_and_start_single_centos_container(self, build_or_runtime):
         cluster_type = 'installer_tester'
-        bare_image_provider = NoHadoopBareImageProvider()
+        bare_image_provider = NoHadoopBareImageProvider(build_or_runtime)
         centos_container, bare_cluster = DockerCluster.start_cluster(
             bare_image_provider, cluster_type, 'master', [],
             cap_add=['NET_ADMIN'])
@@ -81,7 +52,7 @@ class TestInstaller(BaseProductTestCase):
 
         return centos_container
 
-    def __verify_third_party_dir(self, is_third_party_present):
+    def _verify_third_party_dir(self, is_third_party_present):
         matches = fnmatch.filter(
             os.listdir(self.centos_container.get_dist_dir(unique=True)),
             'prestoadmin-*.tar.gz')
