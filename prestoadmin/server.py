@@ -511,10 +511,15 @@ def is_port_in_use(host):
     with settings(hide('warnings', 'stdout'), warn_only=True):
         output = run('netstat -ln |grep -E "\<%s\>" |grep LISTEN' % str(portnum))
     if output:
-        _LOGGER.info("Presto server port already in use. Skipping "
-                     "server start...")
-        error('Server failed to start on %s. Port %s already in use'
-              % (env.host, str(portnum)))
+        if 'command not found' in output:
+            _LOGGER.info("Presto server has no netstat installed. Skipping "
+                         "server start...")
+            error("Server failed to start on %s. netstat not installed")
+        else:
+            _LOGGER.info("Presto server port already in use. Skipping "
+                         "server start...")
+            error('Server failed to start on %s. Port %s already in use'
+                  % (env.host, str(portnum)))
     return output
 
 
