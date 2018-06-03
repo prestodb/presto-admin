@@ -96,9 +96,8 @@ setup(
     description="Presto-admin installs, configures, and manages Presto " + \
                 "installations.",
     long_description=readme,
-    author="Teradata Coporation",
-    author_email='christina.wallin@teradata.com',
-    url='https://github.com/teradatalabs/presto-admin',
+    author="PrestoDB Team",
+    url='https://github.com/prestodb/presto-admin',
     packages=find_packages(exclude=['*tests*']),
     package_dir={'prestoadmin':
                  'prestoadmin'},
