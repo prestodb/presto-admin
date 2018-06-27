@@ -4,7 +4,7 @@ flake8==2.5.4  # MIT
 mock==1.0.1  # License :: OSI Approved :: BSD License
 py==1.4.26  # MIT license
 Sphinx==1.3.1  # BSD
-babel==2.6.0 # MIT
+babel==2.5.3 # MIT
 tox==1.9.2  # http://opensource.org/licenses/MIT
 virtualenv==12.0.7  # MIT
 wheel==0.23.0  # MIT
