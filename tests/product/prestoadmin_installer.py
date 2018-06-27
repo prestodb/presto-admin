@@ -112,6 +112,10 @@ class PrestoadminInstaller(BaseInstaller):
             # https://github.com/pypa/pip/issues/3384
             installer_container.run_script_on_host(
                 'set -e\n'
+                # use explicit versions of dependent packages
+                'pip install --upgrade cffi==1.11.5\n'
+                'pip install --upgrade PyNaCl==1.2.1\n'
+                'pip install --upgrade cryptography==2.1.1\n'
                 'pip install --upgrade pip==7.1.2\n'
                 'pip install --upgrade wheel==0.23.0\n'
                 'pip install --upgrade setuptools==20.1.1\n'

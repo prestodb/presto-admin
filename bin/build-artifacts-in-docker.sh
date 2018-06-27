@@ -25,8 +25,13 @@ docker run --name ${CONTAINER_NAME} -v ${ROOT_DIR}:${CONTAINER_DIR} --rm -i ${BA
   env CONTAINER_DIR="${CONTAINER_DIR}" bash <<"EOF"
     cd ${CONTAINER_DIR}
     pip install --upgrade pip==9.0.1
+    pip install tox-travis==0.10
+    # use explicit versions of dependent packages
+    pip install Babel==2.5.3
+    pip install cffi==1.11.5
+    pip install PyNaCl==1.2.1
+    pip install cryptography==2.1.1
     pip install -r requirements.txt
-    pip install tox-travis
     export PYTHONPATH=${PYTHONPATH}:$(pwd)
     make dist dist-offline
 EOF

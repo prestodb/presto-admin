@@ -44,7 +44,7 @@ with open('README.md') as readme_file:
 requirements = [
     'argparse==1.4',
     'paramiko==1.15.3',
-    'fabric==1.10.1',
+    'Fabric==1.10.1',
     'requests==2.7.0',
     'overrides==0.5',
     'pip==8.1.2',
