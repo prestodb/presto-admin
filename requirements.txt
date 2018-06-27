@@ -8,6 +8,8 @@ Babel==2.5.3 # MIT
 tox==1.9.2  # http://opensource.org/licenses/MIT
 virtualenv==12.0.7  # MIT
 wheel==0.23.0  # MIT
+cffi==1.4.1 # MIT
+PyNaCl==1.2.1 # Apache License, Version 2.0
 Fabric==1.10.1  # License :: OSI Approved :: BSD License
 requests==2.7.0  # Apache 2.0
 docker==2.5.1  # Apache License 2.0
