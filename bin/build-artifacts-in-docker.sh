@@ -26,7 +26,7 @@ docker run --name ${CONTAINER_NAME} -v ${ROOT_DIR}:${CONTAINER_DIR} --rm -i ${BA
     cd ${CONTAINER_DIR}
     pip install --upgrade pip==9.0.1
     pip install tox-travis==0.10
-    # list presto-admin package dependencies versions
+    # use explicit versions of dependent packages
     pip install Babel==2.5.3
     pip install cffi==1.11.5
     pip install PyNaCl==1.2.1
