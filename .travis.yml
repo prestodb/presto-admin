@@ -26,7 +26,7 @@ before_install:
 install:
   - pip install --upgrade pip==9.0.1
   - pip install -r requirements.txt
-  - pip install tox-travis
+  - pip install tox-travis==0.10
 before_script:
   - make docker-images
   - make presto-server-rpm.rpm
