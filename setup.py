@@ -42,6 +42,7 @@ with open('README.md') as readme_file:
 # package it up into the third-party directory, and the resulting dist-offline
 # will fail to install if argparse isn't in the system python libraries.
 requirements = [
+    'pycparser==2.18',
     'argparse==1.4',
     'paramiko==1.15.3',
     'Fabric==1.10.1',
