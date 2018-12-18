@@ -115,7 +115,7 @@ class PrestoadminInstaller(BaseInstaller):
                 # use explicit versions of dependent packages
                 'pip install --upgrade pycparser==2.18 cffi==1.11.5\n'
                 'pip install --upgrade pycparser==2.18 PyNaCl==1.2.1\n'
-                'pip install --upgrade pycparser==2.18 cryptography==2.1.1\n'
+                'pip install --upgrade pycparser==2.18 idna==2.1 cryptography==2.1.1\n'
                 'pip install --upgrade pip==7.1.2\n'
                 'pip install --upgrade wheel==0.23.0\n'
                 'pip install --upgrade setuptools==20.1.1\n'
