@@ -32,6 +32,11 @@ query.max-memory-per-node=512MB
 query.max-memory=50GB
 
 
+master: Configuration file at /etc/presto/log.properties:
+# Enable verbose logging from Presto
+#com.facebook.presto=DEBUG
+
+
 slave1: Configuration file at /etc/presto/node.properties:
 node.id=.*
 catalog.config-dir=/etc/presto/catalog
@@ -62,3 +67,8 @@ discovery.uri=http://master:7070
 http-server.http.port=7070
 query.max-memory-per-node=512MB
 query.max-memory=50GB
+
+
+slave1: Configuration file at /etc/presto/log.properties:
+# Enable verbose logging from Presto
+#com.facebook.presto=DEBUG
