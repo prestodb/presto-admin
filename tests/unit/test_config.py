@@ -67,6 +67,14 @@ class TestConfiguration(BaseTestCase):
                                 'd\\=': '4', 'e\\:': '5', 'f': '==6',
                                 'g': '= 7', 'h': ':8', 'i': '9', 'j': '${ENVIRONMENT_VARIABLE}'})
 
+    @patch('prestoadmin.config.os.path.expandvars', return_value='environment_variable_value')
+    def test_expending_environment_variable(self, environment_variables):
+        config_file = os.path.join(DIR, 'resources', 'environment_variable.properties')
+        conf = config.get_conf_from_properties_file(config_file)
+        self.assertTrue(environment_variables.called)
+        self.assertEqual({'a': 'environment_variable_value'}, conf)
+
+
     @patch('__builtin__.open')
     def test_get_properties_ignores_whitespace(self, open_mock):
         file_manager = open_mock.return_value.__enter__.return_value
