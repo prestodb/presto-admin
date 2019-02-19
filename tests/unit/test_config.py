@@ -58,14 +58,14 @@ class TestConfiguration(BaseTestCase):
     def test_get_config(self):
         config_file = os.path.join(DIR, 'resources', 'valid.config')
         conf = config.get_conf_from_config_file(config_file)
-        self.assertEqual(conf, ['prop1', 'prop2', 'prop3'])
+        self.assertEqual(conf, ['prop1', 'prop2', 'prop3', '${ENVIRONMENT_VARIABLE}'])
 
     def test_get_properties(self):
         config_file = os.path.join(DIR, 'resources', 'valid.properties')
         conf = config.get_conf_from_properties_file(config_file)
         self.assertEqual(conf, {'a': '1', 'b': '2', 'c': '3',
                                 'd\\=': '4', 'e\\:': '5', 'f': '==6',
-                                'g': '= 7', 'h': ':8', 'i': '9'})
+                                'g': '= 7', 'h': ':8', 'i': '9', 'j': '${ENVIRONMENT_VARIABLE}'})
 
     @patch('__builtin__.open')
     def test_get_properties_ignores_whitespace(self, open_mock):
