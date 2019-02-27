@@ -88,7 +88,7 @@ _LOGGER = logging.getLogger(__name__)
 DOWNLOAD_DIRECTORY = '/tmp'
 DEFAULT_RPM_NAME = 'presto-server-rpm.rpm'
 LATEST_RPM_URL = 'https://repository.sonatype.org/service/local/artifact/maven' \
-                 '/content?r=central-proxy&g=com.facebook.presto' \
+                 '/content?r=central-proxy&g=io.prestosql' \
                  '&a=presto-server-rpm&e=rpm&v=RELEASE'
 
 

@@ -175,7 +175,7 @@ class TestServerUpgrade(BaseProductTestCase):
 
     def add_dummy_properties_to_host(self, host):
         self.cluster.write_content_to_host(
-            'com.facebook.presto=INFO',
+            'io.prestosql=INFO',
             '/etc/presto/log.properties',
             host
         )
@@ -190,7 +190,7 @@ class TestServerUpgrade(BaseProductTestCase):
         self.assert_file_content(
             host,
             '/etc/presto/log.properties',
-            'com.facebook.presto=INFO'
+            'io.prestosql=INFO'
         )
 
         # assert dummy jvm config is there too

@@ -34,7 +34,7 @@ query.max-memory=50GB
 
 master: Configuration file at /etc/presto/log.properties:
 # Enable verbose logging from Presto
-#com.facebook.presto=DEBUG
+#io.prestosql=DEBUG
 
 
 slave1: Configuration file at /etc/presto/node.properties:
@@ -71,4 +71,4 @@ query.max-memory=50GB
 
 slave1: Configuration file at /etc/presto/log.properties:
 # Enable verbose logging from Presto
-#com.facebook.presto=DEBUG
+#io.prestosql=DEBUG

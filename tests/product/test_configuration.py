@@ -278,7 +278,7 @@ class TestConfiguration(BaseProductTestCase):
         self.assertEqual(output, expected)
 
         # configuration show log has log.properties
-        log_properties = 'com.facebook.presto=WARN'
+        log_properties = 'io.prestosql=WARN'
         filename = 'log.properties'
         self.cluster.write_content_to_host(
             log_properties,
