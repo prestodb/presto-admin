@@ -74,7 +74,6 @@ class TestConfiguration(BaseTestCase):
         self.assertTrue(environment_variables.called)
         self.assertEqual({'a': 'environment_variable_value'}, conf)
 
-
     @patch('__builtin__.open')
     def test_get_properties_ignores_whitespace(self, open_mock):
         file_manager = open_mock.return_value.__enter__.return_value
