@@ -29,7 +29,10 @@ work.
 
 To install ``presto-admin``:
 
-1. Copy the installer ``prestoadmin-<version>-offline.tar.gz`` to the
+1. Download an offline installer from
+`releases page <https://github.com/prestodb/presto-admin/releases>`_.
+
+2. Copy the installer ``prestoadmin-<version>-offline.tar.gz`` to the
 location where you want ``presto-admin`` to run.
 Note that ``presto-admin`` does not have to be on the same node(s)
 where Presto will run, though it does need to have SSH access to all
@@ -38,7 +41,7 @@ of the nodes in the cluster.
 .. NOTE::
      For Amazon EMR, use the online installer instead of the offline installer.
 
-2. Extract and run the installation script from within the ``prestoadmin`` directory.
+3. Extract and run the installation script from within the ``prestoadmin`` directory.
 ::
 
  $ tar xvf prestoadmin-<version>-offline.tar.gz
@@ -53,7 +56,7 @@ PRESTO_ADMIN_CONFIG_DIR and PRESTO_ADMIN_LOG_DIR. The installation script will a
 the directories pointed to by PRESTO_ADMIN_CONFIG_DIR and PRESTO_ADMIN_LOG_DIR. If those
 directories already exist, the installation script will not erase their contents.
 
-3. Verify that ``presto-admin`` was installed properly by running the following
+4. Verify that ``presto-admin`` was installed properly by running the following
 command:
 ::
 
