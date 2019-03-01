@@ -61,9 +61,6 @@ class TestServerUpgrade(BaseProductTestCase):
             self.assert_path_removed(container, '/usr/lib/presto/lib')
             self.assert_path_removed(container, '/usr/lib/presto/lib/plugin')
 
-            # And adds /usr/lib/presto/README.txt
-            self.assert_path_exists(container, '/usr/lib/presto/README.txt')
-
             # And modifies the text of the readme in
             # /usr/shared/doc/presto/README.txt
             self.assert_file_content_regex(
