@@ -24,14 +24,13 @@ from prestoadmin.standalone.config import StandaloneConfig
 from prestoadmin.util.base_config import requires_config
 from prestoadmin.util.constants import REMOTE_PLUGIN_DIR
 
-__all__ = ['add_jar']
+__all__ = ['add_jar', 'remove_jar']
 _LOGGER = logging.getLogger(__name__)
 
 
 def write(local_path, remote_dir):
     sudo("mkdir -p " + remote_dir)
     put(local_path, remote_dir, use_sudo=True)
-
 
 @task
 @requires_config(StandaloneConfig)
@@ -47,3 +46,15 @@ def add_jar(local_path, plugin_name, plugin_dir=REMOTE_PLUGIN_DIR):
     """
     _LOGGER.info('deploying jars on %s' % env.host)
     write(local_path, os.path.join(plugin_dir, plugin_name))
+
+def remove_jar(local_path, plugin_name):
+    """
+    Remove jar for the specified plugin to the plugin directory.
+
+    Parameters:
+        local_path - Local path to the jar to be removed
+        plugin_name - Name of the plugin subdirectory to deploy jars to
+
+    """
+    _LOGGER.info('removing jar on %s' % env.host)
+    os.remove(os.path.join(local_path, plugin_name))
