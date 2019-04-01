@@ -53,6 +53,12 @@ def get_conf_from_properties_data(data):
         if len(line) > 0 and line[0] not in COMMENT_CHARS:
             pair = split_to_pair(line)
             props[pair[0]] = pair[1]
+    return expand_environment_variables(props)
+
+
+def expand_environment_variables(props):
+    for key in props:
+        props[key] = os.path.expandvars(props[key])
     return props
 
 

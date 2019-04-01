@@ -91,11 +91,9 @@ class bdist_prestoadmin(Command):
         thirdparty_dir = os.path.join(build_dir, 'third-party')
 
         requirements = self.distribution.install_requires
-        for requirement in requirements:
-            pip.main(['wheel',
-                      '--wheel-dir={0}'.format(thirdparty_dir),
-                      '--no-cache',
-                      requirement])
+        pip.main(['wheel',
+                  '--wheel-dir={0}'.format(thirdparty_dir),
+                  '--no-cache'] + requirements)
 
         pip.main(['install',
                   '-d',

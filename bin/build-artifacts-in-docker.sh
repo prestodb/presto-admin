@@ -31,6 +31,7 @@ docker run --name ${CONTAINER_NAME} -v ${ROOT_DIR}:${CONTAINER_DIR} --rm -i ${BA
     pip install Babel==2.5.3
     pip install cffi==1.11.5
     pip install PyNaCl==1.2.1
+    pip install idna==2.7
     pip install cryptography==2.1.1
     pip install -r requirements.txt
     export PYTHONPATH=${PYTHONPATH}:$(pwd)
