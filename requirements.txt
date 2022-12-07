@@ -11,7 +11,7 @@ wheel==0.23.0  # MIT
 Fabric==1.10.1  # License :: OSI Approved :: BSD License
 requests==2.7.0  # Apache 2.0
 docker==2.5.1  # Apache License 2.0
-certifi==2015.4.28 # Mozilla Public License
+certifi==2022.12.7 # Mozilla Public License
 nose==1.3.7  # GNU LGPL
 nose-timer==0.6 # MIT
 fudge==1.1.0  # The MIT License
